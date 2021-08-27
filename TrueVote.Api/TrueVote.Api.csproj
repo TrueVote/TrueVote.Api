@@ -1,0 +1,55 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <AzureFunctionsVersion>v3</AzureFunctionsVersion>
+    <Description>TrueVote Core Api</Description>
+    <Copyright>Copyright TrueVote, Inc.</Copyright>
+    <PackageProjectUrl>https://truevote.org</PackageProjectUrl>
+    <PackageIcon>favicon-32x32.png</PackageIcon>
+    <PackageReadmeFile>README.MD</PackageReadmeFile>
+    <ApplicationIcon>dist\favicon.ico</ApplicationIcon>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="..\.editorconfig" Link=".editorconfig" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Azure.Functions.Extensions" Version="1.1.0" />
+    <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.OpenApi" Version="0.7.2-preview" />
+    <PackageReference Include="Microsoft.CodeAnalysis" Version="3.11.0" />
+    <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="3.0.3" />
+    <PackageReference Include="SecurityCodeScan.VS2019" Version="5.2.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="System.Collections.Immutable" Version="5.0.0" />
+    <PackageReference Include="System.IO.Abstractions" Version="13.2.47" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="dist\favicon-32x32.png">
+      <Pack>True</Pack>
+    </None>
+    <None Update="host.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="local.settings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Connected Services" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Connected Services\" />
+  </ItemGroup>
+  <ItemGroup>
+	<EmbeddedResource Include="dist\truevote-api.css" />
+	<EmbeddedResource Include="dist\truevote-api.js" />
+	<EmbeddedResource Include="dist\favicon-16x16.png" />
+	<EmbeddedResource Include="dist\favicon-32x32.png" />
+	<EmbeddedResource Include="dist\favicon.ico" />
+  </ItemGroup>
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="$(ProjectDir)../scripts/build-version.sh $(ProjectDir) $(TargetDir)bin&#xD;&#xA;exit 0" />
+  </Target>
+</Project>

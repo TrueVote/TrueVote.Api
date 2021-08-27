@@ -1,0 +1,82 @@
+name: TrueVote.Api
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+env:
+  AZURE_FUNCTIONAPP_NAME: truevoteapi
+  AZURE_FUNCTIONAPP_PACKAGE_PATH: '.'
+  DOTNET_VERSION: '3.1.x'
+
+jobs:
+  build_and_test_and_deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: Restore Dependencies
+      run: |
+        dotnet restore
+        dotnet tool restore
+
+    - name: Fixups
+      run: |
+        git update-index --chmod=+x ./scripts/*
+        chmod +x ./scripts/*
+
+    - name: Build
+      run: |
+        dotnet build --no-restore
+
+    - name: Test
+      shell: pwsh  
+      run: |
+        ./scripts/RunTests.ps1
+
+    - name: Publish Coverage to Coveralls
+      uses: coverallsapp/github-action@master
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        path-to-lcov: TrueVote.Api.Tests/TestResults/coverage.info
+
+    #- name: Archive Production Artifacts
+    #  uses: actions/upload-artifact@v2
+    #  with:
+    #    name: build-output
+    #    path: TrueVote.Api/bin/*
+
+    #- name: Archive Code Coverage Results
+    #  uses: actions/upload-artifact@v2
+    #  with:
+    #    name: code-coverage-report
+    #    path: TrueVote.Api.Tests/TestResults/*
+
+    - name: 'Build Release Version'
+      shell: pwsh
+      run: |
+        pushd './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
+        dotnet build --no-restore --configuration Release --output ./output
+        popd
+
+    - name: 'Post Build Tasks'
+      shell: bash
+      run: |
+        ./scripts/build-version.sh
+        cp TrueVote.Api/version.json ./output
+
+    - name: 'Publish to Azure'
+      uses: Azure/functions-action@v1
+      id: fa
+      with:
+        app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
+        package: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/output'
+        publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}

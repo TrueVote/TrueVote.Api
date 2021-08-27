@@ -1,0 +1,47 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31423.177
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TrueVote.Api", "TrueVote.Api\TrueVote.Api.csproj", "{E8E2308C-2C64-4EFD-AEB8-29F98A9BABF0}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{086E0C01-9405-4F20-A756-8558B1F4C9E9}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+		.gitignore = .gitignore
+		scripts\build-version.sh = scripts\build-version.sh
+		CONTRIBUTING.md = CONTRIBUTING.md
+		scripts\copy-version.sh = scripts\copy-version.sh
+		coverlet.runsettings = coverlet.runsettings
+		.config\dotnet-tools.json = .config\dotnet-tools.json
+		LICENSE = LICENSE
+		README.md = README.md
+		scripts\RunTests.ps1 = scripts\RunTests.ps1
+		.github\workflows\truevote-api-github.yml = .github\workflows\truevote-api-github.yml
+		scripts\version_template.json = scripts\version_template.json
+	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TrueVote.Api.Tests", "TrueVote.Api.Tests\TrueVote.Api.Tests.csproj", "{63DCC3E9-0607-45A0-A379-C7FAC0FEDA57}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E8E2308C-2C64-4EFD-AEB8-29F98A9BABF0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E8E2308C-2C64-4EFD-AEB8-29F98A9BABF0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E8E2308C-2C64-4EFD-AEB8-29F98A9BABF0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E8E2308C-2C64-4EFD-AEB8-29F98A9BABF0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{63DCC3E9-0607-45A0-A379-C7FAC0FEDA57}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{63DCC3E9-0607-45A0-A379-C7FAC0FEDA57}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{63DCC3E9-0607-45A0-A379-C7FAC0FEDA57}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{63DCC3E9-0607-45A0-A379-C7FAC0FEDA57}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {8F85F5CD-81E7-4C21-9D3A-329C38D479C6}
+	EndGlobalSection
+EndGlobal

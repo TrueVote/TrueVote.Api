@@ -1,0 +1,6 @@
+{
+  "Branch": "{{branch}}",
+  "BuildTime": "{{buildtime}}",
+  "LastTag": "{{lasttag}}",
+  "Commit": "{{commit}}"
+}
