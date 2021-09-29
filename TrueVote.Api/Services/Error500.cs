@@ -7,6 +7,7 @@ using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Enums;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json;
+using System;
 using System.IO;
 using System.Net;
 using System.Threading.Tasks;
@@ -34,6 +35,15 @@ namespace TrueVote.Api
             var requestBody = await new StreamReader(req.Body).ReadToEndAsync();
             dynamic data = JsonConvert.DeserializeObject(requestBody);
             _log.LogInformation($"Request Data: {data}");
+
+            if (data?.Error == "true")
+            {
+                // Force a divide by zero exception
+                var x = 1;
+                var y = 0;
+                var z = x / y; // This will cause a 500 error. Putting here to test logging / and reporting of this error
+                _log.LogWarning($"Math {z}");
+            }
 
             _log.LogDebug("HTTP trigger - Error500:End");
 
