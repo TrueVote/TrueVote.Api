@@ -40,8 +40,7 @@ namespace TrueVote.Api
                 // Force a divide by zero exception
                 var x = 1;
                 var y = 0;
-                var z = x / y; // This will cause a 500 error. Putting here to test logging / and reporting of this error
-                _log.LogWarning($"Math {z}");
+                _ = x / y; // This will cause a 500 error. Putting here to test logging / and reporting of this error
             }
 
             _log.LogDebug("HTTP trigger - Error500:End");
