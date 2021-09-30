@@ -48,8 +48,8 @@ namespace TrueVote.Api
         [FunctionName("status")]
         [OpenApiOperation(operationId: "Run", tags: new[] { "Status" })]
         [OpenApiSecurity("function_key", SecuritySchemeType.ApiKey, Name = "code", In = OpenApiSecurityLocationType.Query)]
-        [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(StatusModel), Description = "OK")]
-        public async Task<IActionResult> Run(
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(StatusModel), Description = "Returns Status of Api")]
+        public async Task<IActionResult> RunAsync(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequest req)
         {
             _log.LogDebug("HTTP trigger - Status:Begin");
@@ -59,7 +59,7 @@ namespace TrueVote.Api
 
             var requestBody = await new StreamReader(req.Body).ReadToEndAsync();
             dynamic data = JsonConvert.DeserializeObject(requestBody);
-            _log.LogInformation($"Request Data: {data as string}");
+            _log.LogInformation($"Request Data: {data}");
 
             var status = new StatusModel();
 
