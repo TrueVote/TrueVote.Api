@@ -7,6 +7,7 @@ using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Enums;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json;
+using System;
 using System.IO;
 using System.Net;
 using System.Threading.Tasks;
@@ -37,10 +38,8 @@ namespace TrueVote.Api
 
             if (data?.Error == "true")
             {
-                // Force a divide by zero exception
-                var x = 1;
-                var y = 0;
-                _ = x / y; // This will cause a 500 error. Putting here to test logging / and reporting of this error
+                // Throw this random exception for no reason other than the requester wants it
+                throw new Exception("error500 - throwing an exception");
             }
 
             _log.LogDebug("HTTP trigger - Error500:End");

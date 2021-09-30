@@ -58,7 +58,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             {
                 _output.WriteLine($"{ex}");
                 Assert.NotNull(ex);
-                Assert.Contains("Attempted to divide by zero", ex.Message);
+                Assert.Contains("error500 - throwing an exception", ex.Message);
             }
         }
     }
