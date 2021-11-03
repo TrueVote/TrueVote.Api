@@ -16,9 +16,21 @@ The main technology stack platform is [.NET Core](https://dotnet.microsoft.com/)
 
 ## 🛠 Prerequisites
 
-Install Visual Studio 2022 (preview) or later, or Visual Studio Code. Ensure that `$ dotnet --version` is at least 6.0.
+* Install Visual Studio 2022 (preview) or later, or Visual Studio Code. Ensure that `$ dotnet --version` is at least 6.0.
+* Install Azure [CosmosDB Emulator](https://docs.microsoft.com/en-us/azure/cosmos-db/sql-api-emulator)
 
 ## ⌨️ Install, Build, and Serve the Site
+
+Create a new file at the root of TrueVote.Api named `local.settings.json` and add the following, replacing the account key with the actual account key from the [CosmosDB Emulator start page](https://localhost:8081/_explorer/index.html).
+
+```json
+{
+  "IsEncrypted": false,
+  "Values": {
+    "CosmosDbConnectionString": "AccountEndpoint=https://localhost:8081/;AccountKey=<AccountKeyFromCosmosDBEmulator>"
+  }
+}
+```
 
 ```bash
 $ dotnet restore
