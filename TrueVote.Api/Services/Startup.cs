@@ -45,6 +45,8 @@ namespace TrueVote.Api.Services
         public List<OpenApiServer> Servers { get; set; } = new List<OpenApiServer>();
         public OpenApiVersionType OpenApiVersion { get; set; } = OpenApiVersionType.V3;
         public bool IncludeRequestingHostName { get; set; } = true;
+        public bool ForceHttp { get; set; } = false;
+        public bool ForceHttps { get; set; } = true;
     }
 
     [ExcludeFromCodeCoverage]

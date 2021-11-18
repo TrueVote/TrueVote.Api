@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <AzureFunctionsVersion>v3</AzureFunctionsVersion>
     <Description>TrueVote Core Api</Description>
     <Copyright>Copyright TrueVote, Inc.</Copyright>
@@ -8,23 +8,27 @@
     <PackageIcon>favicon-32x32.png</PackageIcon>
     <PackageReadmeFile>README.MD</PackageReadmeFile>
     <ApplicationIcon>dist\favicon.ico</ApplicationIcon>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
+    <OutputType>Library</OutputType>
   </PropertyGroup>
   <ItemGroup>
     <None Include="..\.editorconfig" Link=".editorconfig" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.Azure.Cosmos" Version="3.21.0" />
+    <PackageReference Include="Microsoft.Azure.Cosmos" Version="3.23.0" />
     <PackageReference Include="Microsoft.Azure.Functions.Extensions" Version="1.1.0" />
+    <PackageReference Include="Microsoft.Azure.WebJobs" Version="3.0.30" />
     <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.CosmosDB" Version="3.0.10" />
-    <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.OpenApi" Version="0.7.2-preview" />
-    <PackageReference Include="Microsoft.CodeAnalysis" Version="3.11.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Cosmos" Version="5.0.11" />
-    <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="3.0.3" />
+    <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.OpenApi" Version="1.0.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis" Version="4.0.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Cosmos" Version="6.0.0" />
+    <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="4.0.1" />
     <PackageReference Include="SecurityCodeScan.VS2019" Version="5.2.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="System.Collections.Immutable" Version="5.0.0" />
+    <PackageReference Include="System.Collections.Immutable" Version="6.0.0" />
     <PackageReference Include="System.IO.Abstractions" Version="13.2.47" />
   </ItemGroup>
   <ItemGroup>
@@ -53,6 +57,6 @@
 	<EmbeddedResource Include="dist\favicon.ico" />
   </ItemGroup>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="$(ProjectDir)../scripts/build-version.sh $(ProjectDir) $(TargetDir)bin&#xD;&#xA;exit 0" />
+    <Exec Command="$(ProjectDir)../scripts/build-version.sh $(ProjectDir) $(TargetDir)/bin;exit 0" />
   </Target>
 </Project>

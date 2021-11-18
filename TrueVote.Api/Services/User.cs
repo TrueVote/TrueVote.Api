@@ -39,8 +39,6 @@ namespace TrueVote.Api
 
             await documentsOut.AddAsync(new
             {
-                // create a random ID
-                id = System.Guid.NewGuid().ToString(),
                 user
             });
 
