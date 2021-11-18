@@ -9,14 +9,14 @@ namespace TrueVote.Api.Models
     [ExcludeFromCodeCoverage]
     public class User
     {
-        [OpenApiPropertyDescription("First Name")]
+        [OpenApiProperty(Description = "First Name")]
         [JsonProperty(Required = Required.Always)]
         [StringLength(10)]
         [MaxLength(10)]
         [DataType(DataType.Text)]
         public string FirstName { get; set; } = string.Empty;
 
-        [OpenApiPropertyDescription("Email Address")]
+        [OpenApiProperty(Description = "Email Address")]
         [JsonProperty(Required = Required.Always)]
         [StringLength(10)]
         [MaxLength(10)]
@@ -24,6 +24,16 @@ namespace TrueVote.Api.Models
         [DataType(DataType.EmailAddress)]
         [EmailAddress]
         public string Email { get; set; }
+
+        [OpenApiProperty(Description = "GUID Id")]
+        [JsonProperty(Required = Required.Always)]
+        [StringLength(10)]
+        [MaxLength(10)]
+        [Required(AllowEmptyStrings = false)]
+        [DataType(DataType.EmailAddress)]
+        [EmailAddress]
+        public string Id { get; set; } = System.Guid.NewGuid().ToString();
+
 
         [OnDeserialized]
         private void OnDeserialized(StreamingContext context)
