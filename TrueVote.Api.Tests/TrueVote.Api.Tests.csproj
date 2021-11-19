@@ -2,10 +2,11 @@
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
-
+	<Description>TrueVote Core Api - Tests</Description>
+	<Copyright>Copyright TrueVote, Inc.</Copyright>
+	<PackageProjectUrl>https://truevote.org</PackageProjectUrl>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include="Autofac.Extras.Moq" Version="6.1.0" />
     <PackageReference Include="coverlet.msbuild" Version="3.1.0">
@@ -31,6 +32,6 @@
     <ProjectReference Include="..\TrueVote.Api\TrueVote.Api.csproj" />
   </ItemGroup>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="$(ProjectDir)../scripts/copy-version.sh $(ProjectDir) $(TargetDir)&#xD;&#xA;exit 0" />
+    <Exec Command="$(ProjectDir)../scripts/copy-version.sh $(ProjectDir) $(TargetDir);exit 0" />
   </Target>
 </Project>
