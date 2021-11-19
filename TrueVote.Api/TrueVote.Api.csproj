@@ -10,7 +10,8 @@
     <ApplicationIcon>dist\favicon.ico</ApplicationIcon>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
-    <OutputType>Library</OutputType>
+	<_FunctionsSkipCleanOutput>true</_FunctionsSkipCleanOutput>
+	<OutputType>Library</OutputType>
   </PropertyGroup>
   <ItemGroup>
     <None Include="..\.editorconfig" Link=".editorconfig" />
