@@ -32,6 +32,6 @@
     <ProjectReference Include="..\TrueVote.Api\TrueVote.Api.csproj" />
   </ItemGroup>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="$(ProjectDir)../scripts/copy-version.sh $(ProjectDir) $(TargetDir);exit 0" />
+    <Exec Command="$(ProjectDir)../scripts/copy-version.sh $(ProjectDir) $(TargetDir)" />
   </Target>
 </Project>

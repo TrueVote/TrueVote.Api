@@ -25,9 +25,8 @@ namespace TrueVote.Api
         protected ILogger _log;
         public static BuildInfo _BuildInfo = null;
         protected static string _BuildInfoReadTime = null;
-        protected static string _BinDir = Assembly.GetExecutingAssembly().CodeBase
-                .Replace(Assembly.GetExecutingAssembly().CodeBase.Split('/').Last(), "")
-                .Replace("file:///", "");
+        private static readonly string _CodeBase = new Uri(Assembly.GetExecutingAssembly().Location).ToString();
+        protected static string _BinDir = _CodeBase.Replace(_CodeBase.Split('/').Last(), "").Replace("file:///", "");
 
         public Status(IFileSystem fileSystem, ILogger log, bool clearStatics = false)
         {

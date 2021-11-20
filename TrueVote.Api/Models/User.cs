@@ -40,6 +40,5 @@ namespace TrueVote.Api.Models
         {
 
         }
-
     }
 }
