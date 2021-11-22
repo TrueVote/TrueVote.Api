@@ -23,7 +23,6 @@
     <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.CosmosDB" Version="3.0.10" />
     <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.OpenApi" Version="1.0.0" />
     <PackageReference Include="Microsoft.CodeAnalysis" Version="4.0.1" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Cosmos" Version="6.0.0" />
     <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="4.0.1" />
     <PackageReference Include="SecurityCodeScan.VS2019" Version="5.2.1">
       <PrivateAssets>all</PrivateAssets>
@@ -58,6 +57,6 @@
 	<EmbeddedResource Include="dist\favicon.ico" />
   </ItemGroup>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="$(ProjectDir)../scripts/build-version.sh $(ProjectDir) $(TargetDir)/bin" />
+    <Exec Command="$(ProjectDir)../scripts/build-version.sh $(ProjectDir) $(TargetDir)" />
   </Target>
 </Project>
