@@ -25,8 +25,9 @@ namespace TrueVote.Api
         [FunctionName("user")]
         [OpenApiOperation(operationId: "Run", tags: new[] { "User" })]
         [OpenApiSecurity("function_key", SecuritySchemeType.ApiKey, Name = "code", In = OpenApiSecurityLocationType.Query)]
-        [OpenApiParameter(name: "name", In = ParameterLocation.Query, Required = true, Type = typeof(string), Description = "Adds a user")]
-        [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(string), Description = "Returns the status of adding a user")]
+        [OpenApiRequestBody(contentType: "application/json", bodyType: typeof(User), Description = "Partially filled User Model", Example = typeof(User))]
+        // [OpenApiParameter(name: "user", In = ParameterLocation.Query, Required = true, Type = typeof(User), Description = "User Model")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(User), Description = "Returns the status of adding a user")]
         public async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequest req,
             [CosmosDB(databaseName: "true-vote", collectionName: "users", ConnectionStringSetting = "CosmosDbConnectionString", CreateIfNotExists = true)] IAsyncCollector<dynamic> documentsOut)
