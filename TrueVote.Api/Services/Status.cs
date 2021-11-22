@@ -25,8 +25,6 @@ namespace TrueVote.Api
         protected ILogger _log;
         public static BuildInfo _BuildInfo = null;
         protected static string _BuildInfoReadTime = null;
-        private static readonly string _CodeBase = new Uri(Assembly.GetExecutingAssembly().Location).ToString();
-        protected static string _BinDir = _CodeBase.Replace(_CodeBase.Split('/').Last(), "").Replace("file:///", "");
 
         public Status(IFileSystem fileSystem, ILogger log, bool clearStatics = false)
         {
@@ -102,9 +100,12 @@ namespace TrueVote.Api
 
         private string GetBuildInfo()
         {
-            _log.LogInformation($"binDir: {_BinDir}");
+            var codeBase = new Uri(Assembly.GetExecutingAssembly().Location).ToString();
+            var binDir = codeBase.Replace(codeBase.Split('/').Last(), "");
+            binDir = binDir.Remove(binDir.LastIndexOf("bin/"));
+            binDir = binDir.Replace("file:///", "");
 
-            var binDir = _BinDir;
+            _log.LogInformation($"binDir: {binDir}");
 
             // On Linux we may need to add a leading /
             if (!_fileSystem.Path.IsPathFullyQualified(binDir))
