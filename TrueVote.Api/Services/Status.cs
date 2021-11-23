@@ -75,7 +75,10 @@ namespace TrueVote.Api
                     _BuildInfo = JsonConvert.DeserializeObject<BuildInfo>(buildInfoString);
 
                     // Convert the time for consistency
-                    _BuildInfo.BuildTime ??= $"{DateTime.Parse(_BuildInfo.BuildTime)} UTC";
+                    if (_BuildInfo.BuildTime != string.Empty)
+                    {
+                        _BuildInfo.BuildTime = $"{DateTime.Parse(_BuildInfo.BuildTime)} UTC";
+                    }
 
                     // Set the read time to now. This should never change because it's stored in a static.
                     _BuildInfoReadTime = DateTime.Now.ToUniversalTime().ToString("dddd, MMM dd, yyyy HH:mm:ss");
