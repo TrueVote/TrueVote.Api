@@ -26,13 +26,10 @@ namespace TrueVote.Api.Models
         public string Email { get; set; }
 
         [OpenApiProperty(Description = "GUID Id")]
-        [JsonProperty(Required = Required.Always)]
-        [StringLength(10)]
-        [MaxLength(10)]
-        [Required(AllowEmptyStrings = false)]
-        [DataType(DataType.EmailAddress)]
-        [EmailAddress]
-        public string Id { get; set; } = System.Guid.NewGuid().ToString();
+        [StringLength(40)]
+        [MaxLength(40)]
+        [DataType(DataType.Text)]
+        public string UserId { get; set; } = System.Guid.NewGuid().ToString();
 
 
         [OnDeserialized]
