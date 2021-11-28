@@ -1,5 +1,6 @@
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
 using Newtonsoft.Json;
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Serialization;
@@ -31,6 +32,9 @@ namespace TrueVote.Api.Models
         [DataType(DataType.Text)]
         public string UserId { get; set; } = System.Guid.NewGuid().ToString();
 
+        [OpenApiProperty(Description = "DateCreated")]
+        [DataType(DataType.Date)]
+        public DateTime DateCreated { get; set; } = DateTime.UtcNow;
 
         [OnDeserialized]
         private void OnDeserialized(StreamingContext context)
