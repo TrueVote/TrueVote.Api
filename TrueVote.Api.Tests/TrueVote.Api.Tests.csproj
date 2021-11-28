@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
+	<AzureFunctionsVersion>v4</AzureFunctionsVersion>
 	<Description>TrueVote Core Api - Tests</Description>
 	<Copyright>Copyright TrueVote, Inc.</Copyright>
 	<PackageProjectUrl>https://truevote.org</PackageProjectUrl>
