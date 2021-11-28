@@ -9,7 +9,7 @@ on:
 env:
   AZURE_FUNCTIONAPP_NAME: truevoteapi
   AZURE_FUNCTIONAPP_PACKAGE_PATH: '.'
-  DOTNET_VERSION: '3.1.x'
+  DOTNET_VERSION: '6.0.x'
 
 jobs:
   build_and_test_and_deploy:
