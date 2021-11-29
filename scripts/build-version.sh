@@ -33,15 +33,10 @@ echo $template
 
 # Set the path to the output file
 projectoutputfile=$DIR/../TrueVote.Api/version.json
-testoutputfile=$DIR/../TrueVote.Api.Tests/version.json
 echo "Project Output FilePath: " $projectoutputfile
-echo "Test Output FilePath: " $testoutputfile
 
 # Format the replaced JSON and output to version.json file
 echo $template | grep -Eo '"[^"]*" *(: *([0-9]*|"[^"]*")[^{}\["]*|,)?|[^"\]\[\}\{]*|\{|\},?|\[|\],?|[0-9 ]*,?' | awk '{if ($0 ~ /^[}\]]/ ) offset-=2; printf "%*c%s\n", offset, " ", $0; if ($0 ~ /^[{\[]/) offset+=2}' > $projectoutputfile
-
-# Copy it to the test project root too
-# cp $projectoutputfile $testoutputfile 
 
 # If command args are passed, call another script
 if [ "$1" != "" ]; then

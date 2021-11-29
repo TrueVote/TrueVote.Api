@@ -67,11 +67,11 @@ jobs:
         dotnet build --no-restore --configuration Release --output ./output
         popd
 
-    - name: 'Post Build Tasks'
-      shell: bash
-      run: |
-        ./scripts/build-version.sh
-        cp TrueVote.Api/version.json ./output
+    #- name: 'Post Build Tasks'
+    #  shell: bash
+    #  run: |
+    #    ./scripts/build-version.sh
+    #    cp TrueVote.Api/version.json ./output
 
     - name: 'Publish to Azure'
       uses: Azure/functions-action@v1
