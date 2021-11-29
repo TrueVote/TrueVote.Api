@@ -106,6 +106,9 @@ namespace TrueVote.Api
             var codeBase = new Uri(Assembly.GetExecutingAssembly().Location).ToString();
             var binDir = codeBase.Replace(codeBase.Split('/').Last(), "");
             binDir = binDir.Remove(binDir.LastIndexOf("bin/"));
+            if (binDir.Contains(".Tests/")) {
+                binDir = binDir.Remove(binDir.LastIndexOf(".Tests/"));
+            }
             binDir = binDir.Replace("file:///", "");
 
             _log.LogInformation($"binDir: {binDir}");

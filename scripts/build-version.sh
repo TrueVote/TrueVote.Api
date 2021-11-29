@@ -41,7 +41,7 @@ echo "Test Output FilePath: " $testoutputfile
 echo $template | grep -Eo '"[^"]*" *(: *([0-9]*|"[^"]*")[^{}\["]*|,)?|[^"\]\[\}\{]*|\{|\},?|\[|\],?|[0-9 ]*,?' | awk '{if ($0 ~ /^[}\]]/ ) offset-=2; printf "%*c%s\n", offset, " ", $0; if ($0 ~ /^[{\[]/) offset+=2}' > $projectoutputfile
 
 # Copy it to the test project root too
-cp $projectoutputfile $testoutputfile 
+# cp $projectoutputfile $testoutputfile 
 
 # If command args are passed, call another script
 if [ "$1" != "" ]; then
