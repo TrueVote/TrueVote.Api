@@ -14,7 +14,6 @@ using System.Reflection;
 using System.Threading.Tasks;
 
 [assembly: FunctionsStartup(typeof(TrueVote.Api.Services.Startup))]
-
 namespace TrueVote.Api.Services
 {
     // Modeled from here: https://github.com/Azure/azure-functions-openapi-extension/blob/main/docs/openapi-core.md#openapi-metadata-configuration
@@ -26,7 +25,7 @@ namespace TrueVote.Api.Services
         {
             Version = "1.0.0",
             Title = "TrueVote.Api",
-            Description = "HTTP TrueVote APIs that run as serverless functions using OpenAPI specification.",
+            Description = "TrueVote APIs that run as serverless functions using OpenAPI specification.",
             TermsOfService = new Uri("https://truevote.org/terms"),
             Contact = new OpenApiContact()
             {
@@ -37,7 +36,7 @@ namespace TrueVote.Api.Services
             License = new OpenApiLicense()
             {
                 Name = "MIT License",
-                Url = new Uri("http://opensource.org/licenses/MIT")
+                Url = new Uri("https://raw.githubusercontent.com/TrueVote/TrueVote.Api/master/LICENSE")
             }
         };
 

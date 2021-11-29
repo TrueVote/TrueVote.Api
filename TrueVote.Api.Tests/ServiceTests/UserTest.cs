@@ -32,7 +32,7 @@ namespace TrueVote.Api.Tests.ServiceTests
 
     public class UserObj
     {
-        public Models.User user;
+        public Models.UserModel user;
     }
 
     public class User
@@ -69,7 +69,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             var documentsOut = new MockAsyncCollector<dynamic>();
             var userApi = new Api.User(_log.Object);
 
-            var userObj = new Models.User { FirstName = "Joe", Email = "joe@joe.com" };
+            var userObj = new Models.UserModel { FirstName = "Joe", Email = "joe@joe.com" };
             var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(userObj));
             _httpContext.Request.Body = new MemoryStream(byteArray);
 

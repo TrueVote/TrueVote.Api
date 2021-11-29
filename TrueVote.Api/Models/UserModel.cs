@@ -8,7 +8,7 @@ using System.Runtime.Serialization;
 namespace TrueVote.Api.Models
 {
     [ExcludeFromCodeCoverage]
-    public class User
+    public class UserModel
     {
         [OpenApiProperty(Description = "First Name")]
         [JsonProperty(Required = Required.Always)]
