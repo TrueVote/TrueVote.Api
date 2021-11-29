@@ -1,4 +1,5 @@
 #!/bin/bash
+echo build-version.sh
 
 # Output the OS
 OS=`uname -s`
