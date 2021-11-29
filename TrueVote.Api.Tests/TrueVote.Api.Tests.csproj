@@ -5,7 +5,6 @@
 	<Description>TrueVote Core Api - Tests</Description>
 	<Copyright>Copyright TrueVote, Inc.</Copyright>
 	<PackageProjectUrl>https://truevote.org</PackageProjectUrl>
-    <IsPackable>false</IsPackable>
     <_FunctionsSkipCleanOutput>true</_FunctionsSkipCleanOutput>
   </PropertyGroup>
   <ItemGroup>
