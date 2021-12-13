@@ -15,21 +15,20 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Threading.Tasks;
+using TrueVote.Api.Helpers;
 using TrueVote.Api.Models;
 
 namespace TrueVote.Api
 {
-    public class Status
+    public class Status : LoggerHelper
     {
         protected IFileSystem _fileSystem;
-        protected ILogger _log;
         public static BuildInfo _BuildInfo = null;
         protected static string _BuildInfoReadTime = null;
 
-        public Status(IFileSystem fileSystem, ILogger log, bool clearStatics = false)
+        public Status(IFileSystem fileSystem, ILogger log, bool clearStatics = false): base(log)
         {
             _fileSystem = fileSystem;
-            _log = log;
             if (clearStatics)
             {
                 ClearStatics();

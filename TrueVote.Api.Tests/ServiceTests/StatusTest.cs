@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -6,28 +5,16 @@ using System;
 using System.IO.Abstractions;
 using System.Threading.Tasks;
 using TrueVote.Api.Models;
+using TrueVote.Api.Tests.Helpers;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace TrueVote.Api.Tests.ServiceTests
 {
-    public class Status
+    public class StatusTest : TestHelper
     {
-        private readonly ITestOutputHelper _output;
-        private readonly IFileSystem _fileSystem;
-        private readonly HttpContext _httpContext;
-        private readonly Mock<ILogger<Api.Status>> _log;
-
-        public Status(ITestOutputHelper output)
+        public StatusTest(ITestOutputHelper output) : base(output)
         {
-            _output = output;
-            _fileSystem = new FileSystem();
-            _httpContext = new DefaultHttpContext();
-            _log = new Mock<ILogger<Api.Status>>();
-            _log.MockLog(LogLevel.Debug);
-            _log.MockLog(LogLevel.Information);
-            _log.MockLog(LogLevel.Warning);
-            _log.MockLog(LogLevel.Error);
         }
 
         [Fact]
@@ -35,7 +22,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         {
             try
             {
-                var status = new Api.Status(_fileSystem, _log.Object, true);
+                var status = new Status(_fileSystem, _log.Object, true);
                 _ = await status.RunAsync(null);
             }
             catch (ArgumentNullException ane)
@@ -55,7 +42,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public async Task LogsMessages()
         {
-            var status = new Api.Status(_fileSystem, _log.Object, true);
+            var status = new Status(_fileSystem, _log.Object, true);
             _ = await status.RunAsync(_httpContext.Request);
 
             _log.Verify(LogLevel.Information, Times.AtLeast(2));
@@ -65,7 +52,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public async Task ReturnsValidModel()
         {
-            var status = new Api.Status(_fileSystem, _log.Object, true);
+            var status = new Status(_fileSystem, _log.Object, true);
             var res = (OkObjectResult) await status.RunAsync(_httpContext.Request);
 
             Assert.NotNull(res);
@@ -77,7 +64,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public async Task ReturnsValidBuildInfoModel()
         {
-            var status = new Api.Status(_fileSystem, _log.Object, true);
+            var status = new Status(_fileSystem, _log.Object, true);
             var res = (OkObjectResult) await status.RunAsync(_httpContext.Request);
 
             Assert.NotNull(res);
@@ -119,7 +106,7 @@ namespace TrueVote.Api.Tests.ServiceTests
                 ret = _fileSystem.File.ReadAllText(p);
             }).Returns(() => ret);
 
-            var statusMock = new Api.Status(fileSystemMock.Object, _log.Object, true);
+            var statusMock = new Status(fileSystemMock.Object, _log.Object, true);
             var res = (OkObjectResult) await statusMock.RunAsync(_httpContext.Request);
 
             Assert.NotNull(res);
@@ -139,7 +126,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public async Task RunsStopwatch()
         {
-            var status = new Api.Status(_fileSystem, _log.Object);
+            var status = new Status(_fileSystem, _log.Object);
             var res = (OkObjectResult) await status.RunAsync(_httpContext.Request);
 
             Assert.NotNull(res);
@@ -155,7 +142,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             fileSystemMock.Setup(x => x.Path.IsPathFullyQualified(It.IsAny<string>())).Returns(true);
             fileSystemMock.Setup(x => x.File.ReadAllText(It.IsAny<string>())).Throws(new Exception());
 
-            var statusMock = new Api.Status(fileSystemMock.Object, _log.Object, true);
+            var statusMock = new Status(fileSystemMock.Object, _log.Object, true);
             var res = (OkObjectResult) await statusMock.RunAsync(_httpContext.Request);
 
             Assert.NotNull(res);

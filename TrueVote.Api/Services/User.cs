@@ -10,17 +10,15 @@ using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Enums;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json;
+using TrueVote.Api.Helpers;
 using TrueVote.Api.Models;
 
 namespace TrueVote.Api
 {
-    public class User
+    public class User : LoggerHelper
     {
-        protected ILogger _log;
-
-        public User(ILogger log)
+        public User(ILogger log): base(log)
         {
-            _log = log;
         }
 
         [FunctionName("user")]

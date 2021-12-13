@@ -11,16 +11,14 @@ using System;
 using System.IO;
 using System.Net;
 using System.Threading.Tasks;
+using TrueVote.Api.Helpers;
 
 namespace TrueVote.Api
 {
-    public class Error500
+    public class Error500 : LoggerHelper
     {
-        protected ILogger _log;
-
-        public Error500(ILogger log)
+        public Error500(ILogger log): base(log)
         {
-            _log = log;
         }
 
         [FunctionName("error500")]
