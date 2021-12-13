@@ -3,6 +3,11 @@ name: TrueVote.Api
 on:
   push:
     branches: [ master ]
+    paths-ignore:
+      - CONTRIBUTING.md
+      - README.md
+      - .gitignore
+
   pull_request:
     branches: [ master ]
 
@@ -43,24 +48,28 @@ jobs:
         ./scripts/RunTests.ps1
 
     - name: Publish Coverage to Coveralls
+      if: github.ref == 'refs/heads/master'
       uses: coverallsapp/github-action@master
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         path-to-lcov: TrueVote.Api.Tests/TestResults/coverage.info
 
     #- name: Archive Production Artifacts
+    #  if: github.ref == 'refs/heads/master'
     #  uses: actions/upload-artifact@v2
     #  with:
     #    name: build-output
     #    path: TrueVote.Api/bin/*
 
     #- name: Archive Code Coverage Results
+    #  if: github.ref == 'refs/heads/master'
     #  uses: actions/upload-artifact@v2
     #  with:
     #    name: code-coverage-report
     #    path: TrueVote.Api.Tests/TestResults/*
 
     - name: 'Build Release Version'
+      if: github.ref == 'refs/heads/master'
       shell: pwsh
       run: |
         pushd './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
@@ -68,12 +77,14 @@ jobs:
         popd
 
     #- name: 'Post Build Tasks'
+    #  if: github.ref == 'refs/heads/master'
     #  shell: bash
     #  run: |
     #    ./scripts/build-version.sh
     #    cp TrueVote.Api/version.json ./output
 
     - name: 'Publish to Azure'
+      if: github.ref == 'refs/heads/master'
       uses: Azure/functions-action@v1
       id: fa
       with:
