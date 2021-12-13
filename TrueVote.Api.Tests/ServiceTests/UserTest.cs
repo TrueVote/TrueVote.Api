@@ -1,15 +1,15 @@
-using Microsoft.AspNetCore.Http;
+using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 using Moq;
+using Newtonsoft.Json;
+using System.Collections.Generic;
+using System.IO;
+using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using TrueVote.Api.Tests.Helpers;
 using Xunit;
 using Xunit.Abstractions;
-using Microsoft.Azure.WebJobs;
-using System.Threading;
-using System.Collections.Generic;
-using System.Text;
-using Newtonsoft.Json;
-using System.IO;
 
 namespace TrueVote.Api.Tests.ServiceTests
 {
@@ -35,28 +35,17 @@ namespace TrueVote.Api.Tests.ServiceTests
         public Models.UserModel user;
     }
 
-    public class User
+    public class UserTest : TestHelper
     {
-        private readonly ITestOutputHelper _output;
-        private readonly HttpContext _httpContext;
-        private readonly Mock<ILogger<Api.Error500>> _log;
-
-        public User(ITestOutputHelper output)
+        public UserTest(ITestOutputHelper output) : base(output)
         {
-            _output = output;
-            _httpContext = new DefaultHttpContext();
-            _log = new Mock<ILogger<Api.Error500>>();
-            _log.MockLog(LogLevel.Debug);
-            _log.MockLog(LogLevel.Information);
-            _log.MockLog(LogLevel.Warning);
-            _log.MockLog(LogLevel.Error);
         }
 
         [Fact]
         public async Task LogsMessages()
         {
             var documentsOut = new MockAsyncCollector<dynamic>();
-            var userApi = new Api.User(_log.Object);
+            var userApi = new User(_log.Object);
             _ = await userApi.Run(_httpContext.Request, documentsOut);
 
             _log.Verify(LogLevel.Information, Times.AtLeast(1));
@@ -67,7 +56,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task AddsUser()
         {
             var documentsOut = new MockAsyncCollector<dynamic>();
-            var userApi = new Api.User(_log.Object);
+            var userApi = new User(_log.Object);
 
             var userObj = new Models.UserModel { FirstName = "Joe", Email = "joe@joe.com" };
             var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(userObj));

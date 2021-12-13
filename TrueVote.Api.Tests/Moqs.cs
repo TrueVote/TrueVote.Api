@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Moq.Language.Flow;
 using System;
@@ -6,7 +6,7 @@ using System.Linq.Expressions;
 
 namespace TrueVote.Api.Tests
 {
-    public static class LoggerHelper
+    public static class LoggerMoqHelper
     {
         public static ISetup<ILogger<T>> MockLog<T>(this Mock<ILogger<T>> logger, LogLevel level)
         {

@@ -1,37 +1,26 @@
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using Moq;
-using System.Threading.Tasks;
-using Xunit;
-using Xunit.Abstractions;
+using Newtonsoft.Json;
+using System;
 using System.IO;
 using System.Text;
-using System;
+using System.Threading.Tasks;
+using TrueVote.Api.Tests.Helpers;
+using Xunit;
+using Xunit.Abstractions;
 
 namespace TrueVote.Api.Tests.ServiceTests
 {
-    public class Error500
+    public class Error500Test : TestHelper
     {
-        private readonly ITestOutputHelper _output;
-        private readonly HttpContext _httpContext;
-        private readonly Mock<ILogger<Api.Error500>> _log;
-
-        public Error500(ITestOutputHelper output)
+        public Error500Test(ITestOutputHelper output) : base(output)
         {
-            _output = output;
-            _httpContext = new DefaultHttpContext();
-            _log = new Mock<ILogger<Api.Error500>>();
-            _log.MockLog(LogLevel.Debug);
-            _log.MockLog(LogLevel.Information);
-            _log.MockLog(LogLevel.Warning);
-            _log.MockLog(LogLevel.Error);
         }
 
         [Fact]
         public async Task LogsMessages()
         {
-            var error500 = new Api.Error500(_log.Object);
+            var error500 = new Error500(_log.Object);
             _ = await error500.RunAsync(_httpContext.Request);
 
             _log.Verify(LogLevel.Information, Times.AtLeast(1));
@@ -41,7 +30,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public async Task CausesDivideByZero()
         {
-            var error500 = new Api.Error500(_log.Object);
+            var error500 = new Error500(_log.Object);
 
             var errorObj = new
             {
