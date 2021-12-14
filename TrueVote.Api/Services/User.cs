@@ -24,9 +24,9 @@ namespace TrueVote.Api
         [FunctionName("user")]
         [OpenApiOperation(operationId: "Run", tags: new[] { "User" })]
         [OpenApiSecurity("function_key", SecuritySchemeType.ApiKey, Name = "code", In = OpenApiSecurityLocationType.Query)]
-        [OpenApiRequestBody(contentType: "application/json", bodyType: typeof(UserModel), Description = "Partially filled User Model", Example = typeof(UserModel))]
+        [OpenApiRequestBody(contentType: "application/json", bodyType: typeof(BaseUserModel), Description = "Partially filled User Model", Example = typeof(BaseUserModel))]
         // [OpenApiParameter(name: "user", In = ParameterLocation.Query, Required = true, Type = typeof(User), Description = "User Model")]
-        [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(UserModel), Description = "Returns the status of adding a user")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(UserModel), Description = "Returns the added user")]
         public async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequest req,
             [CosmosDB(databaseName: "true-vote", collectionName: "users", ConnectionStringSetting = "CosmosDbConnectionString", CreateIfNotExists = true)] IAsyncCollector<dynamic> documentsOut)
@@ -34,8 +34,10 @@ namespace TrueVote.Api
             _log.LogDebug("HTTP trigger - User:Begin");
 
             var requestBody = await new StreamReader(req.Body).ReadToEndAsync();
-            var user = JsonConvert.DeserializeObject<UserModel>(requestBody);
-            _log.LogInformation($"Request Data: {user}");
+            var baseUser = JsonConvert.DeserializeObject<BaseUserModel>(requestBody);
+            _log.LogInformation($"Request Data: {baseUser}");
+
+            var user = new UserModel(baseUser);
 
             await documentsOut.AddAsync(new
             {
@@ -44,8 +46,7 @@ namespace TrueVote.Api
 
             _log.LogDebug("HTTP trigger - User:End");
 
-            return new OkResult();
+            return new OkObjectResult(user);
         }
     }
 }
-

@@ -46,6 +46,11 @@ namespace TrueVote.Api.Tests.ServiceTests
         {
             var documentsOut = new MockAsyncCollector<dynamic>();
             var userApi = new User(_log.Object);
+
+            var baseUserObj = new Models.BaseUserModel { FirstName = "Joe", Email = "joe@joe.com" };
+            var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(baseUserObj));
+            _httpContext.Request.Body = new MemoryStream(byteArray);
+
             _ = await userApi.Run(_httpContext.Request, documentsOut);
 
             _log.Verify(LogLevel.Information, Times.AtLeast(1));
@@ -58,8 +63,8 @@ namespace TrueVote.Api.Tests.ServiceTests
             var documentsOut = new MockAsyncCollector<dynamic>();
             var userApi = new User(_log.Object);
 
-            var userObj = new Models.UserModel { FirstName = "Joe", Email = "joe@joe.com" };
-            var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(userObj));
+            var baseUserObj = new Models.BaseUserModel { FirstName = "Joe", Email = "joe@joe.com" };
+            var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(baseUserObj));
             _httpContext.Request.Body = new MemoryStream(byteArray);
 
             _ = await userApi.Run(_httpContext.Request, documentsOut);
@@ -75,9 +80,13 @@ namespace TrueVote.Api.Tests.ServiceTests
 
             _output.WriteLine($"Items[0].FirstName: {u.user.FirstName}");
             _output.WriteLine($"Items[0].Email: {u.user.Email}");
+            _output.WriteLine($"Items[0].DateCreated: {u.user.DateCreated}");
+            _output.WriteLine($"Items[0].UserId: {u.user.UserId}");
 
             Assert.Equal("Joe", u.user.FirstName);
             Assert.Equal("joe@joe.com", u.user.Email);
+            Assert.NotNull(u.user.DateCreated);
+            Assert.NotEmpty(u.user.UserId);
 
             _log.Verify(LogLevel.Information, Times.AtLeast(1));
             _log.Verify(LogLevel.Debug, Times.AtLeast(2));
