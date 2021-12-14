@@ -22,6 +22,8 @@ namespace TrueVote.Api
         }
 
         [FunctionName("error500")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [OpenApiOperation(operationId: "Run", tags: new[] { "Error500" })]
         [OpenApiSecurity("function_key", SecuritySchemeType.ApiKey, Name = "code", In = OpenApiSecurityLocationType.Query)]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(string), Description = "Tests Error Logging of a Server 500")]

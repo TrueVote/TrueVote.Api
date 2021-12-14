@@ -42,6 +42,7 @@ namespace TrueVote.Api
         }
 
         [FunctionName("status")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         [OpenApiOperation(operationId: "Run", tags: new[] { "Status" })]
         [OpenApiSecurity("function_key", SecuritySchemeType.ApiKey, Name = "code", In = OpenApiSecurityLocationType.Query)]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(StatusModel), Description = "Returns Status of Api")]
