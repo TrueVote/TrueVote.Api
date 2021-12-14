@@ -23,7 +23,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             try
             {
                 var status = new Status(_fileSystem, _log.Object, true);
-                _ = await status.RunAsync(null);
+                _ = await status.GetStatus(null);
             }
             catch (ArgumentNullException ane)
             {
@@ -43,7 +43,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task LogsMessages()
         {
             var status = new Status(_fileSystem, _log.Object, true);
-            _ = await status.RunAsync(_httpContext.Request);
+            _ = await status.GetStatus(_httpContext.Request);
 
             _log.Verify(LogLevel.Information, Times.AtLeast(2));
             _log.Verify(LogLevel.Debug, Times.AtLeast(2));
@@ -53,7 +53,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task ReturnsValidModel()
         {
             var status = new Status(_fileSystem, _log.Object, true);
-            var res = (OkObjectResult) await status.RunAsync(_httpContext.Request);
+            var res = (OkObjectResult) await status.GetStatus(_httpContext.Request);
 
             Assert.NotNull(res);
             var statusModel = (StatusModel) res.Value;
@@ -65,7 +65,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task ReturnsValidBuildInfoModel()
         {
             var status = new Status(_fileSystem, _log.Object, true);
-            var res = (OkObjectResult) await status.RunAsync(_httpContext.Request);
+            var res = (OkObjectResult) await status.GetStatus(_httpContext.Request);
 
             Assert.NotNull(res);
             var statusModel = (StatusModel) res.Value;
@@ -107,7 +107,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             }).Returns(() => ret);
 
             var statusMock = new Status(fileSystemMock.Object, _log.Object, true);
-            var res = (OkObjectResult) await statusMock.RunAsync(_httpContext.Request);
+            var res = (OkObjectResult) await statusMock.GetStatus(_httpContext.Request);
 
             Assert.NotNull(res);
             var statusModel = (StatusModel) res.Value;
@@ -127,7 +127,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task RunsStopwatch()
         {
             var status = new Status(_fileSystem, _log.Object);
-            var res = (OkObjectResult) await status.RunAsync(_httpContext.Request);
+            var res = (OkObjectResult) await status.GetStatus(_httpContext.Request);
 
             Assert.NotNull(res);
             var statusModel = (StatusModel) res.Value;
@@ -143,7 +143,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             fileSystemMock.Setup(x => x.File.ReadAllText(It.IsAny<string>())).Throws(new Exception());
 
             var statusMock = new Status(fileSystemMock.Object, _log.Object, true);
-            var res = (OkObjectResult) await statusMock.RunAsync(_httpContext.Request);
+            var res = (OkObjectResult) await statusMock.GetStatus(_httpContext.Request);
 
             Assert.NotNull(res);
             var statusModel = (StatusModel) res.Value;

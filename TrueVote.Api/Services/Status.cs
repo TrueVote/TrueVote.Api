@@ -41,15 +41,15 @@ namespace TrueVote.Api
             _BuildInfoReadTime = null;
         }
 
-        [FunctionName("status")]
+        [FunctionName(nameof(GetStatus))]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [OpenApiOperation(operationId: "Run", tags: new[] { "Status" })]
+        [OpenApiOperation(operationId: "GetStatus", tags: new[] { "Status" })]
         [OpenApiSecurity("function_key", SecuritySchemeType.ApiKey, Name = "code", In = OpenApiSecurityLocationType.Query)]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(StatusModel), Description = "Returns Status of Api")]
-        public async Task<IActionResult> RunAsync(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequest req)
+        public async Task<IActionResult> GetStatus(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "status")] HttpRequest req)
         {
-            _log.LogDebug("HTTP trigger - Status:Begin");
+            _log.LogDebug("HTTP trigger - GetStatus:Begin");
 
             // For timing the running of this function
             var watch = Stopwatch.StartNew();
@@ -96,7 +96,7 @@ namespace TrueVote.Api
             status.ExecutionTimeMsg = $"Time to run: {watch.ElapsedMilliseconds}ms";
             status.CurrentTime = DateTime.Now.ToUniversalTime().ToString("dddd, MMM dd, yyyy HH:mm:ss");
 
-            _log.LogDebug("HTTP trigger - Status:End");
+            _log.LogDebug("HTTP trigger - GetStatus:End");
 
             return new OkObjectResult(status);
         }

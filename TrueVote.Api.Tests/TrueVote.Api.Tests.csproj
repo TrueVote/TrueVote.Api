@@ -6,6 +6,9 @@
 	<Copyright>Copyright TrueVote, Inc.</Copyright>
 	<PackageProjectUrl>https://truevote.org</PackageProjectUrl>
     <_FunctionsSkipCleanOutput>true</_FunctionsSkipCleanOutput>
+    <RepositoryUrl>https://github.com/morrisonbrett/TrueVote.Api</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Autofac.Extras.Moq" Version="6.1.0" />

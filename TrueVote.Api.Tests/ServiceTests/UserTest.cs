@@ -60,7 +60,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(baseUserObj));
             _httpContext.Request.Body = new MemoryStream(byteArray);
 
-            _ = await userApi.Run(_httpContext.Request, documentsOut);
+            _ = await userApi.CreateUser(_httpContext.Request, documentsOut);
 
             _log.Verify(LogLevel.Information, Times.AtLeast(1));
             _log.Verify(LogLevel.Debug, Times.AtLeast(2));
@@ -76,7 +76,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(baseUserObj));
             _httpContext.Request.Body = new MemoryStream(byteArray);
 
-            var ret = await userApi.Run(_httpContext.Request, documentsOut);
+            var ret = await userApi.CreateUser(_httpContext.Request, documentsOut);
 
             _output.WriteLine($"Item Count: {documentsOut.Items.Count}");
             Assert.Single(documentsOut.Items);
@@ -117,7 +117,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(fakeBaseUserObj));
             _httpContext.Request.Body = new MemoryStream(byteArray);
 
-            var ret = await userApi.Run(_httpContext.Request, documentsOut);
+            var ret = await userApi.CreateUser(_httpContext.Request, documentsOut);
             Assert.NotNull(ret);
             var objectResult = Assert.IsType<BadRequestObjectResult>(ret);
             Assert.Equal((int) HttpStatusCode.BadRequest, objectResult.StatusCode);
