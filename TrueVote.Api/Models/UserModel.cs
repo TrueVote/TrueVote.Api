@@ -1,14 +1,35 @@
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Enums;
-using Microsoft.OpenApi.Models;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Serialization;
 
 namespace TrueVote.Api.Models
 {
+    [ExcludeFromCodeCoverage]
+    public static class UserExtensions
+    {
+        public static List<UserModel> ToUserModelList(this IEnumerable<UserObj> listUserObj)
+        {
+            var listUserModel = new List<UserModel>();
+
+            foreach (var userObj in listUserObj)
+            {
+                listUserModel.Add(userObj.user);
+            }
+
+            return listUserModel;
+        }
+    }
+
+    public class UserObj
+    {
+        public UserModel user;
+    }
+
     [ExcludeFromCodeCoverage]
     public class FindUserModel
     {

@@ -10,6 +10,7 @@ using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using TrueVote.Api.Models;
 using TrueVote.Api.Tests.Helpers;
 using Xunit;
 using Xunit.Abstractions;
@@ -37,11 +38,6 @@ namespace TrueVote.Api.Tests.ServiceTests
     {
         public string FirstName { get; set; } = string.Empty;
         public string Email { get; set; }
-    }
-
-    public class UserObj
-    {
-        public Models.UserModel user;
     }
 
     public class UserTest : TestHelper

@@ -6,8 +6,7 @@ using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.Documents.Client;
-using Microsoft.Azure.Documents.Linq;
+using Microsoft.Azure.Cosmos;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
@@ -22,8 +21,15 @@ namespace TrueVote.Api
 {
     public class User : LoggerHelper
     {
-        public User(ILogger log): base(log)
+        private readonly CosmosClient _cosmosClient;
+        private readonly Database _database;
+        private readonly Container _container;
+
+        public User(ILogger log, CosmosClient cosmosClient) : base(log)
         {
+            _cosmosClient = cosmosClient;
+            _database = _cosmosClient.GetDatabase("true-vote");
+            _container = _database.GetContainer("users");
         }
 
         [FunctionName(nameof(CreateUser))]
@@ -76,7 +82,7 @@ namespace TrueVote.Api
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(List<UserModel>), Description = "Returns collection of users")]
         public async Task<IActionResult> UserFind(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "user/find")] HttpRequest req,
-            [CosmosDB(databaseName: "true-vote", collectionName: "users", ConnectionStringSetting = "CosmosDbConnectionString", CreateIfNotExists = true)] DocumentClient client)
+            [CosmosDB(databaseName: "true-vote", collectionName: "users", ConnectionStringSetting = "CosmosDbConnectionString")] IAsyncCollector<UserModel> users)
         {
             _log.LogDebug("HTTP trigger - UserFind:Begin");
 
@@ -96,22 +102,15 @@ namespace TrueVote.Api
 
             _log.LogInformation($"Request Data: {findUser}");
 
-            var driverCollectionUri = UriFactory.CreateDocumentCollectionUri(databaseId: "true-vote", collectionId: "users");
-            var options = new FeedOptions { EnableCrossPartitionQuery = true };
+            var items = _container.GetItemLinqQueryable<UserObj>(true)
+                .Where(u =>
+                    (findUser.FirstName == null || u.user.FirstName.Contains(findUser.FirstName)) &&
+                    (findUser.Email == null || u.user.Email.Contains(findUser.Email)))
+                .ToUserModelList();
 
-            var userList = client.CreateDocumentQuery<UserModel>(driverCollectionUri, options).Where(u => u.FirstName.Contains(findUser.FirstName)).AsDocumentQuery();
-
-            var userListReturn = new List<UserModel>();
-            while (userList.HasMoreResults)
-            {
-                foreach (UserModel user in await userList.ExecuteNextAsync())
-                {
-                    userListReturn.Add(user);
-                }
-            }
             _log.LogDebug("HTTP trigger - UserFind:End");
 
-            return new OkObjectResult(userListReturn);
+            return new OkObjectResult(items);
         }
     }
 }
