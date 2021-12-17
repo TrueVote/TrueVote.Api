@@ -21,7 +21,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task LogsMessages()
         {
             var error500 = new Error500(_log.Object);
-            _ = await error500.RunAsync(_httpContext.Request);
+            _ = await error500.ThrowError500(_httpContext.Request);
 
             _log.Verify(LogLevel.Information, Times.AtLeast(1));
             _log.Verify(LogLevel.Debug, Times.AtLeast(2));
@@ -41,13 +41,13 @@ namespace TrueVote.Api.Tests.ServiceTests
             _httpContext.Request.Body = new MemoryStream(byteArray);
             try
             {
-                _ = await error500.RunAsync(_httpContext.Request);
+                _ = await error500.ThrowError500(_httpContext.Request);
             }
             catch (Exception ex)
             {
                 _output.WriteLine($"{ex}");
                 Assert.NotNull(ex);
-                Assert.Contains("error500 - throwing an exception", ex.Message);
+                Assert.Contains("error500 - throwing a sample exception", ex.Message);
             }
         }
     }

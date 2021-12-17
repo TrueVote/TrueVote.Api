@@ -21,16 +21,16 @@ namespace TrueVote.Api
         {
         }
 
-        [FunctionName("error500")]
+        [FunctionName(nameof(ThrowError500))]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [OpenApiOperation(operationId: "Run", tags: new[] { "Error500" })]
+        [OpenApiOperation(operationId: "ThrowError500", tags: new[] { "Errors" })]
         [OpenApiSecurity("function_key", SecuritySchemeType.ApiKey, Name = "code", In = OpenApiSecurityLocationType.Query)]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(string), Description = "Tests Error Logging of a Server 500")]
-        public async Task<IActionResult> RunAsync(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequest req)
+        public async Task<IActionResult> ThrowError500(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "error500")] HttpRequest req)
         {
-            _log.LogDebug("HTTP trigger - Error500:Begin");
+            _log.LogDebug("HTTP trigger - ThrowError500:Begin");
 
             var requestBody = await new StreamReader(req.Body).ReadToEndAsync();
             dynamic data = JsonConvert.DeserializeObject(requestBody);
@@ -39,10 +39,12 @@ namespace TrueVote.Api
             if (data?.Error == "true")
             {
                 // Throw this random exception for no reason other than the requester wants it
-                throw new Exception("error500 - throwing an exception");
+                _log.LogError($"error500 - throwing a sample exception");
+                _log.LogDebug("HTTP trigger - ThrowError500:End");
+                throw new Exception("error500 - throwing a sample exception");
             }
 
-            _log.LogDebug("HTTP trigger - Error500:End");
+            _log.LogDebug("HTTP trigger - ThrowError500:End");
 
             return new OkResult();
         }

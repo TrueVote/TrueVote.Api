@@ -1,6 +1,8 @@
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
+using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Enums;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Serialization;
@@ -8,19 +10,61 @@ using System.Runtime.Serialization;
 namespace TrueVote.Api.Models
 {
     [ExcludeFromCodeCoverage]
-    public class BaseUserModel
+    public static class UserExtensions
     {
+        public static List<UserModel> ToUserModelList(this IEnumerable<UserObj> listUserObj)
+        {
+            var listUserModel = new List<UserModel>();
+
+            foreach (var userObj in listUserObj)
+            {
+                listUserModel.Add(userObj.user);
+            }
+
+            return listUserModel;
+        }
+    }
+
+    public class UserObj
+    {
+        public UserModel user;
+    }
+
+    [ExcludeFromCodeCoverage]
+    public class FindUserModel
+    {
+        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
         [OpenApiProperty(Description = "First Name")]
-        [JsonProperty(Required = Required.Always)]
-        [StringLength(10)]
-        [MaxLength(10)]
+        [StringLength(50)]
+        [MaxLength(50)]
         [DataType(DataType.Text)]
         public string FirstName { get; set; } = string.Empty;
 
+        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
         [OpenApiProperty(Description = "Email Address")]
-        [JsonProperty(Required = Required.Always)]
-        [StringLength(10)]
-        [MaxLength(10)]
+        [StringLength(200)]
+        [MaxLength(200)]
+        [DataType(DataType.EmailAddress)]
+        [EmailAddress]
+        public string Email { get; set; }
+    }
+
+    [ExcludeFromCodeCoverage]
+    public class BaseUserModel
+    {
+        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
+        [OpenApiProperty(Description = "First Name")]
+        [JsonProperty(Required = Newtonsoft.Json.Required.Always)]
+        [StringLength(50)]
+        [MaxLength(50)]
+        [DataType(DataType.Text)]
+        public string FirstName { get; set; } = string.Empty;
+
+        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
+        [OpenApiProperty(Description = "Email Address")]
+        [JsonProperty(Required = Newtonsoft.Json.Required.Always)]
+        [StringLength(2000)]
+        [MaxLength(2000)]
         [Required(AllowEmptyStrings = false)]
         [DataType(DataType.EmailAddress)]
         [EmailAddress]
@@ -36,12 +80,14 @@ namespace TrueVote.Api.Models
             Email = baseUser?.Email;
         }
 
+        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
         [OpenApiProperty(Description = "GUID Id")]
         [StringLength(40)]
         [MaxLength(40)]
         [DataType(DataType.Text)]
         public string UserId { get; set; } = Guid.NewGuid().ToString();
 
+        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
         [OpenApiProperty(Description = "DateCreated")]
         [DataType(DataType.Date)]
         public DateTime DateCreated { get; set; } = DateTime.UtcNow;

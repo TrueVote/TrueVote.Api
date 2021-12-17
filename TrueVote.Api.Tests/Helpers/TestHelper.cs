@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Http;
+using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Logging;
 using Moq;
 using System.IO.Abstractions;
@@ -12,6 +13,7 @@ namespace TrueVote.Api.Tests.Helpers
         protected readonly ITestOutputHelper _output;
         protected readonly HttpContext _httpContext;
         protected readonly IFileSystem _fileSystem;
+        protected readonly Mock<CosmosClient> _cosmosClient;
         protected readonly Mock<ILogger<LoggerHelper>> _log;
 
         public TestHelper(ITestOutputHelper output)
@@ -19,6 +21,7 @@ namespace TrueVote.Api.Tests.Helpers
             _output = output;
             _httpContext = new DefaultHttpContext();
             _fileSystem = new FileSystem();
+            _cosmosClient = new Mock<CosmosClient>();
             _log = new Mock<ILogger<LoggerHelper>>();
             _log.MockLog(LogLevel.Debug);
             _log.MockLog(LogLevel.Information);

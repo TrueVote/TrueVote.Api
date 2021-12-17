@@ -1,9 +1,12 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Azure.Cosmos;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
@@ -18,23 +21,29 @@ namespace TrueVote.Api
 {
     public class User : LoggerHelper
     {
-        public User(ILogger log): base(log)
+        private readonly CosmosClient _cosmosClient;
+        private readonly Database _database;
+        private readonly Container _container;
+
+        public User(ILogger log, CosmosClient cosmosClient) : base(log)
         {
+            _cosmosClient = cosmosClient;
+            _database = _cosmosClient.GetDatabase("true-vote");
+            _container = _database.GetContainer("users");
         }
 
-        [FunctionName("user")]
+        [FunctionName(nameof(CreateUser))]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [OpenApiOperation(operationId: "Run", tags: new[] { "User" })]
+        [OpenApiOperation(operationId: "CreateUser", tags: new[] { "User" })]
         [OpenApiSecurity("function_key", SecuritySchemeType.ApiKey, Name = "code", In = OpenApiSecurityLocationType.Query)]
         [OpenApiRequestBody(contentType: "application/json", bodyType: typeof(BaseUserModel), Description = "Partially filled User Model", Example = typeof(BaseUserModel))]
-        // [OpenApiParameter(name: "user", In = ParameterLocation.Query, Required = true, Type = typeof(User), Description = "User Model")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.Created, contentType: "application/json", bodyType: typeof(UserModel), Description = "Returns the added user")]
-        public async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequest req,
+        public async Task<IActionResult> CreateUser(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "user")] HttpRequest req,
             [CosmosDB(databaseName: "true-vote", collectionName: "users", ConnectionStringSetting = "CosmosDbConnectionString", CreateIfNotExists = true)] IAsyncCollector<dynamic> documentsOut)
         {
-            _log.LogDebug("HTTP trigger - User:Begin");
+            _log.LogDebug("HTTP trigger - CreateUser:Begin");
 
             BaseUserModel baseUser;
             try
@@ -44,8 +53,8 @@ namespace TrueVote.Api
             }
             catch (Exception e)
             {
-                _log.LogDebug("HTTP trigger - User:End");
                 _log.LogError("baseUser: invalid format");
+                _log.LogDebug("HTTP trigger - CreateUser:End");
 
                 return new BadRequestObjectResult(e.Message);
             }
@@ -59,9 +68,50 @@ namespace TrueVote.Api
                 user
             });
 
-            _log.LogDebug("HTTP trigger - User:End");
+            _log.LogDebug("HTTP trigger - CreateUser:End");
 
             return new CreatedResult(string.Empty, user);
+        }
+
+        [FunctionName(nameof(UserFind))]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [OpenApiOperation(operationId: "UserFind", tags: new[] { "User" })]
+        [OpenApiSecurity("function_key", SecuritySchemeType.ApiKey, Name = "code", In = OpenApiSecurityLocationType.Query)]
+        [OpenApiRequestBody(contentType: "application/json", bodyType: typeof(FindUserModel), Description = "Fields to search for Users", Example = typeof(FindUserModel))]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(List<UserModel>), Description = "Returns collection of users")]
+        public async Task<IActionResult> UserFind(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "user/find")] HttpRequest req)
+        {
+            _log.LogDebug("HTTP trigger - UserFind:Begin");
+
+            FindUserModel findUser;
+            try
+            {
+                var requestBody = await new StreamReader(req.Body).ReadToEndAsync();
+                findUser = JsonConvert.DeserializeObject<FindUserModel>(requestBody);
+            }
+            catch (Exception e)
+            {
+                _log.LogError("findUser: invalid format");
+                _log.LogDebug("HTTP trigger - UserFind:End");
+
+                return new BadRequestObjectResult(e.Message);
+            }
+
+            _log.LogInformation($"Request Data: {findUser}");
+
+            // TODO Simplify this query by putting the and conditions in an extension methods to build the where clause more idomatically. It should iterate
+            // through all the properties in FindUserModel and build the .Where clause dynamically.
+            var items = _container.GetItemLinqQueryable<UserObj>(true)
+                .Where(u =>
+                    (findUser.FirstName == null || u.user.FirstName.Contains(findUser.FirstName)) &&
+                    (findUser.Email == null || u.user.Email.Contains(findUser.Email)))
+                .ToUserModelList();
+
+            _log.LogDebug("HTTP trigger - UserFind:End");
+
+            return new OkObjectResult(items);
         }
     }
 }

@@ -1,47 +1,23 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
+using TrueVote.Api.Models;
 using TrueVote.Api.Tests.Helpers;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace TrueVote.Api.Tests.ServiceTests
 {
-    public class MockAsyncCollector<T> : IAsyncCollector<T>
-    {
-        public readonly List<T> Items = new();
-
-        public Task AddAsync(T item, CancellationToken cancellationToken = default)
-        {
-            Items.Add(item);
-
-            return Task.FromResult(true);
-        }
-
-        public Task FlushAsync(CancellationToken cancellationToken = default)
-        {
-            return Task.FromResult(true);
-        }
-    }
-
     public class FakeBaseUserModel
     {
         public string FirstName { get; set; } = string.Empty;
         public string Email { get; set; }
-    }
-
-    public class UserObj
-    {
-        public Models.UserModel user;
     }
 
     public class UserTest : TestHelper
@@ -54,13 +30,14 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task LogsMessages()
         {
             var documentsOut = new MockAsyncCollector<dynamic>();
-            var userApi = new User(_log.Object);
+            var cosmosClient = new MockCosmosClient();
+            var userApi = new User(_log.Object, cosmosClient);
 
-            var baseUserObj = new Models.BaseUserModel { FirstName = "Joe", Email = "joe@joe.com" };
+            var baseUserObj = new BaseUserModel { FirstName = "Joe", Email = "joe@joe.com" };
             var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(baseUserObj));
             _httpContext.Request.Body = new MemoryStream(byteArray);
 
-            _ = await userApi.Run(_httpContext.Request, documentsOut);
+            _ = await userApi.CreateUser(_httpContext.Request, documentsOut);
 
             _log.Verify(LogLevel.Information, Times.AtLeast(1));
             _log.Verify(LogLevel.Debug, Times.AtLeast(2));
@@ -70,13 +47,14 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task AddsUser()
         {
             var documentsOut = new MockAsyncCollector<dynamic>();
-            var userApi = new User(_log.Object);
+            var cosmosClient = new MockCosmosClient();
+            var userApi = new User(_log.Object, cosmosClient);
 
-            var baseUserObj = new Models.BaseUserModel { FirstName = "Joe", Email = "joe@joe.com" };
+            var baseUserObj = new BaseUserModel { FirstName = "Joe", Email = "joe@joe.com" };
             var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(baseUserObj));
             _httpContext.Request.Body = new MemoryStream(byteArray);
 
-            var ret = await userApi.Run(_httpContext.Request, documentsOut);
+            var ret = await userApi.CreateUser(_httpContext.Request, documentsOut);
 
             _output.WriteLine($"Item Count: {documentsOut.Items.Count}");
             Assert.Single(documentsOut.Items);
@@ -110,18 +88,60 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task HandlesInvalidUserCreate()
         {
             var documentsOut = new MockAsyncCollector<dynamic>();
-            var userApi = new User(_log.Object);
+            var cosmosClient = new MockCosmosClient();
+            var userApi = new User(_log.Object, cosmosClient);
 
             // This object is missing required property (email)
             var fakeBaseUserObj = new FakeBaseUserModel { FirstName = "Joe" };
             var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(fakeBaseUserObj));
             _httpContext.Request.Body = new MemoryStream(byteArray);
 
-            var ret = await userApi.Run(_httpContext.Request, documentsOut);
+            var ret = await userApi.CreateUser(_httpContext.Request, documentsOut);
             Assert.NotNull(ret);
             var objectResult = Assert.IsType<BadRequestObjectResult>(ret);
             Assert.Equal((int) HttpStatusCode.BadRequest, objectResult.StatusCode);
             Assert.Contains("Required", objectResult.Value.ToString());
+
+            _log.Verify(LogLevel.Error, Times.AtLeast(1));
+            _log.Verify(LogLevel.Debug, Times.AtLeast(2));
+        }
+
+        [Fact]
+        public async Task FindsUser()
+        {
+            var cosmosClient = new MockCosmosClient();
+            var userApi = new User(_log.Object, cosmosClient);
+
+            var findUserObj = new FindUserModel { FirstName = "Joe" };
+            var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(findUserObj));
+            _httpContext.Request.Body = new MemoryStream(byteArray);
+
+            var ret = await userApi.UserFind(_httpContext.Request);
+            Assert.NotNull(ret);
+            var objectResult = Assert.IsType<OkObjectResult>(ret);
+            Assert.Equal((int) HttpStatusCode.OK, objectResult.StatusCode);
+
+            // TODO Inspect objectResult for data
+
+            _log.Verify(LogLevel.Information, Times.AtLeast(1));
+            _log.Verify(LogLevel.Debug, Times.AtLeast(2));
+        }
+
+        [Fact]
+        public async Task HandlesFindUserError()
+        {
+            var cosmosClient = new MockCosmosClient();
+            var userApi = new User(_log.Object, cosmosClient);
+
+            var findUserObj = "blah";
+            var byteArray = Encoding.ASCII.GetBytes(findUserObj);
+            _httpContext.Request.Body = new MemoryStream(byteArray);
+
+            var ret = await userApi.UserFind(_httpContext.Request);
+            Assert.NotNull(ret);
+            var objectResult = Assert.IsType<BadRequestObjectResult>(ret);
+            Assert.Equal((int) HttpStatusCode.BadRequest, objectResult.StatusCode);
+
 
             _log.Verify(LogLevel.Error, Times.AtLeast(1));
             _log.Verify(LogLevel.Debug, Times.AtLeast(2));
