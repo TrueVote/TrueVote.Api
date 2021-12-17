@@ -81,8 +81,7 @@ namespace TrueVote.Api
         [OpenApiRequestBody(contentType: "application/json", bodyType: typeof(FindUserModel), Description = "Fields to search for Users", Example = typeof(FindUserModel))]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(List<UserModel>), Description = "Returns collection of users")]
         public async Task<IActionResult> UserFind(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "user/find")] HttpRequest req,
-            [CosmosDB(databaseName: "true-vote", collectionName: "users", ConnectionStringSetting = "CosmosDbConnectionString")] IAsyncCollector<UserModel> users)
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "user/find")] HttpRequest req)
         {
             _log.LogDebug("HTTP trigger - UserFind:Begin");
 
@@ -102,6 +101,8 @@ namespace TrueVote.Api
 
             _log.LogInformation($"Request Data: {findUser}");
 
+            // TODO Simplify this query by putting the and conditions in an extension methods to build the where clause more idomatically. It should iterate
+            // through all the properties in FindUserModel and build the .Where clause dynamically.
             var items = _container.GetItemLinqQueryable<UserObj>(true)
                 .Where(u =>
                     (findUser.FirstName == null || u.user.FirstName.Contains(findUser.FirstName)) &&
