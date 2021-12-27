@@ -32,7 +32,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="System.Collections.Immutable" Version="6.0.0" />
-    <PackageReference Include="System.IO.Abstractions" Version="14.0.13" />
+    <PackageReference Include="System.IO.Abstractions" Version="16.0.1" />
   </ItemGroup>
   <ItemGroup>
     <None Update="dist\favicon-32x32.png">
