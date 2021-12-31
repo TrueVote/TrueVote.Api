@@ -27,6 +27,11 @@ namespace TrueVote.Api
         [OpenApiOperation(operationId: "ThrowError500", tags: new[] { "Errors" })]
         [OpenApiSecurity("function_key", SecuritySchemeType.ApiKey, Name = "code", In = OpenApiSecurityLocationType.Query)]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(string), Description = "Tests Error Logging of a Server 500")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.Forbidden, contentType: "application/json", bodyType: typeof(string), Description = "Forbidden")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.Unauthorized, contentType: "application/json", bodyType: typeof(string), Description = "Unauthorized")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.NotFound, contentType: "application/json", bodyType: typeof(string), Description = "Not Found")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.NotAcceptable, contentType: "application/json", bodyType: typeof(string), Description = "Not Acceptable")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.TooManyRequests, contentType: "application/json", bodyType: typeof(string), Description = "Too Many Requests")]
         public async Task<IActionResult> ThrowError500(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "error500")] HttpRequest req)
         {

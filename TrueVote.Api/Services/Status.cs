@@ -46,6 +46,11 @@ namespace TrueVote.Api
         [OpenApiOperation(operationId: "GetStatus", tags: new[] { "Status" })]
         [OpenApiSecurity("function_key", SecuritySchemeType.ApiKey, Name = "code", In = OpenApiSecurityLocationType.Query)]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(StatusModel), Description = "Returns Status of Api")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.Forbidden, contentType: "application/json", bodyType: typeof(string), Description = "Forbidden")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.Unauthorized, contentType: "application/json", bodyType: typeof(string), Description = "Unauthorized")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.NotFound, contentType: "application/json", bodyType: typeof(string), Description = "Not Found")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.NotAcceptable, contentType: "application/json", bodyType: typeof(string), Description = "Not Acceptable")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.TooManyRequests, contentType: "application/json", bodyType: typeof(string), Description = "Too Many Requests")]
         public async Task<IActionResult> GetStatus(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "status")] HttpRequest req)
         {
