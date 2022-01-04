@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
-using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Enums;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json;
@@ -24,7 +23,7 @@ namespace TrueVote.Api
     {
         protected IFileSystem _fileSystem;
         public static BuildInfo _BuildInfo = null;
-        protected static string _BuildInfoReadTime = null;
+        private static string _BuildInfoReadTime = null;
 
         public Status(IFileSystem fileSystem, ILogger log, bool clearStatics = false): base(log)
         {
