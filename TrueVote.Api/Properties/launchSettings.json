@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "TrueVote.Api": {
+      "commandName": "Project",
+      "commandLineArgs": "host start --useHttps --cert \"local-certificate.pfx\" --password \"1234\""
+    }
+  }
+}
