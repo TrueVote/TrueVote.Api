@@ -2,7 +2,7 @@ name: TrueVote.Api
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master, "feature/AD-16" ]
     paths-ignore:
       - CONTRIBUTING.md
       - README.md
@@ -67,6 +67,13 @@ jobs:
     #  with:
     #    name: code-coverage-report
     #    path: TrueVote.Api.Tests/TestResults/*
+
+    - name: Audit OpenAPI
+      uses: 42Crunch/api-security-audit-action@v2
+      with:
+        api-token: ${{ secrets.FORTYTWOCRUNCH_TOKEN }}
+        min-score: 60
+        upload-to-code-scanning: true
 
     - name: 'Build Release Version'
       if: github.ref == 'refs/heads/master'
