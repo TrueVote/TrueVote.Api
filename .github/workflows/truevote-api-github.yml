@@ -68,15 +68,7 @@ jobs:
     #    name: code-coverage-report
     #    path: TrueVote.Api.Tests/TestResults/*
 
-    - name: Audit OpenAPI
-      uses: 42Crunch/api-security-audit-action@v2
-      with:
-        api-token: ${{ secrets.FORTYTWOCRUNCH_TOKEN }}
-        min-score: 60
-        upload-to-code-scanning: true
-
     - name: 'Build Release Version'
-      if: github.ref == 'refs/heads/master'
       shell: pwsh
       run: |
         pushd './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
@@ -90,7 +82,17 @@ jobs:
     #    ./scripts/build-version.sh
     #    cp TrueVote.Api/version.json ./output
 
-    - name: 'Publish to Azure'
+    - name: 'Publish to Azure Pre-Prod'
+      if: github.ref != 'refs/heads/master'
+      uses: Azure/functions-action@v1
+      id: fa
+      with:
+        app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
+        slot-name: truevote-api-preprod
+        package: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/output'
+        publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
+
+    - name: 'Publish to Azure Production'
       if: github.ref == 'refs/heads/master'
       uses: Azure/functions-action@v1
       id: fa
