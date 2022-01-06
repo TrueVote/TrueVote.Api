@@ -1,9 +1,6 @@
 name: Preprod Integration
 
 on:
-  push:
-    branches: [ master, "feature/AD-16" ]
-
   workflow_dispatch:
 
   workflow_run:
