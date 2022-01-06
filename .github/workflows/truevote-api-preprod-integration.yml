@@ -1,0 +1,20 @@
+name: TrueVote.Api.Preprod.Integration
+
+on:
+  workflow_run:
+    workflows: ["TrueVote.Api"]
+    types: [completed]
+    branches-ignore: [master]
+
+jobs:
+  run_api_audit:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
+    steps:
+    - name: Audit OpenAPI
+      uses: 42Crunch/api-security-audit-action@v2
+      with:
+        api-token: ${{ secrets.FORTYTWOCRUNCH_TOKEN }}
+        min-score: 60
+        upload-to-code-scanning: true
