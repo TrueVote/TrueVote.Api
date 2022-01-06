@@ -1,10 +1,10 @@
-name: TrueVote.Api.Preprod.Integration
+name: Preprod Integration
 
 on:
   workflow_dispatch:
 
   workflow_run:
-    workflows: ["TrueVote.Api"]
+    workflows: ["Build, Test, Deploy"]
     types: [completed]
     branches-ignore: [master]
 

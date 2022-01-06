@@ -1,4 +1,4 @@
-name: TrueVote.Api
+name: Build, Test, Deploy
 
 on:
   push:
@@ -92,10 +92,10 @@ jobs:
         package: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/output'
         publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE_PREPROD }}
 
-    - name: Invoke TrueVote.Api.Preprod.Integration Workflow
+    - name: Invoke Preprod Integration Workflow
       uses: benc-uk/workflow-dispatch@v1
       with:
-        workflow: TrueVote.Api.Preprod.Integration
+        workflow: Preprod Integration
         token: ${{ secrets.ACTIONS_PERSONAL_ACCESS_TOKEN }}
 
     - name: 'Publish to Azure Production'
