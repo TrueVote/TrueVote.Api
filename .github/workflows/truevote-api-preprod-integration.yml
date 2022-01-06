@@ -13,9 +13,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    - name: Download swagger file
+      uses: wei/curl@v1
+      with:
+        args: -o swagger.json https://truevote-api-preprod.azurewebsites.net/api/swagger.json
+
     - name: Audit OpenAPI
       uses: 42Crunch/api-security-audit-action@v2
       with:
         api-token: ${{ secrets.FORTYTWOCRUNCH_TOKEN }}
         min-score: 60
         upload-to-code-scanning: true
+        share-everyone: READ_ONLY
