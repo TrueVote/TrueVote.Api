@@ -85,7 +85,7 @@ jobs:
     - name: 'Publish to Azure Pre-Prod'
       if: github.ref != 'refs/heads/master'
       uses: Azure/functions-action@v1
-      id: fa
+      id: fa-preprod
       with:
         app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
         slot-name: truevote-api-preprod
