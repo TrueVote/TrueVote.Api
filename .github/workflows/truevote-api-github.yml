@@ -2,7 +2,7 @@ name: Build, Test, Deploy
 
 on:
   push:
-    branches: [ master, "feature/AD-16" ]
+    branches: [ master ]
     paths-ignore:
       - CONTRIBUTING.md
       - README.md
