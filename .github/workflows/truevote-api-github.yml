@@ -88,7 +88,7 @@ jobs:
       id: fa-preprod
       with:
         app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
-        slot-name: truevote-api-preprod
+        slot-name: preprod
         package: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/output'
         publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE_PREPROD }}
 
