@@ -1,6 +1,9 @@
 name: TrueVote.Api.Preprod.Integration
 
 on:
+  push:
+    branches: [ "feature/AD-16" ]
+
   workflow_run:
     workflows: ["TrueVote.Api"]
     types: [completed]
