@@ -4,6 +4,7 @@
 [![Keybase Chat](https://img.shields.io/badge/chat-on%20keybase-7793d8)](https://keybase.io/team/truevote)
 
 [![TrueVote.Api](https://github.com/TrueVote/TrueVote.Api/actions/workflows/truevote-api-github.yml/badge.svg)](https://github.com/TrueVote/TrueVote.Api/actions/workflows/truevote-api-github.yml)
+[![TrueVote.Api.Preprod.Integration](https://github.com/TrueVote/TrueVote.Api/actions/workflows/truevote-api-preprod-integration.yml/badge.svg)](https://github.com/TrueVote/TrueVote.Api/actions/workflows/truevote-api-preprod-integration.yml)
 [![Coverage Status](https://coveralls.io/repos/github/TrueVote/TrueVote.Api/badge.svg?branch=master)](https://coveralls.io/github/TrueVote/TrueVote.Api?branch=master)
 
 # TrueVote.Api

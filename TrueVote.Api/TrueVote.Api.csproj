@@ -35,6 +35,9 @@
     <PackageReference Include="System.IO.Abstractions" Version="16.0.1" />
   </ItemGroup>
   <ItemGroup>
+    <None Update="local-certificate.pfx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="dist\favicon-32x32.png">
       <Pack>True</Pack>
     </None>
