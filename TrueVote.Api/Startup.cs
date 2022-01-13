@@ -1,8 +1,8 @@
-using Microsoft.Azure.Cosmos.Fluent;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Abstractions;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Configurations;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Enums;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
@@ -13,6 +13,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO.Abstractions;
 using System.Reflection;
 using System.Threading.Tasks;
+using TrueVote.Api.Models;
 
 [assembly: FunctionsStartup(typeof(TrueVote.Api.Services.Startup))]
 namespace TrueVote.Api.Services
@@ -69,6 +70,23 @@ namespace TrueVote.Api.Services
         }
     }
 
+    public class TrueVoteDbContext : DbContext
+    {
+        public TrueVoteDbContext(DbContextOptions<TrueVoteDbContext> options) : base(options)
+        {
+        }
+        public DbSet<UserModel> Users { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            modelBuilder.HasDefaultContainer("Users");
+            modelBuilder.Entity<UserModel>().ToContainer("Users");
+            modelBuilder.Entity<UserModel>().HasNoDiscriminator();
+        }
+    }
+
     [ExcludeFromCodeCoverage]
     public class Startup : FunctionsStartup
     {
@@ -76,15 +94,7 @@ namespace TrueVote.Api.Services
         {
             builder.Services.TryAddScoped<IFileSystem, FileSystem>();
             builder.Services.TryAddSingleton<ILoggerFactory, LoggerFactory>();
-
-            builder.Services.AddSingleton((s) =>
-            {
-                var cosmosClientBuilder = new CosmosClientBuilder(Environment.GetEnvironmentVariable("CosmosDbConnectionString"));
-
-                return cosmosClientBuilder.WithConnectionModeDirect()
-                    .WithBulkExecution(true)
-                    .Build();
-            });
+            builder.Services.AddDbContext<TrueVoteDbContext>(o => o.UseCosmos(Environment.GetEnvironmentVariable("CosmosDbConnectionString"), "true-vote"));
 
             ConfigureServices(builder.Services).BuildServiceProvider(true);
         }
