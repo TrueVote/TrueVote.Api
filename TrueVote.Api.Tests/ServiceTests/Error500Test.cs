@@ -24,8 +24,8 @@ namespace TrueVote.Api.Tests.ServiceTests
             var error500 = new Error500(_log.Object);
             _ = await error500.ThrowError500(_httpContext.Request);
 
-            _log.Verify(LogLevel.Information, Times.AtLeast(1));
-            _log.Verify(LogLevel.Debug, Times.AtLeast(2));
+            _log.Verify(LogLevel.Information, Times.Exactly(1));
+            _log.Verify(LogLevel.Debug, Times.Exactly(2));
         }
 
         [Fact]

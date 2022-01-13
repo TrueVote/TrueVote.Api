@@ -70,6 +70,7 @@ namespace TrueVote.Api
         }
     }
 
+    [ExcludeFromCodeCoverage]
     public class TrueVoteDbContext : DbContext
     {
         public TrueVoteDbContext(DbContextOptions<TrueVoteDbContext> options) : base(options)

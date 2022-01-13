@@ -46,8 +46,8 @@ namespace TrueVote.Api.Tests.ServiceTests
             var status = new Status(_fileSystem, _log.Object, true);
             _ = await status.GetStatus(_httpContext.Request);
 
-            _log.Verify(LogLevel.Information, Times.AtLeast(2));
-            _log.Verify(LogLevel.Debug, Times.AtLeast(2));
+            _log.Verify(LogLevel.Information, Times.Exactly(4));
+            _log.Verify(LogLevel.Debug, Times.Exactly(2));
         }
 
         [Fact]
@@ -150,7 +150,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             var statusModel = (StatusModel) res.Value;
             Assert.NotNull(statusModel);
             Assert.Null(statusModel.BuildInfo);
-            _log.Verify(LogLevel.Error, Times.AtLeastOnce());
+            _log.Verify(LogLevel.Error, Times.Exactly(1));
         }
     }
 }
