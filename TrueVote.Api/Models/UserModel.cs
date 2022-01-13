@@ -10,22 +10,6 @@ using System.Runtime.Serialization;
 namespace TrueVote.Api.Models
 {
     [ExcludeFromCodeCoverage]
-    public static class UserExtensions
-    {
-        public static List<UserModel> ToUserModelList(this IEnumerable<UserObj> listUserObj)
-        {
-            var listUserModel = new List<UserModel>();
-
-            foreach (var userObj in listUserObj)
-            {
-                listUserModel.Add(userObj.user);
-            }
-
-            return listUserModel;
-        }
-    }
-
-    [ExcludeFromCodeCoverage]
     public class UserObj
     {
         public UserModel user;
@@ -82,19 +66,32 @@ namespace TrueVote.Api.Models
     }
 
     [ExcludeFromCodeCoverage]
-    public class UserModel: BaseUserModel
+    public class UserModel
     {
-        public UserModel(BaseUserModel baseUser)
-        {
-            FirstName = baseUser?.FirstName;
-            Email = baseUser?.Email;
-        }
+        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
+        [OpenApiProperty(Description = "First Name")]
+        [JsonProperty(Required = Required.Always)]
+        [MaxLength(2048)]
+        [DataType(DataType.Text)]
+        [RegularExpression(Constants.GenericStringRegex)]
+        public string FirstName { get; set; } = string.Empty;
+
+        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
+        [OpenApiProperty(Description = "Email Address")]
+        [JsonProperty(Required = Required.Always)]
+        [MaxLength(2048)]
+        [Required(AllowEmptyStrings = false)]
+        [DataType(DataType.EmailAddress)]
+        [EmailAddress]
+        [RegularExpression(Constants.EMailRegex)]
+        public string Email { get; set; }
 
         [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
         [OpenApiProperty(Description = "GUID Id")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
         [RegularExpression(Constants.GenericStringRegex)]
+        [Key]
         public string UserId { get; set; } = Guid.NewGuid().ToString();
 
         [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
