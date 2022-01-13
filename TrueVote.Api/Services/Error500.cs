@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 using TrueVote.Api.Helpers;
 using TrueVote.Api.Models;
 
-namespace TrueVote.Api
+namespace TrueVote.Api.Services
 {
     public class Error500 : LoggerHelper
     {

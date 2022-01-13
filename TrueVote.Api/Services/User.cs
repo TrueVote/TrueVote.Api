@@ -14,9 +14,8 @@ using Microsoft.OpenApi.Models;
 using Newtonsoft.Json;
 using TrueVote.Api.Helpers;
 using TrueVote.Api.Models;
-using TrueVote.Api.Services;
 
-namespace TrueVote.Api
+namespace TrueVote.Api.Services
 {
     public class User : LoggerHelper
     {

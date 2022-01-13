@@ -15,8 +15,8 @@ using System.Reflection;
 using System.Threading.Tasks;
 using TrueVote.Api.Models;
 
-[assembly: FunctionsStartup(typeof(TrueVote.Api.Services.Startup))]
-namespace TrueVote.Api.Services
+[assembly: FunctionsStartup(typeof(TrueVote.Api.Startup))]
+namespace TrueVote.Api
 {
     // Modeled from here: https://github.com/Azure/azure-functions-openapi-extension/blob/main/docs/openapi-core.md#openapi-metadata-configuration
     // Overrides default OpenApi description and more

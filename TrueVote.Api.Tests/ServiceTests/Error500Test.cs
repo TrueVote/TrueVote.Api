@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using TrueVote.Api.Services;
 using TrueVote.Api.Tests.Helpers;
 using Xunit;
 using Xunit.Abstractions;
