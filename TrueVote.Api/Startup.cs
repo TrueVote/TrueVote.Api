@@ -73,10 +73,13 @@ namespace TrueVote.Api
     [ExcludeFromCodeCoverage]
     public class TrueVoteDbContext : DbContext
     {
-        public TrueVoteDbContext(DbContextOptions<TrueVoteDbContext> options) : base(options)
+        public virtual DbSet<UserModel> Users { get; set; }
+
+        protected override async void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
+            optionsBuilder.UseCosmos(Environment.GetEnvironmentVariable("CosmosDbConnectionString"), "true-vote");
+            await Database.EnsureCreatedAsync();
         }
-        public DbSet<UserModel> Users { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -95,7 +98,7 @@ namespace TrueVote.Api
         {
             builder.Services.TryAddScoped<IFileSystem, FileSystem>();
             builder.Services.TryAddSingleton<ILoggerFactory, LoggerFactory>();
-            builder.Services.AddDbContext<TrueVoteDbContext>(o => o.UseCosmos(Environment.GetEnvironmentVariable("CosmosDbConnectionString"), "true-vote"));
+            builder.Services.AddDbContext<TrueVoteDbContext>();
 
             ConfigureServices(builder.Services).BuildServiceProvider(true);
         }
