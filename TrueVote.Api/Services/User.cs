@@ -5,29 +5,25 @@ using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.Cosmos;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json;
 using TrueVote.Api.Helpers;
 using TrueVote.Api.Models;
 
-namespace TrueVote.Api
+namespace TrueVote.Api.Services
 {
     public class User : LoggerHelper
     {
-        private readonly CosmosClient _cosmosClient;
-        private readonly Database _database;
-        private readonly Container _container;
+        private readonly TrueVoteDbContext _trueVoteDbContext;
 
-        public User(ILogger log, CosmosClient cosmosClient) : base(log)
+        public User(ILogger log, TrueVoteDbContext trueVoteDbContext) : base(log)
         {
-            _cosmosClient = cosmosClient;
-            _database = _cosmosClient.GetDatabase("true-vote");
-            _container = _database.GetContainer("users");
+            _trueVoteDbContext = trueVoteDbContext;
         }
 
         [FunctionName(nameof(CreateUser))]
@@ -44,8 +40,7 @@ namespace TrueVote.Api
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.TooManyRequests, contentType: "application/json", bodyType: typeof(SecureString), Description = "Too Many Requests")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.UnsupportedMediaType, contentType: "application/json", bodyType: typeof(SecureString), Description = "Unsupported Media Type")]
         public async Task<IActionResult> CreateUser(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "user")] HttpRequest req,
-            [CosmosDB(databaseName: "true-vote", collectionName: "users", ConnectionStringSetting = "CosmosDbConnectionString", CreateIfNotExists = true)] IAsyncCollector<dynamic> documentsOut)
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "user")] HttpRequest req)
         {
             _log.LogDebug("HTTP trigger - CreateUser:Begin");
 
@@ -65,12 +60,12 @@ namespace TrueVote.Api
 
             _log.LogInformation($"Request Data: {baseUser}");
 
-            var user = new UserModel(baseUser);
+            var user = new UserModel { FirstName = baseUser.FirstName, Email = baseUser.Email };
 
-            await documentsOut.AddAsync(new
-            {
-                user
-            });
+            await _trueVoteDbContext.EnsureCreatedAsync();
+
+            await _trueVoteDbContext.Users.AddAsync(user);
+            await _trueVoteDbContext.SaveChangesAsync();
 
             _log.LogDebug("HTTP trigger - CreateUser:End");
 
@@ -112,11 +107,11 @@ namespace TrueVote.Api
 
             // TODO Simplify this query by putting the and conditions in an extension methods to build the where clause more idomatically. It should iterate
             // through all the properties in FindUserModel and build the .Where clause dynamically.
-            var items = _container.GetItemLinqQueryable<UserObj>(true)
+            var items = await _trueVoteDbContext.Users
                 .Where(u =>
-                    (findUser.FirstName == null || u.user.FirstName.Contains(findUser.FirstName)) &&
-                    (findUser.Email == null || u.user.Email.Contains(findUser.Email)))
-                .ToUserModelList();
+                    (findUser.FirstName == null || u.FirstName.Contains(findUser.FirstName)) &&
+                    (findUser.Email == null || u.Email.Contains(findUser.Email)))
+                .OrderByDescending(u => u.DateCreated).ToListAsync();
 
             _log.LogDebug("HTTP trigger - UserFind:End");
 
