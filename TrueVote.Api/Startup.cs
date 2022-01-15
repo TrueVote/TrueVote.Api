@@ -75,10 +75,9 @@ namespace TrueVote.Api
     {
         public virtual DbSet<UserModel> Users { get; set; }
 
-        protected override async void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             optionsBuilder.UseCosmos(Environment.GetEnvironmentVariable("CosmosDbConnectionString"), "true-vote");
-            await Database.EnsureCreatedAsync();
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
