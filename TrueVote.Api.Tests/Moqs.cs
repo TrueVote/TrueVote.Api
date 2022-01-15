@@ -47,7 +47,7 @@ namespace TrueVote.Api.Tests
         public static Mock<DbSet<T>> GetDbSet<T>(IQueryable<T> testData) where T : class
         {
             var mockSet = new Mock<DbSet<T>>();
-            mockSet.As<IAsyncEnumerable<T>>().Setup(x => x.GetEnumerator()).Returns(new TestAsyncEnumerator<T>(testData.GetEnumerator()));
+            mockSet.As<IAsyncEnumerable<T>>().Setup(x => x.GetAsyncEnumerator(It.IsAny<CancellationToken>())).Returns(new TestAsyncEnumerator<T>(testData.GetEnumerator()));
             mockSet.As<IDbAsyncEnumerable<T>>().Setup(m => m.GetAsyncEnumerator()).Returns(new TestDbAsyncEnumerator<T>(testData.GetEnumerator()));
             mockSet.As<IQueryable<T>>().Setup(x => x.Provider).Returns(new TestAsyncQueryProvider<T>(testData.Provider));
             mockSet.As<IQueryable<T>>().Setup(x => x.Expression).Returns(testData.Expression);
@@ -244,7 +244,9 @@ namespace TrueVote.Api.Tests
 
         public ValueTask DisposeAsync()
         {
-            throw new NotImplementedException();
+            _inner.Dispose();
+
+            return new ValueTask();
         }
     }
 }
