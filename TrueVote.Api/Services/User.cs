@@ -62,7 +62,7 @@ namespace TrueVote.Api.Services
 
             var user = new UserModel { FirstName = baseUser.FirstName, Email = baseUser.Email };
 
-            await _trueVoteDbContext.Database.EnsureCreatedAsync();
+            await _trueVoteDbContext.EnsureCreatedAsync();
 
             await _trueVoteDbContext.Users.AddAsync(user);
             await _trueVoteDbContext.SaveChangesAsync();

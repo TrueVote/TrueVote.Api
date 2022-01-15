@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Moq;
 using System.IO.Abstractions;
+using System.Threading.Tasks;
 using TrueVote.Api.Helpers;
 using TrueVote.Api.Services;
 using Xunit.Abstractions;
@@ -30,6 +31,7 @@ namespace TrueVote.Api.Tests.Helpers
             var mockSet = DbMoqHelper.GetDbSet(MoqData.MockUserData);
             var mockUserContext = new Mock<TrueVoteDbContext>();
             mockUserContext.Setup(m => m.Users).Returns(mockSet.Object);
+            mockUserContext.Setup(m => m.EnsureCreatedAsync()).Returns(Task.FromResult(true));
 
             _userApi = new User(_log.Object, mockUserContext.Object);
         }
