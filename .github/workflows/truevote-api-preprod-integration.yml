@@ -25,3 +25,4 @@ jobs:
         min-score: 60
         upload-to-code-scanning: true
         share-everyone: READ_ONLY
+        log-level: DEBUG
