@@ -19,7 +19,7 @@ jobs:
         args: -o swagger.json https://truevote-api-preprod.azurewebsites.net/api/swagger.json
 
     - name: Audit OpenAPI
-      uses: 42Crunch/api-security-audit-action@v2
+      uses: 42Crunch/api-security-audit-action@v3
       with:
         api-token: ${{ secrets.FORTYTWOCRUNCH_TOKEN }}
         min-score: 60
