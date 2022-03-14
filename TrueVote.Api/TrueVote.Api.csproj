@@ -32,7 +32,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="System.Collections.Immutable" Version="6.0.0" />
-    <PackageReference Include="System.IO.Abstractions" Version="16.1.20" />
+    <PackageReference Include="System.IO.Abstractions" Version="16.1.23" />
   </ItemGroup>
   <ItemGroup>
     <None Update="local-certificate.pfx">
