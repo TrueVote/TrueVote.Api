@@ -4,99 +4,109 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.Serialization;
 
 namespace TrueVote.Api.Models
 {
-    [ExcludeFromCodeCoverage]
-    public class UserObj
+    // TODO Need to describe this for SwaggerUI
+    public enum RaceTypes
     {
-        public UserModel user;
+        [EnumMember(Value = "Choose One")]
+        ChooseOne = 0,
+        [EnumMember(Value = "Choose Many")]
+        ChooseMany = 1
     }
 
     [ExcludeFromCodeCoverage]
-    public class UserModelList
+    public class RaceObj
+    {
+        public RaceModel race;
+    }
+
+    [ExcludeFromCodeCoverage]
+    public class RaceModelList
     {
         [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
         [MaxLength(2048)]
-        [OpenApiProperty(Description = "List of Users")]
-        public List<UserModel> Users { get; set; }
+        [OpenApiProperty(Description = "List of Races")]
+        public List<RaceModel> Races { get; set; }
     }
 
     [ExcludeFromCodeCoverage]
-    public class FindUserModel
+    public class FindRaceModel
     {
         [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "First Name")]
+        [OpenApiProperty(Description = "Name")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
         [RegularExpression(Constants.GenericStringRegex)]
-        public string FirstName { get; set; } = string.Empty;
-
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "Email Address")]
-        [MaxLength(2048)]
-        [DataType(DataType.EmailAddress)]
-        [EmailAddress]
-        [RegularExpression(Constants.EMailRegex)]
-        public string Email { get; set; }
+        public string Name { get; set; } = string.Empty;
     }
 
     [ExcludeFromCodeCoverage]
-    public class BaseUserModel
+    public class BaseRaceModel
     {
         [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "First Name")]
+        [OpenApiProperty(Description = "Name")]
         [JsonProperty(Required = Required.Always)]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
         [RegularExpression(Constants.GenericStringRegex)]
-        public string FirstName { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
 
         [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "Email Address")]
+        [OpenApiProperty(Description = "Race Type")]
         [JsonProperty(Required = Required.Always)]
-        [MaxLength(2048)]
-        [Required(AllowEmptyStrings = false)]
-        [DataType(DataType.EmailAddress)]
-        [EmailAddress]
-        [RegularExpression(Constants.EMailRegex)]
-        public string Email { get; set; }
+        [EnumDataType(typeof(RaceTypes))]
+        public RaceTypes RaceType { get; set; }
     }
 
     [ExcludeFromCodeCoverage]
-    public class UserModel
+    public class RaceModel
     {
         [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "User Id")]
+        [OpenApiProperty(Description = "Race Id")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
         [RegularExpression(Constants.GenericStringRegex)]
         [Key]
-        public string UserId { get; set; } = Guid.NewGuid().ToString();
+        public string RaceId { get; set; } = Guid.NewGuid().ToString();
 
         [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "First Name")]
+        [OpenApiProperty(Description = "Name")]
         [JsonProperty(Required = Required.Always)]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
         [RegularExpression(Constants.GenericStringRegex)]
-        public string FirstName { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
 
         [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "Email Address")]
+        [OpenApiProperty(Description = "Race Type")]
         [JsonProperty(Required = Required.Always)]
+        [EnumDataType(typeof(RaceTypes))]
+        public RaceTypes RaceType { get; set; }
+
+        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
+        [OpenApiProperty(Description = "Race Type Name")]
         [MaxLength(2048)]
-        [Required(AllowEmptyStrings = false)]
-        [DataType(DataType.EmailAddress)]
-        [EmailAddress]
-        [RegularExpression(Constants.EMailRegex)]
-        public string Email { get; set; }
+        [DataType(DataType.Text)]
+        [NotMapped]
+        public string RaceTypeName { get; set; }
 
         [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
         [OpenApiProperty(Description = "DateCreated")]
         [MaxLength(2048)]
         [DataType(DataType.Date)]
         public DateTime DateCreated { get; set; } = DateTime.UtcNow;
+
+        public List<CandidateModel> Candidates { get; set; }
+
+        [OnSerializing]
+        private void OnSerializing(StreamingContext context)
+        {
+            RaceTypeName = RaceType.ToString();
+        }
     }
 }

@@ -20,6 +20,9 @@ namespace TrueVote.Api
 {
     // Modeled from here: https://github.com/Azure/azure-functions-openapi-extension/blob/main/docs/openapi-core.md#openapi-metadata-configuration
     // Overrides default OpenApi description and more
+    // TODO - One this PR gets merged: https://github.com/Azure/azure-functions-openapi-extension/pull/344
+    // Add custom filter for enums exactly like this: https://github.com/domaindrivendev/Swashbuckle.AspNetCore/issues/1387#issuecomment-582316007
+    // Jira: https://truevote.atlassian.net/browse/AD-32
     [ExcludeFromCodeCoverage]
     public class OpenApiConfigurationOptions : IOpenApiConfigurationOptions
     {
@@ -74,6 +77,9 @@ namespace TrueVote.Api
     public class TrueVoteDbContext : DbContext
     {
         public virtual DbSet<UserModel> Users { get; set; }
+        public virtual DbSet<ElectionModel> Elections { get; set; }
+        public virtual DbSet<RaceModel> Races { get; set; }
+        public virtual DbSet<CandidateModel> Candidates { get; set; }
 
         public virtual async Task<bool> EnsureCreatedAsync()
         {
@@ -92,6 +98,18 @@ namespace TrueVote.Api
             modelBuilder.HasDefaultContainer("Users");
             modelBuilder.Entity<UserModel>().ToContainer("Users");
             modelBuilder.Entity<UserModel>().HasNoDiscriminator();
+
+            modelBuilder.HasDefaultContainer("Elections");
+            modelBuilder.Entity<ElectionModel>().ToContainer("Elections");
+            modelBuilder.Entity<ElectionModel>().HasNoDiscriminator();
+
+            modelBuilder.HasDefaultContainer("Races");
+            modelBuilder.Entity<RaceModel>().ToContainer("Races");
+            modelBuilder.Entity<RaceModel>().HasNoDiscriminator();
+
+            modelBuilder.HasDefaultContainer("Candidates");
+            modelBuilder.Entity<CandidateModel>().ToContainer("Candidates");
+            modelBuilder.Entity<CandidateModel>().HasNoDiscriminator();
         }
     }
 

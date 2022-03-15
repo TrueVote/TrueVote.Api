@@ -109,8 +109,8 @@ namespace TrueVote.Api.Services
             // through all the properties in FindUserModel and build the .Where clause dynamically.
             var items = await _trueVoteDbContext.Users
                 .Where(u =>
-                    (findUser.FirstName == null || u.FirstName.Contains(findUser.FirstName)) &&
-                    (findUser.Email == null || u.Email.Contains(findUser.Email)))
+                    (findUser.FirstName == null || (u.FirstName ?? string.Empty).ToLower().Contains(findUser.FirstName.ToLower())) &&
+                    (findUser.Email == null || (u.Email ?? string.Empty).ToLower().Contains(findUser.Email.ToLower())))
                 .OrderByDescending(u => u.DateCreated).ToListAsync();
 
             _log.LogDebug("HTTP trigger - UserFind:End");
