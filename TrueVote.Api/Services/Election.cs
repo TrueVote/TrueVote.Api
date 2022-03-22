@@ -107,9 +107,9 @@ namespace TrueVote.Api.Services
 
             // TODO Add all the Races to the query
             var items = await _trueVoteDbContext.Elections
-                .Where(u =>
-                    findElection.Name == null || (u.Name ?? string.Empty).ToLower().Contains(findElection.Name.ToLower()))
-                .OrderByDescending(u => u.DateCreated).ToListAsync();
+                .Where(e =>
+                    findElection.Name == null || (e.Name ?? string.Empty).ToLower().Contains(findElection.Name.ToLower()))
+                .OrderByDescending(e => e.DateCreated).ToListAsync();
 
             _log.LogDebug("HTTP trigger - ElectionFind:End");
 

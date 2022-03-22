@@ -108,9 +108,9 @@ namespace TrueVote.Api.Services
             // TODO Add all the Candidates to the query
             // TODO Fix RaceTypeName not resolving properly
             var items = await _trueVoteDbContext.Races
-                .Where(u =>
-                    findRace.Name == null || (u.Name ?? string.Empty).ToLower().Contains(findRace.Name.ToLower()))
-                .OrderByDescending(u => u.DateCreated).ToListAsync();
+                .Where(r =>
+                    findRace.Name == null || (r.Name ?? string.Empty).ToLower().Contains(findRace.Name.ToLower()))
+                .OrderByDescending(r => r.DateCreated).ToListAsync();
 
             _log.LogDebug("HTTP trigger - RaceFind:End");
 

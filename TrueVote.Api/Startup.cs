@@ -20,7 +20,7 @@ namespace TrueVote.Api
 {
     // Modeled from here: https://github.com/Azure/azure-functions-openapi-extension/blob/main/docs/openapi-core.md#openapi-metadata-configuration
     // Overrides default OpenApi description and more
-    // TODO - One this PR gets merged: https://github.com/Azure/azure-functions-openapi-extension/pull/344
+    // TODO Once this PR gets merged and released: https://github.com/Azure/azure-functions-openapi-extension/pull/344
     // Add custom filter for enums exactly like this: https://github.com/domaindrivendev/Swashbuckle.AspNetCore/issues/1387#issuecomment-582316007
     // Jira: https://truevote.atlassian.net/browse/AD-32
     [ExcludeFromCodeCoverage]
