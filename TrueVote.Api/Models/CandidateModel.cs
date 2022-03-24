@@ -4,6 +4,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 
 namespace TrueVote.Api.Models
@@ -71,6 +72,14 @@ namespace TrueVote.Api.Models
         [RegularExpression(Constants.GenericStringRegex)]
         [Key]
         public string CandidateId { get; set; } = Guid.NewGuid().ToString();
+
+        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
+        [OpenApiProperty(Description = "Race Id (FK)")]
+        [MaxLength(2048)]
+        [DataType(DataType.Text)]
+        [RegularExpression(Constants.GenericStringRegex)]
+        [ForeignKey("RaceId")]
+        public virtual string RaceId { get; set; }
 
         [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
         [OpenApiProperty(Description = "Name")]
