@@ -155,7 +155,7 @@ namespace TrueVote.Api.Services
             // Get all the races that match the search
             var items = await _trueVoteDbContext.Races
                 .Where(r =>
-                    findRace.Name == null || (r.Name ?? string.Empty).Contains(findRace.Name, StringComparison.InvariantCultureIgnoreCase))
+                    findRace.Name == null || (r.Name ?? string.Empty).ToLower().Contains(findRace.Name.ToLower()))
                 .OrderByDescending(r => r.DateCreated).ToListAsync();
 
             // For each race, bind the candidates participating in that race
