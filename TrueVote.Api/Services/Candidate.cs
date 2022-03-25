@@ -107,8 +107,8 @@ namespace TrueVote.Api.Services
 
             var items = await _trueVoteDbContext.Candidates
                 .Where(c =>
-                    (findCandidate.Name == null || (c.Name ?? string.Empty).ToLower().Contains(findCandidate.Name.ToLower())) &&
-                    (findCandidate.PartyAffiliation == null || (c.PartyAffiliation ?? string.Empty).ToLower().Contains(findCandidate.PartyAffiliation.ToLower())))
+                    (findCandidate.Name == null || (c.Name ?? string.Empty).Contains(findCandidate.Name, StringComparison.InvariantCultureIgnoreCase)) &&
+                    (findCandidate.PartyAffiliation == null || (c.PartyAffiliation ?? string.Empty).Contains(findCandidate.PartyAffiliation, StringComparison.InvariantCultureIgnoreCase)))
                 .OrderByDescending(c => c.DateCreated).ToListAsync();
 
             _log.LogDebug("HTTP trigger - CandidateFind:End");

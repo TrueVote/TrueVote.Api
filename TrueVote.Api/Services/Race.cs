@@ -151,15 +151,19 @@ namespace TrueVote.Api.Services
 
             _log.LogInformation($"Request Data: {findRace}");
 
-            // TODO Add all the Candidates to the query
             // TODO Fix RaceTypeName not resolving properly
+            // Get all the races that match the search
             var items = await _trueVoteDbContext.Races
-                .Include(c => _trueVoteDbContext.Candidates)
-                .Select(c => new RaceModel
-                {
-                    Candidates = c.Candidates
-                })
-                .ToListAsync();
+                .Where(r =>
+                    findRace.Name == null || (r.Name ?? string.Empty).Contains(findRace.Name, StringComparison.InvariantCultureIgnoreCase))
+                .OrderByDescending(r => r.DateCreated).ToListAsync();
+
+            // For each race, bind the candidates participating in that race
+            foreach (var i in items)
+            {
+                i.Candidates = await _trueVoteDbContext.Candidates.Where(c => c.RaceId != i.RaceId) // TODO not != need to be ==
+                    .OrderBy(r => r.DateCreated).ToListAsync();
+            }
 
             _log.LogDebug("HTTP trigger - RaceFind:End");
 

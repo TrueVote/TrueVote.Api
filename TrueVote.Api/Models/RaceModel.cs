@@ -101,7 +101,7 @@ namespace TrueVote.Api.Models
         [DataType(DataType.Date)]
         public DateTime DateCreated { get; set; } = DateTime.UtcNow;
 
-        public List<CandidateModel> Candidates { get; set; }
+        public virtual ICollection<CandidateModel> Candidates { get; set; }
 
         [OnSerializing]
         private void OnSerializing(StreamingContext context)
