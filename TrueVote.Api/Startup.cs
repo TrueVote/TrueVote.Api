@@ -3,6 +3,7 @@ using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Abstractions;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Configurations;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Enums;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
@@ -11,7 +12,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO.Abstractions;
+using System.Linq;
 using System.Reflection;
+using System.Text.Json;
 using System.Threading.Tasks;
 using TrueVote.Api.Models;
 
@@ -106,6 +109,14 @@ namespace TrueVote.Api
             modelBuilder.HasDefaultContainer("Races");
             modelBuilder.Entity<RaceModel>().ToContainer("Races");
             modelBuilder.Entity<RaceModel>().HasNoDiscriminator();
+            modelBuilder.Entity<RaceModel>().Property(p => p.Candidates)
+                .HasConversion(
+                    v => JsonSerializer.Serialize(v, (JsonSerializerOptions) null),
+                    v => JsonSerializer.Deserialize<List<CandidateModel>>(v, (JsonSerializerOptions) null),
+                    new ValueComparer<ICollection<CandidateModel>>(
+                        (c1, c2) => c1.SequenceEqual(c2),
+                        c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
+                        c => c.ToList()));
 
             modelBuilder.HasDefaultContainer("Candidates");
             modelBuilder.Entity<CandidateModel>().ToContainer("Candidates");

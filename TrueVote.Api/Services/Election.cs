@@ -32,7 +32,7 @@ namespace TrueVote.Api.Services
         [OpenApiOperation(operationId: "CreateElection", tags: new[] { "Election" })]
         [OpenApiSecurity("oidc_auth", SecuritySchemeType.OpenIdConnect, OpenIdConnectUrl = "https://login.microsoftonline.com/{tenant_id}/v2.0/.well-known/openid-configuration", OpenIdConnectScopes = "openid,profile")]
         [OpenApiRequestBody(contentType: "application/json", bodyType: typeof(BaseElectionModel), Description = "Partially filled Election Model", Example = typeof(BaseElectionModel))]
-        [OpenApiResponseWithBody(statusCode: HttpStatusCode.Created, contentType: "application/json", bodyType: typeof(ElectionModel), Description = "Returns the added election")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.Created, contentType: "application/json", bodyType: typeof(ElectionModel), Description = "Returns the added Election")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.Forbidden, contentType: "application/json", bodyType: typeof(SecureString), Description = "Forbidden")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.Unauthorized, contentType: "application/json", bodyType: typeof(SecureString), Description = "Unauthorized")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.NotFound, contentType: "application/json", bodyType: typeof(SecureString), Description = "Not Found")]
@@ -60,7 +60,7 @@ namespace TrueVote.Api.Services
 
             _log.LogInformation($"Request Data: {baseElection}");
 
-            var election = new ElectionModel { Name = baseElection.Name };
+            var election = new ElectionModel { Name = baseElection.Name, StartDate = baseElection.StartDate, EndDate = baseElection.EndDate };
 
             await _trueVoteDbContext.EnsureCreatedAsync();
 
@@ -78,7 +78,7 @@ namespace TrueVote.Api.Services
         [OpenApiOperation(operationId: "ElectionFind", tags: new[] { "Election" })]
         [OpenApiSecurity("oidc_auth", SecuritySchemeType.OpenIdConnect, OpenIdConnectUrl = "https://login.microsoftonline.com/{tenant_id}/v2.0/.well-known/openid-configuration", OpenIdConnectScopes = "openid,profile")]
         [OpenApiRequestBody(contentType: "application/json", bodyType: typeof(FindElectionModel), Description = "Fields to search for Elections", Example = typeof(FindElectionModel))]
-        [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(ElectionModelList), Description = "Returns collection of elections")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(ElectionModelList), Description = "Returns collection of Elections")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.Forbidden, contentType: "application/json", bodyType: typeof(SecureString), Description = "Forbidden")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.Unauthorized, contentType: "application/json", bodyType: typeof(SecureString), Description = "Unauthorized")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.NotFound, contentType: "application/json", bodyType: typeof(SecureString), Description = "Not Found")]
@@ -111,6 +111,8 @@ namespace TrueVote.Api.Services
                     findElection.Name == null || (e.Name ?? string.Empty).ToLower().Contains(findElection.Name.ToLower()))
                 .OrderByDescending(e => e.DateCreated).ToListAsync();
 
+            // TODO Need to respond if not found
+            
             _log.LogDebug("HTTP trigger - ElectionFind:End");
 
             return new OkObjectResult(items);

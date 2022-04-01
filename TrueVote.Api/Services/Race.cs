@@ -32,7 +32,7 @@ namespace TrueVote.Api.Services
         [OpenApiOperation(operationId: "CreateRace", tags: new[] { "Race" })]
         [OpenApiSecurity("oidc_auth", SecuritySchemeType.OpenIdConnect, OpenIdConnectUrl = "https://login.microsoftonline.com/{tenant_id}/v2.0/.well-known/openid-configuration", OpenIdConnectScopes = "openid,profile")]
         [OpenApiRequestBody(contentType: "application/json", bodyType: typeof(BaseRaceModel), Description = "Partially filled Race Model", Example = typeof(BaseRaceModel))]
-        [OpenApiResponseWithBody(statusCode: HttpStatusCode.Created, contentType: "application/json", bodyType: typeof(RaceModel), Description = "Returns the added race")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.Created, contentType: "application/json", bodyType: typeof(RaceModel), Description = "Returns the added Race")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.Forbidden, contentType: "application/json", bodyType: typeof(SecureString), Description = "Forbidden")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.Unauthorized, contentType: "application/json", bodyType: typeof(SecureString), Description = "Unauthorized")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.NotFound, contentType: "application/json", bodyType: typeof(SecureString), Description = "Not Found")]
@@ -77,8 +77,8 @@ namespace TrueVote.Api.Services
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [OpenApiOperation(operationId: "AddCandidates", tags: new[] { "Race" })]
         [OpenApiSecurity("oidc_auth", SecuritySchemeType.OpenIdConnect, OpenIdConnectUrl = "https://login.microsoftonline.com/{tenant_id}/v2.0/.well-known/openid-configuration", OpenIdConnectScopes = "openid,profile")]
-        [OpenApiRequestBody(contentType: "application/json", bodyType: typeof(BaseRaceModel), Description = "Partially filled Race Model", Example = typeof(BaseRaceModel))]
-        [OpenApiResponseWithBody(statusCode: HttpStatusCode.Created, contentType: "application/json", bodyType: typeof(RaceModel), Description = "Returns the added race")]
+        [OpenApiRequestBody(contentType: "application/json", bodyType: typeof(AddCandidatesModel), Description = "RaceId and collection of Candidate Ids", Example = typeof(AddCandidatesModel))]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.Created, contentType: "application/json", bodyType: typeof(RaceModel), Description = "Returns the Race")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.Forbidden, contentType: "application/json", bodyType: typeof(SecureString), Description = "Forbidden")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.Unauthorized, contentType: "application/json", bodyType: typeof(SecureString), Description = "Unauthorized")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.NotFound, contentType: "application/json", bodyType: typeof(SecureString), Description = "Not Found")]
@@ -90,23 +90,53 @@ namespace TrueVote.Api.Services
         {
             _log.LogDebug("HTTP trigger - AddCandidates:Begin");
 
-            BaseRaceModel baseRace;
+            AddCandidatesModel addCandidatesModel;
             try
             {
                 var requestBody = await new StreamReader(req.Body).ReadToEndAsync();
-                baseRace = JsonConvert.DeserializeObject<BaseRaceModel>(requestBody);
+                addCandidatesModel = JsonConvert.DeserializeObject<AddCandidatesModel>(requestBody);
             }
             catch (Exception e)
             {
-                _log.LogError("baseRace: invalid format");
+                _log.LogError("addCandidates: invalid format");
                 _log.LogDebug("HTTP trigger - AddCandidates:End");
 
                 return new BadRequestObjectResult(e.Message);
             }
 
-            _log.LogInformation($"Request Data: {baseRace}");
+            _log.LogInformation($"Request Data: {addCandidatesModel}");
 
-            var race = new RaceModel { Name = baseRace.Name, RaceType = baseRace.RaceType };
+            // Check if the race exists, if so, return it detatched from EF
+            var race = await _trueVoteDbContext.Races.Where(r => r.RaceId == addCandidatesModel.RaceId).AsNoTracking().OrderByDescending(r => r.DateCreated).FirstOrDefaultAsync();
+            if (race == null)
+            {
+                return new NotFoundObjectResult($"Race: '{addCandidatesModel.RaceId}' not found");
+            }
+
+            // Check if each candidate exists or is already part of the race. If any problems, exit with error
+            foreach (var cid in addCandidatesModel.CandidateIds)
+            {
+                // Ensure Candidate exists in Candidate store
+                var candidate = await _trueVoteDbContext.Candidates.Where(c => c.CandidateId == cid).OrderByDescending(c => c.DateCreated).FirstOrDefaultAsync();
+                if (candidate == null)
+                {
+                    return new NotFoundObjectResult($"Candidate: '{cid}' not found");
+                }
+
+                // Check if it's already part of the Race
+                var candidateExists = race.Candidates?.Where(c => c.CandidateId == cid).FirstOrDefault();
+                if (candidateExists != null)
+                {
+                    return new ConflictObjectResult($"Candidate: '{cid}' already exists in Race");
+                }
+
+                // Made it this far, add the candidate to the Race. Ok to add here because if another one in the list, it won't get persisted
+                race.Candidates.Add(candidate);
+            }
+
+            // If made through the loop of checks above, ok to persist. This will write a new Race
+            race.DateCreated = DateTime.UtcNow;
+            race.RaceId = Guid.NewGuid().ToString();
 
             await _trueVoteDbContext.EnsureCreatedAsync();
 
@@ -124,7 +154,7 @@ namespace TrueVote.Api.Services
         [OpenApiOperation(operationId: "RaceFind", tags: new[] { "Race" })]
         [OpenApiSecurity("oidc_auth", SecuritySchemeType.OpenIdConnect, OpenIdConnectUrl = "https://login.microsoftonline.com/{tenant_id}/v2.0/.well-known/openid-configuration", OpenIdConnectScopes = "openid,profile")]
         [OpenApiRequestBody(contentType: "application/json", bodyType: typeof(FindRaceModel), Description = "Fields to search for Races", Example = typeof(FindRaceModel))]
-        [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(RaceModelList), Description = "Returns collection of races")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(RaceModelList), Description = "Returns collection of Races")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.Forbidden, contentType: "application/json", bodyType: typeof(SecureString), Description = "Forbidden")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.Unauthorized, contentType: "application/json", bodyType: typeof(SecureString), Description = "Unauthorized")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.NotFound, contentType: "application/json", bodyType: typeof(SecureString), Description = "Not Found")]
@@ -157,13 +187,6 @@ namespace TrueVote.Api.Services
                 .Where(r =>
                     findRace.Name == null || (r.Name ?? string.Empty).ToLower().Contains(findRace.Name.ToLower()))
                 .OrderByDescending(r => r.DateCreated).ToListAsync();
-
-            // For each race, bind the candidates participating in that race
-            foreach (var i in items)
-            {
-                i.Candidates = await _trueVoteDbContext.Candidates.Where(c => c.RaceId != i.RaceId) // TODO not != need to be ==
-                    .OrderBy(r => r.DateCreated).ToListAsync();
-            }
 
             _log.LogDebug("HTTP trigger - RaceFind:End");
 

@@ -101,12 +101,35 @@ namespace TrueVote.Api.Models
         [DataType(DataType.Date)]
         public DateTime DateCreated { get; set; } = DateTime.UtcNow;
 
-        public virtual ICollection<CandidateModel> Candidates { get; set; }
+        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
+        [OpenApiProperty(Description = "List of Candidates")]
+        [JsonProperty(Required = Required.AllowNull)]
+        [DataType("ICollection<CandidateModel>")]
+        public ICollection<CandidateModel> Candidates { get; set; } = new List<CandidateModel>();
 
         [OnSerializing]
         private void OnSerializing(StreamingContext context)
         {
             RaceTypeName = RaceType.ToString();
         }
+    }
+
+    [ExcludeFromCodeCoverage]
+    public class AddCandidatesModel
+    {
+        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
+        [OpenApiProperty(Description = "Race Id")]
+        [JsonProperty(Required = Required.Always)]
+        [MaxLength(2048)]
+        [DataType(DataType.Text)]
+        [RegularExpression(Constants.GenericStringRegex)]
+        public string RaceId { get; set; }
+
+        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
+        [OpenApiProperty(Description = "Candidate Ids")]
+        [JsonProperty(Required = Required.Always)]
+        [DataType(DataType.Text)]
+        [RegularExpression(Constants.GenericStringRegex)]
+        public List<string> CandidateIds { get; set; }
     }
 }

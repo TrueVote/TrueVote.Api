@@ -44,6 +44,20 @@ namespace TrueVote.Api.Models
         [DataType(DataType.Text)]
         [RegularExpression(Constants.GenericStringRegex)]
         public string Name { get; set; } = string.Empty;
+
+        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
+        [OpenApiProperty(Description = "StartDate")]
+        [JsonProperty(Required = Required.Always)]
+        [MaxLength(2048)]
+        [DataType(DataType.Date)]
+        public DateTime? StartDate { get; set; }
+
+        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
+        [OpenApiProperty(Description = "EndDate")]
+        [JsonProperty(Required = Required.Always)]
+        [MaxLength(2048)]
+        [DataType(DataType.Date)]
+        public DateTime? EndDate { get; set; }
     }
 
     [ExcludeFromCodeCoverage]
@@ -71,6 +85,20 @@ namespace TrueVote.Api.Models
         [DataType(DataType.Text)]
         [RegularExpression(Constants.GenericStringRegex)]
         public string Name { get; set; } = string.Empty;
+
+        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
+        [OpenApiProperty(Description = "StartDate")]
+        [JsonProperty(Required = Required.Always)]
+        [MaxLength(2048)]
+        [DataType(DataType.Date)]
+        public DateTime? StartDate { get; set; }
+
+        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
+        [OpenApiProperty(Description = "EndDate")]
+        [JsonProperty(Required = Required.Always)]
+        [MaxLength(2048)]
+        [DataType(DataType.Date)]
+        public DateTime? EndDate { get; set; }
 
         [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
         [OpenApiProperty(Description = "DateCreated")]

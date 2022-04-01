@@ -74,14 +74,6 @@ namespace TrueVote.Api.Models
         public string CandidateId { get; set; } = Guid.NewGuid().ToString();
 
         [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "Race Id (FK)")]
-        [MaxLength(2048)]
-        [DataType(DataType.Text)]
-        [RegularExpression(Constants.GenericStringRegex)]
-        [ForeignKey("RaceId")]
-        public virtual string RaceId { get; set; }
-
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
         [OpenApiProperty(Description = "Name")]
         [JsonProperty(Required = Required.Always)]
         [MaxLength(2048)]

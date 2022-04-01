@@ -32,7 +32,7 @@ namespace TrueVote.Api.Services
         [OpenApiOperation(operationId: "CreateCandidate", tags: new[] { "Candidate" })]
         [OpenApiSecurity("oidc_auth", SecuritySchemeType.OpenIdConnect, OpenIdConnectUrl = "https://login.microsoftonline.com/{tenant_id}/v2.0/.well-known/openid-configuration", OpenIdConnectScopes = "openid,profile")]
         [OpenApiRequestBody(contentType: "application/json", bodyType: typeof(BaseCandidateModel), Description = "Partially filled Candidate Model", Example = typeof(BaseCandidateModel))]
-        [OpenApiResponseWithBody(statusCode: HttpStatusCode.Created, contentType: "application/json", bodyType: typeof(CandidateModel), Description = "Returns the added candidate")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.Created, contentType: "application/json", bodyType: typeof(CandidateModel), Description = "Returns the added Candidate")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.Forbidden, contentType: "application/json", bodyType: typeof(SecureString), Description = "Forbidden")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.Unauthorized, contentType: "application/json", bodyType: typeof(SecureString), Description = "Unauthorized")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.NotFound, contentType: "application/json", bodyType: typeof(SecureString), Description = "Not Found")]
@@ -78,7 +78,7 @@ namespace TrueVote.Api.Services
         [OpenApiOperation(operationId: "CandidateFind", tags: new[] { "Candidate" })]
         [OpenApiSecurity("oidc_auth", SecuritySchemeType.OpenIdConnect, OpenIdConnectUrl = "https://login.microsoftonline.com/{tenant_id}/v2.0/.well-known/openid-configuration", OpenIdConnectScopes = "openid,profile")]
         [OpenApiRequestBody(contentType: "application/json", bodyType: typeof(FindCandidateModel), Description = "Fields to search for Candidates", Example = typeof(FindCandidateModel))]
-        [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(CandidateModelList), Description = "Returns collection of candidates")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(CandidateModelList), Description = "Returns collection of Candidates")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.Forbidden, contentType: "application/json", bodyType: typeof(SecureString), Description = "Forbidden")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.Unauthorized, contentType: "application/json", bodyType: typeof(SecureString), Description = "Unauthorized")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.NotFound, contentType: "application/json", bodyType: typeof(SecureString), Description = "Not Found")]
@@ -110,6 +110,8 @@ namespace TrueVote.Api.Services
                     (findCandidate.Name == null || (c.Name ?? string.Empty).ToLower().Contains(findCandidate.Name.ToLower())) &&
                     (findCandidate.PartyAffiliation == null || (c.PartyAffiliation ?? string.Empty).ToLower().Contains(findCandidate.PartyAffiliation.ToLower())))
                 .OrderByDescending(c => c.DateCreated).ToListAsync();
+
+            // TODO Need to respond if not found
 
             _log.LogDebug("HTTP trigger - CandidateFind:End");
 
