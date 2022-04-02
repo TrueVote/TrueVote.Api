@@ -24,7 +24,14 @@ namespace TrueVote.Api.Tests
 
         internal static IQueryable<CandidateModel> MockCandidateData => new List<CandidateModel>
         {
-            new CandidateModel { Name = "John Smith", DateCreated = DateTime.Now, PartyAffiliation = "Republican" }
+            new CandidateModel { Name = "John Smith", DateCreated = DateTime.Now, PartyAffiliation = "Republican", CandidateId =  "1" },
+            new CandidateModel { Name = "Jane Doe", DateCreated = DateTime.Now, PartyAffiliation = "Demoocrat", CandidateId = "2" }
         }.AsQueryable();
+
+        internal static ICollection<CandidateModel> MockCandidateDataCollection => new List<CandidateModel>
+        {
+            new CandidateModel { Name = "John Smith", DateCreated = DateTime.Now, PartyAffiliation = "Republican", CandidateId = "1" },
+            new CandidateModel { Name = "Jane Doe", DateCreated = DateTime.Now, PartyAffiliation = "Demoocrat", CandidateId = "2" }
+        };
     }
 }

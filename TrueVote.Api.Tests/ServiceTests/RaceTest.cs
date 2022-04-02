@@ -22,6 +22,14 @@ namespace TrueVote.Api.Tests.ServiceTests
         public string Name { get; set; } = string.Empty;
     }
 
+    public class FakeRaceModel
+    {
+        public string RaceId { get; set; } = Guid.NewGuid().ToString();
+        public string Name { get; set; } = string.Empty;
+        public RaceTypes RaceType { get; set; }
+        public ICollection<CandidateModel> Candidates { get; set; } = new List<CandidateModel>();
+    }
+
     public class RaceTest : TestHelper
     {
         public RaceTest(ITestOutputHelper output) : base(output)
@@ -96,22 +104,15 @@ namespace TrueVote.Api.Tests.ServiceTests
         {
             var findRaceData = new List<RaceModel>
             {
-                new RaceModel { Name = "President", DateCreated = DateTime.Now, RaceType = RaceTypes.ChooseOne },
+                new RaceModel { Name = "President", DateCreated = DateTime.Now, RaceType = RaceTypes.ChooseOne, Candidates = MoqData.MockCandidateDataCollection },
                 new RaceModel { Name = "Judge", DateCreated = DateTime.Now.AddSeconds(1), RaceType = RaceTypes.ChooseMany },
                 new RaceModel { Name = "Governor", DateCreated = DateTime.Now.AddSeconds(2), RaceType = RaceTypes.ChooseOne }
             }.AsQueryable();
-            var mockRaceSet = DbMoqHelper.GetDbSet(findRaceData);
 
-            //var findCandidateData = new List<CandidateModel>
-            //{
-            //    new CandidateModel { Name = "John Smith", DateCreated = DateTime.Now, PartyAffiliation = "Republican" },
-            //    new CandidateModel { Name = "Jane Doe", DateCreated = DateTime.Now.AddSeconds(1), PartyAffiliation = "Democrat" }
-            //}.AsQueryable();
-            //var mockCandidateSet = DbMoqHelper.GetDbSet(findCandidateData);
+            var mockRaceSet = DbMoqHelper.GetDbSet(findRaceData);
 
             var mockRaceContext = new Mock<TrueVoteDbContext>();
             mockRaceContext.Setup(m => m.Races).Returns(mockRaceSet.Object);
-            //mockRaceContext.Setup(m => m.Candidates).Returns(mockCandidateSet.Object);
 
             var findRaceObj = new FindRaceModel { Name = "President" };
             var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(findRaceObj));
@@ -128,8 +129,8 @@ namespace TrueVote.Api.Tests.ServiceTests
             Assert.NotEmpty(val);
             Assert.Single(val);
             Assert.Equal("President", val[0].Name);
-            Assert.Equal("John Smith", val[0].Candidates.ToList()[1].Name);
-            Assert.Equal("Jane Doe", val[0].Candidates.ToList()[0].Name);
+            Assert.Equal("John Smith", val[0].Candidates.ToList()[0].Name);
+            Assert.Equal("Jane Doe", val[0].Candidates.ToList()[1].Name);
 
             _log.Verify(LogLevel.Information, Times.Exactly(1));
             _log.Verify(LogLevel.Debug, Times.Exactly(2));
@@ -148,6 +149,38 @@ namespace TrueVote.Api.Tests.ServiceTests
             Assert.Equal((int) HttpStatusCode.BadRequest, objectResult.StatusCode);
 
             _log.Verify(LogLevel.Error, Times.Exactly(1));
+            _log.Verify(LogLevel.Debug, Times.Exactly(2));
+        }
+
+        [Fact]
+        public async Task AddsCandidatesToRace()
+        {
+            var addsCandidatesRaceData = new List<RaceModel>
+            {
+                new RaceModel { Name = "President", DateCreated = DateTime.Now, RaceType = RaceTypes.ChooseOne, RaceId = "1" },
+                new RaceModel { Name = "Judge", DateCreated = DateTime.Now.AddSeconds(1), RaceType = RaceTypes.ChooseMany, RaceId = "2" },
+                new RaceModel { Name = "Governor", DateCreated = DateTime.Now.AddSeconds(2), RaceType = RaceTypes.ChooseOne, RaceId = "3" }
+            }.AsQueryable();
+
+            var mockRaceSet = DbMoqHelper.GetDbSet(addsCandidatesRaceData);
+
+            var mockRaceContext = new Mock<TrueVoteDbContext>();
+            mockRaceContext.Setup(m => m.Races).Returns(mockRaceSet.Object);
+
+            var candidates = new List<CandidateModel> {
+                new CandidateModel { Name = "John Smith", DateCreated = DateTime.Now, PartyAffiliation = "Republican", CandidateId = "1" },
+                new CandidateModel { Name = "Jane Doe", DateCreated = DateTime.Now, PartyAffiliation = "Democrat", CandidateId = "2" }
+            };
+
+            var addCandidatesObj = new AddCandidatesModel { RaceId = "1", CandidateIds = new List<string> { candidates[0].CandidateId, candidates[1].CandidateId } };
+            var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(addCandidatesObj));
+            _httpContext.Request.Body = new MemoryStream(byteArray);
+
+            var raceApi = new Race(_log.Object, mockRaceContext.Object);
+
+            var ret = await raceApi.AddCandidates(_httpContext.Request);
+
+            _log.Verify(LogLevel.Information, Times.Exactly(1));
             _log.Verify(LogLevel.Debug, Times.Exactly(2));
         }
     }
