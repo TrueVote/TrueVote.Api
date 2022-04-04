@@ -106,9 +106,8 @@ namespace TrueVote.Api.Services
 
             _log.LogInformation($"Request Data: {addCandidatesModel}");
 
-            // Check if the race exists, if so, return it detatched from EF
-            // var race = await _trueVoteDbContext.Races.Where(r => r.RaceId == addCandidatesModel.RaceId).AsNoTracking().OrderByDescending(r => r.DateCreated).FirstOrDefaultAsync();
-            var race = await _trueVoteDbContext.Races.Where(r => r.RaceId == addCandidatesModel.RaceId).FirstOrDefaultAsync();
+            // Check if the race exists. If so, return it detatched from EF
+            var race = await _trueVoteDbContext.Races.Where(r => r.RaceId == addCandidatesModel.RaceId).AsNoTracking().OrderByDescending(r => r.DateCreated).FirstOrDefaultAsync();
             if (race == null)
             {
                 return new NotFoundObjectResult($"Race: '{addCandidatesModel.RaceId}' not found");

@@ -14,6 +14,7 @@ using TrueVote.Api.Services;
 using TrueVote.Api.Tests.Helpers;
 using Xunit;
 using Xunit.Abstractions;
+using MockQueryable.Moq;
 
 namespace TrueVote.Api.Tests.ServiceTests
 {
@@ -157,12 +158,18 @@ namespace TrueVote.Api.Tests.ServiceTests
         {
             var addsCandidatesRaceData = new List<RaceModel>
             {
-                new RaceModel { Name = "President", DateCreated = DateTime.Now, RaceType = RaceTypes.ChooseOne, RaceId = "1" },
-                new RaceModel { Name = "Judge", DateCreated = DateTime.Now.AddSeconds(1), RaceType = RaceTypes.ChooseMany, RaceId = "2" },
-                new RaceModel { Name = "Governor", DateCreated = DateTime.Now.AddSeconds(2), RaceType = RaceTypes.ChooseOne, RaceId = "3" }
-            }.AsQueryable();
+                new RaceModel { Name = "President", DateCreated = DateTime.Now, RaceType = RaceTypes.ChooseOne },
+                new RaceModel { Name = "Judge", DateCreated = DateTime.Now.AddSeconds(1), RaceType = RaceTypes.ChooseMany },
+                new RaceModel { Name = "Governor", DateCreated = DateTime.Now.AddSeconds(2), RaceType = RaceTypes.ChooseOne }
+            };
 
-            var mockRaceSet = DbMoqHelper.GetDbSet(addsCandidatesRaceData);
+            addsCandidatesRaceData[0].RaceId = "1";
+            addsCandidatesRaceData[1].RaceId = "2";
+            addsCandidatesRaceData[2].RaceId = "3";
+
+            // https://docs.microsoft.com/en-us/ef/ef6/fundamentals/testing/mocking?redirectedfrom=MSDN
+            // https://github.com/romantitov/MockQueryable
+            var mockRaceSet = addsCandidatesRaceData.AsQueryable().BuildMockDbSet();
 
             var mockRaceContext = new Mock<TrueVoteDbContext>();
             mockRaceContext.Setup(m => m.Races).Returns(mockRaceSet.Object);
@@ -179,6 +186,8 @@ namespace TrueVote.Api.Tests.ServiceTests
             var raceApi = new Race(_log.Object, mockRaceContext.Object);
 
             var ret = await raceApi.AddCandidates(_httpContext.Request);
+
+            // TODO Verify candidates are added
 
             _log.Verify(LogLevel.Information, Times.Exactly(1));
             _log.Verify(LogLevel.Debug, Times.Exactly(2));
