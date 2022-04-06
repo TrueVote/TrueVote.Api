@@ -96,18 +96,18 @@ namespace TrueVote.Api.Tests.ServiceTests
         {
             var findUserData = new List<UserModel>
             {
-                new UserModel { Email = "foo@foo.com", DateCreated = DateTime.Now, FirstName = "Foo", UserId = "1" },
-                new UserModel { Email = "foo2@foo.com", DateCreated = DateTime.Now.AddSeconds(1), FirstName = "Foo2", UserId = "2" },
-                new UserModel { Email = "boo@foo.com", DateCreated = DateTime.Now.AddSeconds(2), FirstName = "Boo", UserId = "3" }
+                new UserModel { Email = "foo@bar.com", DateCreated = DateTime.Now, FirstName = "Foo", UserId = "1" },
+                new UserModel { Email = "foo2@bar.com", DateCreated = DateTime.Now.AddSeconds(1), FirstName = "Foo2", UserId = "2" },
+                new UserModel { Email = "boo@bar.com", DateCreated = DateTime.Now.AddSeconds(2), FirstName = "Boo", UserId = "3" }
             }.AsQueryable();
+            var mockUserSet = DbMoqHelper.GetDbSet(findUserData);
+
+            var mockUserContext = new Mock<TrueVoteDbContext>();
+            mockUserContext.Setup(m => m.Users).Returns(mockUserSet.Object);
 
             var findUserObj = new FindUserModel { FirstName = "Foo" };
             var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(findUserObj));
             _httpContext.Request.Body = new MemoryStream(byteArray);
-
-            var mockSet = DbMoqHelper.GetDbSet(findUserData);
-            var mockUserContext = new Mock<TrueVoteDbContext>();
-            mockUserContext.Setup(m => m.Users).Returns(mockSet.Object);
 
             var userApi = new User(_log.Object, mockUserContext.Object);
 
@@ -120,7 +120,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             Assert.NotEmpty(val);
             Assert.Equal(2, val.Count);
             Assert.Equal("Foo2", val[0].FirstName);
-            Assert.Equal("foo2@foo.com", val[0].Email);
+            Assert.Equal("foo2@bar.com", val[0].Email);
 
             _log.Verify(LogLevel.Information, Times.Exactly(1));
             _log.Verify(LogLevel.Debug, Times.Exactly(2));

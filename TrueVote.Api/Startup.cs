@@ -3,6 +3,7 @@ using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Abstractions;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Configurations;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Enums;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
@@ -11,7 +12,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO.Abstractions;
+using System.Linq;
 using System.Reflection;
+using System.Text.Json;
 using System.Threading.Tasks;
 using TrueVote.Api.Models;
 
@@ -20,6 +23,9 @@ namespace TrueVote.Api
 {
     // Modeled from here: https://github.com/Azure/azure-functions-openapi-extension/blob/main/docs/openapi-core.md#openapi-metadata-configuration
     // Overrides default OpenApi description and more
+    // TODO Once this PR gets merged and released: https://github.com/Azure/azure-functions-openapi-extension/pull/344
+    // Add custom filter for enums exactly like this: https://github.com/domaindrivendev/Swashbuckle.AspNetCore/issues/1387#issuecomment-582316007
+    // Jira: https://truevote.atlassian.net/browse/AD-32
     [ExcludeFromCodeCoverage]
     public class OpenApiConfigurationOptions : IOpenApiConfigurationOptions
     {
@@ -74,6 +80,9 @@ namespace TrueVote.Api
     public class TrueVoteDbContext : DbContext
     {
         public virtual DbSet<UserModel> Users { get; set; }
+        public virtual DbSet<ElectionModel> Elections { get; set; }
+        public virtual DbSet<RaceModel> Races { get; set; }
+        public virtual DbSet<CandidateModel> Candidates { get; set; }
 
         public virtual async Task<bool> EnsureCreatedAsync()
         {
@@ -92,6 +101,26 @@ namespace TrueVote.Api
             modelBuilder.HasDefaultContainer("Users");
             modelBuilder.Entity<UserModel>().ToContainer("Users");
             modelBuilder.Entity<UserModel>().HasNoDiscriminator();
+
+            modelBuilder.HasDefaultContainer("Elections");
+            modelBuilder.Entity<ElectionModel>().ToContainer("Elections");
+            modelBuilder.Entity<ElectionModel>().HasNoDiscriminator();
+
+            modelBuilder.HasDefaultContainer("Races");
+            modelBuilder.Entity<RaceModel>().ToContainer("Races");
+            modelBuilder.Entity<RaceModel>().HasNoDiscriminator();
+            modelBuilder.Entity<RaceModel>().Property(p => p.Candidates)
+                .HasConversion(
+                    v => JsonSerializer.Serialize(v, (JsonSerializerOptions) null),
+                    v => JsonSerializer.Deserialize<List<CandidateModel>>(v, (JsonSerializerOptions) null),
+                    new ValueComparer<ICollection<CandidateModel>>(
+                        (c1, c2) => c1.SequenceEqual(c2),
+                        c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
+                        c => c.ToList()));
+
+            modelBuilder.HasDefaultContainer("Candidates");
+            modelBuilder.Entity<CandidateModel>().ToContainer("Candidates");
+            modelBuilder.Entity<CandidateModel>().HasNoDiscriminator();
         }
     }
 

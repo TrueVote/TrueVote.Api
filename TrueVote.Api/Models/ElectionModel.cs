@@ -9,94 +9,103 @@ using System.Diagnostics.CodeAnalysis;
 namespace TrueVote.Api.Models
 {
     [ExcludeFromCodeCoverage]
-    public class UserObj
+    public class ElectionObj
     {
-        public UserModel user;
+        public ElectionModel user;
     }
 
     [ExcludeFromCodeCoverage]
-    public class UserModelList
+    public class ElectionModelList
     {
         [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
         [MaxLength(2048)]
-        [OpenApiProperty(Description = "List of Users")]
-        public List<UserModel> Users { get; set; }
+        [OpenApiProperty(Description = "List of Elections")]
+        public List<ElectionModel> Elections { get; set; }
     }
 
     [ExcludeFromCodeCoverage]
-    public class FindUserModel
+    public class FindElectionModel
     {
         [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "First Name")]
+        [OpenApiProperty(Description = "Name")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
         [RegularExpression(Constants.GenericStringRegex)]
-        public string FirstName { get; set; } = string.Empty;
-
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "Email Address")]
-        [MaxLength(2048)]
-        [DataType(DataType.EmailAddress)]
-        [EmailAddress]
-        [RegularExpression(Constants.EMailRegex)]
-        public string Email { get; set; }
+        public string Name { get; set; } = string.Empty;
     }
 
     [ExcludeFromCodeCoverage]
-    public class BaseUserModel
+    public class BaseElectionModel
     {
         [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "First Name")]
+        [OpenApiProperty(Description = "Name")]
         [JsonProperty(Required = Required.Always)]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
         [RegularExpression(Constants.GenericStringRegex)]
-        public string FirstName { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
 
         [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "Email Address")]
+        [OpenApiProperty(Description = "StartDate")]
         [JsonProperty(Required = Required.Always)]
         [MaxLength(2048)]
-        [Required(AllowEmptyStrings = false)]
-        [DataType(DataType.EmailAddress)]
-        [EmailAddress]
-        [RegularExpression(Constants.EMailRegex)]
-        public string Email { get; set; }
+        [DataType(DataType.Date)]
+        public DateTime? StartDate { get; set; }
+
+        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
+        [OpenApiProperty(Description = "EndDate")]
+        [JsonProperty(Required = Required.Always)]
+        [MaxLength(2048)]
+        [DataType(DataType.Date)]
+        public DateTime? EndDate { get; set; }
     }
 
     [ExcludeFromCodeCoverage]
-    public class UserModel
+    public class ElectionModel
     {
         [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "User Id")]
+        [OpenApiProperty(Description = "Election Id")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
         [RegularExpression(Constants.GenericStringRegex)]
         [Key]
-        public string UserId { get; set; } = Guid.NewGuid().ToString();
+        public string ElectionId { get; set; } = Guid.NewGuid().ToString();
 
         [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "First Name")]
+        [OpenApiProperty(Description = "Parent Election Id")]
+        [MaxLength(2048)]
+        [DataType(DataType.Text)]
+        [RegularExpression(Constants.GenericStringRegex)]
+        public string ParentElectionId { get; set; }
+
+        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
+        [OpenApiProperty(Description = "Name")]
         [JsonProperty(Required = Required.Always)]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
         [RegularExpression(Constants.GenericStringRegex)]
-        public string FirstName { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
 
         [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "Email Address")]
+        [OpenApiProperty(Description = "StartDate")]
         [JsonProperty(Required = Required.Always)]
         [MaxLength(2048)]
-        [Required(AllowEmptyStrings = false)]
-        [DataType(DataType.EmailAddress)]
-        [EmailAddress]
-        [RegularExpression(Constants.EMailRegex)]
-        public string Email { get; set; }
+        [DataType(DataType.Date)]
+        public DateTime? StartDate { get; set; }
+
+        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
+        [OpenApiProperty(Description = "EndDate")]
+        [JsonProperty(Required = Required.Always)]
+        [MaxLength(2048)]
+        [DataType(DataType.Date)]
+        public DateTime? EndDate { get; set; }
 
         [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
         [OpenApiProperty(Description = "DateCreated")]
         [MaxLength(2048)]
         [DataType(DataType.Date)]
         public DateTime DateCreated { get; set; } = DateTime.UtcNow;
+
+        public List<RaceModel> Races { get; set; }
     }
 }
