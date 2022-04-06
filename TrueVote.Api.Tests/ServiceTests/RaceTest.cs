@@ -169,15 +169,18 @@ namespace TrueVote.Api.Tests.ServiceTests
 
             // https://docs.microsoft.com/en-us/ef/ef6/fundamentals/testing/mocking?redirectedfrom=MSDN
             // https://github.com/romantitov/MockQueryable
-            var mockRaceSet = addsCandidatesRaceData.AsQueryable().BuildMockDbSet();
-
             var mockRaceContext = new Mock<TrueVoteDbContext>();
+
+            var mockRaceSet = addsCandidatesRaceData.AsQueryable().BuildMockDbSet();
             mockRaceContext.Setup(m => m.Races).Returns(mockRaceSet.Object);
 
             var candidates = new List<CandidateModel> {
-                new CandidateModel { Name = "John Smith", DateCreated = DateTime.Now, PartyAffiliation = "Republican", CandidateId = "1" },
-                new CandidateModel { Name = "Jane Doe", DateCreated = DateTime.Now, PartyAffiliation = "Democrat", CandidateId = "2" }
+                new CandidateModel { Name = "John Doe", DateCreated = DateTime.Now, PartyAffiliation = "Republican", CandidateId = "1" },
+                new CandidateModel { Name = "Jane Smith", DateCreated = DateTime.Now, PartyAffiliation = "Democrat", CandidateId = "2" }
             };
+
+            var mockCandidatesSet = candidates.AsQueryable().BuildMockDbSet();
+            mockRaceContext.Setup(m => m.Candidates).Returns(mockCandidatesSet.Object);
 
             var addCandidatesObj = new AddCandidatesModel { RaceId = "1", CandidateIds = new List<string> { candidates[0].CandidateId, candidates[1].CandidateId } };
             var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(addCandidatesObj));
@@ -187,7 +190,17 @@ namespace TrueVote.Api.Tests.ServiceTests
 
             var ret = await raceApi.AddCandidates(_httpContext.Request);
 
-            // TODO Verify candidates are added
+            Assert.NotNull(ret);
+            var objectResult = Assert.IsType<CreatedResult>(ret);
+            Assert.Equal((int) HttpStatusCode.Created, objectResult.StatusCode);
+
+            var val = objectResult.Value as RaceModel;
+            Assert.NotNull(val);
+            Assert.Equal("President", val.Name);
+            Assert.Equal("John Doe", val.Candidates.ToList()[0].Name);
+            Assert.Equal("Republican", val.Candidates.ToList()[0].PartyAffiliation);
+            Assert.Equal("Jane Smith", val.Candidates.ToList()[1].Name);
+            Assert.Equal("Democrat", val.Candidates.ToList()[1].PartyAffiliation);
 
             _log.Verify(LogLevel.Information, Times.Exactly(1));
             _log.Verify(LogLevel.Debug, Times.Exactly(2));
