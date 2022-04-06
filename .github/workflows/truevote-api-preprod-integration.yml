@@ -21,7 +21,7 @@ jobs:
     - name: Audit OpenAPI
       uses: 42Crunch/api-security-audit-action@v3
       with:
-        api-token: ${{ secrets.FORTYTWOCRUNCH_TOKEN }}
+        api-token: ${{ secrets.API_TOKEN }}
         min-score: 60
         upload-to-code-scanning: true
         share-everyone: READ_ONLY
