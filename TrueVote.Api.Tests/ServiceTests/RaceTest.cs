@@ -205,5 +205,134 @@ namespace TrueVote.Api.Tests.ServiceTests
             _log.Verify(LogLevel.Information, Times.Exactly(1));
             _log.Verify(LogLevel.Debug, Times.Exactly(2));
         }
+
+        [Fact]
+        public async Task HandlesAddCandidatesError()
+        {
+            var addCandidatesObj = "blah";
+            var byteArray = Encoding.ASCII.GetBytes(addCandidatesObj);
+            _httpContext.Request.Body = new MemoryStream(byteArray);
+
+            var ret = await _raceApi.AddCandidates(_httpContext.Request);
+            Assert.NotNull(ret);
+            var objectResult = Assert.IsType<BadRequestObjectResult>(ret);
+            Assert.Equal((int) HttpStatusCode.BadRequest, objectResult.StatusCode);
+
+            _log.Verify(LogLevel.Error, Times.Exactly(1));
+            _log.Verify(LogLevel.Debug, Times.Exactly(2));
+        }
+
+        [Fact]
+        public async Task HandlesAddCandidatesUnfoundRace()
+        {
+            var addsCandidatesRaceData = new List<RaceModel>
+            {
+                new RaceModel { Name = "President", DateCreated = DateTime.Now, RaceType = RaceTypes.ChooseOne },
+            };
+
+            addsCandidatesRaceData[0].RaceId = "1";
+
+            var mockRaceContext = new Mock<TrueVoteDbContext>();
+
+            var mockRaceSet = addsCandidatesRaceData.AsQueryable().BuildMockDbSet();
+            mockRaceContext.Setup(m => m.Races).Returns(mockRaceSet.Object);
+
+            var addCandidatesObj = new AddCandidatesModel { RaceId = "blah", CandidateIds = new List<string>() { } };
+            var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(addCandidatesObj));
+            _httpContext.Request.Body = new MemoryStream(byteArray);
+
+            var raceApi = new Race(_log.Object, mockRaceContext.Object);
+
+            var ret = await raceApi.AddCandidates(_httpContext.Request);
+            Assert.NotNull(ret);
+            var objectResult = Assert.IsType<NotFoundObjectResult>(ret);
+            Assert.Equal((int) HttpStatusCode.NotFound, objectResult.StatusCode);
+            Assert.Contains("Race", objectResult.Value.ToString());
+            Assert.Contains("not found", objectResult.Value.ToString());
+
+            _log.Verify(LogLevel.Debug, Times.Exactly(1));
+        }
+
+        [Fact]
+        public async Task HandlesAddCandidatesUnfoundCandidate()
+        {
+            var addsCandidatesRaceData = new List<RaceModel>
+            {
+                new RaceModel { Name = "President", DateCreated = DateTime.Now, RaceType = RaceTypes.ChooseOne },
+            };
+
+            addsCandidatesRaceData[0].RaceId = "1";
+
+            var mockRaceContext = new Mock<TrueVoteDbContext>();
+
+            var mockRaceSet = addsCandidatesRaceData.AsQueryable().BuildMockDbSet();
+            mockRaceContext.Setup(m => m.Races).Returns(mockRaceSet.Object);
+
+            var candidates = new List<CandidateModel> {
+                new CandidateModel { Name = "John Doe", DateCreated = DateTime.Now, PartyAffiliation = "Republican", CandidateId = "1" },
+                new CandidateModel { Name = "Jane Smith", DateCreated = DateTime.Now, PartyAffiliation = "Democrat", CandidateId = "2" }
+            };
+
+            var mockCandidatesSet = candidates.AsQueryable().BuildMockDbSet();
+            mockRaceContext.Setup(m => m.Candidates).Returns(mockCandidatesSet.Object);
+
+            var addCandidatesObj = new AddCandidatesModel { RaceId = "1", CandidateIds = new List<string> { "68", "69" } };
+            var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(addCandidatesObj));
+            _httpContext.Request.Body = new MemoryStream(byteArray);
+
+            var raceApi = new Race(_log.Object, mockRaceContext.Object);
+
+            var ret = await raceApi.AddCandidates(_httpContext.Request);
+            Assert.NotNull(ret);
+            var objectResult = Assert.IsType<NotFoundObjectResult>(ret);
+            Assert.Equal((int) HttpStatusCode.NotFound, objectResult.StatusCode);
+            Assert.Contains("Candidate", objectResult.Value.ToString());
+            Assert.Contains("not found", objectResult.Value.ToString());
+
+            _log.Verify(LogLevel.Debug, Times.Exactly(1));
+        }
+
+        [Fact]
+        public async Task HandlesAddCandidateAlreadyInRace()
+        {
+            var addsCandidatesRaceData = new List<RaceModel>
+            {
+                new RaceModel { Name = "President", DateCreated = DateTime.Now, RaceType = RaceTypes.ChooseOne, Candidates = MoqData.MockCandidateDataCollection },
+                new RaceModel { Name = "Judge", DateCreated = DateTime.Now.AddSeconds(1), RaceType = RaceTypes.ChooseMany },
+                new RaceModel { Name = "Governor", DateCreated = DateTime.Now.AddSeconds(2), RaceType = RaceTypes.ChooseOne }
+            };
+
+            addsCandidatesRaceData[0].RaceId = "1";
+            addsCandidatesRaceData[1].RaceId = "2";
+            addsCandidatesRaceData[2].RaceId = "3";
+
+            var mockRaceContext = new Mock<TrueVoteDbContext>();
+
+            var mockRaceSet = addsCandidatesRaceData.AsQueryable().BuildMockDbSet();
+            mockRaceContext.Setup(m => m.Races).Returns(mockRaceSet.Object);
+
+            var candidates = new List<CandidateModel> {
+                new CandidateModel { Name = "John Smith", DateCreated = DateTime.Now, PartyAffiliation = "Republican", CandidateId = "1" },
+                new CandidateModel { Name = "Jane Doe", DateCreated = DateTime.Now, PartyAffiliation = "Democrat", CandidateId = "2" }
+            };
+
+            var mockCandidatesSet = candidates.AsQueryable().BuildMockDbSet();
+            mockRaceContext.Setup(m => m.Candidates).Returns(mockCandidatesSet.Object);
+
+            var addCandidatesObj = new AddCandidatesModel { RaceId = "1", CandidateIds = new List<string> { "1", "2" } };
+            var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(addCandidatesObj));
+            _httpContext.Request.Body = new MemoryStream(byteArray);
+
+            var raceApi = new Race(_log.Object, mockRaceContext.Object);
+
+            var ret = await raceApi.AddCandidates(_httpContext.Request);
+            Assert.NotNull(ret);
+            var objectResult = Assert.IsType<ConflictObjectResult>(ret);
+            Assert.Equal((int) HttpStatusCode.Conflict, objectResult.StatusCode);
+            Assert.Contains("Candidate", objectResult.Value.ToString());
+            Assert.Contains("already exists", objectResult.Value.ToString());
+
+            _log.Verify(LogLevel.Debug, Times.Exactly(1));
+        }
     }
 }
