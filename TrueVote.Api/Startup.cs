@@ -23,7 +23,7 @@ namespace TrueVote.Api
 {
     // Modeled from here: https://github.com/Azure/azure-functions-openapi-extension/blob/main/docs/openapi-core.md#openapi-metadata-configuration
     // Overrides default OpenApi description and more
-    // TODO Once this PR gets merged and released: https://github.com/Azure/azure-functions-openapi-extension/pull/344
+    // TODO Once this feature gets implemented and released: https://github.com/Azure/azure-functions-openapi-extension/issues/400
     // Add custom filter for enums exactly like this: https://github.com/domaindrivendev/Swashbuckle.AspNetCore/issues/1387#issuecomment-582316007
     // Jira: https://truevote.atlassian.net/browse/AD-32
     [ExcludeFromCodeCoverage]
@@ -53,7 +53,7 @@ namespace TrueVote.Api
         public bool IncludeRequestingHostName { get; set; } = true;
         public bool ForceHttp { get; set; } = false;
         public bool ForceHttps { get; set; } = false;
-        public List<IDocumentFilter> DocumentFilters { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public List<IDocumentFilter> DocumentFilters { get; set; } = new List<IDocumentFilter>();
     }
 
     [ExcludeFromCodeCoverage]
