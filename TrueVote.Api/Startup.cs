@@ -53,6 +53,7 @@ namespace TrueVote.Api
         public bool IncludeRequestingHostName { get; set; } = true;
         public bool ForceHttp { get; set; } = false;
         public bool ForceHttps { get; set; } = false;
+        public List<IDocumentFilter> DocumentFilters { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
     }
 
     [ExcludeFromCodeCoverage]
