@@ -111,11 +111,9 @@ namespace TrueVote.Api.Services
                     findElection.Name == null || (e.Name ?? string.Empty).ToLower().Contains(findElection.Name.ToLower()))
                 .OrderByDescending(e => e.DateCreated).ToListAsync();
 
-            // TODO Need to respond if not found
-            
             _log.LogDebug("HTTP trigger - ElectionFind:End");
 
-            return new OkObjectResult(items);
+            return items.Count == 0 ? new NotFoundResult() : new OkObjectResult(items);
         }
     }
 }

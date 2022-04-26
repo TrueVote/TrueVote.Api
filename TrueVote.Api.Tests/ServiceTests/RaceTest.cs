@@ -138,6 +138,36 @@ namespace TrueVote.Api.Tests.ServiceTests
         }
 
         [Fact]
+        public async Task HandlesUnfoundRace()
+        {
+            var findRaceData = new List<RaceModel>
+            {
+                new RaceModel { Name = "President", DateCreated = DateTime.Now, RaceType = RaceTypes.ChooseOne, Candidates = MoqData.MockCandidateDataCollection },
+                new RaceModel { Name = "Judge", DateCreated = DateTime.Now.AddSeconds(1), RaceType = RaceTypes.ChooseMany },
+                new RaceModel { Name = "Governor", DateCreated = DateTime.Now.AddSeconds(2), RaceType = RaceTypes.ChooseOne }
+            }.AsQueryable();
+
+            var mockRaceSet = DbMoqHelper.GetDbSet(findRaceData);
+
+            var mockRaceContext = new Mock<TrueVoteDbContext>();
+            mockRaceContext.Setup(m => m.Races).Returns(mockRaceSet.Object);
+
+            var findRaceObj = new FindRaceModel { Name = "not going to find anything" };
+            var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(findRaceObj));
+            _httpContext.Request.Body = new MemoryStream(byteArray);
+
+            var raceApi = new Race(_log.Object, mockRaceContext.Object);
+
+            var ret = await raceApi.RaceFind(_httpContext.Request);
+            Assert.NotNull(ret);
+            var objectResult = Assert.IsType<NotFoundResult>(ret);
+            Assert.Equal((int) HttpStatusCode.NotFound, objectResult.StatusCode);
+
+            _log.Verify(LogLevel.Information, Times.Exactly(1));
+            _log.Verify(LogLevel.Debug, Times.Exactly(2));
+        }
+
+        [Fact]
         public async Task HandlesFindRaceError()
         {
             var findRaceObj = "blah";
