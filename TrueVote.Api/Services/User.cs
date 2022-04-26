@@ -113,11 +113,9 @@ namespace TrueVote.Api.Services
                     (findUser.Email == null || (u.Email ?? string.Empty).ToLower().Contains(findUser.Email.ToLower())))
                 .OrderByDescending(u => u.DateCreated).ToListAsync();
 
-            // TODO Need to respond if not found
-
             _log.LogDebug("HTTP trigger - UserFind:End");
 
-            return new OkObjectResult(items);
+            return items.Count == 0 ? new NotFoundResult() : new OkObjectResult(items);
         }
     }
 }

@@ -190,7 +190,7 @@ namespace TrueVote.Api.Services
 
             _log.LogDebug("HTTP trigger - RaceFind:End");
 
-            return new OkObjectResult(items);
+            return items.Count == 0 ? new NotFoundResult() : new OkObjectResult(items);
         }
     }
 }

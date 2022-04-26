@@ -111,11 +111,9 @@ namespace TrueVote.Api.Services
                     (findCandidate.PartyAffiliation == null || (c.PartyAffiliation ?? string.Empty).ToLower().Contains(findCandidate.PartyAffiliation.ToLower())))
                 .OrderByDescending(c => c.DateCreated).ToListAsync();
 
-            // TODO Need to respond if not found
-
             _log.LogDebug("HTTP trigger - CandidateFind:End");
 
-            return new OkObjectResult(items);
+            return items.Count == 0 ? new NotFoundResult() : new OkObjectResult(items);
         }
     }
 }

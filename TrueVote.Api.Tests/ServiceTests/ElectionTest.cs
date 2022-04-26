@@ -127,6 +127,35 @@ namespace TrueVote.Api.Tests.ServiceTests
         }
 
         [Fact]
+        public async Task HandlesUnfoundElection()
+        {
+            var findElectionData = new List<ElectionModel>
+            {
+                new ElectionModel { Name = "California State", DateCreated = DateTime.Now, StartDate = DateTime.Now, EndDate = DateTime.Now.AddDays(30) },
+                new ElectionModel { Name = "Los Angeles County", DateCreated = DateTime.Now, StartDate = DateTime.Now, EndDate = DateTime.Now.AddDays(30) },
+                new ElectionModel { Name = "Federal", DateCreated = DateTime.Now, StartDate = DateTime.Now, EndDate = DateTime.Now.AddDays(30) },
+            }.AsQueryable();
+            var mockElectionSet = DbMoqHelper.GetDbSet(findElectionData);
+
+            var mockElectionContext = new Mock<TrueVoteDbContext>();
+            mockElectionContext.Setup(m => m.Elections).Returns(mockElectionSet.Object);
+
+            var findElectionObj = new FindElectionModel { Name = "not going to find anything" };
+            var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(findElectionObj));
+            _httpContext.Request.Body = new MemoryStream(byteArray);
+
+            var electionApi = new Election(_log.Object, mockElectionContext.Object);
+
+            var ret = await electionApi.ElectionFind(_httpContext.Request);
+            Assert.NotNull(ret);
+            var objectResult = Assert.IsType<NotFoundResult>(ret);
+            Assert.Equal((int) HttpStatusCode.NotFound, objectResult.StatusCode);
+
+            _log.Verify(LogLevel.Information, Times.Exactly(1));
+            _log.Verify(LogLevel.Debug, Times.Exactly(2));
+        }
+
+        [Fact]
         public async Task HandlesFindElectionError()
         {
             var findElectionObj = "blah";
