@@ -5,6 +5,7 @@ $TestOutput = dotnet test --verbosity normal --collect:"XPlat Code Coverage" --s
 
 Write-Host $TestOutput
 
+# ci variable is set in .github/workflows/truevote-api-version.yml. When run locally, it will fall through here, pass or fail
 if ($ci -eq "true" -and $TestOutput -clike "*FAILED*") {
 	Write-Host "Failed. Exiting"
 	exit -1
