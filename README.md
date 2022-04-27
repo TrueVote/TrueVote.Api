@@ -55,6 +55,12 @@ $ powershell ./scripts/RunTests.ps1
 
 This generages a coverage report in `TrueVote.Api.Tests/coverage-html`. Open `index.html` to view the report.
 
+## 🎁 Versioning
+
+TrueVote.Api uses [sementic versioning](https://semver.org/), starting with 1.0.0.
+
+The patch (last segment of the 3 segments) is auto-incremented via a GitHub action when a pull request is merged to master. The GitHub action is configured in the [.github/workflows/developer-guide.yml](.github/workflows/truevote-api-version.yml) file. To update the major or minor version, follow the instructions specified in the [bumping section of the action](https://github.com/anothrNick/github-tag-action#bumping) - use #major or #minor in the commit message to auto-increment the version.
+
 ## ❤️ Contributing
 
 We welcome all contributions. Please read our [contributing guidelines](CONTRIBUTING.md) before submitting a pull request.
@@ -66,3 +72,6 @@ TrueVote.Api is licensed under the MIT license.
 [![License](https://img.shields.io/github/license/TrueVote/TrueVote.Api)]((https://github.com/TrueVote/TrueVote.Api/master/LICENSE))
 
 [truevote.org](https://truevote.org)
+<!---
+Icons used from: https://emojipedia.org/
+--->
