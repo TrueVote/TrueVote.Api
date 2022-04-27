@@ -37,7 +37,7 @@ jobs:
       run: |
         git update-index --chmod=+x ./scripts/*
         chmod +x ./scripts/*
-        ./scripts/update-git.sh
+        # ./scripts/update-git.sh
 
     - name: Build
       run: |

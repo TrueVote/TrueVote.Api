@@ -16,7 +16,7 @@ echo "Commit: " $commit
 branchname=`git rev-parse --abbrev-ref HEAD || echo unknown`
 echo "Branchname: " $branchname
 
-lasttag=`git describe --abbrev=0 --tags --always || echo unknown`
+lasttag=`git tag | sort -V | tail -1 || echo unknown`
 echo "Lasttag: " $lasttag
 
 buildtime=`date -u +"%A, %b %d, %Y %H:%M:%S" || echo unknown`
