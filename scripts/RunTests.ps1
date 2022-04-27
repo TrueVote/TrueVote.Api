@@ -1,11 +1,11 @@
-param([String]$local="false") 
+param([String]$ci="false") 
 
 # Run the test coverage
 $TestOutput = dotnet test --verbosity normal --collect:"XPlat Code Coverage" --settings:coverlet.runsettings /p:threshold=100 /p:thresholdType=line /p:thresholdStat=total /p:CollectCoverage=true
 
 Write-Host $TestOutput
 
-if ($local -eq "false" -and $TestOutput -clike "*FAILED*") {
+if ($ci -eq "true" -and $TestOutput -clike "*FAILED*") {
 	Write-Host "Failed. Exiting"
 	exit -1
 }
