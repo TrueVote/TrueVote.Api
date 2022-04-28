@@ -71,21 +71,26 @@ jobs:
     #    name: code-coverage-report
     #    path: TrueVote.Api.Tests/TestResults/*
 
-    - name: 'Build Release Version'
+    - name: Build Release Version
       shell: pwsh
       run: |
         pushd './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
         dotnet build --no-restore --configuration Release --output ./output
         popd
 
-    #- name: 'Post Build Tasks'
+    #- name: Post Build Tasks
     #  if: github.ref == 'refs/heads/master'
     #  shell: bash
     #  run: |
     #    ./scripts/build-version.sh
     #    cp TrueVote.Api/version.json ./output
 
-    - name: 'Publish to Azure Pre-Prod'
+    - name: Login to Azure
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    - name: Publish to Azure Pre-Prod
       if: github.ref != 'refs/heads/master'
       uses: Azure/functions-action@v1
       id: fa-preprod
@@ -103,7 +108,7 @@ jobs:
         token: ${{ secrets.ACTIONS_PERSONAL_ACCESS_TOKEN }}
         ref: ${{ github.event.pull_request.head.ref }}
 
-    - name: 'Publish to Azure Production'
+    - name: Publish to Azure Production
       if: github.ref == 'refs/heads/master'
       uses: Azure/functions-action@v1
       id: fa
