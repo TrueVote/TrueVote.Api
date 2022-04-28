@@ -21,13 +21,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Invoke Version Bump Workflow on PR
-      if: github.event_name == 'pull_request'
+    - name: Invoke Version Bump Workflow
       uses: benc-uk/workflow-dispatch@v1
       with:
         workflow: Bump Version
         token: ${{ secrets.ACTIONS_PERSONAL_ACCESS_TOKEN }}
-        ref: ${{ github.event.pull_request.head.ref }}
+        # ref: ${{ github.event.pull_request.head.ref }}
 
     - name: Checkout Code
       uses: actions/checkout@v2
