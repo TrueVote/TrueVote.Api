@@ -16,5 +16,12 @@ jobs:
     uses: ./.github/workflows/truevote-api-version.yml
 
   call-build-workflow:
+    runs-on: ubuntu-latest
     needs: call-version-workflow
-    uses: ./.github/workflows/truevote-api-github.yml
+
+    steps:
+    - name: Invoke Build Workflow
+      uses: benc-uk/workflow-dispatch@v1
+      with:
+        workflow: Build, Test, Deploy
+        token: ${{ secrets.ACTIONS_PERSONAL_ACCESS_TOKEN }}
