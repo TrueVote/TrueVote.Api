@@ -1,8 +1,12 @@
-name: Bump version
+name: Bump Version
 
 on:
-  push:
-    branches: [ master ]
+  workflow_dispatch:
+
+  workflow_run:
+    workflows: ["Build, Test, Deploy"]
+    types: [completed]
+    branches-ignore: [master]
 
 jobs:
   tag_version:
