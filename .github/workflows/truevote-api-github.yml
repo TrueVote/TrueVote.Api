@@ -3,6 +3,8 @@ name: Build, Test, Deploy
 on:
   workflow_dispatch:
 
+  workflow_call:
+
   workflow_run:
     workflows: ["Workflow Controller"]
     types: [completed]
