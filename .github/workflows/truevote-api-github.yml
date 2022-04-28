@@ -1,15 +1,12 @@
 name: Build, Test, Deploy
 
 on:
-  push:
-    branches: [ master ]
-    paths-ignore:
-      - CONTRIBUTING.md
-      - README.md
-      - .gitignore
+  workflow_dispatch:
 
-  pull_request:
-    branches: [ master ]
+  workflow_run:
+    workflows: ["Workflow Controller"]
+    types: [completed]
+    branches-ignore: [master]
 
 env:
   AZURE_FUNCTIONAPP_NAME: truevote-api
@@ -21,13 +18,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Invoke Version Bump Workflow
-      uses: benc-uk/workflow-dispatch@v1
-      with:
-        workflow: Bump Version
-        token: ${{ secrets.ACTIONS_PERSONAL_ACCESS_TOKEN }}
-        # ref: ${{ github.event.pull_request.head.ref }}
-
     - name: Checkout Code
       uses: actions/checkout@v2
       with:

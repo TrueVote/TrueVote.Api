@@ -1,0 +1,29 @@
+name: Workflow Controller
+
+on:
+  push:
+    branches: [ master ]
+    paths-ignore:
+      - CONTRIBUTING.md
+      - README.md
+      - .gitignore
+
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  workflow-controller:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Invoke Version Bump Workflow
+      uses: benc-uk/workflow-dispatch@v1
+      with:
+        workflow: Bump Version
+        token: ${{ secrets.ACTIONS_PERSONAL_ACCESS_TOKEN }}
+
+    - name: Invoke Build Workflow
+      uses: benc-uk/workflow-dispatch@v1
+      with:
+        workflow: Build, Test, Deploy
+        token: ${{ secrets.ACTIONS_PERSONAL_ACCESS_TOKEN }}
