@@ -13,8 +13,8 @@ on:
 
 jobs:
   call-version-workflow:
-    uses: .github/workflows/truevote-api-version.yml
+    uses: ./.github/workflows/truevote-api-version.yml
 
   call-build-workflow:
     needs: call-version-workflow
-    uses: .github/workflows/truevote-api-github.yml
+    uses: ./.github/workflows/truevote-api-github.yml
