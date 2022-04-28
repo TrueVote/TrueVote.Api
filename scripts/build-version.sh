@@ -5,6 +5,9 @@ echo build-version.sh
 OS=`uname -s`
 echo "OS: " $OS
 
+GITVER=`git --version`
+echo "Git: " $GITVER
+
 # Set the dir this is running from
 DIR=`cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd`
 echo "Directory: " $DIR
@@ -16,7 +19,7 @@ echo "Commit: " $commit
 branchname=`git rev-parse --abbrev-ref HEAD || echo unknown`
 echo "Branchname: " $branchname
 
-lasttag=`git tag | sort -V | tail -1 || echo unknown`
+lasttag=`git describe --abbrev=0 --tags --always || echo unknown`
 echo "Lasttag: " $lasttag
 
 buildtime=`date -u +"%A, %b %d, %Y %H:%M:%S" || echo unknown`
