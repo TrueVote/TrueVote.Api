@@ -41,6 +41,12 @@ jobs:
         chmod +x ./scripts/*
         # ./scripts/update-git.sh
 
+    - name: Versions
+      run: |
+        dotnet --version
+        git --version
+        az --version
+
     - name: Build
       run: |
         dotnet build --no-restore
