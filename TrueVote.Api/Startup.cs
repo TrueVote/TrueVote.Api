@@ -17,6 +17,7 @@ using System.Reflection;
 using System.Text.Json;
 using System.Threading.Tasks;
 using TrueVote.Api.Models;
+using TrueVote.Api.Services;
 
 [assembly: FunctionsStartup(typeof(TrueVote.Api.Startup))]
 namespace TrueVote.Api
@@ -133,6 +134,7 @@ namespace TrueVote.Api
             builder.Services.TryAddScoped<IFileSystem, FileSystem>();
             builder.Services.TryAddSingleton<ILoggerFactory, LoggerFactory>();
             builder.Services.AddDbContext<TrueVoteDbContext>();
+            TelegramBot.Init();
 
             ConfigureServices(builder.Services).BuildServiceProvider(true);
         }
