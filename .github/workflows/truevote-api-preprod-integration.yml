@@ -3,6 +3,8 @@ name: Preprod Integration
 on:
   workflow_dispatch:
 
+  workflow_call:
+
   workflow_run:
     workflows: ["Build, Test, Deploy"]
     types: [completed]

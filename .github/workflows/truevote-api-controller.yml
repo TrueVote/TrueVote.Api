@@ -13,9 +13,11 @@ on:
 
 jobs:
   call-version-workflow:
+    if: github.ref == 'refs/heads/master'
     uses: ./.github/workflows/truevote-api-version.yml
 
-  call-build-workflow:
+  call-build-workflow-master:
+    if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     needs: call-version-workflow
 
@@ -25,3 +27,16 @@ jobs:
       with:
         workflow: Build, Test, Deploy
         token: ${{ secrets.ACTIONS_PERSONAL_ACCESS_TOKEN }}
+
+  call-build-workflow-pr:
+    if: github.ref != 'refs/heads/master'
+    runs-on: ubuntu-latest
+    needs: call-version-workflow
+
+    steps:
+    - name: Invoke Build Workflow
+      uses: benc-uk/workflow-dispatch@v1
+      with:
+        workflow: Build, Test, Deploy
+        token: ${{ secrets.ACTIONS_PERSONAL_ACCESS_TOKEN }}
+        ref: ${{ github.event.pull_request.head.ref }}

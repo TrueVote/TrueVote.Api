@@ -21,6 +21,7 @@ namespace TrueVote.Api.Models
         [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
         [MaxLength(2048)]
         [OpenApiProperty(Description = "List of Candidates")]
+        [JsonProperty(PropertyName = "Candidates")]
         public List<CandidateModel> Candidates { get; set; }
     }
 
@@ -32,6 +33,7 @@ namespace TrueVote.Api.Models
         [MaxLength(2048)]
         [DataType(DataType.Text)]
         [RegularExpression(Constants.GenericStringRegex)]
+        [JsonProperty(PropertyName = "Name")]
         public string Name { get; set; } = string.Empty;
 
         [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
@@ -39,6 +41,7 @@ namespace TrueVote.Api.Models
         [MaxLength(2048)]
         [DataType(DataType.Text)]
         [RegularExpression(Constants.GenericStringRegex)]
+        [JsonProperty(PropertyName = "PartyAffiliation")]
         public string PartyAffiliation { get; set; } = string.Empty;
     }
 
@@ -47,18 +50,18 @@ namespace TrueVote.Api.Models
     {
         [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
         [OpenApiProperty(Description = "Name")]
-        [JsonProperty(Required = Required.Always)]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
         [RegularExpression(Constants.GenericStringRegex)]
+        [JsonProperty(PropertyName = "Name", Required = Required.Always)]
         public string Name { get; set; } = string.Empty;
 
         [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
         [OpenApiProperty(Description = "Party Affiliation")]
-        [JsonProperty(Required = Required.Always)]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
         [RegularExpression(Constants.GenericStringRegex)]
+        [JsonProperty(PropertyName = "PartyAffiliation", Required = Required.Always)]
         public string PartyAffiliation { get; set; } = string.Empty;
     }
 
@@ -70,29 +73,31 @@ namespace TrueVote.Api.Models
         [MaxLength(2048)]
         [DataType(DataType.Text)]
         [RegularExpression(Constants.GenericStringRegex)]
+        [JsonProperty(PropertyName = "CandidateId")]
         [Key]
         public string CandidateId { get; set; } = Guid.NewGuid().ToString();
 
         [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
         [OpenApiProperty(Description = "Name")]
-        [JsonProperty(Required = Required.Always)]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
         [RegularExpression(Constants.GenericStringRegex)]
+        [JsonProperty(PropertyName = "Name", Required = Required.Always)]
         public string Name { get; set; } = string.Empty;
 
         [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
         [OpenApiProperty(Description = "Party Affiliation")]
-        [JsonProperty(Required = Required.Always)]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
         [RegularExpression(Constants.GenericStringRegex)]
+        [JsonProperty(PropertyName = "PartyAffiliation", Required = Required.Always)]
         public string PartyAffiliation { get; set; } = string.Empty;
 
         [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
         [OpenApiProperty(Description = "DateCreated")]
         [MaxLength(2048)]
         [DataType(DataType.Date)]
+        [JsonProperty(PropertyName = "DateCreated")]
         public DateTime DateCreated { get; set; } = DateTime.UtcNow;
     }
 }

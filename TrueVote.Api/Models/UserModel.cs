@@ -20,6 +20,7 @@ namespace TrueVote.Api.Models
         [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
         [MaxLength(2048)]
         [OpenApiProperty(Description = "List of Users")]
+        [JsonProperty(PropertyName = "Users")]
         public List<UserModel> Users { get; set; }
     }
 
@@ -31,6 +32,7 @@ namespace TrueVote.Api.Models
         [MaxLength(2048)]
         [DataType(DataType.Text)]
         [RegularExpression(Constants.GenericStringRegex)]
+        [JsonProperty(PropertyName = "FirstName")]
         public string FirstName { get; set; } = string.Empty;
 
         [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
@@ -39,6 +41,7 @@ namespace TrueVote.Api.Models
         [DataType(DataType.EmailAddress)]
         [EmailAddress]
         [RegularExpression(Constants.EMailRegex)]
+        [JsonProperty(PropertyName = "Email")]
         public string Email { get; set; }
     }
 
@@ -47,20 +50,20 @@ namespace TrueVote.Api.Models
     {
         [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
         [OpenApiProperty(Description = "First Name")]
-        [JsonProperty(Required = Required.Always)]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
         [RegularExpression(Constants.GenericStringRegex)]
+        [JsonProperty(PropertyName = "FirstName", Required = Required.Always)]
         public string FirstName { get; set; } = string.Empty;
 
         [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
         [OpenApiProperty(Description = "Email Address")]
-        [JsonProperty(Required = Required.Always)]
         [MaxLength(2048)]
         [Required(AllowEmptyStrings = false)]
         [DataType(DataType.EmailAddress)]
         [EmailAddress]
         [RegularExpression(Constants.EMailRegex)]
+        [JsonProperty(PropertyName = "Email", Required = Required.Always)]
         public string Email { get; set; }
     }
 
@@ -72,31 +75,33 @@ namespace TrueVote.Api.Models
         [MaxLength(2048)]
         [DataType(DataType.Text)]
         [RegularExpression(Constants.GenericStringRegex)]
+        [JsonProperty(PropertyName = "UserId")]
         [Key]
         public string UserId { get; set; } = Guid.NewGuid().ToString();
 
         [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
         [OpenApiProperty(Description = "First Name")]
-        [JsonProperty(Required = Required.Always)]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
         [RegularExpression(Constants.GenericStringRegex)]
+        [JsonProperty(PropertyName = "FirstName", Required = Required.Always)]
         public string FirstName { get; set; } = string.Empty;
 
         [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
         [OpenApiProperty(Description = "Email Address")]
-        [JsonProperty(Required = Required.Always)]
         [MaxLength(2048)]
         [Required(AllowEmptyStrings = false)]
         [DataType(DataType.EmailAddress)]
         [EmailAddress]
         [RegularExpression(Constants.EMailRegex)]
+        [JsonProperty(PropertyName = "Email", Required = Required.Always)]
         public string Email { get; set; }
 
         [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
         [OpenApiProperty(Description = "DateCreated")]
         [MaxLength(2048)]
         [DataType(DataType.Date)]
+        [JsonProperty(PropertyName = "DateCreated")]
         public DateTime DateCreated { get; set; } = DateTime.UtcNow;
     }
 }

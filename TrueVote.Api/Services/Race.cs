@@ -67,6 +67,8 @@ namespace TrueVote.Api.Services
             await _trueVoteDbContext.Races.AddAsync(race);
             await _trueVoteDbContext.SaveChangesAsync();
 
+            await TelegramBot.SendChannelMessage($"New TrueVote Race created: {baseRace.Name}");
+
             _log.LogDebug("HTTP trigger - CreateRace:End");
 
             return new CreatedResult(string.Empty, race);
