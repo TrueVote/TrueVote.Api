@@ -103,6 +103,8 @@ namespace TrueVote.Api.Services
 
                 Console.WriteLine($"Start listening for @{me.Username}");
 
+                await SendChannelMessage($"TrueVote API Bot Started: @{me.Username}");
+
                 // This keeps it running
                 new ManualResetEvent(false).WaitOne();
 
@@ -178,7 +180,7 @@ namespace TrueVote.Api.Services
             }
 
             // Post command to global group channel
-            await SendChannelMessage($"Bot received command: {command} from user: {update.Message.Chat.Username}");
+            await SendChannelMessage($"Bot received command: {command} from user: @{update.Message.Chat.Username}");
         }
 
         private static Task HandleErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
