@@ -9,6 +9,11 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Linq;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Http;
+using System.Net.Http;
+using Newtonsoft.Json;
+using TrueVote.Api.Models;
+using System.Text;
 
 namespace TrueVote.Api.Services
 {
@@ -17,6 +22,11 @@ namespace TrueVote.Api.Services
     {
         private static TelegramBotClient botClient = null; // To connect to bot: http://t.me/TrueVoteAPI_bot
         private static readonly string TelegramRuntimeChannel = "@TrueVote_Api_Runtime_Channel";  // To connect to channel: https://t.me/TrueVote_Api_Runtime_Channel
+        private static readonly string HelpText = "📖 TrueVote API Bot enables you execute some commands on the API. Simply use / in this chat to see a list of commands. To view broadcast messages, be sure and join the TrueVote API Runtime Channel: https://t.me/TrueVote_Api_Runtime_Channel";
+
+        // TODO Self referrential. Needs context instead of just pointing to production.
+        // Would be better to pull this from the environment. e.g. For local it would be https://localhost:7071/api
+        private static readonly string BaseApiUrl = "https://truevote-api.azurewebsites.net/api";
 
         public static async void Init()
         {
@@ -27,9 +37,9 @@ namespace TrueVote.Api.Services
 
             // List of BotCommands
             var commands = new List<BotCommand>() {
-                new BotCommand { Command = "help", Description = "View summary of what the bot can do" },
-                new BotCommand { Command = "status", Description = "View the API status" },
-                new BotCommand { Command = "version", Description = "View the API version" }
+                new BotCommand { Command = "help", Description = "📖 View summary of what the bot can do" },
+                new BotCommand { Command = "status", Description = "🖥 View the API status" },
+                new BotCommand { Command = "version", Description = "🤖 View the API version" }
             };
 
             // Get the Bot key
@@ -87,32 +97,6 @@ namespace TrueVote.Api.Services
             }
         }
 
-        private async static Task<Message> SendMessage(ChatId chatId, string text, CancellationToken cancellationToken)
-        {
-            try
-            {
-                return await botClient.SendTextMessageAsync(chatId, text, cancellationToken: cancellationToken);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"Error sending Telegram Bot Message: {e.Message}");
-                return null;
-            }
-        }
-
-        public async static Task<Message> SendChannelMessage(string text)
-        {
-            try
-            {
-                return await botClient.SendTextMessageAsync(TelegramRuntimeChannel, text);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"Error sending Telegram Channel Message: {e.Message}");
-                return null;
-            }
-        }
-
         private async static Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
         {
             // Only process Message updates: https://core.telegram.org/bots/api#message
@@ -137,19 +121,20 @@ namespace TrueVote.Api.Services
             {
                 case "/help":
                     {
-                        messageResponse = "help go here";
+                        messageResponse = HelpText;
                         break;
                     }
 
                 case "/status":
                     {
-                        messageResponse = "status go here";
+                        var status = await GetStatus();
+                        messageResponse = $"<code>{status}</code>";
                         break;
                     }
 
                 case "/version":
                     {
-                        messageResponse = "version go here";
+                        messageResponse = await GetVersion();
                         break;
                     }
 
@@ -180,6 +165,58 @@ namespace TrueVote.Api.Services
             Console.WriteLine($"HandleErrorAsync() Error: {ErrorMessage}");
 
             return Task.CompletedTask;
+        }
+
+        private async static Task<Message> SendMessage(ChatId chatId, string text, CancellationToken cancellationToken)
+        {
+            try
+            {
+                return await botClient.SendTextMessageAsync(chatId, text, ParseMode.Html, null, null, null, null, null, null, cancellationToken);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"Error sending Telegram Bot Message: {e.Message}");
+                return null;
+            }
+        }
+
+        public async static Task<Message> SendChannelMessage(string text)
+        {
+            try
+            {
+                return await botClient.SendTextMessageAsync(TelegramRuntimeChannel, text);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"Error sending Telegram Channel Message: {e.Message}");
+                return null;
+            }
+        }
+
+        private static async Task<string> GetStatus()
+        {
+            var client = new HttpClient();
+
+            var ret = await client.GetAsync($"{BaseApiUrl}/status");
+
+            var result = await ret.Content.ReadAsAsync<StatusModel>();
+
+            // Convert it back to string
+            var sresult = JsonConvert.SerializeObject(result, Formatting.Indented);
+
+            return sresult;
+        }
+
+        // TODO Need to really get version from assembly info. Better than Git tag
+        private static async Task<string> GetVersion()
+        {
+            var client = new HttpClient();
+
+            var ret = await client.GetAsync($"{BaseApiUrl}/status");
+
+            var result = await ret.Content.ReadAsAsync<StatusModel>();
+
+            return result.BuildInfo.LastTag;
         }
     }
 }
