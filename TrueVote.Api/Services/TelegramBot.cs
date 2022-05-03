@@ -9,24 +9,23 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Linq;
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.AspNetCore.Http;
 using System.Net.Http;
 using Newtonsoft.Json;
 using TrueVote.Api.Models;
-using System.Text;
 
+// TODO Localize this
+// See local.settings.json for local settings and Azure Portal for production settings
 namespace TrueVote.Api.Services
 {
+#pragma warning disable SCS0004 // Certificate Validation has been disabled.
     [ExcludeFromCodeCoverage] // TODO Write tests. This requires mocking the Telegram API
     public class TelegramBot
     {
-        private static TelegramBotClient botClient = null; // To connect to bot: http://t.me/TrueVoteAPI_bot
-        private static readonly string TelegramRuntimeChannel = "@TrueVote_Api_Runtime_Channel";  // To connect to channel: https://t.me/TrueVote_Api_Runtime_Channel
-        private static readonly string HelpText = "📖 TrueVote API Bot enables you execute some commands on the API. Simply use / in this chat to see a list of commands. To view broadcast messages, be sure and join the TrueVote API Runtime Channel: https://t.me/TrueVote_Api_Runtime_Channel";
-
-        // TODO Self referrential. Needs context instead of just pointing to production.
-        // Would be better to pull this from the environment. e.g. For local it would be https://localhost:7071/api
-        private static readonly string BaseApiUrl = "https://truevote-api.azurewebsites.net/api";
+        private static HttpClientHandler httpClientHandler;
+        private static TelegramBotClient botClient = null; // To connect to bot: https://t.me/TrueVoteAPI_bot
+        private static string TelegramRuntimeChannel = string.Empty;
+        private static string BaseApiUrl = string.Empty; // TODO Would be better to pull this from the environment instead of a setting. e.g. For local it would be https://localhost:7071/api
+        private static readonly string HelpText = "📖 TrueVote API Bot enables you execute some commands on the API. Simply use / in this chat to see a list of commands. To view broadcast messages, be sure and join the TrueVote API Runtime Channel: https://t.me/{0}";
 
         public static async void Init()
         {
@@ -38,17 +37,37 @@ namespace TrueVote.Api.Services
             // List of BotCommands
             var commands = new List<BotCommand>() {
                 new BotCommand { Command = "help", Description = "📖 View summary of what the bot can do" },
+                new BotCommand { Command = "elections", Description = "🖥 View the count of total number of elections" },
                 new BotCommand { Command = "status", Description = "🖥 View the API status" },
                 new BotCommand { Command = "version", Description = "🤖 View the API version" }
             };
 
-            // Get the Bot key
+            // Get the Bot settings
             var botKey = Environment.GetEnvironmentVariable("TelegramBotKey");
             if (string.IsNullOrEmpty(botKey))
             {
                 Console.WriteLine("Error retreiving Telegram BotKey");
                 return;
             }
+
+            TelegramRuntimeChannel = Environment.GetEnvironmentVariable("TelegramRuntimeChannel");
+            if (string.IsNullOrEmpty(TelegramRuntimeChannel))
+            {
+                Console.WriteLine("Error retreiving TelegramRuntimeChannel");
+                return;
+            }
+
+            BaseApiUrl = Environment.GetEnvironmentVariable("BaseApiUrl");
+            if (string.IsNullOrEmpty(BaseApiUrl))
+            {
+                Console.WriteLine("Error retreiving BaseApiUrl");
+                return;
+            }
+
+            // Setup HttpClient requests to ignore Certificate errors
+            httpClientHandler = new HttpClientHandler();
+            httpClientHandler.ClientCertificateOptions = ClientCertificateOption.Manual;
+            httpClientHandler.ServerCertificateCustomValidationCallback = (httpRequestMessage, cert, cetChain, policyErrors) => true;
 
             try
             {
@@ -121,20 +140,28 @@ namespace TrueVote.Api.Services
             {
                 case "/help":
                     {
-                        messageResponse = HelpText;
+                        messageResponse = string.Format(HelpText, TelegramRuntimeChannel);
+                        break;
+                    }
+
+                case "/elections":
+                    {
+                        var ret = await GetElectionsCount();
+                        messageResponse = $"Total Elections: {ret}";
                         break;
                     }
 
                 case "/status":
                     {
-                        var status = await GetStatus();
-                        messageResponse = $"<code>{status}</code>";
+                        var ret = await GetStatus();
+                        messageResponse = $"{ret}";
                         break;
                     }
 
                 case "/version":
                     {
-                        messageResponse = await GetVersion();
+                        var ret = await GetVersion();
+                        messageResponse = $"Version: {ret}";
                         break;
                     }
 
@@ -171,7 +198,7 @@ namespace TrueVote.Api.Services
         {
             try
             {
-                return await botClient.SendTextMessageAsync(chatId, text, ParseMode.Html, null, null, null, null, null, null, cancellationToken);
+                return await botClient.SendTextMessageAsync(chatId, text, null, null, null, null, null, null, null, cancellationToken);
             }
             catch (Exception e)
             {
@@ -184,7 +211,7 @@ namespace TrueVote.Api.Services
         {
             try
             {
-                return await botClient.SendTextMessageAsync(TelegramRuntimeChannel, text);
+                return await botClient.SendTextMessageAsync($"@{TelegramRuntimeChannel}", text);
             }
             catch (Exception e)
             {
@@ -193,30 +220,66 @@ namespace TrueVote.Api.Services
             }
         }
 
+        private static async Task<string> GetElectionsCount()
+        {
+            try
+            {
+                var client = new HttpClient(httpClientHandler);
+
+                var findElectionObj = new FindElectionModel { Name = "" };
+                var json = JsonConvert.SerializeObject(findElectionObj);
+                var httpRequestMessage = new HttpRequestMessage { RequestUri = new Uri($"{BaseApiUrl}/election/find"), Method = HttpMethod.Get, Content = new StringContent(json.ToString()) };
+                var ret = await client.SendAsync(httpRequestMessage);
+
+                var retList = await ret.Content.ReadAsAsync<List<ElectionModel>>();
+
+                return retList.Count.ToString();
+            }
+            catch (Exception e)
+            {
+                return $"Error: {e.Message}";
+            }
+        }
+
         private static async Task<string> GetStatus()
         {
-            var client = new HttpClient();
+            try
+            {
+                var client = new HttpClient(httpClientHandler);
 
-            var ret = await client.GetAsync($"{BaseApiUrl}/status");
+                var ret = await client.GetAsync($"{BaseApiUrl}/status");
 
-            var result = await ret.Content.ReadAsAsync<StatusModel>();
+                var result = await ret.Content.ReadAsAsync<StatusModel>();
 
-            // Convert it back to string
-            var sresult = JsonConvert.SerializeObject(result, Formatting.Indented);
+                // Convert it back to string
+                var sresult = JsonConvert.SerializeObject(result, Formatting.Indented);
 
-            return sresult;
+                return sresult;
+            }
+            catch (Exception e)
+            {
+                return $"Error: {e.Message}";
+            }
         }
 
         // TODO Need to really get version from assembly info. Better than Git tag
         private static async Task<string> GetVersion()
         {
-            var client = new HttpClient();
+            try
+            {
+                var client = new HttpClient(httpClientHandler);
 
-            var ret = await client.GetAsync($"{BaseApiUrl}/status");
+                var ret = await client.GetAsync($"{BaseApiUrl}/status");
 
-            var result = await ret.Content.ReadAsAsync<StatusModel>();
+                var result = await ret.Content.ReadAsAsync<StatusModel>();
 
-            return result.BuildInfo.LastTag;
+                return result.BuildInfo.LastTag;
+            }
+            catch (Exception e)
+            {
+                return $"Error: {e.Message}";
+            }
         }
     }
+#pragma warning restore SCS0004 // Certificate Validation has been disabled.
 }
