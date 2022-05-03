@@ -1,12 +1,5 @@
 using System;
-using System.IO;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using Telegram.Bot;
 using Telegram.Bot.Exceptions;
 using Telegram.Bot.Extensions.Polling;
@@ -15,39 +8,21 @@ using Telegram.Bot.Types.Enums;
 using System.Collections.Generic;
 using System.Threading;
 using System.Linq;
+using System.Diagnostics.CodeAnalysis;
 
 namespace TrueVote.Api.Services
 {
-#pragma warning disable CS8632 // The annotation for nullable reference types should only be used in code within a '#nullable' annotations context.
+    [ExcludeFromCodeCoverage] // TODO Write tests. This requires mocking the Telegram API
     public class TelegramBot
     {
-        public static string botKey = Environment.GetEnvironmentVariable("TelegramBotKey");
-        public static string botChatId = string.Empty;
-        public static TelegramBotClient? botClient = null;
-
-        [FunctionName("TelegramBot")]
-        public async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req,
-            ILogger log)
-        {
-            log.LogInformation("C# HTTP trigger function processed a request.");
-
-            string name = req.Query["name"];
-
-            var requestBody = await new StreamReader(req.Body).ReadToEndAsync();
-            dynamic data = JsonConvert.DeserializeObject(requestBody);
-            name ??= data?.name;
-
-            var responseMessage = string.IsNullOrEmpty(name)
-                ? "This HTTP triggered function executed successfully. Pass a name in the query string or in the request body for a personalized response."
-                : $"Hello, {name}. This HTTP triggered function executed successfully.";
-
-            return new OkObjectResult(responseMessage);
-        }
+        private static TelegramBotClient botClient = null; // To connect to bot: http://t.me/TrueVoteAPI_bot
+        private static readonly string TelegramRuntimeChannel = "@TrueVote_Api_Runtime_Channel";  // To connect to channel: https://t.me/TrueVote_Api_Runtime_Channel
 
         public static async void Init()
         {
-            string? botChatId = null;
+            if (botClient != null)
+                return;
+
             using var cts = new CancellationTokenSource();
 
             // List of BotCommands
@@ -58,12 +33,29 @@ namespace TrueVote.Api.Services
             };
 
             // Get the Bot key
-            var botKey = TelegramBot.botKey;
+            var botKey = Environment.GetEnvironmentVariable("TelegramBotKey");
+            if (string.IsNullOrEmpty(botKey))
+            {
+                Console.WriteLine("Error retreiving Telegram BotKey");
+                return;
+            }
 
-            // Try and get a ChatId
-            botChatId = TelegramBot.botKey;
+            try
+            {
+                botClient = new TelegramBotClient(botKey);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"Error creating Telegram BotClient: {e.Message}");
+                return;
+            }
 
-            botClient = new TelegramBotClient(botKey);
+            var testKey = await botClient.TestApiAsync();
+            if (!testKey)
+            {
+                Console.WriteLine($"Error with Telegram Api Key - Failure to connect");
+                return;
+            }
 
             // StartReceiving does not block the caller thread. Receiving is done on the ThreadPool.
             var receiverOptions = new ReceiverOptions
@@ -71,34 +63,57 @@ namespace TrueVote.Api.Services
                 AllowedUpdates = { } // receive all update types
             };
 
-            // Inject the bot with these command options
-            var commandStatus = botClient.SetMyCommandsAsync(commands, null, null, cts.Token);
-
-            botClient.StartReceiving(HandleUpdateAsync, HandleErrorAsync, receiverOptions, cancellationToken: cts.Token);
-
-            var me = await botClient.GetMeAsync();
-
-            Console.WriteLine($"Start listening for @{me.Username}");
-
-            // If we have this ID, we can send notifications. Send a welcome message.
-            if (!string.IsNullOrEmpty(botChatId))
+            try
             {
-                // var welcomeMessage = await SendMessage(botChatId, $"Connected TrueVote.Api to {me.Username}", cancellationToken: cts.Token);
+                // Inject the bot with these command options
+                var commandStatus = botClient.SetMyCommandsAsync(commands, null, null, cts.Token);
+
+                botClient.StartReceiving(HandleUpdateAsync, HandleErrorAsync, receiverOptions, cancellationToken: cts.Token);
+
+                var me = await botClient.GetMeAsync();
+
+                Console.WriteLine($"Start listening for @{me.Username}");
+
+                // This keeps it running
+                new ManualResetEvent(false).WaitOne();
+
+                // Send cancellation request to stop bot
+                cts.Cancel();
             }
-
-            // This keeps it running
-            new ManualResetEvent(false).WaitOne();
-
-            // Send cancellation request to stop bot
-            cts.Cancel();
+            catch (Exception e)
+            {
+                Console.WriteLine($"Error handling Telegram Bot Message: {e.Message}");
+                return;
+            }
         }
 
-        async static Task<Message> SendMessage(ChatId chatId, string text, CancellationToken cancellationToken)
+        private async static Task<Message> SendMessage(ChatId chatId, string text, CancellationToken cancellationToken)
         {
-            return await botClient.SendTextMessageAsync(chatId, text, cancellationToken: cancellationToken);
+            try
+            {
+                return await botClient.SendTextMessageAsync(chatId, text, cancellationToken: cancellationToken);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"Error sending Telegram Bot Message: {e.Message}");
+                return null;
+            }
         }
 
-        async static Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
+        public async static Task<Message> SendChannelMessage(string text)
+        {
+            try
+            {
+                return await botClient.SendTextMessageAsync(TelegramRuntimeChannel, text);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"Error sending Telegram Channel Message: {e.Message}");
+                return null;
+            }
+        }
+
+        private async static Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
         {
             // Only process Message updates: https://core.telegram.org/bots/api#message
             if (update.Type != UpdateType.Message)
@@ -109,22 +124,16 @@ namespace TrueVote.Api.Services
                 return;
 
             var chatId = update.Message.Chat.Id;
-            var messageText = update.Message.Text;
 
-            if (string.IsNullOrEmpty(botChatId))
-            {
-                // Store it in appSettings
-                botChatId = chatId.ToString();
-                // SetupConfiguration.AddOrUpdateAppSetting("TelegramBotChatId", botChatId);
-                // TODO SAVE IT
-                Console.WriteLine($"Persisting ChatId: {botChatId} to appsettings.json");
-            }
+            var messageText = update.Message.Text;
 
             Console.WriteLine($"Type: {update.Type} Received: '{messageText}' message in bot {chatId}.");
 
             var messageResponse = string.Empty;
 
-            switch (messageText.ToLower().Split(' ').First())
+            var command = messageText.ToLower().Split(' ').First();
+
+            switch (command)
             {
                 case "/help":
                     {
@@ -155,9 +164,12 @@ namespace TrueVote.Api.Services
                 var _ = await SendMessage(chatId: chatId, text: messageResponse, cancellationToken: cancellationToken);
                 Console.WriteLine($"Sent Message: {messageResponse}");
             }
+
+            // Post command to global group channel
+            await SendChannelMessage($"Bot received command: {command} from user: {update.Message.Chat.Username}");
         }
 
-        static Task HandleErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
+        private static Task HandleErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
         {
             var ErrorMessage = exception switch
             {
@@ -170,5 +182,4 @@ namespace TrueVote.Api.Services
             return Task.CompletedTask;
         }
     }
-#pragma warning restore CS8632 // The annotation for nullable reference types should only be used in code within a '#nullable' annotations context.
 }

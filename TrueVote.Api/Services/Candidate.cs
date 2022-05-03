@@ -67,6 +67,8 @@ namespace TrueVote.Api.Services
             await _trueVoteDbContext.Candidates.AddAsync(candidate);
             await _trueVoteDbContext.SaveChangesAsync();
 
+            await TelegramBot.SendChannelMessage($"New TrueVote Candidate created: {baseCandidate.Name}");
+
             _log.LogDebug("HTTP trigger - CreateCandidate:End");
 
             return new CreatedResult(string.Empty, candidate);
