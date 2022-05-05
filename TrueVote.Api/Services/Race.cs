@@ -42,7 +42,7 @@ namespace TrueVote.Api.Services
         public async Task<IActionResult> CreateRace(
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "race")] HttpRequest req)
         {
-            _log.LogDebug("HTTP trigger - CreateRace:Begin");
+            LogDebug("HTTP trigger - CreateRace:Begin");
 
             BaseRaceModel baseRace;
             try
@@ -52,13 +52,13 @@ namespace TrueVote.Api.Services
             }
             catch (Exception e)
             {
-                _log.LogError("baseRace: invalid format");
-                _log.LogDebug("HTTP trigger - CreateRace:End");
+                LogError("baseRace: invalid format");
+                LogDebug("HTTP trigger - CreateRace:End");
 
                 return new BadRequestObjectResult(e.Message);
             }
 
-            _log.LogInformation($"Request Data: {baseRace}");
+            LogInformation($"Request Data: {baseRace}");
 
             var race = new RaceModel { Name = baseRace.Name, RaceType = baseRace.RaceType };
 
@@ -69,7 +69,7 @@ namespace TrueVote.Api.Services
 
             await TelegramBot.SendChannelMessage($"New TrueVote Race created: {baseRace.Name}");
 
-            _log.LogDebug("HTTP trigger - CreateRace:End");
+            LogDebug("HTTP trigger - CreateRace:End");
 
             return new CreatedResult(string.Empty, race);
         }
@@ -90,7 +90,7 @@ namespace TrueVote.Api.Services
         public async Task<IActionResult> AddCandidates(
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "race/addcandidates")] HttpRequest req)
         {
-            _log.LogDebug("HTTP trigger - AddCandidates:Begin");
+            LogDebug("HTTP trigger - AddCandidates:Begin");
 
             AddCandidatesModel addCandidatesModel;
             try
@@ -100,13 +100,13 @@ namespace TrueVote.Api.Services
             }
             catch (Exception e)
             {
-                _log.LogError("addCandidates: invalid format");
-                _log.LogDebug("HTTP trigger - AddCandidates:End");
+                LogError("addCandidates: invalid format");
+                LogDebug("HTTP trigger - AddCandidates:End");
 
                 return new BadRequestObjectResult(e.Message);
             }
 
-            _log.LogInformation($"Request Data: {addCandidatesModel}");
+            LogInformation($"Request Data: {addCandidatesModel}");
 
             // Check if the race exists. If so, return it detatched from EF
             var race = await _trueVoteDbContext.Races.Where(r => r.RaceId == addCandidatesModel.RaceId).AsNoTracking().OrderByDescending(r => r.DateCreated).FirstOrDefaultAsync();
@@ -145,7 +145,7 @@ namespace TrueVote.Api.Services
             await _trueVoteDbContext.Races.AddAsync(race);
             await _trueVoteDbContext.SaveChangesAsync();
 
-            _log.LogDebug("HTTP trigger - AddCandidates:End");
+            LogDebug("HTTP trigger - AddCandidates:End");
 
             return new CreatedResult(string.Empty, race);
         }
@@ -165,7 +165,7 @@ namespace TrueVote.Api.Services
         public async Task<IActionResult> RaceFind(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "race/find")] HttpRequest req)
         {
-            _log.LogDebug("HTTP trigger - RaceFind:Begin");
+            LogDebug("HTTP trigger - RaceFind:Begin");
 
             FindRaceModel findRace;
             try
@@ -175,13 +175,13 @@ namespace TrueVote.Api.Services
             }
             catch (Exception e)
             {
-                _log.LogError("findRace: invalid format");
-                _log.LogDebug("HTTP trigger - RaceFind:End");
+                LogError("findRace: invalid format");
+                LogDebug("HTTP trigger - RaceFind:End");
 
                 return new BadRequestObjectResult(e.Message);
             }
 
-            _log.LogInformation($"Request Data: {findRace}");
+            LogInformation($"Request Data: {findRace}");
 
             // TODO Fix RaceTypeName not resolving properly
             // Get all the races that match the search
@@ -190,7 +190,7 @@ namespace TrueVote.Api.Services
                     findRace.Name == null || (r.Name ?? string.Empty).ToLower().Contains(findRace.Name.ToLower()))
                 .OrderByDescending(r => r.DateCreated).ToListAsync();
 
-            _log.LogDebug("HTTP trigger - RaceFind:End");
+            LogDebug("HTTP trigger - RaceFind:End");
 
             return items.Count == 0 ? new NotFoundResult() : new OkObjectResult(items);
         }

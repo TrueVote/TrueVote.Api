@@ -53,14 +53,14 @@ namespace TrueVote.Api.Services
         public async Task<IActionResult> GetStatus(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "status")] HttpRequest req)
         {
-            _log.LogDebug("HTTP trigger - GetStatus:Begin");
+            LogDebug("HTTP trigger - GetStatus:Begin");
 
             // For timing the running of this function
             var watch = Stopwatch.StartNew();
 
             var requestBody = await new StreamReader(req.Body).ReadToEndAsync();
             dynamic data = JsonConvert.DeserializeObject(requestBody);
-            _log.LogInformation($"Request Data: {data}");
+            LogInformation($"Request Data: {data}");
 
             var status = new StatusModel();
 
@@ -100,7 +100,7 @@ namespace TrueVote.Api.Services
             status.ExecutionTimeMsg = $"Time to run: {watch.ElapsedMilliseconds}ms";
             status.CurrentTime = DateTime.Now.ToUniversalTime().ToString("dddd, MMM dd, yyyy HH:mm:ss");
 
-            _log.LogDebug("HTTP trigger - GetStatus:End");
+            LogDebug("HTTP trigger - GetStatus:End");
 
             return new OkObjectResult(status);
         }
@@ -115,31 +115,31 @@ namespace TrueVote.Api.Services
             }
             binDir = binDir.Replace("file:///", "");
 
-            _log.LogInformation($"binDir: {binDir}");
+            LogInformation($"binDir: {binDir}");
 
             // On Linux we may need to add a leading /
             if (!_fileSystem.Path.IsPathFullyQualified(binDir))
             {
                 binDir = "/" + binDir;
-                _log.LogInformation("Added leading '/' to binDir");
-                _log.LogInformation($"Modified binDir: {binDir}");
+                LogInformation("Added leading '/' to binDir");
+                LogInformation($"Modified binDir: {binDir}");
             }
 
             try
             {
                 var versionFile = _fileSystem.Path.Combine(binDir, "version.json");
 
-                _log.LogInformation($"Loading build info from: {versionFile}");
+                LogInformation($"Loading build info from: {versionFile}");
 
                 var versionContents = _fileSystem.File.ReadAllText(versionFile);
 
-                _log.LogInformation($"Loaded build info from version.json");
+                LogInformation($"Loaded build info from version.json");
 
                 return versionContents;
             }
             catch (Exception e)
             {
-                _log.LogError($"Could not load version.json file. Exception: {e.Message}");
+                LogError($"Could not load version.json file. Exception: {e.Message}");
 
                 return null;
             }

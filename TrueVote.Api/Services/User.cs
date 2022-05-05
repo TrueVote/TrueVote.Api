@@ -42,7 +42,7 @@ namespace TrueVote.Api.Services
         public async Task<IActionResult> CreateUser(
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "user")] HttpRequest req)
         {
-            _log.LogDebug("HTTP trigger - CreateUser:Begin");
+            LogDebug("HTTP trigger - CreateUser:Begin");
 
             BaseUserModel baseUser;
             try
@@ -52,13 +52,13 @@ namespace TrueVote.Api.Services
             }
             catch (Exception e)
             {
-                _log.LogError("baseUser: invalid format");
-                _log.LogDebug("HTTP trigger - CreateUser:End");
+                LogError("baseUser: invalid format");
+                LogDebug("HTTP trigger - CreateUser:End");
 
                 return new BadRequestObjectResult(e.Message);
             }
 
-            _log.LogInformation($"Request Data: {baseUser}");
+            LogInformation($"Request Data: {baseUser}");
 
             var user = new UserModel { FirstName = baseUser.FirstName, Email = baseUser.Email };
 
@@ -69,7 +69,7 @@ namespace TrueVote.Api.Services
 
             await TelegramBot.SendChannelMessage("New TrueVote User created");
 
-            _log.LogDebug("HTTP trigger - CreateUser:End");
+            LogDebug("HTTP trigger - CreateUser:End");
 
             return new CreatedResult(string.Empty, user);
         }
@@ -89,7 +89,7 @@ namespace TrueVote.Api.Services
         public async Task<IActionResult> UserFind(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "user/find")] HttpRequest req)
         {
-            _log.LogDebug("HTTP trigger - UserFind:Begin");
+            LogDebug("HTTP trigger - UserFind:Begin");
 
             FindUserModel findUser;
             try
@@ -99,13 +99,13 @@ namespace TrueVote.Api.Services
             }
             catch (Exception e)
             {
-                _log.LogError("findUser: invalid format");
-                _log.LogDebug("HTTP trigger - UserFind:End");
+                LogError("findUser: invalid format");
+                LogDebug("HTTP trigger - UserFind:End");
 
                 return new BadRequestObjectResult(e.Message);
             }
 
-            _log.LogInformation($"Request Data: {findUser}");
+            LogInformation($"Request Data: {findUser}");
 
             // TODO Simplify this query by putting the and conditions in an extension methods to build the where clause more idomatically. It should iterate
             // through all the properties in FindUserModel and build the .Where clause dynamically.
@@ -115,7 +115,7 @@ namespace TrueVote.Api.Services
                     (findUser.Email == null || (u.Email ?? string.Empty).ToLower().Contains(findUser.Email.ToLower())))
                 .OrderByDescending(u => u.DateCreated).ToListAsync();
 
-            _log.LogDebug("HTTP trigger - UserFind:End");
+            LogDebug("HTTP trigger - UserFind:End");
 
             return items.Count == 0 ? new NotFoundResult() : new OkObjectResult(items);
         }

@@ -42,7 +42,7 @@ namespace TrueVote.Api.Services
         public async Task<IActionResult> CreateElection(
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "election")] HttpRequest req)
         {
-            _log.LogDebug("HTTP trigger - CreateElection:Begin");
+            LogDebug("HTTP trigger - CreateElection:Begin");
 
             BaseElectionModel baseElection;
             try
@@ -52,13 +52,13 @@ namespace TrueVote.Api.Services
             }
             catch (Exception e)
             {
-                _log.LogError("baseElection: invalid format");
-                _log.LogDebug("HTTP trigger - CreateElection:End");
+                LogError("baseElection: invalid format");
+                LogDebug("HTTP trigger - CreateElection:End");
 
                 return new BadRequestObjectResult(e.Message);
             }
 
-            _log.LogInformation($"Request Data: {baseElection}");
+            LogInformation($"Request Data: {baseElection}");
 
             var election = new ElectionModel { Name = baseElection.Name, StartDate = baseElection.StartDate, EndDate = baseElection.EndDate };
 
@@ -69,7 +69,7 @@ namespace TrueVote.Api.Services
 
             await TelegramBot.SendChannelMessage($"New TrueVote Election created: {baseElection.Name}");
 
-            _log.LogDebug("HTTP trigger - CreateElection:End");
+            LogDebug("HTTP trigger - CreateElection:End");
 
             return new CreatedResult(string.Empty, election);
         }
@@ -89,7 +89,7 @@ namespace TrueVote.Api.Services
         public async Task<IActionResult> ElectionFind(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "election/find")] HttpRequest req)
         {
-            _log.LogDebug("HTTP trigger - ElectionFind:Begin");
+            LogDebug("HTTP trigger - ElectionFind:Begin");
 
             FindElectionModel findElection;
             try
@@ -99,13 +99,13 @@ namespace TrueVote.Api.Services
             }
             catch (Exception e)
             {
-                _log.LogError("findElection: invalid format");
-                _log.LogDebug("HTTP trigger - ElectionFind:End");
+                LogError("findElection: invalid format");
+                LogDebug("HTTP trigger - ElectionFind:End");
 
                 return new BadRequestObjectResult(e.Message);
             }
 
-            _log.LogInformation($"Request Data: {findElection}");
+            LogInformation($"Request Data: {findElection}");
 
             // TODO Add all the Races to the query
             var items = await _trueVoteDbContext.Elections
@@ -113,7 +113,7 @@ namespace TrueVote.Api.Services
                     findElection.Name == null || (e.Name ?? string.Empty).ToLower().Contains(findElection.Name.ToLower()))
                 .OrderByDescending(e => e.DateCreated).ToListAsync();
 
-            _log.LogDebug("HTTP trigger - ElectionFind:End");
+            LogDebug("HTTP trigger - ElectionFind:End");
 
             return items.Count == 0 ? new NotFoundResult() : new OkObjectResult(items);
         }

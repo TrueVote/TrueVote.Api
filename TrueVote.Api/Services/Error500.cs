@@ -35,21 +35,21 @@ namespace TrueVote.Api.Services
         public async Task<IActionResult> ThrowError500(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "error500")] HttpRequest req)
         {
-            _log.LogDebug("HTTP trigger - ThrowError500:Begin");
+            LogDebug("HTTP trigger - ThrowError500:Begin");
 
             var requestBody = await new StreamReader(req.Body).ReadToEndAsync();
             dynamic data = JsonConvert.DeserializeObject(requestBody);
-            _log.LogInformation($"Request Data: {data}");
+            LogInformation($"Request Data: {data}");
 
             if (data?.Error == "true")
             {
                 // Throw this random exception for no reason other than the requester wants it
-                _log.LogError($"error500 - throwing a sample exception");
-                _log.LogDebug("HTTP trigger - ThrowError500:End");
+                LogError($"error500 - throwing a sample exception");
+                LogDebug("HTTP trigger - ThrowError500:End");
                 throw new Exception("error500 - throwing a sample exception");
             }
 
-            _log.LogDebug("HTTP trigger - ThrowError500:End");
+            LogDebug("HTTP trigger - ThrowError500:End");
 
             return new OkResult();
         }
