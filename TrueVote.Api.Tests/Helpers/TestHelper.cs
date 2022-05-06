@@ -14,7 +14,7 @@ namespace TrueVote.Api.Tests.Helpers
         protected readonly ITestOutputHelper _output;
         protected readonly HttpContext _httpContext;
         protected readonly IFileSystem _fileSystem;
-        protected readonly Mock<ILogger<LoggerHelper>> _log;
+        protected readonly Mock<ILogger<LoggerHelper>> logHelper;
         protected readonly User _userApi;
         protected readonly Election _electionApi;
         protected readonly Race _raceApi;
@@ -25,35 +25,38 @@ namespace TrueVote.Api.Tests.Helpers
             _output = output;
             _httpContext = new DefaultHttpContext();
             _fileSystem = new FileSystem();
-            _log = new Mock<ILogger<LoggerHelper>>();
-            _log.MockLog(LogLevel.Debug);
-            _log.MockLog(LogLevel.Information);
-            _log.MockLog(LogLevel.Warning);
-            _log.MockLog(LogLevel.Error);
+            logHelper = new Mock<ILogger<LoggerHelper>>();
+            logHelper.MockLog(LogLevel.Debug);
+            logHelper.MockLog(LogLevel.Information);
+            logHelper.MockLog(LogLevel.Warning);
+            logHelper.MockLog(LogLevel.Error);
+
+            //var mockTelegram = new Mock<TelegramBot>();
+            //mockTelegram.Setup(m => TelegramBot.SendChannelMessage(It.IsAny<string>()));
 
             var mockUserSet = DbMoqHelper.GetDbSet(MoqData.MockUserData);
             var mockUserContext = new Mock<TrueVoteDbContext>();
             mockUserContext.Setup(m => m.Users).Returns(mockUserSet.Object);
             mockUserContext.Setup(m => m.EnsureCreatedAsync()).Returns(Task.FromResult(true));
-            _userApi = new User(_log.Object, mockUserContext.Object);
+            _userApi = new User(logHelper.Object, mockUserContext.Object);
 
             var mockElectionSet = DbMoqHelper.GetDbSet(MoqData.MockElectionData);
             var mockElectionContext = new Mock<TrueVoteDbContext>();
             mockElectionContext.Setup(m => m.Elections).Returns(mockElectionSet.Object);
             mockElectionContext.Setup(m => m.EnsureCreatedAsync()).Returns(Task.FromResult(true));
-            _electionApi = new Election(_log.Object, mockElectionContext.Object);
+            _electionApi = new Election(logHelper.Object, mockElectionContext.Object);
 
             var mockRaceSet = DbMoqHelper.GetDbSet(MoqData.MockRaceData);
             var mockRaceContext = new Mock<TrueVoteDbContext>();
             mockRaceContext.Setup(m => m.Races).Returns(mockRaceSet.Object);
             mockRaceContext.Setup(m => m.EnsureCreatedAsync()).Returns(Task.FromResult(true));
-            _raceApi = new Race(_log.Object, mockRaceContext.Object);
+            _raceApi = new Race(logHelper.Object, mockRaceContext.Object);
 
             var mockCandidateSet = DbMoqHelper.GetDbSet(MoqData.MockCandidateData);
             var mockCandidateContext = new Mock<TrueVoteDbContext>();
             mockCandidateContext.Setup(m => m.Candidates).Returns(mockCandidateSet.Object);
             mockCandidateContext.Setup(m => m.EnsureCreatedAsync()).Returns(Task.FromResult(true));
-            _candidateApi = new Candidate(_log.Object, mockCandidateContext.Object);
+            _candidateApi = new Candidate(logHelper.Object, mockCandidateContext.Object);
         }
     }
 }

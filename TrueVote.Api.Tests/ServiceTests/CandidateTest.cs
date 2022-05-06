@@ -38,8 +38,8 @@ namespace TrueVote.Api.Tests.ServiceTests
 
             _ = await _candidateApi.CreateCandidate(_httpContext.Request);
 
-            _log.Verify(LogLevel.Information, Times.Exactly(1));
-            _log.Verify(LogLevel.Debug, Times.Exactly(2));
+            logHelper.Verify(LogLevel.Information, Times.Exactly(1));
+            logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
         }
 
         [Fact]
@@ -69,8 +69,8 @@ namespace TrueVote.Api.Tests.ServiceTests
             Assert.IsType<DateTime>(val.DateCreated);
             Assert.NotEmpty(val.CandidateId);
 
-            _log.Verify(LogLevel.Information, Times.Exactly(1));
-            _log.Verify(LogLevel.Debug, Times.Exactly(2));
+            logHelper.Verify(LogLevel.Information, Times.Exactly(1));
+            logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
         }
 
         [Fact]
@@ -87,8 +87,8 @@ namespace TrueVote.Api.Tests.ServiceTests
             Assert.Equal((int) HttpStatusCode.BadRequest, objectResult.StatusCode);
             Assert.Contains("Required", objectResult.Value.ToString());
 
-            _log.Verify(LogLevel.Error, Times.Exactly(1));
-            _log.Verify(LogLevel.Debug, Times.Exactly(2));
+            logHelper.Verify(LogLevel.Error, Times.Exactly(1));
+            logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
         }
 
         [Fact]
@@ -108,7 +108,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(findCandidateObj));
             _httpContext.Request.Body = new MemoryStream(byteArray);
 
-            var candidateApi = new Candidate(_log.Object, mockCandidateContext.Object);
+            var candidateApi = new Candidate(logHelper.Object, mockCandidateContext.Object);
 
             var ret = await candidateApi.CandidateFind(_httpContext.Request);
             Assert.NotNull(ret);
@@ -121,8 +121,8 @@ namespace TrueVote.Api.Tests.ServiceTests
             Assert.Equal("John Smith", val[1].Name);
             Assert.Equal("Democrat", val[0].PartyAffiliation);
 
-            _log.Verify(LogLevel.Information, Times.Exactly(1));
-            _log.Verify(LogLevel.Debug, Times.Exactly(2));
+            logHelper.Verify(LogLevel.Information, Times.Exactly(1));
+            logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
         }
 
         [Fact]
@@ -142,15 +142,15 @@ namespace TrueVote.Api.Tests.ServiceTests
             var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(findCandidateObj));
             _httpContext.Request.Body = new MemoryStream(byteArray);
 
-            var candidateApi = new Candidate(_log.Object, mockCandidateContext.Object);
+            var candidateApi = new Candidate(logHelper.Object, mockCandidateContext.Object);
 
             var ret = await candidateApi.CandidateFind(_httpContext.Request);
             Assert.NotNull(ret);
             var objectResult = Assert.IsType<NotFoundResult>(ret);
             Assert.Equal((int) HttpStatusCode.NotFound, objectResult.StatusCode);
 
-            _log.Verify(LogLevel.Information, Times.Exactly(1));
-            _log.Verify(LogLevel.Debug, Times.Exactly(2));
+            logHelper.Verify(LogLevel.Information, Times.Exactly(1));
+            logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
         }
 
         [Fact]
@@ -165,8 +165,8 @@ namespace TrueVote.Api.Tests.ServiceTests
             var objectResult = Assert.IsType<BadRequestObjectResult>(ret);
             Assert.Equal((int) HttpStatusCode.BadRequest, objectResult.StatusCode);
 
-            _log.Verify(LogLevel.Error, Times.Exactly(1));
-            _log.Verify(LogLevel.Debug, Times.Exactly(2));
+            logHelper.Verify(LogLevel.Error, Times.Exactly(1));
+            logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
         }
     }
 }
