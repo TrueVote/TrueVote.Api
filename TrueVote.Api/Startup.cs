@@ -134,6 +134,7 @@ namespace TrueVote.Api
             builder.Services.AddDbContext<TrueVoteDbContext>();
             builder.Services.TryAddScoped<IFileSystem, FileSystem>();
             builder.Services.TryAddSingleton<ILoggerFactory, LoggerFactory>();
+            builder.Services.TryAddSingleton<TelegramBot, TelegramBot>();
 
             ConfigureServices(builder.Services).BuildServiceProvider(true);
         }

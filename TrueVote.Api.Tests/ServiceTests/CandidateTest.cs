@@ -108,7 +108,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(findCandidateObj));
             _httpContext.Request.Body = new MemoryStream(byteArray);
 
-            var candidateApi = new Candidate(logHelper.Object, mockCandidateContext.Object);
+            var candidateApi = new Candidate(logHelper.Object, mockCandidateContext.Object, mockTelegram.Object);
 
             var ret = await candidateApi.CandidateFind(_httpContext.Request);
             Assert.NotNull(ret);
@@ -142,7 +142,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(findCandidateObj));
             _httpContext.Request.Body = new MemoryStream(byteArray);
 
-            var candidateApi = new Candidate(logHelper.Object, mockCandidateContext.Object);
+            var candidateApi = new Candidate(logHelper.Object, mockCandidateContext.Object, mockTelegram.Object);
 
             var ret = await candidateApi.CandidateFind(_httpContext.Request);
             Assert.NotNull(ret);

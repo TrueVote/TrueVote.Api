@@ -119,7 +119,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(findRaceObj));
             _httpContext.Request.Body = new MemoryStream(byteArray);
 
-            var raceApi = new Race(logHelper.Object, mockRaceContext.Object);
+            var raceApi = new Race(logHelper.Object, mockRaceContext.Object, mockTelegram.Object);
 
             var ret = await raceApi.RaceFind(_httpContext.Request);
             Assert.NotNull(ret);
@@ -156,7 +156,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(findRaceObj));
             _httpContext.Request.Body = new MemoryStream(byteArray);
 
-            var raceApi = new Race(logHelper.Object, mockRaceContext.Object);
+            var raceApi = new Race(logHelper.Object, mockRaceContext.Object, mockTelegram.Object);
 
             var ret = await raceApi.RaceFind(_httpContext.Request);
             Assert.NotNull(ret);
@@ -216,7 +216,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(addCandidatesObj));
             _httpContext.Request.Body = new MemoryStream(byteArray);
 
-            var raceApi = new Race(logHelper.Object, mockRaceContext.Object);
+            var raceApi = new Race(logHelper.Object, mockRaceContext.Object, mockTelegram.Object);
 
             var ret = await raceApi.AddCandidates(_httpContext.Request);
 
@@ -271,7 +271,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(addCandidatesObj));
             _httpContext.Request.Body = new MemoryStream(byteArray);
 
-            var raceApi = new Race(logHelper.Object, mockRaceContext.Object);
+            var raceApi = new Race(logHelper.Object, mockRaceContext.Object, mockTelegram.Object);
 
             var ret = await raceApi.AddCandidates(_httpContext.Request);
             Assert.NotNull(ret);
@@ -310,7 +310,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(addCandidatesObj));
             _httpContext.Request.Body = new MemoryStream(byteArray);
 
-            var raceApi = new Race(logHelper.Object, mockRaceContext.Object);
+            var raceApi = new Race(logHelper.Object, mockRaceContext.Object, mockTelegram.Object);
 
             var ret = await raceApi.AddCandidates(_httpContext.Request);
             Assert.NotNull(ret);
@@ -353,7 +353,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(addCandidatesObj));
             _httpContext.Request.Body = new MemoryStream(byteArray);
 
-            var raceApi = new Race(logHelper.Object, mockRaceContext.Object);
+            var raceApi = new Race(logHelper.Object, mockRaceContext.Object, mockTelegram.Object);
 
             var ret = await raceApi.AddCandidates(_httpContext.Request);
             Assert.NotNull(ret);
