@@ -1,8 +1,10 @@
 using Microsoft.Extensions.Logging;
+using System.Diagnostics.CodeAnalysis;
 using TrueVote.Api.Services;
 
 namespace TrueVote.Api.Helpers
 {
+    [ExcludeFromCodeCoverage]
     public class LoggerHelper
     {
         private readonly ILogger _log;
