@@ -31,7 +31,6 @@ jobs:
   call-build-workflow-pr:
     if: github.ref != 'refs/heads/master'
     runs-on: ubuntu-latest
-    needs: call-version-workflow
 
     steps:
     - name: Invoke Build Workflow
