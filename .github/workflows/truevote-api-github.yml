@@ -10,6 +10,9 @@ on:
     types: [completed]
     branches-ignore: [master]
 
+  pull_request:
+    branches: [ master ]
+
 env:
   AZURE_FUNCTIONAPP_NAME: truevote-api
   AZURE_FUNCTIONAPP_PACKAGE_PATH: './TrueVote.Api'
