@@ -6,10 +6,12 @@ namespace TrueVote.Api.Helpers
     public class LoggerHelper
     {
         private readonly ILogger _log;
+        private readonly TelegramBot _telegramBot;
 
-        public LoggerHelper(ILogger log)
+        public LoggerHelper(ILogger log, TelegramBot telegramBot)
         {
             _log = log;
+            _telegramBot = telegramBot;
         }
 
         public void LogInformation(string message)
@@ -22,9 +24,9 @@ namespace TrueVote.Api.Helpers
             _log.LogWarning(message);
         }
 
-        public void LogError(string message)
+        public async void LogError(string message)
         {
-            // _ = TelegramBot.SendChannelMessage($"TrueVote API Error: {message}");
+            await _telegramBot.SendChannelMessageAsync($"TrueVote API Error: {message}");
 
             _log.LogError(message);
         }

@@ -32,7 +32,7 @@ namespace TrueVote.Api.Tests.Helpers
             logHelper.MockLog(LogLevel.Warning);
             logHelper.MockLog(LogLevel.Error);
 
-            mockTelegram.Setup(m => m.SendChannelMessageAsync(It.IsAny<string>()));
+            mockTelegram.Setup(m => m.SendChannelMessageAsync(It.IsAny<string>())).ReturnsAsync(new Telegram.Bot.Types.Message());
 
             var mockUserSet = DbMoqHelper.GetDbSet(MoqData.MockUserData);
             var mockUserContext = new Mock<TrueVoteDbContext>();

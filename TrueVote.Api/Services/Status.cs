@@ -24,10 +24,12 @@ namespace TrueVote.Api.Services
         protected IFileSystem _fileSystem;
         public static BuildInfo _BuildInfo = null;
         private static string _BuildInfoReadTime = null;
+        private readonly TelegramBot _telegramBot;
 
-        public Status(IFileSystem fileSystem, ILogger log, bool clearStatics = false): base(log)
+        public Status(IFileSystem fileSystem, ILogger log, TelegramBot telegramBot, bool clearStatics = false): base(log, telegramBot)
         {
             _fileSystem = fileSystem;
+            _telegramBot = telegramBot;
             if (clearStatics)
             {
                 ClearStatics();
@@ -99,6 +101,8 @@ namespace TrueVote.Api.Services
             status.ExecutionTime = watch.ElapsedMilliseconds;
             status.ExecutionTimeMsg = $"Time to run: {watch.ElapsedMilliseconds}ms";
             status.CurrentTime = DateTime.Now.ToUniversalTime().ToString("dddd, MMM dd, yyyy HH:mm:ss");
+
+            await _telegramBot.SendChannelMessageAsync($"Status Check");
 
             LogDebug("HTTP trigger - GetStatus:End");
 

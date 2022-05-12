@@ -7,7 +7,7 @@ namespace TrueVote.Api.Services
 {
     public class Health : LoggerHelper
     {
-        public Health(ILogger log): base(log)
+        public Health(ILogger log, TelegramBot telegramBot): base(log, telegramBot)
         {
         }
 

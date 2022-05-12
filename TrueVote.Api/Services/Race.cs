@@ -22,7 +22,7 @@ namespace TrueVote.Api.Services
         private readonly TrueVoteDbContext _trueVoteDbContext;
         private readonly TelegramBot _telegramBot;
 
-        public Race(ILogger log, TrueVoteDbContext trueVoteDbContext, TelegramBot telegramBot) : base(log)
+        public Race(ILogger log, TrueVoteDbContext trueVoteDbContext, TelegramBot telegramBot) : base(log, telegramBot)
         {
             _trueVoteDbContext = trueVoteDbContext;
             _telegramBot = telegramBot;
