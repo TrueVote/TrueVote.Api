@@ -20,10 +20,12 @@ namespace TrueVote.Api.Services
     public class Candidate : LoggerHelper
     {
         private readonly TrueVoteDbContext _trueVoteDbContext;
+        private readonly TelegramBot _telegramBot;
 
-        public Candidate(ILogger log, TrueVoteDbContext trueVoteDbContext) : base(log)
+        public Candidate(ILogger log, TrueVoteDbContext trueVoteDbContext, TelegramBot telegramBot) : base(log, telegramBot)
         {
             _trueVoteDbContext = trueVoteDbContext;
+            _telegramBot = telegramBot;
         }
 
         [FunctionName(nameof(CreateCandidate))]
@@ -42,7 +44,7 @@ namespace TrueVote.Api.Services
         public async Task<IActionResult> CreateCandidate(
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "candidate")] HttpRequest req)
         {
-            _log.LogDebug("HTTP trigger - CreateCandidate:Begin");
+            LogDebug("HTTP trigger - CreateCandidate:Begin");
 
             BaseCandidateModel baseCandidate;
             try
@@ -52,13 +54,13 @@ namespace TrueVote.Api.Services
             }
             catch (Exception e)
             {
-                _log.LogError("baseCandidate: invalid format");
-                _log.LogDebug("HTTP trigger - CreateCandidate:End");
+                LogError("baseCandidate: invalid format");
+                LogDebug("HTTP trigger - CreateCandidate:End");
 
                 return new BadRequestObjectResult(e.Message);
             }
 
-            _log.LogInformation($"Request Data: {baseCandidate}");
+            LogInformation($"Request Data: {baseCandidate}");
 
             var candidate = new CandidateModel { Name = baseCandidate.Name, PartyAffiliation = baseCandidate.PartyAffiliation };
 
@@ -67,9 +69,9 @@ namespace TrueVote.Api.Services
             await _trueVoteDbContext.Candidates.AddAsync(candidate);
             await _trueVoteDbContext.SaveChangesAsync();
 
-            await TelegramBot.SendChannelMessage($"New TrueVote Candidate created: {baseCandidate.Name}");
+            await _telegramBot.SendChannelMessageAsync($"New TrueVote Candidate created: {baseCandidate.Name}");
 
-            _log.LogDebug("HTTP trigger - CreateCandidate:End");
+            LogDebug("HTTP trigger - CreateCandidate:End");
 
             return new CreatedResult(string.Empty, candidate);
         }
@@ -89,7 +91,7 @@ namespace TrueVote.Api.Services
         public async Task<IActionResult> CandidateFind(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "candidate/find")] HttpRequest req)
         {
-            _log.LogDebug("HTTP trigger - CandidateFind:Begin");
+            LogDebug("HTTP trigger - CandidateFind:Begin");
 
             FindCandidateModel findCandidate;
             try
@@ -99,13 +101,13 @@ namespace TrueVote.Api.Services
             }
             catch (Exception e)
             {
-                _log.LogError("findCandidate: invalid format");
-                _log.LogDebug("HTTP trigger - CandidateFind:End");
+                LogError("findCandidate: invalid format");
+                LogDebug("HTTP trigger - CandidateFind:End");
 
                 return new BadRequestObjectResult(e.Message);
             }
 
-            _log.LogInformation($"Request Data: {findCandidate}");
+            LogInformation($"Request Data: {findCandidate}");
 
             var items = await _trueVoteDbContext.Candidates
                 .Where(c =>
@@ -113,7 +115,7 @@ namespace TrueVote.Api.Services
                     (findCandidate.PartyAffiliation == null || (c.PartyAffiliation ?? string.Empty).ToLower().Contains(findCandidate.PartyAffiliation.ToLower())))
                 .OrderByDescending(c => c.DateCreated).ToListAsync();
 
-            _log.LogDebug("HTTP trigger - CandidateFind:End");
+            LogDebug("HTTP trigger - CandidateFind:End");
 
             return items.Count == 0 ? new NotFoundResult() : new OkObjectResult(items);
         }

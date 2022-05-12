@@ -131,10 +131,10 @@ namespace TrueVote.Api
     {
         public override void Configure(IFunctionsHostBuilder builder)
         {
+            builder.Services.AddDbContext<TrueVoteDbContext>();
             builder.Services.TryAddScoped<IFileSystem, FileSystem>();
             builder.Services.TryAddSingleton<ILoggerFactory, LoggerFactory>();
-            builder.Services.AddDbContext<TrueVoteDbContext>();
-            TelegramBot.Init();
+            builder.Services.TryAddSingleton<TelegramBot, TelegramBot>();
 
             ConfigureServices(builder.Services).BuildServiceProvider(true);
         }

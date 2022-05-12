@@ -19,7 +19,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public void LogsMessages()
         {
-            var health = new Health(_log.Object);
+            var health = new Health(logHelper.Object, mockTelegram.Object);
 
             var cronSchedule = new CronSchedule(CrontabSchedule.Parse("*/5 * * * *"));
 
@@ -28,7 +28,7 @@ namespace TrueVote.Api.Tests.ServiceTests
 
             health.Run(timerInfo);
 
-            _log.Verify(LogLevel.Information, Times.AtLeast(1));
+            logHelper.Verify(LogLevel.Information, Times.AtLeast(1));
         }
     }
 }

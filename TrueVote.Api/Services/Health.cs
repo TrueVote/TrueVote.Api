@@ -7,14 +7,14 @@ namespace TrueVote.Api.Services
 {
     public class Health : LoggerHelper
     {
-        public Health(ILogger log): base(log)
+        public Health(ILogger log, TelegramBot telegramBot): base(log, telegramBot)
         {
         }
 
         [FunctionName("HealthTimer")]
         public void Run([TimerTrigger("*/5 * * * *")] TimerInfo timerInfo)
         {
-            _log.LogInformation($"HealthTimer trigger function {timerInfo.Schedule} executed at: {DateTime.Now.ToUniversalTime().ToString("dddd, MMM dd, yyyy HH:mm:ss")}");
+            LogInformation($"HealthTimer trigger function {timerInfo.Schedule} executed at: {DateTime.Now.ToUniversalTime().ToString("dddd, MMM dd, yyyy HH:mm:ss")}");
         }
     }
 }

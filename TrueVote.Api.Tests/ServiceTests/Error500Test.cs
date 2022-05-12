@@ -21,17 +21,17 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public async Task LogsMessages()
         {
-            var error500 = new Error500(_log.Object);
+            var error500 = new Error500(logHelper.Object, mockTelegram.Object);
             _ = await error500.ThrowError500(_httpContext.Request);
 
-            _log.Verify(LogLevel.Information, Times.Exactly(1));
-            _log.Verify(LogLevel.Debug, Times.Exactly(2));
+            logHelper.Verify(LogLevel.Information, Times.Exactly(1));
+            logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
         }
 
         [Fact]
         public async Task CausesDivideByZero()
         {
-            var error500 = new Error500(_log.Object);
+            var error500 = new Error500(logHelper.Object, mockTelegram.Object);
 
             var errorObj = new
             {
