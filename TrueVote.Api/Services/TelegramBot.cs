@@ -12,14 +12,17 @@ using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using Newtonsoft.Json;
 using TrueVote.Api.Models;
+using Microsoft.Azure.Functions.Extensions.DependencyInjection;
+using TrueVote.Api.Services;
 
-// TODO Localize this
+// TODO Localize this service, since it returns English messages to Telegram
 // See local.settings.json for local settings and Azure Portal for production settings
+[assembly: FunctionsStartup(typeof(TelegramBot))]
 namespace TrueVote.Api.Services
 {
 #pragma warning disable SCS0004 // Certificate Validation has been disabled.
     [ExcludeFromCodeCoverage] // TODO Write tests. This requires mocking the Telegram API
-    public class TelegramBot
+    public class TelegramBot : FunctionsStartup
     {
         private static HttpClientHandler httpClientHandler;
         private static TelegramBotClient botClient = null; // To connect to bot: https://t.me/TrueVoteAPI_bot
@@ -27,9 +30,14 @@ namespace TrueVote.Api.Services
         private static string BaseApiUrl = string.Empty; // TODO Would be better to pull this from the environment instead of a setting. e.g. For local it would be https://localhost:7071/api
         private static readonly string HelpText = "📖 TrueVote API Bot enables you execute some commands on the API. Simply use / in this chat to see a list of commands. To view broadcast messages, be sure and join the TrueVote API Runtime Channel: https://t.me/{0}";
 
-        public static async void Init()
+        public override void Configure(IFunctionsHostBuilder builder)
         {
-            if (botClient != null)
+            Init();
+        }
+
+        private static async void Init()
+        {
+            if (botClient != null) // In case the function is called again, if it's iniatialized, don't do it again
                 return;
 
             using var cts = new CancellationTokenSource();
@@ -65,9 +73,11 @@ namespace TrueVote.Api.Services
             }
 
             // Setup HttpClient requests to ignore Certificate errors
-            httpClientHandler = new HttpClientHandler();
-            httpClientHandler.ClientCertificateOptions = ClientCertificateOption.Manual;
-            httpClientHandler.ServerCertificateCustomValidationCallback = (httpRequestMessage, cert, cetChain, policyErrors) => true;
+            httpClientHandler = new HttpClientHandler
+            {
+                ClientCertificateOptions = ClientCertificateOption.Manual,
+                ServerCertificateCustomValidationCallback = (httpRequestMessage, cert, cetChain, policyErrors) => true
+            };
 
             try
             {
