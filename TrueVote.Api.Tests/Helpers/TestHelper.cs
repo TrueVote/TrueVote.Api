@@ -19,6 +19,7 @@ namespace TrueVote.Api.Tests.Helpers
         protected readonly Election _electionApi;
         protected readonly Race _raceApi;
         protected readonly Candidate _candidateApi;
+        protected readonly GraphQL _graphQLApi;
         public Mock<TelegramBot> mockTelegram = new Mock<TelegramBot>();
 
         public TestHelper(ITestOutputHelper output)
@@ -57,6 +58,8 @@ namespace TrueVote.Api.Tests.Helpers
             mockCandidateContext.Setup(m => m.Candidates).Returns(mockCandidateSet.Object);
             mockCandidateContext.Setup(m => m.EnsureCreatedAsync()).Returns(Task.FromResult(true));
             _candidateApi = new Candidate(logHelper.Object, mockCandidateContext.Object, mockTelegram.Object);
+
+            _graphQLApi = new GraphQL(logHelper.Object, mockTelegram.Object);
         }
     }
 }

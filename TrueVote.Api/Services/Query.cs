@@ -1,20 +1,15 @@
+using TrueVote.Api.Models;
+
 namespace TrueVote.Api.Services
 {
     public class Query
     {
-        public Person GetPerson()
+        public CandidateModel GetCandidates()
         {
-            return new Person("Luke Skywalker");
-        }
-    }
-
-    public class Person
-    {
-        public Person(string name)
-        {
-            Name = name;
+            // TODO Return actual query
+            return new CandidateModel { CandidateId = "1", DateCreated = System.DateTime.Now, Name = "John Smith", PartyAffiliation = "Independant" };
         }
 
-        public string Name { get; }
+        // TODO Add Get() commands for all Services
     }
 }
