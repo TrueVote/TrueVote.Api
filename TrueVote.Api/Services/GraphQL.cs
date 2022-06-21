@@ -31,11 +31,11 @@ namespace TrueVote.Api.Services
         {
             LogDebug("HTTP trigger - GraphQL:Begin");
 
-            var ret = executor.ExecuteAsync(req);
+            var ret = await executor.ExecuteAsync(req);
 
             LogDebug("HTTP trigger - GraphQL:End");
 
-            return await ret;
+            return ret;
         }
     }
 }
