@@ -11,6 +11,9 @@ using Xunit.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using HotChocolate.AzureFunctions;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
+using Newtonsoft.Json;
+using TrueVote.Api.Models;
 
 namespace TrueVote.Api.Tests.ServiceTests
 {
@@ -21,6 +24,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         public GraphQLTest(ITestOutputHelper output) : base(output)
         {
             httpContext = new DefaultHttpContext();
+            httpContext.Features.Set<IHttpResponseBodyFeature>(new StreamResponseBodyFeature(new MemoryStream()));
         }
 
         [Fact]
@@ -39,28 +43,33 @@ namespace TrueVote.Api.Tests.ServiceTests
 
             var byteArray = Encoding.ASCII.GetBytes(graphQLRequestObj);
             httpContext.Request.Body = new MemoryStream(byteArray);
+            httpContext.Request.ContentType = "application/json";
+            httpContext.Request.ContentLength = httpContext.Request.Body.Length;
+            httpContext.Request.Path = "/api/graphql";
+            httpContext.Request.Method = "POST";
 
             var ret = await _graphQLApi.Run(httpContext.Request, requestExecutor);
             Assert.NotNull(ret);
-
-            // TODO Assert() statements for actual data returned. Right now, it returns an empty result
-            // The challenge is how to get the BODY from the response off of the context.
-            // This query works in Postman, Banana Cake Pop, but in those environments, it's called using
-            // an actual http pipeline context. Here on line 43 it's directly calling the service without
-            // a fully materialized context.
-            //
-            // HotChocolate says that it's returned in the response stream here:
-            // https://github.com/ChilliCream/hotchocolate/blob/c2e8bbc0a9c7dc5da3ed2ffb6b669ee533d75d75/src/HotChocolate/AzureFunctions/src/HotChocolate.AzureFunctions/DefaultGraphQLRequestExecutor.cs#L32
-
-            // Ticket
-            // https://truevote.atlassian.net/browse/AD-39
-            // https://github.com/TrueVote/TrueVote.Api/issues/19
+            var responseStream = httpContext.Response.Body as MemoryStream;
+            var responseBody = Encoding.ASCII.GetString(responseStream.ToArray());
+            Assert.Equal("{\"data\":{\"candidates\":{\"name\":\"John Smith\",\"partyAffiliation\":\"Independant\"}}}", responseBody);
+            var baseCandidate = JsonConvert.DeserializeObject<Root>(responseBody).Data.Candidates;
+            Assert.Equal("John Smith", baseCandidate.Name);
 
             Assert.Equal((int) HttpStatusCode.OK, httpContext.Response.StatusCode);
-
             logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
         }
 
         // TODO Add Get() tests for all Services
+    }
+
+    public class Data
+    {
+        public CandidateModel Candidates { get; set; }
+    }
+
+    public class Root
+    {
+        public Data Data { get; set; }
     }
 }
