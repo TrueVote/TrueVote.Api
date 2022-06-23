@@ -136,6 +136,8 @@ namespace TrueVote.Api
             builder.Services.TryAddSingleton<ILoggerFactory, LoggerFactory>();
             builder.Services.TryAddSingleton<TelegramBot, TelegramBot>();
 
+            builder.AddGraphQLFunction().AddQueryType<Query>();
+
             ConfigureServices(builder.Services).BuildServiceProvider(true);
         }
 
