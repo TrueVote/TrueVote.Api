@@ -24,6 +24,8 @@ namespace TrueVote.Api.Tests.ServiceTests
         public GraphQLTest(ITestOutputHelper output) : base(output)
         {
             httpContext = new DefaultHttpContext();
+
+            // https://stackoverflow.com/questions/59159565/initializing-defaulthttpcontext-response-body-to-memorystream-throws-nullreferen
             httpContext.Features.Set<IHttpResponseBodyFeature>(new StreamResponseBodyFeature(new MemoryStream()));
         }
 
@@ -34,11 +36,9 @@ namespace TrueVote.Api.Tests.ServiceTests
             serviceCollection.AddGraphQLFunction().AddQueryType<Query>();
 
             var serviceProvider = serviceCollection.BuildServiceProvider();
-
             var requestExecutor = serviceProvider.GetRequiredService<IGraphQLRequestExecutor>();
 
-            var graphQLQuery = "{ candidates { name, partyAffiliation } }";
-
+            var graphQLQuery = "{ candidate { name, partyAffiliation } }";
             var graphQLRequestObj = $"{{\"query\":\"{graphQLQuery}\"}}";
 
             var byteArray = Encoding.ASCII.GetBytes(graphQLRequestObj);
@@ -50,26 +50,19 @@ namespace TrueVote.Api.Tests.ServiceTests
 
             var ret = await _graphQLApi.Run(httpContext.Request, requestExecutor);
             Assert.NotNull(ret);
+
             var responseStream = httpContext.Response.Body as MemoryStream;
             var responseBody = Encoding.ASCII.GetString(responseStream.ToArray());
-            Assert.Equal("{\"data\":{\"candidates\":{\"name\":\"John Smith\",\"partyAffiliation\":\"Independant\"}}}", responseBody);
-            var baseCandidate = JsonConvert.DeserializeObject<Root>(responseBody).Data.Candidates;
-            Assert.Equal("John Smith", baseCandidate.Name);
+            Assert.Equal("{\"data\":{\"candidate\":{\"name\":\"John Smith\",\"partyAffiliation\":\"Independant\"}}}", responseBody);
+
+            var graphQLRoot = JsonConvert.DeserializeObject<GraphQLCandidateRoot>(responseBody).Data;
+            var candiateRoot = JsonConvert.DeserializeObject<CandidateObj>(JsonConvert.SerializeObject(graphQLRoot));
+            Assert.Equal("John Smith", candiateRoot.candidate.Name);
 
             Assert.Equal((int) HttpStatusCode.OK, httpContext.Response.StatusCode);
             logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
         }
 
         // TODO Add Get() tests for all Services
-    }
-
-    public class Data
-    {
-        public CandidateModel Candidates { get; set; }
-    }
-
-    public class Root
-    {
-        public Data Data { get; set; }
     }
 }

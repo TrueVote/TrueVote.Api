@@ -4,11 +4,16 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 
 namespace TrueVote.Api.Models
 {
+    [ExcludeFromCodeCoverage]
+    public class GraphQLCandidateRoot
+    {
+        public CandidateObj Data { get; set; }
+    }
+
     [ExcludeFromCodeCoverage]
     public class CandidateObj
     {
