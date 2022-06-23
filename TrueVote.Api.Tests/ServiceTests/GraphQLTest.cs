@@ -46,7 +46,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             // TODO Assert() statements for actual data returned. Right now, it returns an empty result
             // The challenge is how to get the BODY from the response off of the context.
             // This query works in Postman, Banana Cake Pop, but in those environments, it's called using
-            // an actual http pipeline context. Here on line 58 it's directly calling the service without
+            // an actual http pipeline context. Here on line 43 it's directly calling the service without
             // a fully materialized context.
             //
             // HotChocolate says that it's returned in the response stream here:
