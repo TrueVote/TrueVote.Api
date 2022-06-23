@@ -1,7 +1,9 @@
+using System.Diagnostics.CodeAnalysis;
 using TrueVote.Api.Models;
 
 namespace TrueVote.Api.Services
 {
+    [ExcludeFromCodeCoverage]
     public class Query
     {
         public CandidateModel GetCandidates()

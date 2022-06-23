@@ -1,51 +1,26 @@
-using HotChocolate.Types;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Moq;
-using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
-using TrueVote.Api.Models;
 using TrueVote.Api.Services;
 using TrueVote.Api.Tests.Helpers;
 using Xunit;
 using Xunit.Abstractions;
-using MockQueryable.Moq;
 using Microsoft.Extensions.DependencyInjection;
 using HotChocolate.AzureFunctions;
 using Microsoft.AspNetCore.Http;
-using System.Data.Entity.Core.Objects;
-using Microsoft.AspNetCore.Mvc.Abstractions;
-using Microsoft.AspNetCore.Routing;
-using System.Net.Http;
-using HotChocolate.Execution;
 
 namespace TrueVote.Api.Tests.ServiceTests
 {
     public class GraphQLTest : TestHelper
     {
-        // private readonly IGraphQLRequestExecutor requestExecutor;
         private readonly HttpContext httpContext;
-        private readonly HttpClient httpClient;
-        private byte[] buffer;
 
         public GraphQLTest(ITestOutputHelper output) : base(output)
         {
             httpContext = new DefaultHttpContext();
-            httpClient = new HttpClient();
-        }
-
-        private static ActionContext PrepareActionContext()
-        {
-            HttpContext httpContext = new DefaultHttpContext();
-            httpContext.Response.Body = new MemoryStream();
-
-            return new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
         }
 
         [Fact]
@@ -63,29 +38,24 @@ namespace TrueVote.Api.Tests.ServiceTests
             var graphQLRequestObj = $"{{\"query\":\"{graphQLQuery}\"}}";
 
             var byteArray = Encoding.ASCII.GetBytes(graphQLRequestObj);
-
             httpContext.Request.Body = new MemoryStream(byteArray);
-            httpContext.Request.ContentType = "application/json";
-            httpContext.Request.ContentLength = _httpContext.Request.Body.Length;
-            httpContext.Request.Path = "/api/graphql";
-            httpContext.Request.Protocol = "HTTP/1.1";
-            httpContext.Request.Method = "POST";
 
             var ret = await _graphQLApi.Run(httpContext.Request, requestExecutor);
             Assert.NotNull(ret);
 
-            var responseBody = await new StreamReader(httpContext.Response.Body).ReadToEndAsync();
+            // TODO Assert() statements for actual data returned. Right now, it returns an empty result
+            // The challenge is how to get the BODY from the response off of the context.
+            // This query works in Postman, Banana Cake Pop, but in those environments, it's called using
+            // an actual http pipeline context. Here on line 58 it's directly calling the service without
+            // a fully materialized context.
+            //
+            // HotChocolate says that it's returned in the response stream here:
+            // https://github.com/ChilliCream/hotchocolate/blob/c2e8bbc0a9c7dc5da3ed2ffb6b669ee533d75d75/src/HotChocolate/AzureFunctions/src/HotChocolate.AzureFunctions/DefaultGraphQLRequestExecutor.cs#L32
 
-            var baseCandidate = JsonConvert.DeserializeObject(responseBody);
-            var t = Task.FromResult(ret);
+            // Ticket
+            // https://truevote.atlassian.net/browse/AD-39
+            // https://github.com/TrueVote/TrueVote.Api/issues/19
 
-            // var responseBody = new StreamReader(body).ReadToEnd();
-
-            // var objectResult = Assert.IsType<CandidateModel>(httpContext.Response.Body);
-
-            //Assert.NotEmpty(val);
-            //Assert.Single(val);
-            //Assert.Equal("John Smith", val[0].Name);
             Assert.Equal((int) HttpStatusCode.OK, httpContext.Response.StatusCode);
 
             logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
