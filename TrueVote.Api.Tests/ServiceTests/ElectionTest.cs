@@ -95,22 +95,11 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public async Task FindsElection()
         {
-            var findElectionData = new List<ElectionModel>
-            {
-                new ElectionModel { Name = "California State", DateCreated = DateTime.Now, StartDate = DateTime.Now, EndDate = DateTime.Now.AddDays(30) },
-                new ElectionModel { Name = "Los Angeles County", DateCreated = DateTime.Now, StartDate = DateTime.Now, EndDate = DateTime.Now.AddDays(30) },
-                new ElectionModel { Name = "Federal", DateCreated = DateTime.Now, StartDate = DateTime.Now, EndDate = DateTime.Now.AddDays(30) },
-            }.AsQueryable();
-            var mockElectionSet = DbMoqHelper.GetDbSet(findElectionData);
-
-            var mockElectionContext = new Mock<TrueVoteDbContext>();
-            mockElectionContext.Setup(m => m.Elections).Returns(mockElectionSet.Object);
-
             var findElectionObj = new FindElectionModel { Name = "County" };
             var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(findElectionObj));
             _httpContext.Request.Body = new MemoryStream(byteArray);
 
-            var electionApi = new Election(logHelper.Object, mockElectionContext.Object, mockTelegram.Object);
+            var electionApi = new Election(logHelper.Object, _moqDataAccessor.mockElectionContext.Object, mockTelegram.Object);
 
             var ret = await electionApi.ElectionFind(_httpContext.Request);
             Assert.NotNull(ret);
@@ -129,22 +118,11 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public async Task HandlesUnfoundElection()
         {
-            var findElectionData = new List<ElectionModel>
-            {
-                new ElectionModel { Name = "California State", DateCreated = DateTime.Now, StartDate = DateTime.Now, EndDate = DateTime.Now.AddDays(30) },
-                new ElectionModel { Name = "Los Angeles County", DateCreated = DateTime.Now, StartDate = DateTime.Now, EndDate = DateTime.Now.AddDays(30) },
-                new ElectionModel { Name = "Federal", DateCreated = DateTime.Now, StartDate = DateTime.Now, EndDate = DateTime.Now.AddDays(30) },
-            }.AsQueryable();
-            var mockElectionSet = DbMoqHelper.GetDbSet(findElectionData);
-
-            var mockElectionContext = new Mock<TrueVoteDbContext>();
-            mockElectionContext.Setup(m => m.Elections).Returns(mockElectionSet.Object);
-
             var findElectionObj = new FindElectionModel { Name = "not going to find anything" };
             var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(findElectionObj));
             _httpContext.Request.Body = new MemoryStream(byteArray);
 
-            var electionApi = new Election(logHelper.Object, mockElectionContext.Object, mockTelegram.Object);
+            var electionApi = new Election(logHelper.Object, _moqDataAccessor.mockElectionContext.Object, mockTelegram.Object);
 
             var ret = await electionApi.ElectionFind(_httpContext.Request);
             Assert.NotNull(ret);

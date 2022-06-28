@@ -94,22 +94,11 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public async Task FindsUser()
         {
-            var findUserData = new List<UserModel>
-            {
-                new UserModel { Email = "foo@bar.com", DateCreated = DateTime.Now, FirstName = "Foo", UserId = "1" },
-                new UserModel { Email = "foo2@bar.com", DateCreated = DateTime.Now.AddSeconds(1), FirstName = "Foo2", UserId = "2" },
-                new UserModel { Email = "boo@bar.com", DateCreated = DateTime.Now.AddSeconds(2), FirstName = "Boo", UserId = "3" }
-            }.AsQueryable();
-            var mockUserSet = DbMoqHelper.GetDbSet(findUserData);
-
-            var mockUserContext = new Mock<TrueVoteDbContext>();
-            mockUserContext.Setup(m => m.Users).Returns(mockUserSet.Object);
-
             var findUserObj = new FindUserModel { FirstName = "Foo" };
             var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(findUserObj));
             _httpContext.Request.Body = new MemoryStream(byteArray);
 
-            var userApi = new User(logHelper.Object, mockUserContext.Object, mockTelegram.Object);
+            var userApi = new User(logHelper.Object, _moqDataAccessor.mockUserContext.Object, mockTelegram.Object);
 
             var ret = await userApi.UserFind(_httpContext.Request);
             Assert.NotNull(ret);
@@ -129,22 +118,11 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public async Task HandlesUnfoundUser()
         {
-            var findUserData = new List<UserModel>
-            {
-                new UserModel { Email = "foo@bar.com", DateCreated = DateTime.Now, FirstName = "Foo", UserId = "1" },
-                new UserModel { Email = "foo2@bar.com", DateCreated = DateTime.Now.AddSeconds(1), FirstName = "Foo2", UserId = "2" },
-                new UserModel { Email = "boo@bar.com", DateCreated = DateTime.Now.AddSeconds(2), FirstName = "Boo", UserId = "3" }
-            }.AsQueryable();
-            var mockUserSet = DbMoqHelper.GetDbSet(findUserData);
-
-            var mockUserContext = new Mock<TrueVoteDbContext>();
-            mockUserContext.Setup(m => m.Users).Returns(mockUserSet.Object);
-
             var findUserObj = new FindUserModel { FirstName = "not going to find anything" };
             var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(findUserObj));
             _httpContext.Request.Body = new MemoryStream(byteArray);
 
-            var userApi = new User(logHelper.Object, mockUserContext.Object, mockTelegram.Object);
+            var userApi = new User(logHelper.Object, _moqDataAccessor.mockUserContext.Object, mockTelegram.Object);
 
             var ret = await userApi.UserFind(_httpContext.Request);
             Assert.NotNull(ret);

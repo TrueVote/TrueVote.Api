@@ -105,7 +105,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         {
             var findRaceData = new List<RaceModel>
             {
-                new RaceModel { Name = "President", DateCreated = DateTime.Now, RaceType = RaceTypes.ChooseOne, Candidates = MoqData.MockCandidateDataCollection },
+                new RaceModel { Name = "President", DateCreated = DateTime.Now, RaceType = RaceTypes.ChooseOne, Candidates = _moqDataAccessor.mockCandidateDataCollection },
                 new RaceModel { Name = "Judge", DateCreated = DateTime.Now.AddSeconds(1), RaceType = RaceTypes.ChooseMany },
                 new RaceModel { Name = "Governor", DateCreated = DateTime.Now.AddSeconds(2), RaceType = RaceTypes.ChooseOne }
             }.AsQueryable();
@@ -140,23 +140,11 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public async Task HandlesUnfoundRace()
         {
-            var findRaceData = new List<RaceModel>
-            {
-                new RaceModel { Name = "President", DateCreated = DateTime.Now, RaceType = RaceTypes.ChooseOne, Candidates = MoqData.MockCandidateDataCollection },
-                new RaceModel { Name = "Judge", DateCreated = DateTime.Now.AddSeconds(1), RaceType = RaceTypes.ChooseMany },
-                new RaceModel { Name = "Governor", DateCreated = DateTime.Now.AddSeconds(2), RaceType = RaceTypes.ChooseOne }
-            }.AsQueryable();
-
-            var mockRaceSet = DbMoqHelper.GetDbSet(findRaceData);
-
-            var mockRaceContext = new Mock<TrueVoteDbContext>();
-            mockRaceContext.Setup(m => m.Races).Returns(mockRaceSet.Object);
-
             var findRaceObj = new FindRaceModel { Name = "not going to find anything" };
             var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(findRaceObj));
             _httpContext.Request.Body = new MemoryStream(byteArray);
 
-            var raceApi = new Race(logHelper.Object, mockRaceContext.Object, mockTelegram.Object);
+            var raceApi = new Race(logHelper.Object, _moqDataAccessor.mockRaceContext.Object, mockTelegram.Object);
 
             var ret = await raceApi.RaceFind(_httpContext.Request);
             Assert.NotNull(ret);
@@ -327,7 +315,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         {
             var addsCandidatesRaceData = new List<RaceModel>
             {
-                new RaceModel { Name = "President", DateCreated = DateTime.Now, RaceType = RaceTypes.ChooseOne, Candidates = MoqData.MockCandidateDataCollection },
+                new RaceModel { Name = "President", DateCreated = DateTime.Now, RaceType = RaceTypes.ChooseOne, Candidates = _moqDataAccessor.mockCandidateDataCollection },
                 new RaceModel { Name = "Judge", DateCreated = DateTime.Now.AddSeconds(1), RaceType = RaceTypes.ChooseMany },
                 new RaceModel { Name = "Governor", DateCreated = DateTime.Now.AddSeconds(2), RaceType = RaceTypes.ChooseOne }
             };

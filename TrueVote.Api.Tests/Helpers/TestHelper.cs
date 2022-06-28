@@ -20,6 +20,7 @@ namespace TrueVote.Api.Tests.Helpers
         protected readonly Race _raceApi;
         protected readonly Candidate _candidateApi;
         protected readonly GraphQL _graphQLApi;
+        protected readonly MoqDataAccessor _moqDataAccessor;
         public Mock<TelegramBot> mockTelegram = new Mock<TelegramBot>();
 
         public TestHelper(ITestOutputHelper output)
@@ -28,6 +29,7 @@ namespace TrueVote.Api.Tests.Helpers
             _httpContext = new DefaultHttpContext();
             _fileSystem = new FileSystem();
             logHelper = new Mock<ILogger<LoggerHelper>>();
+            _moqDataAccessor = new MoqDataAccessor();
             logHelper.MockLog(LogLevel.Debug);
             logHelper.MockLog(LogLevel.Information);
             logHelper.MockLog(LogLevel.Warning);
@@ -35,25 +37,25 @@ namespace TrueVote.Api.Tests.Helpers
 
             mockTelegram.Setup(m => m.SendChannelMessageAsync(It.IsAny<string>())).ReturnsAsync(new Telegram.Bot.Types.Message());
 
-            var mockUserSet = DbMoqHelper.GetDbSet(MoqData.MockUserData);
+            var mockUserSet = DbMoqHelper.GetDbSet(_moqDataAccessor.mockUserDataQueryable);
             var mockUserContext = new Mock<TrueVoteDbContext>();
             mockUserContext.Setup(m => m.Users).Returns(mockUserSet.Object);
             mockUserContext.Setup(m => m.EnsureCreatedAsync()).Returns(Task.FromResult(true));
             _userApi = new User(logHelper.Object, mockUserContext.Object, mockTelegram.Object);
 
-            var mockElectionSet = DbMoqHelper.GetDbSet(MoqData.MockElectionData);
+            var mockElectionSet = DbMoqHelper.GetDbSet(_moqDataAccessor.mockElectionDataQueryable);
             var mockElectionContext = new Mock<TrueVoteDbContext>();
             mockElectionContext.Setup(m => m.Elections).Returns(mockElectionSet.Object);
             mockElectionContext.Setup(m => m.EnsureCreatedAsync()).Returns(Task.FromResult(true));
             _electionApi = new Election(logHelper.Object, mockElectionContext.Object, mockTelegram.Object);
 
-            var mockRaceSet = DbMoqHelper.GetDbSet(MoqData.MockRaceData);
+            var mockRaceSet = DbMoqHelper.GetDbSet(_moqDataAccessor.mockRaceDataQueryable);
             var mockRaceContext = new Mock<TrueVoteDbContext>();
             mockRaceContext.Setup(m => m.Races).Returns(mockRaceSet.Object);
             mockRaceContext.Setup(m => m.EnsureCreatedAsync()).Returns(Task.FromResult(true));
             _raceApi = new Race(logHelper.Object, mockRaceContext.Object, mockTelegram.Object);
 
-            var mockCandidateSet = DbMoqHelper.GetDbSet(MoqData.MockCandidateData);
+            var mockCandidateSet = DbMoqHelper.GetDbSet(_moqDataAccessor.mockCandidateDataQueryable);
             var mockCandidateContext = new Mock<TrueVoteDbContext>();
             mockCandidateContext.Setup(m => m.Candidates).Returns(mockCandidateSet.Object);
             mockCandidateContext.Setup(m => m.EnsureCreatedAsync()).Returns(Task.FromResult(true));

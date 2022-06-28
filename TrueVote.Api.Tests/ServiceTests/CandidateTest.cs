@@ -94,21 +94,11 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public async Task FindsCandidate()
         {
-            var findCandidateData = new List<CandidateModel>
-            {
-                new CandidateModel { Name = "John Smith", DateCreated = DateTime.Now, PartyAffiliation = "Republican" },
-                new CandidateModel { Name = "Jane Doe", DateCreated = DateTime.Now.AddSeconds(1), PartyAffiliation = "Democrat" }
-            }.AsQueryable();
-            var mockCandidateSet = DbMoqHelper.GetDbSet(findCandidateData);
-
-            var mockCandidateContext = new Mock<TrueVoteDbContext>();
-            mockCandidateContext.Setup(m => m.Candidates).Returns(mockCandidateSet.Object);
-
             var findCandidateObj = new FindCandidateModel { Name = "J" };
             var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(findCandidateObj));
             _httpContext.Request.Body = new MemoryStream(byteArray);
 
-            var candidateApi = new Candidate(logHelper.Object, mockCandidateContext.Object, mockTelegram.Object);
+            var candidateApi = new Candidate(logHelper.Object, _moqDataAccessor.mockCandidateContext.Object, mockTelegram.Object);
 
             var ret = await candidateApi.CandidateFind(_httpContext.Request);
             Assert.NotNull(ret);
@@ -128,21 +118,11 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public async Task HandlesUnfoundCandidate()
         {
-            var findCandidateData = new List<CandidateModel>
-            {
-                new CandidateModel { Name = "John Smith", DateCreated = DateTime.Now, PartyAffiliation = "Republican" },
-                new CandidateModel { Name = "Jane Doe", DateCreated = DateTime.Now.AddSeconds(1), PartyAffiliation = "Democrat" }
-            }.AsQueryable();
-            var mockCandidateSet = DbMoqHelper.GetDbSet(findCandidateData);
-
-            var mockCandidateContext = new Mock<TrueVoteDbContext>();
-            mockCandidateContext.Setup(m => m.Candidates).Returns(mockCandidateSet.Object);
-
             var findCandidateObj = new FindCandidateModel { Name = "not going to find anything" };
             var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(findCandidateObj));
             _httpContext.Request.Body = new MemoryStream(byteArray);
 
-            var candidateApi = new Candidate(logHelper.Object, mockCandidateContext.Object, mockTelegram.Object);
+            var candidateApi = new Candidate(logHelper.Object, _moqDataAccessor.mockCandidateContext.Object, mockTelegram.Object);
 
             var ret = await candidateApi.CandidateFind(_httpContext.Request);
             Assert.NotNull(ret);
