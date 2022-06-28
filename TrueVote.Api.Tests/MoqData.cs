@@ -70,6 +70,7 @@ namespace TrueVote.Api.Tests
 
             mockRaceContext = new Mock<TrueVoteDbContext>();
             MoqData.MockRaceData[0].RaceId = "1";
+            // TODO Fix this assignment
             MoqData.MockRaceData[0].Candidates = mockCandidateDataCollection;
             MoqData.MockRaceData[1].RaceId = "2";
             MoqData.MockRaceData[2].RaceId = "3";
