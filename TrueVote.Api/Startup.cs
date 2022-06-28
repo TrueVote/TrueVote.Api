@@ -135,6 +135,7 @@ namespace TrueVote.Api
             builder.Services.TryAddScoped<IFileSystem, FileSystem>();
             builder.Services.TryAddSingleton<ILoggerFactory, LoggerFactory>();
             builder.Services.TryAddSingleton<TelegramBot, TelegramBot>();
+            builder.Services.TryAddScoped<Query, Query>();
 
             builder.AddGraphQLFunction().AddQueryType<Query>();
 
