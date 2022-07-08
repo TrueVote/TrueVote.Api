@@ -47,7 +47,9 @@ You'll see output in the console showing the various local URL access points.
 
 ![](static/console-output.png)
 
-You can then access the Api root [`http://localhost:7071/api/swagger/ui`](http://localhost:7071/api/swagger/ui).
+REST Api root [`https://localhost:7071/api/swagger/ui`](https://localhost:7071/api/swagger/ui)
+
+GraphQL root [`https://localhost:7071/api/graphql`](https://localhost:7071/api/graphql)
 
 ## 🧪 Unit Testing
 
