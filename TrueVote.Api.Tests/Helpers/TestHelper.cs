@@ -31,7 +31,7 @@ namespace TrueVote.Api.Tests.Helpers
 
         public TestHelper(ITestOutputHelper output)
         {
-            // This will override the calls in Startup.cs
+            // This will override the setup shims in Startup.cs
             var serviceCollection = new ServiceCollection();
 
             serviceCollection.AddDbContext<ITrueVoteDbContext, MoqTrueVoteDbContext>();
@@ -46,20 +46,24 @@ namespace TrueVote.Api.Tests.Helpers
             requestExecutor = serviceProvider.GetRequiredService<IGraphQLRequestExecutor>();
 
             _output = output;
+
             _httpContext = new DefaultHttpContext();
+            _httpContext.Request.ContentType = "application/json";
             // https://stackoverflow.com/questions/59159565/initializing-defaulthttpcontext-response-body-to-memorystream-throws-nullreferen
             _httpContext.Features.Set<IHttpResponseBodyFeature>(new StreamResponseBodyFeature(new MemoryStream()));
+
             _fileSystem = new FileSystem();
+
             _logHelper = new Mock<ILogger<LoggerHelper>>();
-            _mockTelegram =  new Mock<TelegramBot>();
-            _moqDataAccessor = new MoqDataAccessor();
             _logHelper.MockLog(LogLevel.Debug);
             _logHelper.MockLog(LogLevel.Information);
             _logHelper.MockLog(LogLevel.Warning);
             _logHelper.MockLog(LogLevel.Error);
 
+            _mockTelegram = new Mock<TelegramBot>();
             _mockTelegram.Setup(m => m.SendChannelMessageAsync(It.IsAny<string>())).ReturnsAsync(new Telegram.Bot.Types.Message());
 
+            _moqDataAccessor = new MoqDataAccessor();
             _userApi = new User(_logHelper.Object, _moqDataAccessor.mockUserContext.Object, _mockTelegram.Object);
             _electionApi = new Election(_logHelper.Object, _moqDataAccessor.mockElectionContext.Object, _mockTelegram.Object);
             _raceApi = new Race(_logHelper.Object, _moqDataAccessor.mockRaceContext.Object, _mockTelegram.Object);
