@@ -38,8 +38,8 @@ namespace TrueVote.Api.Tests.ServiceTests
 
             _ = await _candidateApi.CreateCandidate(_httpContext.Request);
 
-            logHelper.Verify(LogLevel.Information, Times.Exactly(1));
-            logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+            _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
         }
 
         [Fact]
@@ -69,8 +69,8 @@ namespace TrueVote.Api.Tests.ServiceTests
             Assert.IsType<DateTime>(val.DateCreated);
             Assert.NotEmpty(val.CandidateId);
 
-            logHelper.Verify(LogLevel.Information, Times.Exactly(1));
-            logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+            _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
         }
 
         [Fact]
@@ -87,8 +87,8 @@ namespace TrueVote.Api.Tests.ServiceTests
             Assert.Equal((int) HttpStatusCode.BadRequest, objectResult.StatusCode);
             Assert.Contains("Required", objectResult.Value.ToString());
 
-            logHelper.Verify(LogLevel.Error, Times.Exactly(1));
-            logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+            _logHelper.Verify(LogLevel.Error, Times.Exactly(1));
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
         }
 
         [Fact]
@@ -98,7 +98,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(findCandidateObj));
             _httpContext.Request.Body = new MemoryStream(byteArray);
 
-            var candidateApi = new Candidate(logHelper.Object, _moqDataAccessor.mockCandidateContext.Object, mockTelegram.Object);
+            var candidateApi = new Candidate(_logHelper.Object, _moqDataAccessor.mockCandidateContext.Object, _mockTelegram.Object);
 
             var ret = await candidateApi.CandidateFind(_httpContext.Request);
             Assert.NotNull(ret);
@@ -111,8 +111,8 @@ namespace TrueVote.Api.Tests.ServiceTests
             Assert.Equal("John Smith", val[1].Name);
             Assert.Equal("Democrat", val[0].PartyAffiliation);
 
-            logHelper.Verify(LogLevel.Information, Times.Exactly(1));
-            logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+            _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
         }
 
         [Fact]
@@ -122,15 +122,15 @@ namespace TrueVote.Api.Tests.ServiceTests
             var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(findCandidateObj));
             _httpContext.Request.Body = new MemoryStream(byteArray);
 
-            var candidateApi = new Candidate(logHelper.Object, _moqDataAccessor.mockCandidateContext.Object, mockTelegram.Object);
+            var candidateApi = new Candidate(_logHelper.Object, _moqDataAccessor.mockCandidateContext.Object, _mockTelegram.Object);
 
             var ret = await candidateApi.CandidateFind(_httpContext.Request);
             Assert.NotNull(ret);
             var objectResult = Assert.IsType<NotFoundResult>(ret);
             Assert.Equal((int) HttpStatusCode.NotFound, objectResult.StatusCode);
 
-            logHelper.Verify(LogLevel.Information, Times.Exactly(1));
-            logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+            _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
         }
 
         [Fact]
@@ -145,8 +145,8 @@ namespace TrueVote.Api.Tests.ServiceTests
             var objectResult = Assert.IsType<BadRequestObjectResult>(ret);
             Assert.Equal((int) HttpStatusCode.BadRequest, objectResult.StatusCode);
 
-            logHelper.Verify(LogLevel.Error, Times.Exactly(1));
-            logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+            _logHelper.Verify(LogLevel.Error, Times.Exactly(1));
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
         }
     }
 }

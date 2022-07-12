@@ -46,8 +46,8 @@ namespace TrueVote.Api.Tests.ServiceTests
 
             _ = await _raceApi.CreateRace(_httpContext.Request);
 
-            logHelper.Verify(LogLevel.Information, Times.Exactly(1));
-            logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+            _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
         }
 
         [Fact]
@@ -78,8 +78,8 @@ namespace TrueVote.Api.Tests.ServiceTests
             Assert.IsType<DateTime>(val.DateCreated);
             Assert.NotEmpty(val.RaceId);
 
-            logHelper.Verify(LogLevel.Information, Times.Exactly(1));
-            logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+            _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
         }
 
         [Fact]
@@ -96,8 +96,8 @@ namespace TrueVote.Api.Tests.ServiceTests
             Assert.Equal((int) HttpStatusCode.BadRequest, objectResult.StatusCode);
             Assert.Contains("Required", objectResult.Value.ToString());
 
-            logHelper.Verify(LogLevel.Error, Times.Exactly(1));
-            logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+            _logHelper.Verify(LogLevel.Error, Times.Exactly(1));
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
         }
 
         [Fact]
@@ -119,7 +119,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(findRaceObj));
             _httpContext.Request.Body = new MemoryStream(byteArray);
 
-            var raceApi = new Race(logHelper.Object, mockRaceContext.Object, mockTelegram.Object);
+            var raceApi = new Race(_logHelper.Object, mockRaceContext.Object, _mockTelegram.Object);
 
             var ret = await raceApi.RaceFind(_httpContext.Request);
             Assert.NotNull(ret);
@@ -133,8 +133,8 @@ namespace TrueVote.Api.Tests.ServiceTests
             Assert.Equal("John Smith", val[0].Candidates.ToList()[0].Name);
             Assert.Equal("Jane Doe", val[0].Candidates.ToList()[1].Name);
 
-            logHelper.Verify(LogLevel.Information, Times.Exactly(1));
-            logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+            _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
         }
 
         [Fact]
@@ -144,15 +144,15 @@ namespace TrueVote.Api.Tests.ServiceTests
             var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(findRaceObj));
             _httpContext.Request.Body = new MemoryStream(byteArray);
 
-            var raceApi = new Race(logHelper.Object, _moqDataAccessor.mockRaceContext.Object, mockTelegram.Object);
+            var raceApi = new Race(_logHelper.Object, _moqDataAccessor.mockRaceContext.Object, _mockTelegram.Object);
 
             var ret = await raceApi.RaceFind(_httpContext.Request);
             Assert.NotNull(ret);
             var objectResult = Assert.IsType<NotFoundResult>(ret);
             Assert.Equal((int) HttpStatusCode.NotFound, objectResult.StatusCode);
 
-            logHelper.Verify(LogLevel.Information, Times.Exactly(1));
-            logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+            _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
         }
 
         [Fact]
@@ -167,8 +167,8 @@ namespace TrueVote.Api.Tests.ServiceTests
             var objectResult = Assert.IsType<BadRequestObjectResult>(ret);
             Assert.Equal((int) HttpStatusCode.BadRequest, objectResult.StatusCode);
 
-            logHelper.Verify(LogLevel.Error, Times.Exactly(1));
-            logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+            _logHelper.Verify(LogLevel.Error, Times.Exactly(1));
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
         }
 
         [Fact]
@@ -204,7 +204,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(addCandidatesObj));
             _httpContext.Request.Body = new MemoryStream(byteArray);
 
-            var raceApi = new Race(logHelper.Object, mockRaceContext.Object, mockTelegram.Object);
+            var raceApi = new Race(_logHelper.Object, mockRaceContext.Object, _mockTelegram.Object);
 
             var ret = await raceApi.AddCandidates(_httpContext.Request);
 
@@ -220,8 +220,8 @@ namespace TrueVote.Api.Tests.ServiceTests
             Assert.Equal("Jane Smith", val.Candidates.ToList()[1].Name);
             Assert.Equal("Democrat", val.Candidates.ToList()[1].PartyAffiliation);
 
-            logHelper.Verify(LogLevel.Information, Times.Exactly(1));
-            logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+            _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
         }
 
         [Fact]
@@ -236,8 +236,8 @@ namespace TrueVote.Api.Tests.ServiceTests
             var objectResult = Assert.IsType<BadRequestObjectResult>(ret);
             Assert.Equal((int) HttpStatusCode.BadRequest, objectResult.StatusCode);
 
-            logHelper.Verify(LogLevel.Error, Times.Exactly(1));
-            logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+            _logHelper.Verify(LogLevel.Error, Times.Exactly(1));
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
         }
 
         [Fact]
@@ -259,7 +259,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(addCandidatesObj));
             _httpContext.Request.Body = new MemoryStream(byteArray);
 
-            var raceApi = new Race(logHelper.Object, mockRaceContext.Object, mockTelegram.Object);
+            var raceApi = new Race(_logHelper.Object, mockRaceContext.Object, _mockTelegram.Object);
 
             var ret = await raceApi.AddCandidates(_httpContext.Request);
             Assert.NotNull(ret);
@@ -268,7 +268,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             Assert.Contains("Race", objectResult.Value.ToString());
             Assert.Contains("not found", objectResult.Value.ToString());
 
-            logHelper.Verify(LogLevel.Debug, Times.Exactly(1));
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(1));
         }
 
         [Fact]
@@ -298,7 +298,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(addCandidatesObj));
             _httpContext.Request.Body = new MemoryStream(byteArray);
 
-            var raceApi = new Race(logHelper.Object, mockRaceContext.Object, mockTelegram.Object);
+            var raceApi = new Race(_logHelper.Object, mockRaceContext.Object, _mockTelegram.Object);
 
             var ret = await raceApi.AddCandidates(_httpContext.Request);
             Assert.NotNull(ret);
@@ -307,7 +307,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             Assert.Contains("Candidate", objectResult.Value.ToString());
             Assert.Contains("not found", objectResult.Value.ToString());
 
-            logHelper.Verify(LogLevel.Debug, Times.Exactly(1));
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(1));
         }
 
         [Fact]
@@ -341,7 +341,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(addCandidatesObj));
             _httpContext.Request.Body = new MemoryStream(byteArray);
 
-            var raceApi = new Race(logHelper.Object, mockRaceContext.Object, mockTelegram.Object);
+            var raceApi = new Race(_logHelper.Object, mockRaceContext.Object, _mockTelegram.Object);
 
             var ret = await raceApi.AddCandidates(_httpContext.Request);
             Assert.NotNull(ret);
@@ -350,7 +350,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             Assert.Contains("Candidate", objectResult.Value.ToString());
             Assert.Contains("already exists", objectResult.Value.ToString());
 
-            logHelper.Verify(LogLevel.Debug, Times.Exactly(1));
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(1));
         }
     }
 }

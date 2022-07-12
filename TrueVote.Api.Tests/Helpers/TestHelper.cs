@@ -1,9 +1,14 @@
+using HotChocolate.AzureFunctions;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Moq;
+using System.IO;
 using System.IO.Abstractions;
-using System.Threading.Tasks;
 using TrueVote.Api.Helpers;
+using TrueVote.Api.Interfaces;
 using TrueVote.Api.Services;
 using Xunit.Abstractions;
 
@@ -14,55 +19,52 @@ namespace TrueVote.Api.Tests.Helpers
         protected readonly ITestOutputHelper _output;
         protected readonly HttpContext _httpContext;
         protected readonly IFileSystem _fileSystem;
-        protected readonly Mock<ILogger<LoggerHelper>> logHelper;
+        protected readonly Mock<ILogger<LoggerHelper>> _logHelper;
         protected readonly User _userApi;
         protected readonly Election _electionApi;
         protected readonly Race _raceApi;
         protected readonly Candidate _candidateApi;
         protected readonly GraphQL _graphQLApi;
         protected readonly MoqDataAccessor _moqDataAccessor;
-        public Mock<TelegramBot> mockTelegram = new Mock<TelegramBot>();
+        protected readonly Mock<TelegramBot> _mockTelegram;
+        protected readonly IGraphQLRequestExecutor requestExecutor;
 
         public TestHelper(ITestOutputHelper output)
         {
+            // This will override the calls in Startup.cs
+            var serviceCollection = new ServiceCollection();
+
+            serviceCollection.AddDbContext<ITrueVoteDbContext, MoqTrueVoteDbContext>();
+            serviceCollection.TryAddScoped<IFileSystem, FileSystem>();
+            serviceCollection.TryAddSingleton<ILoggerFactory, LoggerFactory>();
+            serviceCollection.TryAddSingleton(typeof(ILogger), typeof(Logger<Startup>));
+            serviceCollection.TryAddSingleton<TelegramBot, TelegramBot>();
+            serviceCollection.TryAddScoped<Query, Query>();
+            serviceCollection.AddGraphQLFunction().AddQueryType<Query>();
+
+            var serviceProvider = serviceCollection.BuildServiceProvider();
+            requestExecutor = serviceProvider.GetRequiredService<IGraphQLRequestExecutor>();
+
             _output = output;
             _httpContext = new DefaultHttpContext();
+            // https://stackoverflow.com/questions/59159565/initializing-defaulthttpcontext-response-body-to-memorystream-throws-nullreferen
+            _httpContext.Features.Set<IHttpResponseBodyFeature>(new StreamResponseBodyFeature(new MemoryStream()));
             _fileSystem = new FileSystem();
-            logHelper = new Mock<ILogger<LoggerHelper>>();
+            _logHelper = new Mock<ILogger<LoggerHelper>>();
+            _mockTelegram =  new Mock<TelegramBot>();
             _moqDataAccessor = new MoqDataAccessor();
-            logHelper.MockLog(LogLevel.Debug);
-            logHelper.MockLog(LogLevel.Information);
-            logHelper.MockLog(LogLevel.Warning);
-            logHelper.MockLog(LogLevel.Error);
+            _logHelper.MockLog(LogLevel.Debug);
+            _logHelper.MockLog(LogLevel.Information);
+            _logHelper.MockLog(LogLevel.Warning);
+            _logHelper.MockLog(LogLevel.Error);
 
-            mockTelegram.Setup(m => m.SendChannelMessageAsync(It.IsAny<string>())).ReturnsAsync(new Telegram.Bot.Types.Message());
+            _mockTelegram.Setup(m => m.SendChannelMessageAsync(It.IsAny<string>())).ReturnsAsync(new Telegram.Bot.Types.Message());
 
-            // TODO DRY this out by using MoqTrueVoteDbContext
-            var mockUserSet = DbMoqHelper.GetDbSet(_moqDataAccessor.mockUserDataQueryable);
-            var mockUserContext = new Mock<TrueVoteDbContext>();
-            mockUserContext.Setup(m => m.Users).Returns(mockUserSet.Object);
-            mockUserContext.Setup(m => m.EnsureCreatedAsync()).Returns(Task.FromResult(true));
-            _userApi = new User(logHelper.Object, mockUserContext.Object, mockTelegram.Object);
-
-            var mockElectionSet = DbMoqHelper.GetDbSet(_moqDataAccessor.mockElectionDataQueryable);
-            var mockElectionContext = new Mock<TrueVoteDbContext>();
-            mockElectionContext.Setup(m => m.Elections).Returns(mockElectionSet.Object);
-            mockElectionContext.Setup(m => m.EnsureCreatedAsync()).Returns(Task.FromResult(true));
-            _electionApi = new Election(logHelper.Object, mockElectionContext.Object, mockTelegram.Object);
-
-            var mockRaceSet = DbMoqHelper.GetDbSet(_moqDataAccessor.mockRaceDataQueryable);
-            var mockRaceContext = new Mock<TrueVoteDbContext>();
-            mockRaceContext.Setup(m => m.Races).Returns(mockRaceSet.Object);
-            mockRaceContext.Setup(m => m.EnsureCreatedAsync()).Returns(Task.FromResult(true));
-            _raceApi = new Race(logHelper.Object, mockRaceContext.Object, mockTelegram.Object);
-
-            var mockCandidateSet = DbMoqHelper.GetDbSet(_moqDataAccessor.mockCandidateDataQueryable);
-            var mockCandidateContext = new Mock<TrueVoteDbContext>();
-            mockCandidateContext.Setup(m => m.Candidates).Returns(mockCandidateSet.Object);
-            mockCandidateContext.Setup(m => m.EnsureCreatedAsync()).Returns(Task.FromResult(true));
-            _candidateApi = new Candidate(logHelper.Object, mockCandidateContext.Object, mockTelegram.Object);
-
-            _graphQLApi = new GraphQL(logHelper.Object, mockTelegram.Object);
+            _userApi = new User(_logHelper.Object, _moqDataAccessor.mockUserContext.Object, _mockTelegram.Object);
+            _electionApi = new Election(_logHelper.Object, _moqDataAccessor.mockElectionContext.Object, _mockTelegram.Object);
+            _raceApi = new Race(_logHelper.Object, _moqDataAccessor.mockRaceContext.Object, _mockTelegram.Object);
+            _candidateApi = new Candidate(_logHelper.Object, _moqDataAccessor.mockCandidateContext.Object, _mockTelegram.Object);
+            _graphQLApi = new GraphQL(_logHelper.Object, _mockTelegram.Object);
         }
     }
 }
