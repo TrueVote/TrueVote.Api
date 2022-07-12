@@ -13,16 +13,17 @@ using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json;
 using TrueVote.Api.Helpers;
+using TrueVote.Api.Interfaces;
 using TrueVote.Api.Models;
 
 namespace TrueVote.Api.Services
 {
     public class Candidate : LoggerHelper
     {
-        private readonly TrueVoteDbContext _trueVoteDbContext;
+        private readonly ITrueVoteDbContext _trueVoteDbContext;
         private readonly TelegramBot _telegramBot;
 
-        public Candidate(ILogger log, TrueVoteDbContext trueVoteDbContext, TelegramBot telegramBot) : base(log, telegramBot)
+        public Candidate(ILogger log, ITrueVoteDbContext trueVoteDbContext, TelegramBot telegramBot) : base(log, telegramBot)
         {
             _trueVoteDbContext = trueVoteDbContext;
             _telegramBot = telegramBot;

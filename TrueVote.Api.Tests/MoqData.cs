@@ -1,7 +1,10 @@
+using Microsoft.EntityFrameworkCore;
 using Moq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
+using TrueVote.Api.Interfaces;
 using TrueVote.Api.Models;
 
 namespace TrueVote.Api.Tests
@@ -38,45 +41,81 @@ namespace TrueVote.Api.Tests
 
     public class MoqDataAccessor
     {
-        public readonly Mock<TrueVoteDbContext> mockUserContext;
-        public readonly Mock<TrueVoteDbContext> mockElectionContext;
-        public readonly Mock<TrueVoteDbContext> mockCandidateContext;
-        public readonly Mock<TrueVoteDbContext> mockRaceContext;
+        public readonly Mock<MoqTrueVoteDbContext> mockUserContext;
+        public readonly Mock<MoqTrueVoteDbContext> mockElectionContext;
+        public readonly Mock<MoqTrueVoteDbContext> mockCandidateContext;
+        public readonly Mock<MoqTrueVoteDbContext> mockRaceContext;
         public readonly IQueryable<UserModel> mockUserDataQueryable;
-        public readonly IQueryable<RaceModel> mockRaceDataQueryable;
+        public readonly IQueryable<ElectionModel> mockElectionDataQueryable;
         public readonly IQueryable<CandidateModel> mockCandidateDataQueryable;
         public readonly ICollection<CandidateModel> mockCandidateDataCollection;
-        public readonly IQueryable<ElectionModel> mockElectionDataQueryable;
+        public readonly IQueryable<RaceModel> mockRaceDataQueryable;
+
+        public Mock<DbSet<UserModel>> mockUserSet { get; private set; }
+        public Mock<DbSet<RaceModel>> mockRaceSet { get; private set; }
+        public Mock<DbSet<CandidateModel>> mockCandidateSet { get; private set; }
+        public Mock<DbSet<ElectionModel>> mockElectionSet { get; private set; }
 
         // https://docs.microsoft.com/en-us/ef/ef6/fundamentals/testing/mocking?redirectedfrom=MSDN
         // https://github.com/romantitov/MockQueryable
         public MoqDataAccessor()
         {
-            mockUserContext = new Mock<TrueVoteDbContext>();
+            mockUserContext = new Mock<MoqTrueVoteDbContext>();
             mockUserDataQueryable = MoqData.MockUserData.AsQueryable();
-            var mockUserSet = DbMoqHelper.GetDbSet(mockUserDataQueryable);
+            mockUserSet = DbMoqHelper.GetDbSet(mockUserDataQueryable);
             mockUserContext.Setup(m => m.Users).Returns(mockUserSet.Object);
 
-            mockElectionContext = new Mock<TrueVoteDbContext>();
+            mockElectionContext = new Mock<MoqTrueVoteDbContext>();
             mockElectionDataQueryable = MoqData.MockElectionData.AsQueryable();
-            var mockElectionSet = DbMoqHelper.GetDbSet(mockElectionDataQueryable);
+            mockElectionSet = DbMoqHelper.GetDbSet(mockElectionDataQueryable);
             mockElectionContext.Setup(m => m.Elections).Returns(mockElectionSet.Object);
 
-            mockCandidateContext = new Mock<TrueVoteDbContext>();
+            mockCandidateContext = new Mock<MoqTrueVoteDbContext>();
             mockCandidateDataQueryable = MoqData.MockCandidateData.AsQueryable();
             mockCandidateDataCollection = MoqData.MockCandidateData;
-            var mockCandidateSet = DbMoqHelper.GetDbSet(mockCandidateDataQueryable);
+            mockCandidateSet = DbMoqHelper.GetDbSet(mockCandidateDataQueryable);
             mockCandidateContext.Setup(m => m.Candidates).Returns(mockCandidateSet.Object);
 
-            mockRaceContext = new Mock<TrueVoteDbContext>();
+            mockRaceContext = new Mock<MoqTrueVoteDbContext>();
             MoqData.MockRaceData[0].RaceId = "1";
             // TODO Fix this assignment
             MoqData.MockRaceData[0].Candidates = mockCandidateDataCollection;
             MoqData.MockRaceData[1].RaceId = "2";
             MoqData.MockRaceData[2].RaceId = "3";
             mockRaceDataQueryable = MoqData.MockRaceData.AsQueryable();
-            var mockRaceSet = DbMoqHelper.GetDbSet(mockRaceDataQueryable);
+            mockRaceSet = DbMoqHelper.GetDbSet(mockRaceDataQueryable);
             mockRaceContext.Setup(m => m.Races).Returns(mockRaceSet.Object);
+        }
+    }
+
+    // By implementing ITrueVoteDbContext, override the properties and set them to use Mocked data
+    public class MoqTrueVoteDbContext : DbContext, ITrueVoteDbContext
+    {
+        public virtual DbSet<UserModel> Users { get; set; }
+        public virtual DbSet<ElectionModel> Elections { get; set; }
+        public virtual DbSet<RaceModel> Races { get; set; }
+        public virtual DbSet<CandidateModel> Candidates { get; set; }
+
+        protected MoqDataAccessor _moqDataAccessor;
+
+        public MoqTrueVoteDbContext()
+        {
+            _moqDataAccessor = new MoqDataAccessor();
+
+            Users = _moqDataAccessor.mockUserSet.Object;
+            Elections = _moqDataAccessor.mockElectionSet.Object;
+            Races = _moqDataAccessor.mockRaceSet.Object;
+            Candidates = _moqDataAccessor.mockCandidateSet.Object;
+        }
+
+        public virtual async Task<bool> EnsureCreatedAsync()
+        {
+            return await Database.EnsureCreatedAsync();
+        }
+
+        public virtual async Task<int> SaveChangesAsync()
+        {
+            return await base.SaveChangesAsync();
         }
     }
 }

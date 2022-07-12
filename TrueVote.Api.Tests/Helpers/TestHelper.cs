@@ -37,6 +37,7 @@ namespace TrueVote.Api.Tests.Helpers
 
             mockTelegram.Setup(m => m.SendChannelMessageAsync(It.IsAny<string>())).ReturnsAsync(new Telegram.Bot.Types.Message());
 
+            // TODO DRY this out by using MoqTrueVoteDbContext
             var mockUserSet = DbMoqHelper.GetDbSet(_moqDataAccessor.mockUserDataQueryable);
             var mockUserContext = new Mock<TrueVoteDbContext>();
             mockUserContext.Setup(m => m.Users).Returns(mockUserSet.Object);

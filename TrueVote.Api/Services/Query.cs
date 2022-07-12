@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using TrueVote.Api.Helpers;
+using TrueVote.Api.Interfaces;
 using TrueVote.Api.Models;
 
 namespace TrueVote.Api.Services
@@ -13,10 +14,10 @@ namespace TrueVote.Api.Services
     // TODO Add sorting support to replace the 'OrderBy' directives below
     public class Query : LoggerHelper
     {
-        private readonly TrueVoteDbContext _trueVoteDbContext;
+        private readonly ITrueVoteDbContext _trueVoteDbContext;
         private readonly TelegramBot _telegramBot;
 
-        public Query(ILogger log, TrueVoteDbContext trueVoteDbContext, TelegramBot telegramBot) : base(log, telegramBot)
+        public Query(ILogger log, ITrueVoteDbContext trueVoteDbContext, TelegramBot telegramBot) : base(log, telegramBot)
         {
             _trueVoteDbContext = trueVoteDbContext;
             _telegramBot = telegramBot;

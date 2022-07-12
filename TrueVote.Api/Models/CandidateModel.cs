@@ -11,13 +11,15 @@ namespace TrueVote.Api.Models
     [ExcludeFromCodeCoverage]
     public class GraphQLCandidateRoot
     {
+        [JsonProperty(PropertyName = "Data")]
         public CandidateObj Data { get; set; }
     }
 
     [ExcludeFromCodeCoverage]
     public class CandidateObj
     {
-        public CandidateModel candidate;
+        [JsonProperty(PropertyName = "Candidate")]
+        public List<CandidateModel> candidate;
     }
 
     [ExcludeFromCodeCoverage]

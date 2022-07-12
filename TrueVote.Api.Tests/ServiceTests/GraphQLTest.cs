@@ -14,6 +14,10 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Newtonsoft.Json;
 using TrueVote.Api.Models;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using System.IO.Abstractions;
+using System.Collections.Generic;
+using TrueVote.Api.Interfaces;
 
 namespace TrueVote.Api.Tests.ServiceTests
 {
@@ -33,12 +37,19 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task RunsCandidateQuery()
         {
             var serviceCollection = new ServiceCollection();
+
+            serviceCollection.AddDbContext<ITrueVoteDbContext, MoqTrueVoteDbContext>();
+            serviceCollection.TryAddScoped<IFileSystem, FileSystem>();
+            serviceCollection.TryAddSingleton<ILoggerFactory, LoggerFactory>();
+            serviceCollection.TryAddSingleton(typeof(ILogger), typeof(Logger<Startup>));
+            serviceCollection.TryAddSingleton<TelegramBot, TelegramBot>();
+            serviceCollection.TryAddScoped<Query, Query>();
             serviceCollection.AddGraphQLFunction().AddQueryType<Query>();
 
             var serviceProvider = serviceCollection.BuildServiceProvider();
             var requestExecutor = serviceProvider.GetRequiredService<IGraphQLRequestExecutor>();
 
-            var graphQLQuery = "{ candidate { name, partyAffiliation } }";
+            var graphQLQuery = "{ candidate { candidateId, name, partyAffiliation } }";
             var graphQLRequestObj = $"{{\"query\":\"{graphQLQuery}\"}}";
 
             var byteArray = Encoding.ASCII.GetBytes(graphQLRequestObj);
@@ -53,16 +64,17 @@ namespace TrueVote.Api.Tests.ServiceTests
 
             var responseStream = httpContext.Response.Body as MemoryStream;
             var responseBody = Encoding.ASCII.GetString(responseStream.ToArray());
-            Assert.Equal("{\"data\":{\"candidate\":{\"name\":\"John Smith\",\"partyAffiliation\":\"Independant\"}}}", responseBody);
+            Assert.StartsWith("{\"data\":{\"candidate\":", responseBody);
 
             var graphQLRoot = JsonConvert.DeserializeObject<GraphQLCandidateRoot>(responseBody).Data;
-            var candiateRoot = JsonConvert.DeserializeObject<CandidateObj>(JsonConvert.SerializeObject(graphQLRoot));
-            Assert.Equal("John Smith", candiateRoot.candidate.Name);
+            var candiateRoot = JsonConvert.DeserializeObject<List<CandidateModel>>(JsonConvert.SerializeObject(graphQLRoot.candidate));
+            Assert.Equal("Jane Doe", candiateRoot[0].Name);
 
             Assert.Equal((int) HttpStatusCode.OK, httpContext.Response.StatusCode);
             logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
         }
 
+        // TODO Dry this out
         // TODO Add Get() tests for all Services
     }
 }
