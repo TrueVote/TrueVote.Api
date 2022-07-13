@@ -13,6 +13,12 @@ using System.Collections.Generic;
 
 namespace TrueVote.Api.Tests.ServiceTests
 {
+    public class GraphQLRoot
+    {
+        [JsonProperty(PropertyName = "Data")]
+        public dynamic Data { get; set; }
+    }
+
     public class GraphQLTest : TestHelper
     {
         public static readonly string GraphQLRootFormat = "{{\"query\":\"{0}\"}}";
@@ -25,7 +31,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         }
 
         // Takes a GraphQL query packages it, sends it, and checks for valid response
-        private async Task<string> GraphQLQuerySetup(string graphQLQuery)
+        private async Task<dynamic> GraphQLQuerySetup(string graphQLQuery)
         {
             var graphQLRequestObj = string.Format(GraphQLRootFormat, graphQLQuery);
 
@@ -40,14 +46,15 @@ namespace TrueVote.Api.Tests.ServiceTests
             var responseBody = Encoding.ASCII.GetString(responseStream.ToArray());
             Assert.StartsWith(GraphQLResponseRootHeader, responseBody);
 
-            return responseBody;
+            var graphQLRoot = JsonConvert.DeserializeObject<GraphQLRoot>(responseBody).Data;
+
+            return graphQLRoot;
         }
 
         [Fact]
         public async Task RunsCandidateQuery()
         {
-            var responseBody = await GraphQLQuerySetup("{ candidate { candidateId, name, partyAffiliation } }");
-            var graphQLRoot = JsonConvert.DeserializeObject<GraphQLCandidateRoot>(responseBody).Data;
+            var graphQLRoot = await GraphQLQuerySetup("{ candidate { candidateId, name, partyAffiliation } }");
 
             var candidates = JsonConvert.DeserializeObject<List<CandidateModel>>(JsonConvert.SerializeObject(graphQLRoot.candidate));
             Assert.Equal("Jane Doe", candidates[0].Name);
@@ -61,8 +68,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public async Task RunsElectionQuery()
         {
-            var responseBody = await GraphQLQuerySetup("{ election { electionId, name, dateCreated } }");
-            var graphQLRoot = JsonConvert.DeserializeObject<GraphQLElectionRoot>(responseBody).Data;
+            var graphQLRoot = await GraphQLQuerySetup("{ election { electionId, name, dateCreated } }");
 
             var elections = JsonConvert.DeserializeObject<List<ElectionModelReponse>>(JsonConvert.SerializeObject(graphQLRoot.election));
             Assert.Equal("Federal", elections[0].Name);
@@ -76,13 +82,14 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public async Task RunsRaceQuery()
         {
-            var responseBody = await GraphQLQuerySetup("{ race { dateCreated, name, raceId, raceType, raceTypeName, candidates { candidateId, name, partyAffiliation, dateCreated } } }");
-            var graphQLRoot = JsonConvert.DeserializeObject<GraphQLRaceRoot>(responseBody).Data;
+            var graphQLRoot = await GraphQLQuerySetup("{ race { dateCreated, name, raceId, raceType, raceTypeName, candidates { candidateId, name, partyAffiliation, dateCreated } } }");
 
             var race = JsonConvert.DeserializeObject<List<RaceModelResponse>>(JsonConvert.SerializeObject(graphQLRoot.race));
             Assert.Equal("Governor", race[0].Name);
+            Assert.Equal(RaceTypes.ChooseOne, race[0].RaceType);
             Assert.Equal("ChooseOne", race[0].RaceTypeName);
             Assert.Equal("Judge", race[1].Name);
+            Assert.Equal(RaceTypes.ChooseMany, race[1].RaceType);
             Assert.Equal("ChooseMany", race[1].RaceTypeName);
             Assert.True(race.Count == 3);
 
@@ -93,8 +100,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public async Task RunsUserQuery()
         {
-            var responseBody = await GraphQLQuerySetup("{ user { dateCreated, email, firstName, userId } }");
-            var graphQLRoot = JsonConvert.DeserializeObject<GraphQLUserRoot>(responseBody).Data;
+            var graphQLRoot = await GraphQLQuerySetup("{ user { dateCreated, email, firstName, userId } }");
 
             var race = JsonConvert.DeserializeObject<List<UserModel>>(JsonConvert.SerializeObject(graphQLRoot.user));
             Assert.Equal("Boo", race[0].FirstName);

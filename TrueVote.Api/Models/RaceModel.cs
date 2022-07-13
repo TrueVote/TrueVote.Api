@@ -13,17 +13,10 @@ namespace TrueVote.Api.Models
     // TODO Need to describe this for SwaggerUI
     public enum RaceTypes
     {
-        [EnumMember(Value = "Choose One")]
+        [EnumMember(Value = "CHOOSE_ONE")]
         ChooseOne = 0,
-        [EnumMember(Value = "Choose Many")]
+        [EnumMember(Value = "CHOOSE_MANY")]
         ChooseMany = 1
-    }
-
-    [ExcludeFromCodeCoverage]
-    public class GraphQLRaceRoot
-    {
-        [JsonProperty(PropertyName = "Data")]
-        public RaceObj Data { get; set; }
     }
 
     [ExcludeFromCodeCoverage]
@@ -105,7 +98,7 @@ namespace TrueVote.Api.Models
         [DataType(DataType.Text)]
         [NotMapped]
         [JsonProperty(PropertyName = "RaceTypeName")]
-        public string RaceTypeName { get; set; }
+        public string RaceTypeName => RaceType.ToString();
 
         [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
         [OpenApiProperty(Description = "DateCreated")]
@@ -119,12 +112,6 @@ namespace TrueVote.Api.Models
         [DataType("ICollection<CandidateModel>")]
         [JsonProperty(PropertyName = "Candidates", Required = Required.AllowNull)]
         public ICollection<CandidateModel> Candidates { get; set; } = new List<CandidateModel>();
-
-        [OnSerializing]
-        private void OnSerializing(StreamingContext context)
-        {
-            RaceTypeName = RaceType.ToString();
-        }
     }
 
     // Same as above model but without required properties
@@ -160,7 +147,7 @@ namespace TrueVote.Api.Models
         [DataType(DataType.Text)]
         [NotMapped]
         [JsonProperty(PropertyName = "RaceTypeName")]
-        public string RaceTypeName { get => RaceType.ToString(); set; }
+        public string RaceTypeName => RaceType.ToString();
 
         [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
         [OpenApiProperty(Description = "DateCreated")]
@@ -174,12 +161,6 @@ namespace TrueVote.Api.Models
         [DataType("ICollection<CandidateModel>")]
         [JsonProperty(PropertyName = "Candidates")]
         public ICollection<CandidateModel> Candidates { get; set; } = new List<CandidateModel>();
-
-        [OnSerializing]
-        private void OnSerializing(StreamingContext context)
-        {
-            RaceTypeName = RaceType.ToString();
-        }
     }
 
     [ExcludeFromCodeCoverage]

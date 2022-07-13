@@ -9,13 +9,6 @@ using System.Diagnostics.CodeAnalysis;
 namespace TrueVote.Api.Models
 {
     [ExcludeFromCodeCoverage]
-    public class GraphQLUserRoot
-    {
-        [JsonProperty(PropertyName = "Data")]
-        public UserObj Data { get; set; }
-    }
-
-    [ExcludeFromCodeCoverage]
     public class UserObj
     {
         [JsonProperty(PropertyName = "User")]
