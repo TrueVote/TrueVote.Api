@@ -12,9 +12,9 @@ using TrueVote.Api.Helpers;
 
 namespace TrueVote.Api.Services
 {
-    public class GraphQL : LoggerHelper
+    public class GraphQLExecutor : LoggerHelper
     {
-        public GraphQL(ILogger log, TelegramBot telegramBot) : base(log, telegramBot)
+        public GraphQLExecutor(ILogger log, TelegramBot telegramBot) : base(log, telegramBot)
         {
         }
 

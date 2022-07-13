@@ -38,8 +38,8 @@ namespace TrueVote.Api.Tests.ServiceTests
 
             _ = await _userApi.CreateUser(_httpContext.Request);
 
-            logHelper.Verify(LogLevel.Information, Times.Exactly(1));
-            logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+            _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
         }
 
         [Fact]
@@ -69,8 +69,8 @@ namespace TrueVote.Api.Tests.ServiceTests
             Assert.IsType<DateTime>(val.DateCreated);
             Assert.NotEmpty(val.UserId);
 
-            logHelper.Verify(LogLevel.Information, Times.Exactly(1));
-            logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+            _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
         }
 
         [Fact]
@@ -87,29 +87,18 @@ namespace TrueVote.Api.Tests.ServiceTests
             Assert.Equal((int) HttpStatusCode.BadRequest, objectResult.StatusCode);
             Assert.Contains("Required", objectResult.Value.ToString());
 
-            logHelper.Verify(LogLevel.Error, Times.Exactly(1));
-            logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+            _logHelper.Verify(LogLevel.Error, Times.Exactly(1));
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
         }
 
         [Fact]
         public async Task FindsUser()
         {
-            var findUserData = new List<UserModel>
-            {
-                new UserModel { Email = "foo@bar.com", DateCreated = DateTime.Now, FirstName = "Foo", UserId = "1" },
-                new UserModel { Email = "foo2@bar.com", DateCreated = DateTime.Now.AddSeconds(1), FirstName = "Foo2", UserId = "2" },
-                new UserModel { Email = "boo@bar.com", DateCreated = DateTime.Now.AddSeconds(2), FirstName = "Boo", UserId = "3" }
-            }.AsQueryable();
-            var mockUserSet = DbMoqHelper.GetDbSet(findUserData);
-
-            var mockUserContext = new Mock<TrueVoteDbContext>();
-            mockUserContext.Setup(m => m.Users).Returns(mockUserSet.Object);
-
             var findUserObj = new FindUserModel { FirstName = "Foo" };
             var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(findUserObj));
             _httpContext.Request.Body = new MemoryStream(byteArray);
 
-            var userApi = new User(logHelper.Object, mockUserContext.Object, mockTelegram.Object);
+            var userApi = new User(_logHelper.Object, _moqDataAccessor.mockUserContext.Object, _mockTelegram.Object);
 
             var ret = await userApi.UserFind(_httpContext.Request);
             Assert.NotNull(ret);
@@ -122,37 +111,26 @@ namespace TrueVote.Api.Tests.ServiceTests
             Assert.Equal("Foo2", val[0].FirstName);
             Assert.Equal("foo2@bar.com", val[0].Email);
 
-            logHelper.Verify(LogLevel.Information, Times.Exactly(1));
-            logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+            _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
         }
 
         [Fact]
         public async Task HandlesUnfoundUser()
         {
-            var findUserData = new List<UserModel>
-            {
-                new UserModel { Email = "foo@bar.com", DateCreated = DateTime.Now, FirstName = "Foo", UserId = "1" },
-                new UserModel { Email = "foo2@bar.com", DateCreated = DateTime.Now.AddSeconds(1), FirstName = "Foo2", UserId = "2" },
-                new UserModel { Email = "boo@bar.com", DateCreated = DateTime.Now.AddSeconds(2), FirstName = "Boo", UserId = "3" }
-            }.AsQueryable();
-            var mockUserSet = DbMoqHelper.GetDbSet(findUserData);
-
-            var mockUserContext = new Mock<TrueVoteDbContext>();
-            mockUserContext.Setup(m => m.Users).Returns(mockUserSet.Object);
-
             var findUserObj = new FindUserModel { FirstName = "not going to find anything" };
             var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(findUserObj));
             _httpContext.Request.Body = new MemoryStream(byteArray);
 
-            var userApi = new User(logHelper.Object, mockUserContext.Object, mockTelegram.Object);
+            var userApi = new User(_logHelper.Object, _moqDataAccessor.mockUserContext.Object, _mockTelegram.Object);
 
             var ret = await userApi.UserFind(_httpContext.Request);
             Assert.NotNull(ret);
             var objectResult = Assert.IsType<NotFoundResult>(ret);
             Assert.Equal((int) HttpStatusCode.NotFound, objectResult.StatusCode);
 
-            logHelper.Verify(LogLevel.Information, Times.Exactly(1));
-            logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+            _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
         }
 
         [Fact]
@@ -167,8 +145,8 @@ namespace TrueVote.Api.Tests.ServiceTests
             var objectResult = Assert.IsType<BadRequestObjectResult>(ret);
             Assert.Equal((int) HttpStatusCode.BadRequest, objectResult.StatusCode);
 
-            logHelper.Verify(LogLevel.Error, Times.Exactly(1));
-            logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+            _logHelper.Verify(LogLevel.Error, Times.Exactly(1));
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
         }
     }
 }

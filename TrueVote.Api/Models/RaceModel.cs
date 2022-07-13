@@ -11,18 +11,20 @@ using System.Runtime.Serialization;
 namespace TrueVote.Api.Models
 {
     // TODO Need to describe this for SwaggerUI
+    // GraphQL spec is reason for ALL_CAPS below (https://github.com/graphql-dotnet/graphql-dotnet/pull/2773)
     public enum RaceTypes
     {
-        [EnumMember(Value = "Choose One")]
+        [EnumMember(Value = "CHOOSE_ONE")]
         ChooseOne = 0,
-        [EnumMember(Value = "Choose Many")]
+        [EnumMember(Value = "CHOOSE_MANY")]
         ChooseMany = 1
     }
 
     [ExcludeFromCodeCoverage]
     public class RaceObj
     {
-        public RaceModel race;
+        [JsonProperty(PropertyName = "Race")]
+        public List<RaceModelResponse> race;
     }
 
     [ExcludeFromCodeCoverage]
@@ -97,7 +99,7 @@ namespace TrueVote.Api.Models
         [DataType(DataType.Text)]
         [NotMapped]
         [JsonProperty(PropertyName = "RaceTypeName")]
-        public string RaceTypeName { get; set; }
+        public string RaceTypeName => RaceType.ToString();
 
         [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
         [OpenApiProperty(Description = "DateCreated")]
@@ -111,12 +113,55 @@ namespace TrueVote.Api.Models
         [DataType("ICollection<CandidateModel>")]
         [JsonProperty(PropertyName = "Candidates", Required = Required.AllowNull)]
         public ICollection<CandidateModel> Candidates { get; set; } = new List<CandidateModel>();
+    }
 
-        [OnSerializing]
-        private void OnSerializing(StreamingContext context)
-        {
-            RaceTypeName = RaceType.ToString();
-        }
+    // Same as above model but without required properties
+    [ExcludeFromCodeCoverage]
+    public class RaceModelResponse
+    {
+        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
+        [OpenApiProperty(Description = "Race Id")]
+        [MaxLength(2048)]
+        [DataType(DataType.Text)]
+        [RegularExpression(Constants.GenericStringRegex)]
+        [JsonProperty(PropertyName = "RaceId")]
+        [Key]
+        public string RaceId { get; set; } = Guid.NewGuid().ToString();
+
+        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
+        [OpenApiProperty(Description = "Name")]
+        [MaxLength(2048)]
+        [DataType(DataType.Text)]
+        [RegularExpression(Constants.GenericStringRegex)]
+        [JsonProperty(PropertyName = "Name")]
+        public string Name { get; set; } = string.Empty;
+
+        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
+        [OpenApiProperty(Description = "Race Type")]
+        [EnumDataType(typeof(RaceTypes))]
+        [JsonProperty(PropertyName = "RaceType")]
+        public RaceTypes RaceType { get; set; }
+
+        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
+        [OpenApiProperty(Description = "Race Type Name")]
+        [MaxLength(2048)]
+        [DataType(DataType.Text)]
+        [NotMapped]
+        [JsonProperty(PropertyName = "RaceTypeName")]
+        public string RaceTypeName => RaceType.ToString();
+
+        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
+        [OpenApiProperty(Description = "DateCreated")]
+        [MaxLength(2048)]
+        [DataType(DataType.Date)]
+        [JsonProperty(PropertyName = "DateCreated")]
+        public DateTime DateCreated { get; set; } = DateTime.UtcNow;
+
+        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
+        [OpenApiProperty(Description = "List of Candidates")]
+        [DataType("ICollection<CandidateModel>")]
+        [JsonProperty(PropertyName = "Candidates")]
+        public ICollection<CandidateModel> Candidates { get; set; } = new List<CandidateModel>();
     }
 
     [ExcludeFromCodeCoverage]

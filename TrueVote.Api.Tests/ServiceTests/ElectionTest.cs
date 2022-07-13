@@ -39,8 +39,8 @@ namespace TrueVote.Api.Tests.ServiceTests
 
             _ = await _electionApi.CreateElection(_httpContext.Request);
 
-            logHelper.Verify(LogLevel.Information, Times.Exactly(1));
-            logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+            _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
         }
 
         [Fact]
@@ -70,8 +70,8 @@ namespace TrueVote.Api.Tests.ServiceTests
             Assert.IsType<DateTime>(val.DateCreated);
             Assert.NotEmpty(val.ElectionId);
 
-            logHelper.Verify(LogLevel.Information, Times.Exactly(1));
-            logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+            _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
         }
 
         [Fact]
@@ -88,29 +88,18 @@ namespace TrueVote.Api.Tests.ServiceTests
             Assert.Equal((int) HttpStatusCode.BadRequest, objectResult.StatusCode);
             Assert.Contains("Required", objectResult.Value.ToString());
 
-            logHelper.Verify(LogLevel.Error, Times.Exactly(1));
-            logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+            _logHelper.Verify(LogLevel.Error, Times.Exactly(1));
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
         }
 
         [Fact]
         public async Task FindsElection()
         {
-            var findElectionData = new List<ElectionModel>
-            {
-                new ElectionModel { Name = "California State", DateCreated = DateTime.Now, StartDate = DateTime.Now, EndDate = DateTime.Now.AddDays(30) },
-                new ElectionModel { Name = "Los Angeles County", DateCreated = DateTime.Now, StartDate = DateTime.Now, EndDate = DateTime.Now.AddDays(30) },
-                new ElectionModel { Name = "Federal", DateCreated = DateTime.Now, StartDate = DateTime.Now, EndDate = DateTime.Now.AddDays(30) },
-            }.AsQueryable();
-            var mockElectionSet = DbMoqHelper.GetDbSet(findElectionData);
-
-            var mockElectionContext = new Mock<TrueVoteDbContext>();
-            mockElectionContext.Setup(m => m.Elections).Returns(mockElectionSet.Object);
-
             var findElectionObj = new FindElectionModel { Name = "County" };
             var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(findElectionObj));
             _httpContext.Request.Body = new MemoryStream(byteArray);
 
-            var electionApi = new Election(logHelper.Object, mockElectionContext.Object, mockTelegram.Object);
+            var electionApi = new Election(_logHelper.Object, _moqDataAccessor.mockElectionContext.Object, _mockTelegram.Object);
 
             var ret = await electionApi.ElectionFind(_httpContext.Request);
             Assert.NotNull(ret);
@@ -122,37 +111,26 @@ namespace TrueVote.Api.Tests.ServiceTests
             Assert.Single(val);
             Assert.Equal("Los Angeles County", val[0].Name);
 
-            logHelper.Verify(LogLevel.Information, Times.Exactly(1));
-            logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+            _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
         }
 
         [Fact]
         public async Task HandlesUnfoundElection()
         {
-            var findElectionData = new List<ElectionModel>
-            {
-                new ElectionModel { Name = "California State", DateCreated = DateTime.Now, StartDate = DateTime.Now, EndDate = DateTime.Now.AddDays(30) },
-                new ElectionModel { Name = "Los Angeles County", DateCreated = DateTime.Now, StartDate = DateTime.Now, EndDate = DateTime.Now.AddDays(30) },
-                new ElectionModel { Name = "Federal", DateCreated = DateTime.Now, StartDate = DateTime.Now, EndDate = DateTime.Now.AddDays(30) },
-            }.AsQueryable();
-            var mockElectionSet = DbMoqHelper.GetDbSet(findElectionData);
-
-            var mockElectionContext = new Mock<TrueVoteDbContext>();
-            mockElectionContext.Setup(m => m.Elections).Returns(mockElectionSet.Object);
-
             var findElectionObj = new FindElectionModel { Name = "not going to find anything" };
             var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(findElectionObj));
             _httpContext.Request.Body = new MemoryStream(byteArray);
 
-            var electionApi = new Election(logHelper.Object, mockElectionContext.Object, mockTelegram.Object);
+            var electionApi = new Election(_logHelper.Object, _moqDataAccessor.mockElectionContext.Object, _mockTelegram.Object);
 
             var ret = await electionApi.ElectionFind(_httpContext.Request);
             Assert.NotNull(ret);
             var objectResult = Assert.IsType<NotFoundResult>(ret);
             Assert.Equal((int) HttpStatusCode.NotFound, objectResult.StatusCode);
 
-            logHelper.Verify(LogLevel.Information, Times.Exactly(1));
-            logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+            _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
         }
 
         [Fact]
@@ -167,8 +145,8 @@ namespace TrueVote.Api.Tests.ServiceTests
             var objectResult = Assert.IsType<BadRequestObjectResult>(ret);
             Assert.Equal((int) HttpStatusCode.BadRequest, objectResult.StatusCode);
 
-            logHelper.Verify(LogLevel.Error, Times.Exactly(1));
-            logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+            _logHelper.Verify(LogLevel.Error, Times.Exactly(1));
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
         }
     }
 }

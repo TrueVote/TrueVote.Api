@@ -16,6 +16,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text.Json;
 using System.Threading.Tasks;
+using TrueVote.Api.Interfaces;
 using TrueVote.Api.Models;
 using TrueVote.Api.Services;
 
@@ -79,7 +80,7 @@ namespace TrueVote.Api
     }
 
     [ExcludeFromCodeCoverage]
-    public class TrueVoteDbContext : DbContext
+    public class TrueVoteDbContext : DbContext, ITrueVoteDbContext
     {
         public virtual DbSet<UserModel> Users { get; set; }
         public virtual DbSet<ElectionModel> Elections { get; set; }
@@ -89,6 +90,11 @@ namespace TrueVote.Api
         public virtual async Task<bool> EnsureCreatedAsync()
         {
             return await Database.EnsureCreatedAsync();
+        }
+
+        public virtual async Task<int> SaveChangesAsync()
+        {
+            return await base.SaveChangesAsync();
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -131,10 +137,12 @@ namespace TrueVote.Api
     {
         public override void Configure(IFunctionsHostBuilder builder)
         {
-            builder.Services.AddDbContext<TrueVoteDbContext>();
+            builder.Services.AddDbContext<ITrueVoteDbContext, TrueVoteDbContext>();
             builder.Services.TryAddScoped<IFileSystem, FileSystem>();
             builder.Services.TryAddSingleton<ILoggerFactory, LoggerFactory>();
+            // TODO Create ITelegramBot. Will make it easier to Mock it for testing
             builder.Services.TryAddSingleton<TelegramBot, TelegramBot>();
+            builder.Services.TryAddScoped<Query, Query>();
 
             builder.AddGraphQLFunction().AddQueryType<Query>();
 

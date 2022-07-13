@@ -11,7 +11,8 @@ namespace TrueVote.Api.Models
     [ExcludeFromCodeCoverage]
     public class UserObj
     {
-        public UserModel user;
+        [JsonProperty(PropertyName = "User")]
+        public List<UserModel> user;
     }
 
     [ExcludeFromCodeCoverage]
