@@ -11,6 +11,7 @@ using System.Runtime.Serialization;
 namespace TrueVote.Api.Models
 {
     // TODO Need to describe this for SwaggerUI
+    // GraphQL spec is reason for ALL_CAPS below (https://github.com/graphql-dotnet/graphql-dotnet/pull/2773)
     public enum RaceTypes
     {
         [EnumMember(Value = "CHOOSE_ONE")]
