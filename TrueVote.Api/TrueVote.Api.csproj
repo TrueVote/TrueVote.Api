@@ -10,10 +10,10 @@
     <ApplicationIcon>dist\favicon.ico</ApplicationIcon>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
-	<_FunctionsSkipCleanOutput>true</_FunctionsSkipCleanOutput>
-	<OutputType>Library</OutputType>
-	<RepositoryUrl>https://github.com/morrisonbrett/TrueVote.Api</RepositoryUrl>
-	<RepositoryType>git</RepositoryType>
+    <_FunctionsSkipCleanOutput>true</_FunctionsSkipCleanOutput>
+    <OutputType>Library</OutputType>
+    <RepositoryUrl>https://github.com/TrueVote/TrueVote.Api</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
   </PropertyGroup>
   <ItemGroup>
     <None Include="..\.editorconfig" Link=".editorconfig" />
@@ -59,11 +59,11 @@
     <Folder Include="Connected Services\" />
   </ItemGroup>
   <ItemGroup>
-	<EmbeddedResource Include="dist\truevote-api.css" />
-	<EmbeddedResource Include="dist\truevote-api.js" />
-	<EmbeddedResource Include="dist\favicon-16x16.png" />
-	<EmbeddedResource Include="dist\favicon-32x32.png" />
-	<EmbeddedResource Include="dist\favicon.ico" />
+    <EmbeddedResource Include="dist\truevote-api.css" />
+    <EmbeddedResource Include="dist\truevote-api.js" />
+    <EmbeddedResource Include="dist\favicon-16x16.png" />
+    <EmbeddedResource Include="dist\favicon-32x32.png" />
+    <EmbeddedResource Include="dist\favicon.ico" />
   </ItemGroup>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <Exec Command="$(ProjectDir)../scripts/build-version.sh $(ProjectDir) $(TargetDir)" />
