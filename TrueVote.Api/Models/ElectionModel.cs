@@ -49,6 +49,13 @@ namespace TrueVote.Api.Models
         public string Name { get; set; } = string.Empty;
 
         [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
+        [OpenApiProperty(Description = "Description")]
+        [MaxLength(32768)]
+        [DataType(DataType.Text)]
+        [JsonProperty(PropertyName = "Description", Required = Required.Default)]
+        public string Description { get; set; } = string.Empty;
+
+        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
         [OpenApiProperty(Description = "StartDate")]
         [MaxLength(2048)]
         [DataType(DataType.Date)]
@@ -90,6 +97,13 @@ namespace TrueVote.Api.Models
         [RegularExpression(Constants.GenericStringRegex)]
         [JsonProperty(PropertyName = "Name", Required = Required.Always)]
         public string Name { get; set; } = string.Empty;
+
+        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
+        [OpenApiProperty(Description = "Description")]
+        [MaxLength(32768)]
+        [DataType(DataType.Text)]
+        [JsonProperty(PropertyName = "Description", Required = Required.Default)]
+        public string Description { get; set; } = string.Empty;
 
         [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
         [OpenApiProperty(Description = "StartDate")]
@@ -143,6 +157,13 @@ namespace TrueVote.Api.Models
         [RegularExpression(Constants.GenericStringRegex)]
         [JsonProperty(PropertyName = "Name")]
         public string Name { get; set; } = string.Empty;
+
+        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
+        [OpenApiProperty(Description = "Description")]
+        [MaxLength(32768)]
+        [DataType(DataType.Text)]
+        [JsonProperty(PropertyName = "Description")]
+        public string Description { get; set; } = string.Empty;
 
         [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
         [OpenApiProperty(Description = "StartDate")]
