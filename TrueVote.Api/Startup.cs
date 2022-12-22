@@ -1,3 +1,6 @@
+using HotChocolate.Types;
+using HotChocolate;
+using HotChocolate.Types.Descriptors;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Abstractions;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Configurations;
@@ -144,6 +147,7 @@ namespace TrueVote.Api
             builder.Services.TryAddSingleton<TelegramBot, TelegramBot>();
             builder.Services.TryAddScoped<Query, Query>();
 
+            builder.Services.TryAddSingleton<INamingConventions, TrueVoteNamingConventions>();
             builder.AddGraphQLFunction().AddQueryType<Query>();
 
             ConfigureServices(builder.Services).BuildServiceProvider(true);
@@ -155,6 +159,19 @@ namespace TrueVote.Api
             services.AddSingleton(typeof(ILogger), typeof(Logger<Startup>));
 
             return services;
+        }
+    }
+
+    [ExcludeFromCodeCoverage]
+    public partial class TrueVoteNamingConventions : DefaultNamingConventions
+    {
+        // https://github.com/nigel-sampson/nigel-sampson.github.io/blob/07c87b04a3ab4c7133820d42814cf7c45d7a3a76/_posts/2020-10-8-graphlq-naming-conventions.md
+        // https://compiledexperience.com/blog/posts/graphlq-naming-conventions
+        // https://www.apollographql.com/docs/react/data/operation-best-practices/
+        // Overriding this name via filter forces the GraphQL schema to "do nothing", which is the desired behavior. The default behavior is to mangle the names.
+        public override NameString GetMemberName(MemberInfo member, MemberKind kind)
+        {
+            return member.Name;
         }
     }
 }
