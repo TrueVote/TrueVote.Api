@@ -68,8 +68,8 @@ namespace TrueVote.Api
         {
         }
 
-        public override string CustomStylesheetPath { get; } = "dist.truevote-api.css";
-        public override string CustomJavaScriptPath { get; } = "dist.truevote-api.js";
+        public override string CustomStylesheetPath { get; set; } = "dist.truevote-api.css";
+        public override string CustomJavaScriptPath { get; set; } = "dist.truevote-api.js";
 
         public override async Task<string> GetStylesheetAsync()
         {
