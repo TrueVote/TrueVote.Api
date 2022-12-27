@@ -126,7 +126,11 @@ namespace TrueVote.Api.Models
         [JsonProperty(PropertyName = "DateCreated")]
         public DateTime DateCreated { get; set; } = DateTime.UtcNow;
 
-        public List<RaceModel> Races { get; set; }
+        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
+        [OpenApiProperty(Description = "List of Races")]
+        [DataType("ICollection<RaceModel>")]
+        [JsonProperty(PropertyName = "Races", Required = Required.AllowNull)]
+        public ICollection<RaceModel> Races { get; set; } = new List<RaceModel>();
     }
 
     // Same as above model but without required properties
@@ -186,6 +190,30 @@ namespace TrueVote.Api.Models
         [JsonProperty(PropertyName = "DateCreated")]
         public DateTime DateCreated { get; set; } = DateTime.UtcNow;
 
-        public List<RaceModel> Races { get; set; }
+        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
+        [OpenApiProperty(Description = "List of Races")]
+        [DataType("ICollection<RaceModel>")]
+        [JsonProperty(PropertyName = "Races")]
+        public ICollection<RaceModel> Races { get; set; } = new List<RaceModel>();
+    }
+
+    [ExcludeFromCodeCoverage]
+    public class AddRacesModel
+    {
+        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
+        [OpenApiProperty(Description = "Election Id")]
+        [MaxLength(2048)]
+        [DataType(DataType.Text)]
+        [RegularExpression(Constants.GenericStringRegex)]
+        [JsonProperty(PropertyName = "ElectionId")]
+        [Key]
+        public string ElectionId { get; set; }
+
+        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
+        [OpenApiProperty(Description = "Race Ids")]
+        [DataType(DataType.Text)]
+        [RegularExpression(Constants.GenericStringRegex)]
+        [JsonProperty(PropertyName = "RaceIds", Required = Required.Always)]
+        public List<string> RaceIds { get; set; }
     }
 }

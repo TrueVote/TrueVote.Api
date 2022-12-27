@@ -33,9 +33,9 @@ namespace TrueVote.Api.Tests
 
         internal static List<RaceModel> MockRaceData => new()
         {
-            new RaceModel { Name = "President", DateCreated = DateTime.Now, RaceType = RaceTypes.ChooseOne },
-            new RaceModel { Name = "Judge", DateCreated = DateTime.Now.AddSeconds(1), RaceType = RaceTypes.ChooseMany },
-            new RaceModel { Name = "Governor", DateCreated = DateTime.Now.AddSeconds(2), RaceType = RaceTypes.ChooseOne }
+            new RaceModel { Name = "President", DateCreated = DateTime.Now, RaceType = RaceTypes.ChooseOne, RaceId = "1" },
+            new RaceModel { Name = "Judge", DateCreated = DateTime.Now.AddSeconds(1), RaceType = RaceTypes.ChooseMany, RaceId = "2" },
+            new RaceModel { Name = "Governor", DateCreated = DateTime.Now.AddSeconds(2), RaceType = RaceTypes.ChooseOne, RaceId = "3" }
         };
     }
 
@@ -50,6 +50,7 @@ namespace TrueVote.Api.Tests
         public readonly IQueryable<CandidateModel> mockCandidateDataQueryable;
         public readonly ICollection<CandidateModel> mockCandidateDataCollection;
         public readonly IQueryable<RaceModel> mockRaceDataQueryable;
+        public readonly ICollection<RaceModel> mockRaceDataCollection;
 
         public Mock<DbSet<UserModel>> mockUserSet { get; private set; }
         public Mock<DbSet<RaceModel>> mockRaceSet { get; private set; }
@@ -86,6 +87,7 @@ namespace TrueVote.Api.Tests
             MoqData.MockRaceData[1].RaceId = "2";
             MoqData.MockRaceData[2].RaceId = "3";
             mockRaceDataQueryable = MoqData.MockRaceData.AsQueryable();
+            mockRaceDataCollection = MoqData.MockRaceData;
             mockRaceSet = DbMoqHelper.GetDbSet(mockRaceDataQueryable);
             mockRaceContext.Setup(m => m.Races).Returns(mockRaceSet.Object);
             mockRaceContext.Setup(m => m.EnsureCreatedAsync()).Returns(Task.FromResult(true));

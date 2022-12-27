@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using MockQueryable.Moq;
 using Moq;
 using Newtonsoft.Json;
 using System;
@@ -147,6 +148,191 @@ namespace TrueVote.Api.Tests.ServiceTests
 
             _logHelper.Verify(LogLevel.Error, Times.Exactly(1));
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+        }
+
+        [Fact]
+        public async Task AddsRacesToElection()
+        {
+            var addsRacesElectionData = new List<ElectionModel>
+            {
+                new ElectionModel { Name = "California State", StartDate = DateTime.Now, EndDate = DateTime.Now.AddDays(30) },
+                new ElectionModel { Name = "Los Angeles County", StartDate = DateTime.Now, EndDate = DateTime.Now.AddDays(60) }
+            };
+
+            addsRacesElectionData[0].ElectionId = "1";
+            addsRacesElectionData[1].ElectionId = "2";
+
+            // https://docs.microsoft.com/en-us/ef/ef6/fundamentals/testing/mocking?redirectedfrom=MSDN
+            // https://github.com/romantitov/MockQueryable
+            var mockElectionContext = new Mock<TrueVoteDbContext>();
+
+            var mockElectionSet = addsRacesElectionData.AsQueryable().BuildMockDbSet();
+            mockElectionContext.Setup(m => m.Elections).Returns(mockElectionSet.Object);
+
+            var races = new List<RaceModel> {
+                new RaceModel { Name = "President", DateCreated = DateTime.Now, RaceType = RaceTypes.ChooseOne, RaceId = "1" },
+                new RaceModel { Name = "Judge", DateCreated = DateTime.Now.AddSeconds(1), RaceType = RaceTypes.ChooseMany, RaceId = "2" },
+                new RaceModel { Name = "Governor", DateCreated = DateTime.Now.AddSeconds(2), RaceType = RaceTypes.ChooseOne, RaceId = "3" }
+            };
+
+            var mockRacesSet = races.AsQueryable().BuildMockDbSet();
+            mockElectionContext.Setup(m => m.Races).Returns(mockRacesSet.Object);
+
+            var addRacesObj = new AddRacesModel { ElectionId = "1", RaceIds = new List<string> { races[0].RaceId, races[1].RaceId, races[2].RaceId } };
+            var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(addRacesObj));
+            _httpContext.Request.Body = new MemoryStream(byteArray);
+
+            var electionApi = new Election(_logHelper.Object, mockElectionContext.Object, _mockTelegram.Object);
+
+            var ret = await electionApi.AddRaces(_httpContext.Request);
+
+            Assert.NotNull(ret);
+            var objectResult = Assert.IsType<CreatedResult>(ret);
+            Assert.Equal((int) HttpStatusCode.Created, objectResult.StatusCode);
+
+            var val = objectResult.Value as ElectionModel;
+            Assert.NotNull(val);
+            Assert.Equal("California State", val.Name);
+            Assert.Equal("President", val.Races.ToList()[0].Name);
+            Assert.Equal("Judge", val.Races.ToList()[1].Name);
+            Assert.Equal("Governor", val.Races.ToList()[2].Name);
+
+            _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+        }
+
+        [Fact]
+        public async Task HandlesAddRacesError()
+        {
+            var addRacesObj = "blah";
+            var byteArray = Encoding.ASCII.GetBytes(addRacesObj);
+            _httpContext.Request.Body = new MemoryStream(byteArray);
+
+            var ret = await _electionApi.AddRaces(_httpContext.Request);
+            Assert.NotNull(ret);
+            var objectResult = Assert.IsType<BadRequestObjectResult>(ret);
+            Assert.Equal((int) HttpStatusCode.BadRequest, objectResult.StatusCode);
+
+            _logHelper.Verify(LogLevel.Error, Times.Exactly(1));
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+        }
+
+        [Fact]
+        public async Task HandlesAddRacesUnfoundElection()
+        {
+            var addsRacesElectionData = new List<ElectionModel>
+            {
+                new ElectionModel { Name = "California State", StartDate = DateTime.Now, EndDate = DateTime.Now.AddDays(30) },
+                new ElectionModel { Name = "Los Angeles County", StartDate = DateTime.Now, EndDate = DateTime.Now.AddDays(60) }
+            };
+
+            addsRacesElectionData[0].ElectionId = "1";
+            addsRacesElectionData[1].ElectionId = "2";
+
+            var mockElectionContext = new Mock<TrueVoteDbContext>();
+
+            var mockElectionSet = addsRacesElectionData.AsQueryable().BuildMockDbSet();
+            mockElectionContext.Setup(m => m.Elections).Returns(mockElectionSet.Object);
+
+            var addRacesObj = new AddRacesModel { ElectionId = "blah", RaceIds = new List<string>() { } };
+            var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(addRacesObj));
+            _httpContext.Request.Body = new MemoryStream(byteArray);
+
+            var electionApi = new Election(_logHelper.Object, mockElectionContext.Object, _mockTelegram.Object);
+
+            var ret = await electionApi.AddRaces(_httpContext.Request);
+            Assert.NotNull(ret);
+            var objectResult = Assert.IsType<NotFoundObjectResult>(ret);
+            Assert.Equal((int) HttpStatusCode.NotFound, objectResult.StatusCode);
+            Assert.Contains("Election", objectResult.Value.ToString());
+            Assert.Contains("not found", objectResult.Value.ToString());
+
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(1));
+        }
+
+        [Fact]
+        public async Task HandlesAddRacesUnfoundRace()
+        {
+            var addsRacesElectionData = new List<ElectionModel>
+            {
+                new ElectionModel { Name = "California State", StartDate = DateTime.Now, EndDate = DateTime.Now.AddDays(30) },
+                new ElectionModel { Name = "Los Angeles County", StartDate = DateTime.Now, EndDate = DateTime.Now.AddDays(60) }
+            };
+
+            addsRacesElectionData[0].ElectionId = "1";
+            addsRacesElectionData[1].ElectionId = "2";
+
+            var mockElectionContext = new Mock<TrueVoteDbContext>();
+
+            var mockElectionSet = addsRacesElectionData.AsQueryable().BuildMockDbSet();
+            mockElectionContext.Setup(m => m.Elections).Returns(mockElectionSet.Object);
+
+            var races = new List<RaceModel> {
+                new RaceModel { Name = "President", DateCreated = DateTime.Now, RaceType = RaceTypes.ChooseOne, RaceId = "1" },
+                new RaceModel { Name = "Judge", DateCreated = DateTime.Now.AddSeconds(1), RaceType = RaceTypes.ChooseMany, RaceId = "2" },
+                new RaceModel { Name = "Governor", DateCreated = DateTime.Now.AddSeconds(2), RaceType = RaceTypes.ChooseOne, RaceId = "3" }
+            };
+
+            var mockRacesSet = races.AsQueryable().BuildMockDbSet();
+            mockElectionContext.Setup(m => m.Races).Returns(mockRacesSet.Object);
+
+            var addRacesObj = new AddRacesModel { ElectionId = "1", RaceIds = new List<string> { "68", "69", "70" } };
+            var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(addRacesObj));
+            _httpContext.Request.Body = new MemoryStream(byteArray);
+
+            var electionApi = new Election(_logHelper.Object, mockElectionContext.Object, _mockTelegram.Object);
+
+            var ret = await electionApi.AddRaces(_httpContext.Request);
+
+            Assert.NotNull(ret);
+            var objectResult = Assert.IsType<NotFoundObjectResult>(ret);
+            Assert.Equal((int) HttpStatusCode.NotFound, objectResult.StatusCode);
+            Assert.Contains("Race", objectResult.Value.ToString());
+            Assert.Contains("not found", objectResult.Value.ToString());
+
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(1));
+        }
+
+        [Fact]
+        public async Task HandlesAddRaceAlreadyInElection()
+        {
+            var addsRacesElectionData = new List<ElectionModel>
+            {
+                new ElectionModel { Name = "California State", StartDate = DateTime.Now, EndDate = DateTime.Now.AddDays(30), Races = _moqDataAccessor.mockRaceDataCollection },
+                new ElectionModel { Name = "Los Angeles County", StartDate = DateTime.Now, EndDate = DateTime.Now.AddDays(60) }
+            };
+
+            addsRacesElectionData[0].ElectionId = "1";
+            addsRacesElectionData[1].ElectionId = "2";
+
+            var mockElectionContext = new Mock<TrueVoteDbContext>();
+
+            var mockElectionSet = addsRacesElectionData.AsQueryable().BuildMockDbSet();
+            mockElectionContext.Setup(m => m.Elections).Returns(mockElectionSet.Object);
+
+            var races = new List<RaceModel> {
+                new RaceModel { Name = "President", DateCreated = DateTime.Now, RaceType = RaceTypes.ChooseOne, RaceId = "1" },
+                new RaceModel { Name = "Judge", DateCreated = DateTime.Now.AddSeconds(1), RaceType = RaceTypes.ChooseMany, RaceId = "2" },
+                new RaceModel { Name = "Governor", DateCreated = DateTime.Now.AddSeconds(2), RaceType = RaceTypes.ChooseOne, RaceId = "3" }
+            };
+
+            var mockRacesSet = races.AsQueryable().BuildMockDbSet();
+            mockElectionContext.Setup(m => m.Races).Returns(mockRacesSet.Object);
+
+            var addRacesObj = new AddRacesModel { ElectionId = "1", RaceIds = new List<string> { "1", "2", "3" } };
+            var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(addRacesObj));
+            _httpContext.Request.Body = new MemoryStream(byteArray);
+
+            var electionApi = new Election(_logHelper.Object, mockElectionContext.Object, _mockTelegram.Object);
+
+            var ret = await electionApi.AddRaces(_httpContext.Request);
+            Assert.NotNull(ret);
+            var objectResult = Assert.IsType<ConflictObjectResult>(ret);
+            Assert.Equal((int) HttpStatusCode.Conflict, objectResult.StatusCode);
+            Assert.Contains("Race", objectResult.Value.ToString());
+            Assert.Contains("already exists", objectResult.Value.ToString());
+
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(1));
         }
     }
 }
