@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -119,6 +121,82 @@ namespace TrueVote.Api.Services
             LogDebug("HTTP trigger - ElectionFind:End");
 
             return items.Count == 0 ? new NotFoundResult() : new OkObjectResult(items);
+        }
+
+        [FunctionName(nameof(AddRaces))]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [OpenApiOperation(operationId: "AddRaces", tags: new[] { "Race" })]
+        [OpenApiSecurity("oidc_auth", SecuritySchemeType.OpenIdConnect, OpenIdConnectUrl = "https://login.microsoftonline.com/{tenant_id}/v2.0/.well-known/openid-configuration", OpenIdConnectScopes = "openid,profile")]
+        [OpenApiRequestBody(contentType: "application/json", bodyType: typeof(AddRacesModel), Description = "ElectionId and collection of Race Ids", Example = typeof(AddRacesModel))]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.Created, contentType: "application/json", bodyType: typeof(ElectionModel), Description = "Returns the Election")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.Forbidden, contentType: "application/json", bodyType: typeof(SecureString), Description = "Forbidden")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.Unauthorized, contentType: "application/json", bodyType: typeof(SecureString), Description = "Unauthorized")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.NotFound, contentType: "application/json", bodyType: typeof(SecureString), Description = "Not Found")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.NotAcceptable, contentType: "application/json", bodyType: typeof(SecureString), Description = "Not Acceptable")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.TooManyRequests, contentType: "application/json", bodyType: typeof(SecureString), Description = "Too Many Requests")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.UnsupportedMediaType, contentType: "application/json", bodyType: typeof(SecureString), Description = "Unsupported Media Type")]
+        public async Task<IActionResult> AddRaces(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "election/addraces")] HttpRequest req)
+        {
+            LogDebug("HTTP trigger - AddRaces:Begin");
+
+            AddRacesModel bindRaceElectionModel;
+            try
+            {
+                var requestBody = await new StreamReader(req.Body).ReadToEndAsync();
+                bindRaceElectionModel = JsonConvert.DeserializeObject<AddRacesModel>(requestBody);
+            }
+            catch (Exception e)
+            {
+                LogError("bindRaceElectionModel: invalid format");
+                LogDebug("HTTP trigger - AddRaces:End");
+
+                return new BadRequestObjectResult(e.Message);
+            }
+
+            LogInformation($"Request Data: {bindRaceElectionModel}");
+
+            // Check if the election exists. If so, return it detatched from EF
+            var election = await _trueVoteDbContext.Elections.Where(r => r.ElectionId == bindRaceElectionModel.ElectionId).AsNoTracking().OrderByDescending(r => r.DateCreated).FirstOrDefaultAsync();
+            if (election == null)
+            {
+                return new NotFoundObjectResult($"Election: '{bindRaceElectionModel.ElectionId}' not found");
+            }
+
+            // Check if each Race exists or is already part of the election. If any problems, exit with error
+            foreach (var rid in bindRaceElectionModel.RaceIds)
+            {
+                // Ensure Race exists in Race store
+                var race = await _trueVoteDbContext.Races.Where(r => r.RaceId == rid).OrderByDescending(c => c.DateCreated).FirstOrDefaultAsync();
+                if (race == null)
+                {
+                    return new NotFoundObjectResult($"Race: '{rid}' not found");
+                }
+
+                // Check if it's already part of the Election
+                var raceExists = election.Races?.Where(r => r.RaceId == rid).FirstOrDefault();
+                if (raceExists != null)
+                {
+                    return new ConflictObjectResult($"Race: '{rid}' already exists in Election");
+                }
+
+                // Made it this far, add the Race to the Election. Ok to add here because if another one in the list, it won't get persisted
+                election.Races.Add(race);
+            }
+
+            // If made through the loop of checks above, ok to persist. This will write a new Election
+            election.DateCreated = DateTime.UtcNow;
+            election.ElectionId = Guid.NewGuid().ToString();
+
+            await _trueVoteDbContext.EnsureCreatedAsync();
+
+            await _trueVoteDbContext.Elections.AddAsync(election);
+            await _trueVoteDbContext.SaveChangesAsync();
+
+            LogDebug("HTTP trigger - AddRaces:End");
+
+            return new CreatedResult(string.Empty, election);
         }
     }
 }

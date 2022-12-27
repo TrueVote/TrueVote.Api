@@ -116,6 +116,14 @@ namespace TrueVote.Api
             modelBuilder.HasDefaultContainer("Elections");
             modelBuilder.Entity<ElectionModel>().ToContainer("Elections");
             modelBuilder.Entity<ElectionModel>().HasNoDiscriminator();
+            modelBuilder.Entity<ElectionModel>().Property(p => p.Races)
+                .HasConversion(
+                    v => JsonSerializer.Serialize(v, (JsonSerializerOptions) null),
+                    v => JsonSerializer.Deserialize<List<RaceModel>>(v, (JsonSerializerOptions) null),
+                    new ValueComparer<ICollection<RaceModel>>(
+                        (c1, c2) => c1.SequenceEqual(c2),
+                        c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
+                        c => c.ToList()));
 
             modelBuilder.HasDefaultContainer("Races");
             modelBuilder.Entity<RaceModel>().ToContainer("Races");
