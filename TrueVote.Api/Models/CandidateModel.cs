@@ -61,7 +61,7 @@ namespace TrueVote.Api.Models
         [MaxLength(2048)]
         [DataType(DataType.Text)]
         [RegularExpression(Constants.GenericStringRegex)]
-        [JsonProperty(PropertyName = "PartyAffiliation", Required = Required.Always)]
+        [JsonProperty(PropertyName = "PartyAffiliation")]
         public string PartyAffiliation { get; set; } = string.Empty;
     }
 
@@ -90,7 +90,7 @@ namespace TrueVote.Api.Models
         [MaxLength(2048)]
         [DataType(DataType.Text)]
         [RegularExpression(Constants.GenericStringRegex)]
-        [JsonProperty(PropertyName = "PartyAffiliation", Required = Required.Always)]
+        [JsonProperty(PropertyName = "PartyAffiliation")]
         public string PartyAffiliation { get; set; } = string.Empty;
 
         [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]

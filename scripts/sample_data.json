@@ -1,0 +1,42 @@
+{
+  "_comment": "Election Sample Data",
+  "Name": "California State",
+  "Description": "Election for the great state of California. All eligibile California voters, use this election to make your voice heard!",
+  "StartDate": "2023-02-25",
+  "EndDate": "2023-04-04",
+  "Races": [{
+      "Name": "Governor",
+      "RaceType": 1,
+      "Candidates": [{
+          "Name": "Jane Doe",
+          "PartyAffiliation": "Democrat"
+        }, {
+          "Name": "John Smith",
+          "PartyAffiliation": "Republican"
+        }
+      ]
+    }, {
+      "Name": "Judge",
+      "RaceType": 2,
+      "Candidates": [{
+          "Name": "Larry Jones"
+        }, {
+          "Name": "Candice Leary"
+        }, {
+          "Name": "Stephan Wilkins"
+        }, {
+          "Name": "Lisa Thomas"
+        }
+      ]
+    }, {
+      "Name": "Proposition 32 - Traffic analysis funding",
+      "RaceType": 1,
+      "Candidates": [{
+          "Name": "For"
+        }, {
+          "Name": "Against"
+        }
+      ]
+    }
+  ]
+}
