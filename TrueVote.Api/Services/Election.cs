@@ -65,7 +65,7 @@ namespace TrueVote.Api.Services
 
             LogInformation($"Request Data: {baseElection}");
 
-            var election = new ElectionModel { Name = baseElection.Name, Description = baseElection.Description, StartDate = baseElection.StartDate, EndDate = baseElection.EndDate };
+            var election = new ElectionModel { Name = baseElection.Name, Description = baseElection.Description, StartDate = baseElection.StartDate, EndDate = baseElection.EndDate, Races = baseElection.Races };
 
             await _trueVoteDbContext.EnsureCreatedAsync();
 

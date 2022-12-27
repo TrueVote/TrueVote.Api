@@ -68,6 +68,12 @@ namespace TrueVote.Api.Models
         [DataType(DataType.Date)]
         [JsonProperty(PropertyName = "EndDate", Required = Required.Always)]
         public DateTime? EndDate { get; set; }
+
+        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
+        [OpenApiProperty(Description = "List of Races")]
+        [DataType("ICollection<RaceModel>")]
+        [JsonProperty(PropertyName = "Races", Required = Required.AllowNull)]
+        public ICollection<RaceModel> Races { get; set; } = new List<RaceModel>();
     }
 
     [ExcludeFromCodeCoverage]
