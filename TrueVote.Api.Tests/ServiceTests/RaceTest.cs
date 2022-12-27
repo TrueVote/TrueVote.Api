@@ -103,14 +103,10 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public async Task FindsRace()
         {
-            var findRaceData = new List<RaceModel>
-            {
-                new RaceModel { Name = "President", DateCreated = DateTime.Now, RaceType = RaceTypes.ChooseOne, Candidates = _moqDataAccessor.mockCandidateDataCollection },
-                new RaceModel { Name = "Judge", DateCreated = DateTime.Now.AddSeconds(1), RaceType = RaceTypes.ChooseMany },
-                new RaceModel { Name = "Governor", DateCreated = DateTime.Now.AddSeconds(2), RaceType = RaceTypes.ChooseOne }
-            }.AsQueryable();
+            var findRaceData = MoqData.MockRaceData;
+            findRaceData[0].Candidates = _moqDataAccessor.mockCandidateDataCollection;
 
-            var mockRaceSet = DbMoqHelper.GetDbSet(findRaceData);
+            var mockRaceSet = DbMoqHelper.GetDbSet(findRaceData.AsQueryable());
 
             var mockRaceContext = new Mock<TrueVoteDbContext>();
             mockRaceContext.Setup(m => m.Races).Returns(mockRaceSet.Object);
@@ -174,16 +170,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public async Task AddsCandidatesToRace()
         {
-            var addsCandidatesRaceData = new List<RaceModel>
-            {
-                new RaceModel { Name = "President", DateCreated = DateTime.Now, RaceType = RaceTypes.ChooseOne },
-                new RaceModel { Name = "Judge", DateCreated = DateTime.Now.AddSeconds(1), RaceType = RaceTypes.ChooseMany },
-                new RaceModel { Name = "Governor", DateCreated = DateTime.Now.AddSeconds(2), RaceType = RaceTypes.ChooseOne }
-            };
-
-            addsCandidatesRaceData[0].RaceId = "1";
-            addsCandidatesRaceData[1].RaceId = "2";
-            addsCandidatesRaceData[2].RaceId = "3";
+            var addsCandidatesRaceData = MoqData.MockRaceData;
 
             // https://docs.microsoft.com/en-us/ef/ef6/fundamentals/testing/mocking?redirectedfrom=MSDN
             // https://github.com/romantitov/MockQueryable
@@ -192,15 +179,10 @@ namespace TrueVote.Api.Tests.ServiceTests
             var mockRaceSet = addsCandidatesRaceData.AsQueryable().BuildMockDbSet();
             mockRaceContext.Setup(m => m.Races).Returns(mockRaceSet.Object);
 
-            var candidates = new List<CandidateModel> {
-                new CandidateModel { Name = "John Doe", DateCreated = DateTime.Now, PartyAffiliation = "Republican", CandidateId = "1" },
-                new CandidateModel { Name = "Jane Smith", DateCreated = DateTime.Now, PartyAffiliation = "Democrat", CandidateId = "2" }
-            };
-
-            var mockCandidatesSet = candidates.AsQueryable().BuildMockDbSet();
+            var mockCandidatesSet = MoqData.MockCandidateData.AsQueryable().BuildMockDbSet();
             mockRaceContext.Setup(m => m.Candidates).Returns(mockCandidatesSet.Object);
 
-            var addCandidatesObj = new AddCandidatesModel { RaceId = "1", CandidateIds = new List<string> { candidates[0].CandidateId, candidates[1].CandidateId } };
+            var addCandidatesObj = new AddCandidatesModel { RaceId = "1", CandidateIds = new List<string> { MoqData.MockCandidateData[0].CandidateId, MoqData.MockCandidateData[1].CandidateId } };
             var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(addCandidatesObj));
             _httpContext.Request.Body = new MemoryStream(byteArray);
 
@@ -215,9 +197,9 @@ namespace TrueVote.Api.Tests.ServiceTests
             var val = objectResult.Value as RaceModel;
             Assert.NotNull(val);
             Assert.Equal("President", val.Name);
-            Assert.Equal("John Doe", val.Candidates.ToList()[0].Name);
+            Assert.Equal("John Smith", val.Candidates.ToList()[0].Name);
             Assert.Equal("Republican", val.Candidates.ToList()[0].PartyAffiliation);
-            Assert.Equal("Jane Smith", val.Candidates.ToList()[1].Name);
+            Assert.Equal("Jane Doe", val.Candidates.ToList()[1].Name);
             Assert.Equal("Democrat", val.Candidates.ToList()[1].PartyAffiliation);
 
             _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
@@ -243,12 +225,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public async Task HandlesAddCandidatesUnfoundRace()
         {
-            var addsCandidatesRaceData = new List<RaceModel>
-            {
-                new RaceModel { Name = "President", DateCreated = DateTime.Now, RaceType = RaceTypes.ChooseOne },
-            };
-
-            addsCandidatesRaceData[0].RaceId = "1";
+            var addsCandidatesRaceData = MoqData.MockRaceData;
 
             var mockRaceContext = new Mock<TrueVoteDbContext>();
 
@@ -274,24 +251,14 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public async Task HandlesAddCandidatesUnfoundCandidate()
         {
-            var addsCandidatesRaceData = new List<RaceModel>
-            {
-                new RaceModel { Name = "President", DateCreated = DateTime.Now, RaceType = RaceTypes.ChooseOne },
-            };
-
-            addsCandidatesRaceData[0].RaceId = "1";
+            var addsCandidatesRaceData = MoqData.MockRaceData;
 
             var mockRaceContext = new Mock<TrueVoteDbContext>();
 
             var mockRaceSet = addsCandidatesRaceData.AsQueryable().BuildMockDbSet();
             mockRaceContext.Setup(m => m.Races).Returns(mockRaceSet.Object);
 
-            var candidates = new List<CandidateModel> {
-                new CandidateModel { Name = "John Doe", DateCreated = DateTime.Now, PartyAffiliation = "Republican", CandidateId = "1" },
-                new CandidateModel { Name = "Jane Smith", DateCreated = DateTime.Now, PartyAffiliation = "Democrat", CandidateId = "2" }
-            };
-
-            var mockCandidatesSet = candidates.AsQueryable().BuildMockDbSet();
+            var mockCandidatesSet = _moqDataAccessor.mockCandidateDataQueryable.AsQueryable().BuildMockDbSet();
             mockRaceContext.Setup(m => m.Candidates).Returns(mockCandidatesSet.Object);
 
             var addCandidatesObj = new AddCandidatesModel { RaceId = "1", CandidateIds = new List<string> { "68", "69" } };
@@ -313,28 +280,15 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public async Task HandlesAddCandidateAlreadyInRace()
         {
-            var addsCandidatesRaceData = new List<RaceModel>
-            {
-                new RaceModel { Name = "President", DateCreated = DateTime.Now, RaceType = RaceTypes.ChooseOne, Candidates = _moqDataAccessor.mockCandidateDataCollection },
-                new RaceModel { Name = "Judge", DateCreated = DateTime.Now.AddSeconds(1), RaceType = RaceTypes.ChooseMany },
-                new RaceModel { Name = "Governor", DateCreated = DateTime.Now.AddSeconds(2), RaceType = RaceTypes.ChooseOne }
-            };
-
-            addsCandidatesRaceData[0].RaceId = "1";
-            addsCandidatesRaceData[1].RaceId = "2";
-            addsCandidatesRaceData[2].RaceId = "3";
+            var addsCandidatesRaceData = MoqData.MockRaceData;
+            addsCandidatesRaceData[0].Candidates = _moqDataAccessor.mockCandidateDataCollection;
 
             var mockRaceContext = new Mock<TrueVoteDbContext>();
 
             var mockRaceSet = addsCandidatesRaceData.AsQueryable().BuildMockDbSet();
             mockRaceContext.Setup(m => m.Races).Returns(mockRaceSet.Object);
 
-            var candidates = new List<CandidateModel> {
-                new CandidateModel { Name = "John Smith", DateCreated = DateTime.Now, PartyAffiliation = "Republican", CandidateId = "1" },
-                new CandidateModel { Name = "Jane Doe", DateCreated = DateTime.Now, PartyAffiliation = "Democrat", CandidateId = "2" }
-            };
-
-            var mockCandidatesSet = candidates.AsQueryable().BuildMockDbSet();
+            var mockCandidatesSet = _moqDataAccessor.mockCandidateDataQueryable.AsQueryable().BuildMockDbSet();
             mockRaceContext.Setup(m => m.Candidates).Returns(mockCandidatesSet.Object);
 
             var addCandidatesObj = new AddCandidatesModel { RaceId = "1", CandidateIds = new List<string> { "1", "2" } };

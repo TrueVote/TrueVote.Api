@@ -153,11 +153,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public async Task AddsRacesToElection()
         {
-            var addsRacesElectionData = new List<ElectionModel>
-            {
-                new ElectionModel { Name = "California State", StartDate = DateTime.Now, EndDate = DateTime.Now.AddDays(30) },
-                new ElectionModel { Name = "Los Angeles County", StartDate = DateTime.Now, EndDate = DateTime.Now.AddDays(60) }
-            };
+            var addsRacesElectionData = MoqData.MockElectionData;
 
             addsRacesElectionData[0].ElectionId = "1";
             addsRacesElectionData[1].ElectionId = "2";
@@ -169,16 +165,10 @@ namespace TrueVote.Api.Tests.ServiceTests
             var mockElectionSet = addsRacesElectionData.AsQueryable().BuildMockDbSet();
             mockElectionContext.Setup(m => m.Elections).Returns(mockElectionSet.Object);
 
-            var races = new List<RaceModel> {
-                new RaceModel { Name = "President", DateCreated = DateTime.Now, RaceType = RaceTypes.ChooseOne, RaceId = "1" },
-                new RaceModel { Name = "Judge", DateCreated = DateTime.Now.AddSeconds(1), RaceType = RaceTypes.ChooseMany, RaceId = "2" },
-                new RaceModel { Name = "Governor", DateCreated = DateTime.Now.AddSeconds(2), RaceType = RaceTypes.ChooseOne, RaceId = "3" }
-            };
-
-            var mockRacesSet = races.AsQueryable().BuildMockDbSet();
+            var mockRacesSet = _moqDataAccessor.mockRaceDataCollection.AsQueryable().BuildMockDbSet();
             mockElectionContext.Setup(m => m.Races).Returns(mockRacesSet.Object);
 
-            var addRacesObj = new AddRacesModel { ElectionId = "1", RaceIds = new List<string> { races[0].RaceId, races[1].RaceId, races[2].RaceId } };
+            var addRacesObj = new AddRacesModel { ElectionId = "1", RaceIds = new List<string> { MoqData.MockRaceData[0].RaceId, MoqData.MockRaceData[1].RaceId, MoqData.MockRaceData[2].RaceId } };
             var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(addRacesObj));
             _httpContext.Request.Body = new MemoryStream(byteArray);
 
@@ -220,11 +210,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public async Task HandlesAddRacesUnfoundElection()
         {
-            var addsRacesElectionData = new List<ElectionModel>
-            {
-                new ElectionModel { Name = "California State", StartDate = DateTime.Now, EndDate = DateTime.Now.AddDays(30) },
-                new ElectionModel { Name = "Los Angeles County", StartDate = DateTime.Now, EndDate = DateTime.Now.AddDays(60) }
-            };
+            var addsRacesElectionData = MoqData.MockElectionData;
 
             addsRacesElectionData[0].ElectionId = "1";
             addsRacesElectionData[1].ElectionId = "2";
@@ -253,11 +239,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public async Task HandlesAddRacesUnfoundRace()
         {
-            var addsRacesElectionData = new List<ElectionModel>
-            {
-                new ElectionModel { Name = "California State", StartDate = DateTime.Now, EndDate = DateTime.Now.AddDays(30) },
-                new ElectionModel { Name = "Los Angeles County", StartDate = DateTime.Now, EndDate = DateTime.Now.AddDays(60) }
-            };
+            var addsRacesElectionData = MoqData.MockElectionData;
 
             addsRacesElectionData[0].ElectionId = "1";
             addsRacesElectionData[1].ElectionId = "2";
@@ -267,13 +249,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             var mockElectionSet = addsRacesElectionData.AsQueryable().BuildMockDbSet();
             mockElectionContext.Setup(m => m.Elections).Returns(mockElectionSet.Object);
 
-            var races = new List<RaceModel> {
-                new RaceModel { Name = "President", DateCreated = DateTime.Now, RaceType = RaceTypes.ChooseOne, RaceId = "1" },
-                new RaceModel { Name = "Judge", DateCreated = DateTime.Now.AddSeconds(1), RaceType = RaceTypes.ChooseMany, RaceId = "2" },
-                new RaceModel { Name = "Governor", DateCreated = DateTime.Now.AddSeconds(2), RaceType = RaceTypes.ChooseOne, RaceId = "3" }
-            };
-
-            var mockRacesSet = races.AsQueryable().BuildMockDbSet();
+            var mockRacesSet = _moqDataAccessor.mockRaceDataCollection.AsQueryable().BuildMockDbSet();
             mockElectionContext.Setup(m => m.Races).Returns(mockRacesSet.Object);
 
             var addRacesObj = new AddRacesModel { ElectionId = "1", RaceIds = new List<string> { "68", "69", "70" } };
@@ -296,12 +272,9 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public async Task HandlesAddRaceAlreadyInElection()
         {
-            var addsRacesElectionData = new List<ElectionModel>
-            {
-                new ElectionModel { Name = "California State", StartDate = DateTime.Now, EndDate = DateTime.Now.AddDays(30), Races = _moqDataAccessor.mockRaceDataCollection },
-                new ElectionModel { Name = "Los Angeles County", StartDate = DateTime.Now, EndDate = DateTime.Now.AddDays(60) }
-            };
+            var addsRacesElectionData = MoqData.MockElectionData;
 
+            addsRacesElectionData[0].Races = _moqDataAccessor.mockRaceDataCollection;
             addsRacesElectionData[0].ElectionId = "1";
             addsRacesElectionData[1].ElectionId = "2";
 
@@ -310,13 +283,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             var mockElectionSet = addsRacesElectionData.AsQueryable().BuildMockDbSet();
             mockElectionContext.Setup(m => m.Elections).Returns(mockElectionSet.Object);
 
-            var races = new List<RaceModel> {
-                new RaceModel { Name = "President", DateCreated = DateTime.Now, RaceType = RaceTypes.ChooseOne, RaceId = "1" },
-                new RaceModel { Name = "Judge", DateCreated = DateTime.Now.AddSeconds(1), RaceType = RaceTypes.ChooseMany, RaceId = "2" },
-                new RaceModel { Name = "Governor", DateCreated = DateTime.Now.AddSeconds(2), RaceType = RaceTypes.ChooseOne, RaceId = "3" }
-            };
-
-            var mockRacesSet = races.AsQueryable().BuildMockDbSet();
+            var mockRacesSet = _moqDataAccessor.mockRaceDataCollection.AsQueryable().BuildMockDbSet();
             mockElectionContext.Setup(m => m.Races).Returns(mockRacesSet.Object);
 
             var addRacesObj = new AddRacesModel { ElectionId = "1", RaceIds = new List<string> { "1", "2", "3" } };

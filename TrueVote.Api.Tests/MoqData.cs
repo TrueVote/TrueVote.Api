@@ -9,29 +9,29 @@ using TrueVote.Api.Models;
 
 namespace TrueVote.Api.Tests
 {
-    internal static class MoqData
+    public static class MoqData
     {
-        internal static List<UserModel> MockUserData => new()
+        public static List<UserModel> MockUserData => new()
         {
             new UserModel { Email = "foo@foo.com", DateCreated = DateTime.Now, FirstName = "Foo", UserId = "1" },
             new UserModel { Email = "foo2@bar.com", DateCreated = DateTime.Now.AddSeconds(1), FirstName = "Foo2", UserId = "2" },
             new UserModel { Email = "boo@bar.com", DateCreated = DateTime.Now.AddSeconds(2), FirstName = "Boo", UserId = "3" }
         };
 
-        internal static List<ElectionModel> MockElectionData => new()
+        public static List<ElectionModel> MockElectionData => new()
         {
             new ElectionModel { Name = "California State", DateCreated = DateTime.Now },
             new ElectionModel { Name = "Los Angeles County", DateCreated = DateTime.Now.AddSeconds(1), StartDate = DateTime.Now, EndDate = DateTime.Now.AddDays(30) },
             new ElectionModel { Name = "Federal", DateCreated = DateTime.Now.AddSeconds(1), StartDate = DateTime.Now, EndDate = DateTime.Now.AddDays(30) },
         };
 
-        internal static List<CandidateModel> MockCandidateData => new()
+        public static List<CandidateModel> MockCandidateData => new()
         {
             new CandidateModel { Name = "John Smith", DateCreated = DateTime.Now, PartyAffiliation = "Republican", CandidateId =  "1" },
             new CandidateModel { Name = "Jane Doe", DateCreated = DateTime.Now.AddSeconds(1), PartyAffiliation = "Democrat", CandidateId = "2" }
         };
 
-        internal static List<RaceModel> MockRaceData => new()
+        public static List<RaceModel> MockRaceData => new()
         {
             new RaceModel { Name = "President", DateCreated = DateTime.Now, RaceType = RaceTypes.ChooseOne, RaceId = "1" },
             new RaceModel { Name = "Judge", DateCreated = DateTime.Now.AddSeconds(1), RaceType = RaceTypes.ChooseMany, RaceId = "2" },
