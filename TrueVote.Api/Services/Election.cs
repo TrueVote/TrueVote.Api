@@ -126,7 +126,7 @@ namespace TrueVote.Api.Services
         [FunctionName(nameof(AddRaces))]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [OpenApiOperation(operationId: "AddRaces", tags: new[] { "Race" })]
+        [OpenApiOperation(operationId: "AddRaces", tags: new[] { "Election" })]
         [OpenApiSecurity("oidc_auth", SecuritySchemeType.OpenIdConnect, OpenIdConnectUrl = "https://login.microsoftonline.com/{tenant_id}/v2.0/.well-known/openid-configuration", OpenIdConnectScopes = "openid,profile")]
         [OpenApiRequestBody(contentType: "application/json", bodyType: typeof(AddRacesModel), Description = "ElectionId and collection of Race Ids", Example = typeof(AddRacesModel))]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.Created, contentType: "application/json", bodyType: typeof(ElectionModel), Description = "Returns the Election")]
