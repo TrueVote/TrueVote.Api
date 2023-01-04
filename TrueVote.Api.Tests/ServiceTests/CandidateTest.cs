@@ -5,7 +5,6 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
@@ -19,7 +18,7 @@ namespace TrueVote.Api.Tests.ServiceTests
 {
     public class FakeBaseCandidateModel
     {
-        public string Name { get; set; } = string.Empty;
+        public string Name { get; set; }
         public string PartyAffiliation { get; set; }
     }
 
@@ -76,8 +75,8 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public async Task HandlesInvalidCandidateCreate()
         {
-            // This object is missing required property (PartyAffiliation)
-            var fakeBaseCandidateObj = new FakeBaseCandidateModel { Name = "John Smith" };
+            // This object is missing required property (Name)
+            var fakeBaseCandidateObj = new FakeBaseCandidateModel { PartyAffiliation = "Republican" };
             var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(fakeBaseCandidateObj));
             _httpContext.Request.Body = new MemoryStream(byteArray);
 
