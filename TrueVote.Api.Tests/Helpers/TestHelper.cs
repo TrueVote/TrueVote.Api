@@ -1,4 +1,5 @@
 using HotChocolate.AzureFunctions;
+using HotChocolate.Types.Descriptors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.DependencyInjection;
@@ -40,6 +41,7 @@ namespace TrueVote.Api.Tests.Helpers
             serviceCollection.TryAddSingleton(typeof(ILogger), typeof(Logger<Startup>));
             serviceCollection.TryAddSingleton<TelegramBot, TelegramBot>();
             serviceCollection.TryAddScoped<Query, Query>();
+            serviceCollection.TryAddSingleton<INamingConventions, TrueVoteNamingConventions>();
             serviceCollection.AddGraphQLFunction().AddQueryType<Query>();
 
             var serviceProvider = serviceCollection.BuildServiceProvider();

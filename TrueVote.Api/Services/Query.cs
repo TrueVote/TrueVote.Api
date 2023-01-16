@@ -1,3 +1,4 @@
+using HotChocolate;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
@@ -33,6 +34,13 @@ namespace TrueVote.Api.Services
         public async Task<List<ElectionModel>> GetElection()
         {
             var items = await _trueVoteDbContext.Elections.OrderByDescending(c => c.DateCreated).ToListAsync();
+
+            return items;
+        }
+
+        public async Task<List<ElectionModel>> GetElectionById([GraphQLName("ElectionId")] string ElectionId)
+        {
+            var items = await _trueVoteDbContext.Elections.Where(e => e.ElectionId == ElectionId).OrderByDescending(c => c.DateCreated).ToListAsync();
 
             return items;
         }
