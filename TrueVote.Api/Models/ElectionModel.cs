@@ -56,6 +56,13 @@ namespace TrueVote.Api.Models
         public string Description { get; set; } = string.Empty;
 
         [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
+        [OpenApiProperty(Description = "HeaderImageUrl")]
+        [MaxLength(32768)]
+        [DataType(DataType.Text)]
+        [JsonProperty(PropertyName = "HeaderImageUrl", Required = Required.Default)]
+        public string HeaderImageUrl { get; set; } = string.Empty;
+
+        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
         [OpenApiProperty(Description = "StartDate")]
         [MaxLength(2048)]
         [DataType(DataType.Date)]
@@ -110,6 +117,13 @@ namespace TrueVote.Api.Models
         [DataType(DataType.Text)]
         [JsonProperty(PropertyName = "Description", Required = Required.Default)]
         public string Description { get; set; } = string.Empty;
+
+        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
+        [OpenApiProperty(Description = "HeaderImageUrl")]
+        [MaxLength(32768)]
+        [DataType(DataType.Text)]
+        [JsonProperty(PropertyName = "HeaderImageUrl", Required = Required.Default)]
+        public string HeaderImageUrl { get; set; } = string.Empty;
 
         [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
         [OpenApiProperty(Description = "StartDate")]
