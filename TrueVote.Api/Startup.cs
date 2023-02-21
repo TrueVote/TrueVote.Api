@@ -177,7 +177,7 @@ namespace TrueVote.Api
         // https://compiledexperience.com/blog/posts/graphlq-naming-conventions
         // https://www.apollographql.com/docs/react/data/operation-best-practices/
         // Overriding this name via filter forces the GraphQL schema to "do nothing", which is the desired behavior. The default behavior is to mangle the names.
-        public override NameString GetMemberName(MemberInfo member, MemberKind kind)
+        public override string GetMemberName(MemberInfo member, MemberKind kind)
         {
             return member.Name;
         }
