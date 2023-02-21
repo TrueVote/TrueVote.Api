@@ -99,5 +99,11 @@ namespace TrueVote.Api.Models
         [DataType(DataType.Date)]
         [JsonProperty(PropertyName = "DateCreated")]
         public DateTime DateCreated { get; set; } = DateTime.UtcNow;
+
+        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
+        [OpenApiProperty(Description = "Selected")]
+        [DataType(DataType.Text)]
+        [JsonProperty(PropertyName = "Selected")]
+        public bool Selected { get; set; } = false;
     }
 }
