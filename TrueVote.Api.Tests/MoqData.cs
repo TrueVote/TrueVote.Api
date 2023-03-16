@@ -22,7 +22,7 @@ namespace TrueVote.Api.Tests
         {
             new ElectionModel { Name = "California State", DateCreated = DateTime.Now },
             new ElectionModel { Name = "Los Angeles County", DateCreated = DateTime.Now.AddSeconds(1), StartDate = DateTime.Now, EndDate = DateTime.Now.AddDays(30) },
-            new ElectionModel { Name = "Federal", DateCreated = DateTime.Now.AddSeconds(1), StartDate = DateTime.Now, EndDate = DateTime.Now.AddDays(30) },
+            new ElectionModel { Name = "Federal", DateCreated = DateTime.Now.AddSeconds(1), StartDate = DateTime.Now, EndDate = DateTime.Now.AddDays(30), ElectionId = "68" },
         };
 
         public static List<CandidateModel> MockCandidateData => new()
