@@ -10,6 +10,7 @@ using Xunit.Abstractions;
 using Newtonsoft.Json;
 using TrueVote.Api.Models;
 using System.Collections.Generic;
+using GraphQL;
 
 namespace TrueVote.Api.Tests.ServiceTests
 {
@@ -21,9 +22,6 @@ namespace TrueVote.Api.Tests.ServiceTests
 
     public class GraphQLTest : TestHelper
     {
-        public static readonly string GraphQLRootFormat = "{{\"query\":\"{0}\"}}";
-        public static readonly string GraphQLResponseRootHeader = "{\"data\":";
-
         public GraphQLTest(ITestOutputHelper output) : base(output)
         {
             _httpContext.Request.Path = "/api/graphql";
@@ -34,9 +32,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         // Takes a GraphQL query packages it, sends it, and checks for valid response
         private async Task<dynamic> GraphQLQuerySetup(string graphQLQuery)
         {
-            var graphQLRequestObj = string.Format(GraphQLRootFormat, graphQLQuery);
-
-            var byteArray = Encoding.ASCII.GetBytes(graphQLRequestObj);
+            var byteArray = Encoding.ASCII.GetBytes(graphQLQuery);
             _httpContext.Request.Body = new MemoryStream(byteArray);
             _httpContext.Request.ContentLength = _httpContext.Request.Body.Length;
 
@@ -45,7 +41,8 @@ namespace TrueVote.Api.Tests.ServiceTests
 
             var responseStream = _httpContext.Response.Body as MemoryStream;
             var responseBody = Encoding.ASCII.GetString(responseStream.ToArray());
-            Assert.StartsWith(GraphQLResponseRootHeader, responseBody);
+            var graphQLResponseRootHeader = "{\"data\":";
+            Assert.StartsWith(graphQLResponseRootHeader, responseBody);
 
             var graphQLRoot = JsonConvert.DeserializeObject<GraphQLRoot>(responseBody).Data;
 
@@ -55,7 +52,13 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public async Task RunsCandidateQuery()
         {
-            var graphQLRoot = await GraphQLQuerySetup("{ GetCandidate { CandidateId, Name, PartyAffiliation } }");
+            var graphQLRequest = new GraphQLRequest
+            {
+                Query = @"{ GetCandidate { CandidateId, Name, PartyAffiliation } }"
+            };
+
+            var graphQLRequestJson = JsonConvert.SerializeObject(graphQLRequest);
+            var graphQLRoot = await GraphQLQuerySetup(graphQLRequestJson);
 
             var candidates = JsonConvert.DeserializeObject<List<CandidateModel>>(JsonConvert.SerializeObject(graphQLRoot.GetCandidate));
             Assert.Equal("Jane Doe", candidates[0].Name);
@@ -69,9 +72,15 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public async Task RunsElectionQuery()
         {
-            var graphQLRoot = await GraphQLQuerySetup("{ GetElection { ElectionId, Name, DateCreated } }");
+            var graphQLRequest = new GraphQLRequest
+            {
+                Query = @"{ GetElection { ElectionId, Name, DateCreated } }"
+            };
 
-            var elections = JsonConvert.DeserializeObject<List<ElectionModelReponse>>(JsonConvert.SerializeObject(graphQLRoot.GetElection));
+            var graphQLRequestJson = JsonConvert.SerializeObject(graphQLRequest);
+            var graphQLRoot = await GraphQLQuerySetup(graphQLRequestJson);
+
+            var elections = JsonConvert.DeserializeObject<List<ElectionModelResponse>>(JsonConvert.SerializeObject(graphQLRoot.GetElection));
             Assert.Equal("Federal", elections[0].Name);
             Assert.Equal("Los Angeles County", elections[1].Name);
             Assert.True(elections.Count == 3);
@@ -83,14 +92,29 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public async Task RunsElectionByIdQuery()
         {
-            var id = "7d9c6d23-9534-40d4-bca3-9769d0a54d76";
+            var electionId = "68";
 
-            var graphQLRoot = await GraphQLQuerySetup($"{{ GetElectionById ($ElectionId:\"{id}\") {{ ElectionId, Name, DateCreated }} }}");
+            var graphQLRequest = new GraphQLRequest
+            {
+                Query = @"
+                    query ($ElectionId: String!) {
+                        GetElectionById(ElectionId: $ElectionId) { ElectionId, Name, DateCreated }
+                    }",
+                Variables = new
+                {
+                    ElectionId = electionId
+                }
+            };
 
-            var elections = JsonConvert.DeserializeObject<List<ElectionModelReponse>>(JsonConvert.SerializeObject(graphQLRoot.election));
+            var graphQLRequestJson = JsonConvert.SerializeObject(graphQLRequest);
+
+            var graphQLRoot = await GraphQLQuerySetup(graphQLRequestJson);
+
+            var elections = JsonConvert.DeserializeObject<List<ElectionModelResponse>>(JsonConvert.SerializeObject(graphQLRoot.GetElectionById));
+            Assert.NotNull(elections);
             Assert.Equal("Federal", elections[0].Name);
-            Assert.Equal("Los Angeles County", elections[1].Name);
-            Assert.True(elections.Count == 3);
+            Assert.Equal("68", elections[0].ElectionId);
+            Assert.True(elections.Count == 1);
 
             Assert.Equal((int) HttpStatusCode.OK, _httpContext.Response.StatusCode);
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
@@ -99,7 +123,13 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public async Task RunsRaceQuery()
         {
-            var graphQLRoot = await GraphQLQuerySetup("{ GetRace { DateCreated, Name, RaceId, RaceType, RaceTypeName, Candidates { CandidateId, Name, PartyAffiliation, DateCreated } } }");
+            var graphQLRequest = new GraphQLRequest
+            {
+                Query = @"{ GetRace { DateCreated, Name, RaceId, RaceType, RaceTypeName, Candidates { CandidateId, Name, PartyAffiliation, DateCreated } } }"
+            };
+
+            var graphQLRequestJson = JsonConvert.SerializeObject(graphQLRequest);
+            var graphQLRoot = await GraphQLQuerySetup(graphQLRequestJson);
 
             var race = JsonConvert.DeserializeObject<List<RaceModelResponse>>(JsonConvert.SerializeObject(graphQLRoot.GetRace));
             Assert.Equal("Governor", race[0].Name);
@@ -117,7 +147,13 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public async Task RunsUserQuery()
         {
-            var graphQLRoot = await GraphQLQuerySetup("{ GetUser { DateCreated, Email, FirstName, UserId } }");
+            var graphQLRequest = new GraphQLRequest
+            {
+                Query = @"{ GetUser { DateCreated, Email, FirstName, UserId } }"
+            };
+
+            var graphQLRequestJson = JsonConvert.SerializeObject(graphQLRequest);
+            var graphQLRoot = await GraphQLQuerySetup(graphQLRequestJson);
 
             var race = JsonConvert.DeserializeObject<List<UserModel>>(JsonConvert.SerializeObject(graphQLRoot.GetUser));
             Assert.Equal("Boo", race[0].FirstName);
