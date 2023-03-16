@@ -23,6 +23,7 @@ namespace TrueVote.Api.Tests.Helpers
         protected readonly Mock<ILogger<LoggerHelper>> _logHelper;
         protected readonly User _userApi;
         protected readonly Election _electionApi;
+        protected readonly Ballot _ballotApi;
         protected readonly Race _raceApi;
         protected readonly Candidate _candidateApi;
         protected readonly GraphQLExecutor _graphQLApi;
@@ -68,6 +69,7 @@ namespace TrueVote.Api.Tests.Helpers
             _moqDataAccessor = new MoqDataAccessor();
             _userApi = new User(_logHelper.Object, _moqDataAccessor.mockUserContext.Object, _mockTelegram.Object);
             _electionApi = new Election(_logHelper.Object, _moqDataAccessor.mockElectionContext.Object, _mockTelegram.Object);
+            _ballotApi = new Ballot(_logHelper.Object, _moqDataAccessor.mockElectionContext.Object, _mockTelegram.Object);
             _raceApi = new Race(_logHelper.Object, _moqDataAccessor.mockRaceContext.Object, _mockTelegram.Object);
             _candidateApi = new Candidate(_logHelper.Object, _moqDataAccessor.mockCandidateContext.Object, _mockTelegram.Object);
             _graphQLApi = new GraphQLExecutor(_logHelper.Object, _mockTelegram.Object);
