@@ -60,18 +60,26 @@ namespace TrueVote.Api.Services
 
             LogInformation($"Request Data: {bindSubmitBallotModel}");
 
-            // TODO Validate the ballot and return a response
+            // TODO Validate the ballot
+
+            var ballot = new BallotModel { ElectionId = bindSubmitBallotModel.ElectionId, Election = bindSubmitBallotModel.Election };
+
+            await _trueVoteDbContext.EnsureCreatedAsync();
+
+            await _trueVoteDbContext.Ballots.AddAsync(ballot);
+            await _trueVoteDbContext.SaveChangesAsync();
 
             var submitBallotResponse = new SubmitBallotModelResponse {
                 ElectionId = bindSubmitBallotModel.ElectionId,
-                Message = $"Ballot successfully submitted. Election ID: {bindSubmitBallotModel.ElectionId}"
+                BallotId = ballot.BallotId,
+                Message = $"Ballot successfully submitted. Election ID: {bindSubmitBallotModel.ElectionId}, Ballot ID: {ballot.BallotId}"
             };
 
-            await _telegramBot.SendChannelMessageAsync($"New TrueVote Ballot successfully submitted. Election ID: {bindSubmitBallotModel.ElectionId}");
+            await _telegramBot.SendChannelMessageAsync($"New TrueVote Ballot successfully submitted. Election ID: {bindSubmitBallotModel.ElectionId}, Ballot ID: {ballot.BallotId}");
 
             LogDebug("HTTP trigger - SubmitBallot:End");
 
-            // TODO Return a Ballot Submitted model response with more key data
+            // TODO Return a Ballot Submitted model response with critical key data to bind ballot / user
             return new CreatedResult(string.Empty, submitBallotResponse);
         }
     }

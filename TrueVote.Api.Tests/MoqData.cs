@@ -101,6 +101,7 @@ namespace TrueVote.Api.Tests
         public virtual DbSet<ElectionModel> Elections { get; set; }
         public virtual DbSet<RaceModel> Races { get; set; }
         public virtual DbSet<CandidateModel> Candidates { get; set; }
+        public virtual DbSet<BallotModel> Ballots { get; set; }
 
         protected MoqDataAccessor _moqDataAccessor;
 
