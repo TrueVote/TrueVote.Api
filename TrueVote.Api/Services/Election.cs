@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -236,6 +234,8 @@ namespace TrueVote.Api.Services
                 ElectionId = bindSubmitBallotModel.ElectionId,
                 Message = $"Ballot successfully submitted. Election ID: {bindSubmitBallotModel.ElectionId}"
             };
+
+            await _telegramBot.SendChannelMessageAsync($"New TrueVote Ballot successfully submitted. Election ID: {bindSubmitBallotModel.ElectionId}");
 
             LogDebug("HTTP trigger - SubmitBallot:End");
 
