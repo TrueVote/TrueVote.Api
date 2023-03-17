@@ -117,7 +117,10 @@ namespace TrueVote.Api
             modelBuilder.HasDefaultContainer("Ballots");
             modelBuilder.Entity<BallotModel>().ToContainer("Ballots");
             modelBuilder.Entity<BallotModel>().HasNoDiscriminator();
-            // TODO Add Election property
+            modelBuilder.Entity<BallotModel>().Property(p => p.Election)
+                .HasConversion(
+                    v => JsonSerializer.Serialize(v, (JsonSerializerOptions) null),
+                    v => JsonSerializer.Deserialize<ElectionModel>(v, (JsonSerializerOptions) null));
 
             modelBuilder.HasDefaultContainer("Elections");
             modelBuilder.Entity<ElectionModel>().ToContainer("Elections");
