@@ -27,7 +27,8 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public async Task SubmitsBallot()
         {
-            var baseBallotObj = new SubmitBallotModel { ElectionId = "68" };
+            var electionObj = new ElectionModel { ElectionId = "68", Name = "California State", StartDate = DateTime.Now, EndDate = DateTime.Now.AddDays(30) };
+            var baseBallotObj = new SubmitBallotModel { ElectionId = "68", Election = electionObj };
             var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(baseBallotObj));
             _httpContext.Request.Body = new MemoryStream(byteArray);
 

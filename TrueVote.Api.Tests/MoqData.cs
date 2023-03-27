@@ -25,6 +25,13 @@ namespace TrueVote.Api.Tests
             new ElectionModel { Name = "Federal", DateCreated = DateTime.Now.AddSeconds(1), StartDate = DateTime.Now, EndDate = DateTime.Now.AddDays(30), ElectionId = "68" },
         };
 
+        public static List<BallotModel> MockBallotData => new()
+        {
+            new BallotModel { ElectionId = "68", Election = MockElectionData[0] },
+            new BallotModel { ElectionId = "68", Election = MockElectionData[1] },
+            new BallotModel { ElectionId = "68", Election = MockElectionData[2] },
+        };
+
         public static List<CandidateModel> MockCandidateData => new()
         {
             new CandidateModel { Name = "John Smith", DateCreated = DateTime.Now, PartyAffiliation = "Republican", CandidateId =  "1" },
@@ -43,10 +50,12 @@ namespace TrueVote.Api.Tests
     {
         public readonly Mock<MoqTrueVoteDbContext> mockUserContext;
         public readonly Mock<MoqTrueVoteDbContext> mockElectionContext;
+        public readonly Mock<MoqTrueVoteDbContext> mockBallotContext;
         public readonly Mock<MoqTrueVoteDbContext> mockCandidateContext;
         public readonly Mock<MoqTrueVoteDbContext> mockRaceContext;
         public readonly IQueryable<UserModel> mockUserDataQueryable;
         public readonly IQueryable<ElectionModel> mockElectionDataQueryable;
+        public readonly IQueryable<BallotModel> mockBallotDataQueryable;
         public readonly IQueryable<CandidateModel> mockCandidateDataQueryable;
         public readonly ICollection<CandidateModel> mockCandidateDataCollection;
         public readonly IQueryable<RaceModel> mockRaceDataQueryable;
@@ -56,6 +65,7 @@ namespace TrueVote.Api.Tests
         public Mock<DbSet<RaceModel>> mockRaceSet { get; private set; }
         public Mock<DbSet<CandidateModel>> mockCandidateSet { get; private set; }
         public Mock<DbSet<ElectionModel>> mockElectionSet { get; private set; }
+        public Mock<DbSet<BallotModel>> mockBallotSet { get; private set; }
 
         // https://docs.microsoft.com/en-us/ef/ef6/fundamentals/testing/mocking?redirectedfrom=MSDN
         // https://github.com/romantitov/MockQueryable
@@ -72,6 +82,12 @@ namespace TrueVote.Api.Tests
             mockElectionSet = DbMoqHelper.GetDbSet(mockElectionDataQueryable);
             mockElectionContext.Setup(m => m.Elections).Returns(mockElectionSet.Object);
             mockElectionContext.Setup(m => m.EnsureCreatedAsync()).Returns(Task.FromResult(true));
+
+            mockBallotContext = new Mock<MoqTrueVoteDbContext>();
+            mockBallotDataQueryable = MoqData.MockBallotData.AsQueryable();
+            mockBallotSet = DbMoqHelper.GetDbSet(mockBallotDataQueryable);
+            mockBallotContext.Setup(m => m.Ballots).Returns(mockBallotSet.Object);
+            mockBallotContext.Setup(m => m.EnsureCreatedAsync()).Returns(Task.FromResult(true));
 
             mockCandidateContext = new Mock<MoqTrueVoteDbContext>();
             mockCandidateDataQueryable = MoqData.MockCandidateData.AsQueryable();
