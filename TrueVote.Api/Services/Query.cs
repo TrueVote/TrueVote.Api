@@ -31,6 +31,13 @@ namespace TrueVote.Api.Services
             return items;
         }
 
+        public async Task<List<CandidateModel>> GetCandidateByPartyAffiliation([GraphQLName("PartyAffiliation")] string PartyAffiliation)
+        {
+            var items = await _trueVoteDbContext.Candidates.Where(c => c.PartyAffiliation == PartyAffiliation).OrderByDescending(c => c.DateCreated).ToListAsync();
+
+            return items;
+        }
+
         public async Task<List<ElectionModel>> GetElection()
         {
             var items = await _trueVoteDbContext.Elections.OrderByDescending(c => c.DateCreated).ToListAsync();

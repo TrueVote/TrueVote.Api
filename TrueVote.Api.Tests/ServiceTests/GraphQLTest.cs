@@ -70,6 +70,37 @@ namespace TrueVote.Api.Tests.ServiceTests
         }
 
         [Fact]
+        public async Task RunsCandidateByPartyAffiliationQuery()
+        {
+            var partyAffiliation = "Republican";
+
+            var graphQLRequest = new GraphQLRequest
+            {
+                Query = @"
+                    query ($PartyAffiliation: String!)
+                    {
+                        GetCandidateByPartyAffiliation(PartyAffiliation: $PartyAffiliation) {
+                        CandidateId, Name, PartyAffiliation
+                        }
+                    }",
+                Variables = new
+                {
+                    PartyAffiliation = partyAffiliation
+                }
+            };
+
+            var graphQLRequestJson = JsonConvert.SerializeObject(graphQLRequest);
+            var graphQLRoot = await GraphQLQuerySetup(graphQLRequestJson);
+
+            var candidates = JsonConvert.DeserializeObject<List<CandidateModel>>(JsonConvert.SerializeObject(graphQLRoot.GetCandidateByPartyAffiliation));
+            Assert.Equal("John Smith", candidates[0].Name);
+            Assert.True(candidates.Count == 1);
+
+            Assert.Equal((int) HttpStatusCode.OK, _httpContext.Response.StatusCode);
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+        }
+
+        [Fact]
         public async Task RunsElectionQuery()
         {
             var graphQLRequest = new GraphQLRequest
@@ -107,7 +138,6 @@ namespace TrueVote.Api.Tests.ServiceTests
             };
 
             var graphQLRequestJson = JsonConvert.SerializeObject(graphQLRequest);
-
             var graphQLRoot = await GraphQLQuerySetup(graphQLRequestJson);
 
             var elections = JsonConvert.DeserializeObject<List<ElectionModelResponse>>(JsonConvert.SerializeObject(graphQLRoot.GetElectionById));
@@ -163,6 +193,5 @@ namespace TrueVote.Api.Tests.ServiceTests
             Assert.Equal((int) HttpStatusCode.OK, _httpContext.Response.StatusCode);
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
         }
-
     }
 }
