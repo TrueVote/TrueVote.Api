@@ -24,42 +24,42 @@ namespace TrueVote.Api.Services
             _telegramBot = telegramBot;
         }
 
-        public async Task<List<CandidateModel>> GetCandidate()
+        public async Task<IReadOnlyList<CandidateModel>> GetCandidate()
         {
             var items = await _trueVoteDbContext.Candidates.OrderByDescending(c => c.DateCreated).ToListAsync();
 
             return items;
         }
 
-        public async Task<List<CandidateModel>> GetCandidateByPartyAffiliation([GraphQLName("PartyAffiliation")] string PartyAffiliation)
+        public async Task<IReadOnlyList<CandidateModel>> GetCandidateByPartyAffiliation([GraphQLName("PartyAffiliation")] string PartyAffiliation)
         {
             var items = await _trueVoteDbContext.Candidates.Where(c => c.PartyAffiliation == PartyAffiliation).OrderByDescending(c => c.DateCreated).ToListAsync();
 
             return items;
         }
 
-        public async Task<List<ElectionModel>> GetElection()
+        public async Task<IReadOnlyList<ElectionModel>> GetElection()
         {
             var items = await _trueVoteDbContext.Elections.OrderByDescending(c => c.DateCreated).ToListAsync();
 
             return items;
         }
 
-        public async Task<List<ElectionModel>> GetElectionById([GraphQLName("ElectionId")] string ElectionId)
+        public async Task<IReadOnlyList<ElectionModel>> GetElectionById([GraphQLName("ElectionId")] string ElectionId)
         {
             var items = await _trueVoteDbContext.Elections.Where(e => e.ElectionId == ElectionId).OrderByDescending(c => c.DateCreated).ToListAsync();
 
             return items;
         }
 
-        public async Task<List<RaceModel>> GetRace()
+        public async Task<IReadOnlyList<RaceModel>> GetRace()
         {
             var items = await _trueVoteDbContext.Races.OrderByDescending(c => c.DateCreated).ToListAsync();
 
             return items;
         }
 
-        public async Task<List<UserModel>> GetUser()
+        public async Task<IReadOnlyList<UserModel>> GetUser()
         {
             var items = await _trueVoteDbContext.Users.OrderByDescending(c => c.DateCreated).ToListAsync();
 
