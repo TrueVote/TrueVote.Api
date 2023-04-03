@@ -89,6 +89,7 @@ namespace TrueVote.Api
         public virtual DbSet<ElectionModel> Elections { get; set; }
         public virtual DbSet<RaceModel> Races { get; set; }
         public virtual DbSet<CandidateModel> Candidates { get; set; }
+        public virtual DbSet<BallotModel> Ballots { get; set; }
 
         public virtual async Task<bool> EnsureCreatedAsync()
         {
@@ -112,6 +113,14 @@ namespace TrueVote.Api
             modelBuilder.HasDefaultContainer("Users");
             modelBuilder.Entity<UserModel>().ToContainer("Users");
             modelBuilder.Entity<UserModel>().HasNoDiscriminator();
+
+            modelBuilder.HasDefaultContainer("Ballots");
+            modelBuilder.Entity<BallotModel>().ToContainer("Ballots");
+            modelBuilder.Entity<BallotModel>().HasNoDiscriminator();
+            modelBuilder.Entity<BallotModel>().Property(p => p.Election)
+                .HasConversion(
+                    v => JsonSerializer.Serialize(v, (JsonSerializerOptions) null),
+                    v => JsonSerializer.Deserialize<ElectionModel>(v, (JsonSerializerOptions) null));
 
             modelBuilder.HasDefaultContainer("Elections");
             modelBuilder.Entity<ElectionModel>().ToContainer("Elections");

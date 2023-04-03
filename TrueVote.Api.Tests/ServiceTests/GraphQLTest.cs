@@ -54,7 +54,12 @@ namespace TrueVote.Api.Tests.ServiceTests
         {
             var graphQLRequest = new GraphQLRequest
             {
-                Query = @"{ GetCandidate { CandidateId, Name, PartyAffiliation } }"
+                Query = @"
+                    query {
+                        GetCandidate {
+                            CandidateId, Name, PartyAffiliation
+                        }
+                    }"
             };
 
             var graphQLRequestJson = JsonConvert.SerializeObject(graphQLRequest);
@@ -70,11 +75,46 @@ namespace TrueVote.Api.Tests.ServiceTests
         }
 
         [Fact]
+        public async Task RunsCandidateByPartyAffiliationQuery()
+        {
+            var partyAffiliation = "Republican";
+
+            var graphQLRequest = new GraphQLRequest
+            {
+                Query = @"
+                    query ($PartyAffiliation: String!) {
+                        GetCandidateByPartyAffiliation(PartyAffiliation: $PartyAffiliation) {
+                        CandidateId, Name, PartyAffiliation
+                        }
+                    }",
+                Variables = new
+                {
+                    PartyAffiliation = partyAffiliation
+                }
+            };
+
+            var graphQLRequestJson = JsonConvert.SerializeObject(graphQLRequest);
+            var graphQLRoot = await GraphQLQuerySetup(graphQLRequestJson);
+
+            var candidates = JsonConvert.DeserializeObject<List<CandidateModel>>(JsonConvert.SerializeObject(graphQLRoot.GetCandidateByPartyAffiliation));
+            Assert.Equal("John Smith", candidates[0].Name);
+            Assert.True(candidates.Count == 1);
+
+            Assert.Equal((int) HttpStatusCode.OK, _httpContext.Response.StatusCode);
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+        }
+
+        [Fact]
         public async Task RunsElectionQuery()
         {
             var graphQLRequest = new GraphQLRequest
             {
-                Query = @"{ GetElection { ElectionId, Name, DateCreated } }"
+                Query = @"
+                    query {
+                        GetElection {
+                            ElectionId, Name, DateCreated
+                        }
+                    }"
             };
 
             var graphQLRequestJson = JsonConvert.SerializeObject(graphQLRequest);
@@ -98,7 +138,9 @@ namespace TrueVote.Api.Tests.ServiceTests
             {
                 Query = @"
                     query ($ElectionId: String!) {
-                        GetElectionById(ElectionId: $ElectionId) { ElectionId, Name, DateCreated }
+                        GetElectionById(ElectionId: $ElectionId) {
+                            ElectionId, Name, DateCreated
+                        }
                     }",
                 Variables = new
                 {
@@ -107,7 +149,6 @@ namespace TrueVote.Api.Tests.ServiceTests
             };
 
             var graphQLRequestJson = JsonConvert.SerializeObject(graphQLRequest);
-
             var graphQLRoot = await GraphQLQuerySetup(graphQLRequestJson);
 
             var elections = JsonConvert.DeserializeObject<List<ElectionModelResponse>>(JsonConvert.SerializeObject(graphQLRoot.GetElectionById));
@@ -125,7 +166,14 @@ namespace TrueVote.Api.Tests.ServiceTests
         {
             var graphQLRequest = new GraphQLRequest
             {
-                Query = @"{ GetRace { DateCreated, Name, RaceId, RaceType, RaceTypeName, Candidates { CandidateId, Name, PartyAffiliation, DateCreated } } }"
+                Query = @"
+                    query {
+                        GetRace {
+                            DateCreated, Name, RaceId, RaceType, RaceTypeName, Candidates {
+                                CandidateId, Name, PartyAffiliation, DateCreated
+                            }
+                        }
+                    }"
             };
 
             var graphQLRequestJson = JsonConvert.SerializeObject(graphQLRequest);
@@ -149,7 +197,12 @@ namespace TrueVote.Api.Tests.ServiceTests
         {
             var graphQLRequest = new GraphQLRequest
             {
-                Query = @"{ GetUser { DateCreated, Email, FirstName, UserId } }"
+                Query = @"
+                    query {
+                        GetUser {
+                            DateCreated, Email, FirstName, UserId
+                        }
+                    }"
             };
 
             var graphQLRequestJson = JsonConvert.SerializeObject(graphQLRequest);
@@ -163,6 +216,5 @@ namespace TrueVote.Api.Tests.ServiceTests
             Assert.Equal((int) HttpStatusCode.OK, _httpContext.Response.StatusCode);
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
         }
-
     }
 }
