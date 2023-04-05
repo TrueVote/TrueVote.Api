@@ -110,7 +110,6 @@ namespace TrueVote.Api.Services
 
             LogInformation($"Request Data: {findElection}");
 
-            // TODO Add all the Races to the query
             var items = await _trueVoteDbContext.Elections
                 .Where(e =>
                     findElection.Name == null || (e.Name ?? string.Empty).ToLower().Contains(findElection.Name.ToLower()))

@@ -27,9 +27,9 @@ namespace TrueVote.Api.Tests
 
         public static List<BallotModel> MockBallotData => new()
         {
-            new BallotModel { ElectionId = "68", Election = MockElectionData[0] },
-            new BallotModel { ElectionId = "68", Election = MockElectionData[1] },
-            new BallotModel { ElectionId = "68", Election = MockElectionData[2] },
+            new BallotModel { BallotId = "ballotid1", ElectionId = "68", Election = MockElectionData[0] },
+            new BallotModel { BallotId = "ballotid2", ElectionId = "68", Election = MockElectionData[1] },
+            new BallotModel { BallotId = "ballotid3", ElectionId = "68", Election = MockElectionData[2] },
         };
 
         public static List<CandidateModel> MockCandidateData => new()
@@ -129,6 +129,7 @@ namespace TrueVote.Api.Tests
             Elections = _moqDataAccessor.mockElectionSet.Object;
             Races = _moqDataAccessor.mockRaceSet.Object;
             Candidates = _moqDataAccessor.mockCandidateSet.Object;
+            Ballots = _moqDataAccessor.mockBallotSet.Object;
         }
 
         public virtual async Task<bool> EnsureCreatedAsync()

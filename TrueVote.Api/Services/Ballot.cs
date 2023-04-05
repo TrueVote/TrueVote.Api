@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -7,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json;
@@ -79,6 +81,49 @@ namespace TrueVote.Api.Services
 
             // TODO Return a Ballot Submitted model response with critical key data to bind ballot / user
             return new CreatedResult(string.Empty, submitBallotResponse);
+        }
+
+        [FunctionName(nameof(BallotFind))]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [OpenApiOperation(operationId: "BallotFind", tags: new[] { "Ballot" })]
+        [OpenApiSecurity("oidc_auth", SecuritySchemeType.OpenIdConnect, OpenIdConnectUrl = "https://login.microsoftonline.com/{tenant_id}/v2.0/.well-known/openid-configuration", OpenIdConnectScopes = "openid,profile")]
+        [OpenApiRequestBody(contentType: "application/json", bodyType: typeof(FindBallotModel), Description = "Fields to search for Ballots", Example = typeof(FindBallotModel))]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(BallotModelList), Description = "Returns collection of Ballots")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.Forbidden, contentType: "application/json", bodyType: typeof(SecureString), Description = "Forbidden")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.Unauthorized, contentType: "application/json", bodyType: typeof(SecureString), Description = "Unauthorized")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.NotFound, contentType: "application/json", bodyType: typeof(SecureString), Description = "Not Found")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.NotAcceptable, contentType: "application/json", bodyType: typeof(SecureString), Description = "Not Acceptable")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.TooManyRequests, contentType: "application/json", bodyType: typeof(SecureString), Description = "Too Many Requests")]
+        public async Task<IActionResult> BallotFind(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "ballot/find")] HttpRequest req)
+        {
+            LogDebug("HTTP trigger - BallotFind:Begin");
+
+            FindBallotModel findBallot;
+            try
+            {
+                var requestBody = await new StreamReader(req.Body).ReadToEndAsync();
+                findBallot = JsonConvert.DeserializeObject<FindBallotModel>(requestBody);
+            }
+            catch (Exception e)
+            {
+                LogError("findBallot: invalid format");
+                LogDebug("HTTP trigger - BallotFind:End");
+
+                return new BadRequestObjectResult(e.Message);
+            }
+
+            LogInformation($"Request Data: {findBallot}");
+
+            var items = await _trueVoteDbContext.Ballots
+                .Where(e =>
+                    findBallot.BallotId == null || (e.BallotId ?? string.Empty).ToLower().Contains(findBallot.BallotId.ToLower()))
+                .OrderByDescending(e => e.DateCreated).ToListAsync();
+
+            LogDebug("HTTP trigger - BallotFind:End");
+
+            return items.Count == 0 ? new NotFoundResult() : new OkObjectResult(items);
         }
     }
 }
