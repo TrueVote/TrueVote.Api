@@ -2,11 +2,35 @@ using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Enums;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 
 namespace TrueVote.Api.Models
 {
+    [ExcludeFromCodeCoverage]
+    public class BallotModelList
+    {
+        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
+        [MaxLength(2048)]
+        [OpenApiProperty(Description = "List of Ballots")]
+        [JsonProperty(PropertyName = "Ballots")]
+        public List<BallotModel> Ballots { get; set; }
+    }
+
+    [ExcludeFromCodeCoverage]
+    public class FindBallotModel
+    {
+        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
+        [OpenApiProperty(Description = "Ballot Id")]
+        [MaxLength(2048)]
+        [DataType(DataType.Text)]
+        [RegularExpression(Constants.GenericStringRegex)]
+        [JsonProperty(PropertyName = "BallotId")]
+        [Key]
+        public string BallotId { get; set; } = Guid.NewGuid().ToString();
+    }
+
     [ExcludeFromCodeCoverage]
     public class BallotModel
     {

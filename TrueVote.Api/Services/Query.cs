@@ -65,5 +65,19 @@ namespace TrueVote.Api.Services
 
             return items;
         }
+
+        public async Task<IReadOnlyList<BallotModel>> GetBallot()
+        {
+            var items = await _trueVoteDbContext.Ballots.OrderByDescending(c => c.DateCreated).ToListAsync();
+
+            return items;
+        }
+
+        public async Task<IReadOnlyList<BallotModel>> GetBallotById([GraphQLName("BallotId")] string BallotId)
+        {
+            var items = await _trueVoteDbContext.Ballots.Where(e => e.BallotId == BallotId).OrderByDescending(c => c.DateCreated).ToListAsync();
+
+            return items;
+        }
     }
 }

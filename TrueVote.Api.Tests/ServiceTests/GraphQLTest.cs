@@ -216,5 +216,62 @@ namespace TrueVote.Api.Tests.ServiceTests
             Assert.Equal((int) HttpStatusCode.OK, _httpContext.Response.StatusCode);
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
         }
+
+        [Fact]
+        public async Task RunsBallotQuery()
+        {
+            var graphQLRequest = new GraphQLRequest
+            {
+                Query = @"
+                    query {
+                        GetBallot {
+                            BallotId, ElectionId, DateCreated
+                        }
+                    }"
+            };
+
+            var graphQLRequestJson = JsonConvert.SerializeObject(graphQLRequest);
+            var graphQLRoot = await GraphQLQuerySetup(graphQLRequestJson);
+
+            var ballots = JsonConvert.DeserializeObject<List<BallotModel>>(JsonConvert.SerializeObject(graphQLRoot.GetBallot));
+            Assert.Equal("68", ballots[0].ElectionId);
+            Assert.Equal("ballotid3", ballots[0].BallotId);
+            Assert.True(ballots.Count == 3);
+
+            Assert.Equal((int) HttpStatusCode.OK, _httpContext.Response.StatusCode);
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+        }
+
+        [Fact]
+        public async Task RunsBallotByIdQuery()
+        {
+            var ballotId = "ballotid3";
+
+            var graphQLRequest = new GraphQLRequest
+            {
+                Query = @"
+                    query ($BallotId: String!) {
+                        GetBallotById(BallotId: $BallotId) {
+                            BallotId, ElectionId, DateCreated
+                        }
+                    }",
+                Variables = new
+                {
+                    BallotId = ballotId
+                }
+            };
+
+            var graphQLRequestJson = JsonConvert.SerializeObject(graphQLRequest);
+            var graphQLRoot = await GraphQLQuerySetup(graphQLRequestJson);
+
+            var ballots = JsonConvert.DeserializeObject<List<BallotModel>>(JsonConvert.SerializeObject(graphQLRoot.GetBallotById));
+            Assert.NotNull(ballots);
+            Assert.Equal("68", ballots[0].ElectionId);
+            Assert.Equal("ballotid3", ballots[0].BallotId);
+            Assert.True(ballots.Count == 1);
+
+            Assert.Equal((int) HttpStatusCode.OK, _httpContext.Response.StatusCode);
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+        }
     }
 }
