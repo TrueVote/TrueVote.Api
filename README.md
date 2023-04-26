@@ -43,7 +43,7 @@ Create a new file at the root of TrueVote.Api named `local.settings.json` and ad
 $ dotnet restore
 $ dotnet tool restore
 ```
-Open the TrueVote.Api.sln solution in Visual Studio, and build the solution.
+Open TrueVote.Api.sln solution in Visual Studio, and build the solution.
 
 You'll see output in the console showing the various local URL access points.
 
@@ -63,9 +63,10 @@ $ powershell ./scripts/RunTests.ps1
 
 This generates a coverage report in `TrueVote.Api.Tests/coverage-html`. Open `index.html` to view the report.
 
-## 🎛️ Proxying the TrueVote.Api locally
+<a name="proxying-truevoteapi-locally"></a>
+## 🎛️ Proxying TrueVote.Api Locally
 
-In order to use TrueVote.Api locally with the [React Frontend](https://github.com/TrueVote/TrueVote.App), you must proxy the Api to simulate production and bypass [CORS](https://en.wikipedia.org/wiki/Cross-origin_resource_sharing) issues.
+In order to use TrueVote.Api locally with the [React Frontend](https://github.com/TrueVote/TrueVote.App), you must proxy it to simulate production and bypass [CORS](https://en.wikipedia.org/wiki/Cross-origin_resource_sharing) issues.
 
 [Stunnel](https://www.stunnel.org/) works well. Simply install and open the `stunnel.conf` file and add this section to the bottom.
 
@@ -76,7 +77,7 @@ accept = localhost:8080
 connect = localhost:7071
 ```
 
-This will enable traffic to port :8080 as a proxy from the default port of the Api (typically :7071). The React frontend expects the Api to be listening on :8080.
+This will enable traffic to port :8080 as a proxy from the default port of TrueVote.Api (typically :7071). The React frontend expects TrueVote.Api to be listening on :8080.
 
 ## 📮 Making requests via Postman
 
@@ -86,7 +87,7 @@ This will enable traffic to port :8080 as a proxy from the default port of the A
 
 TrueVote.Api uses [sementic versioning](https://semver.org/), starting with 1.0.0.
 
-The patch (last segment of the 3 segments) is auto-incremented via a GitHub action when a pull request is merged to master. The GitHub action is configured in the [.github/workflows/truevote-api-version.yml](.github/workflows/truevote-api-version.yml) file. To update the major or minor version, follow the instructions specified in the [bumping section of the action](https://github.com/anothrNick/github-tag-action#bumping) - use #major or #minor in the commit message to auto-increment the version.
+The patch (last segment of the 3 segments) is auto-incremented via a GitHub action when a pull request is merged to master. The GitHub action is configured in [.github/workflows/truevote-api-version.yml](.github/workflows/truevote-api-version.yml). To update the major or minor version, follow the instructions specified in the [bumping section of the action](https://github.com/anothrNick/github-tag-action#bumping) - use #major or #minor in the commit message to auto-increment the version.
 
 ## ❤️ Contributing
 
