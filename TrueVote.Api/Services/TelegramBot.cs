@@ -210,7 +210,7 @@ namespace TrueVote.Api.Services
         {
             try
             {
-                return await botClient.SendTextMessageAsync(chatId, text, null, null, null, null, null, null, null, null, cancellationToken);
+                return await botClient.SendTextMessageAsync(chatId, text, null, null, null, null, null, null, null, null, null, cancellationToken);
             }
             catch (Exception e)
             {
