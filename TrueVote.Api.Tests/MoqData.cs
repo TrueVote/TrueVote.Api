@@ -11,18 +11,21 @@ namespace TrueVote.Api.Tests
 {
     public static class MoqData
     {
+        public static DateTime startDate = DateTime.Parse("2023-02-25");
+        public static DateTime createDate = DateTime.Parse("2022-12-17");
+
         public static List<UserModel> MockUserData => new()
         {
-            new UserModel { Email = "foo@foo.com", DateCreated = DateTime.Now, FirstName = "Foo", UserId = "1" },
-            new UserModel { Email = "foo2@bar.com", DateCreated = DateTime.Now.AddSeconds(1), FirstName = "Foo2", UserId = "2" },
-            new UserModel { Email = "boo@bar.com", DateCreated = DateTime.Now.AddSeconds(2), FirstName = "Boo", UserId = "3" }
+            new UserModel { Email = "foo@foo.com", DateCreated = createDate, FirstName = "Foo", UserId = "1" },
+            new UserModel { Email = "foo2@bar.com", DateCreated = createDate.AddSeconds(1), FirstName = "Foo2", UserId = "2" },
+            new UserModel { Email = "boo@bar.com", DateCreated = createDate.AddSeconds(2), FirstName = "Boo", UserId = "3" }
         };
 
         public static List<ElectionModel> MockElectionData => new()
         {
-            new ElectionModel { Name = "California State", DateCreated = DateTime.Now },
-            new ElectionModel { Name = "Los Angeles County", DateCreated = DateTime.Now.AddSeconds(1), StartDate = DateTime.Now, EndDate = DateTime.Now.AddDays(30) },
-            new ElectionModel { Name = "Federal", DateCreated = DateTime.Now.AddSeconds(1), StartDate = DateTime.Now, EndDate = DateTime.Now.AddDays(30), ElectionId = "68" },
+            new ElectionModel { Name = "California State", DateCreated = createDate, StartDate = startDate, EndDate = startDate.AddDays(30) },
+            new ElectionModel { Name = "Los Angeles County", DateCreated = createDate.AddSeconds(1), StartDate = startDate, EndDate = startDate.AddDays(30) },
+            new ElectionModel { Name = "Federal", DateCreated = createDate.AddSeconds(1), StartDate = startDate, EndDate = startDate.AddDays(30), ElectionId = "68" },
         };
 
         public static List<BallotModel> MockBallotData => new()
@@ -34,15 +37,15 @@ namespace TrueVote.Api.Tests
 
         public static List<CandidateModel> MockCandidateData => new()
         {
-            new CandidateModel { Name = "John Smith", DateCreated = DateTime.Now, PartyAffiliation = "Republican", CandidateId =  "1" },
-            new CandidateModel { Name = "Jane Doe", DateCreated = DateTime.Now.AddSeconds(1), PartyAffiliation = "Democrat", CandidateId = "2" }
+            new CandidateModel { Name = "John Smith", DateCreated = createDate, PartyAffiliation = "Republican", CandidateId =  "1" },
+            new CandidateModel { Name = "Jane Doe", DateCreated = createDate.AddSeconds(1), PartyAffiliation = "Democrat", CandidateId = "2" }
         };
 
         public static List<RaceModel> MockRaceData => new()
         {
-            new RaceModel { Name = "President", DateCreated = DateTime.Now, RaceType = RaceTypes.ChooseOne, RaceId = "1" },
-            new RaceModel { Name = "Judge", DateCreated = DateTime.Now.AddSeconds(1), RaceType = RaceTypes.ChooseMany, RaceId = "2" },
-            new RaceModel { Name = "Governor", DateCreated = DateTime.Now.AddSeconds(2), RaceType = RaceTypes.ChooseOne, RaceId = "3" }
+            new RaceModel { Name = "President", DateCreated = createDate, RaceType = RaceTypes.ChooseOne, RaceId = "1" },
+            new RaceModel { Name = "Judge", DateCreated = createDate.AddSeconds(1), RaceType = RaceTypes.ChooseMany, RaceId = "2" },
+            new RaceModel { Name = "Governor", DateCreated = createDate.AddSeconds(2), RaceType = RaceTypes.ChooseOne, RaceId = "3" }
         };
     }
 

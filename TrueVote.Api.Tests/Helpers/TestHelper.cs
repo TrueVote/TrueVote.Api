@@ -26,6 +26,7 @@ namespace TrueVote.Api.Tests.Helpers
         protected readonly Ballot _ballotApi;
         protected readonly Race _raceApi;
         protected readonly Candidate _candidateApi;
+        protected readonly Validator _validatorApi;
         protected readonly GraphQLExecutor _graphQLApi;
         protected readonly MoqDataAccessor _moqDataAccessor;
         protected readonly Mock<TelegramBot> _mockTelegram;
@@ -73,6 +74,7 @@ namespace TrueVote.Api.Tests.Helpers
             _raceApi = new Race(_logHelper.Object, _moqDataAccessor.mockRaceContext.Object, _mockTelegram.Object);
             _candidateApi = new Candidate(_logHelper.Object, _moqDataAccessor.mockCandidateContext.Object, _mockTelegram.Object);
             _graphQLApi = new GraphQLExecutor(_logHelper.Object, _mockTelegram.Object);
+            _validatorApi = new Validator(_logHelper.Object, _moqDataAccessor.mockBallotContext.Object, _mockTelegram.Object);
         }
     }
 }

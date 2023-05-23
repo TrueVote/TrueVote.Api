@@ -1,8 +1,14 @@
+using Microsoft.Azure.Cosmos.Core;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
+using System.Text;
+using System.Text.Json;
 using Utf8Json;
 
 namespace TrueVote.Api.Helpers
@@ -45,7 +51,7 @@ namespace TrueVote.Api.Helpers
 
         public static byte[] GetHash<T>(T value)
         {
-            var serializer = JsonSerializer.Serialize(value);
+            var serializer = Utf8Json.JsonSerializer.Serialize(value);
             return s_sha256.ComputeHash(serializer);
         }
 

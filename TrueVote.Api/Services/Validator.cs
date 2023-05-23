@@ -4,6 +4,7 @@ using System;
 using TrueVote.Api.Helpers;
 using System.Linq;
 using TrueVote.Api.Interfaces;
+using System.Text;
 
 namespace TrueVote.Api.Services
 {
@@ -26,11 +27,8 @@ namespace TrueVote.Api.Services
             _telegramBot = telegramBot;
         }
 
-        [FunctionName("Validator")]
-        public void Run([TimerTrigger("*/1 * * * *")] TimerInfo timerInfo)
+        public Timestamp HashBallots()
         {
-            LogInformation($"ValidatorTimer trigger function {timerInfo.Schedule} executed at: {DateTime.Now.ToUniversalTime().ToString("dddd, MMM dd, yyyy HH:mm:ss")}");
-
             // Get all the ballots
             var items = _trueVoteDbContext.Ballots.OrderByDescending(e => e.DateCreated).ToList();
 
@@ -44,17 +42,27 @@ namespace TrueVote.Api.Services
             var otsClient = new OpenTimestampsClient(new Uri("https://a.pool.opentimestamps.org"));
             var result = otsClient.Stamp(merkleRootHash).Result;
 
-            // Store the timestamp record in SQL
+            // Store the timestamp record in a model
             var timestamp = new Timestamp
             {
                 MerkleRoot = merkleRoot,
                 MerkleRootHash = merkleRootHash,
-                TimestampHash = result.ToString(),
+                TimestampHash = Encoding.UTF8.GetString(result),
                 TimestampAt = DateTime.UtcNow
             };
 
             // Store the timestamp in Database
             StoreTimestamp(timestamp);
+
+            return timestamp;
+        }
+
+        [FunctionName("Validator")]
+        public void Run([TimerTrigger("*/1 * * * *")] TimerInfo timerInfo)
+        {
+            LogInformation($"ValidatorTimer trigger function {timerInfo.Schedule} executed at: {DateTime.Now.ToUniversalTime().ToString("dddd, MMM dd, yyyy HH:mm:ss")}");
+
+            HashBallots();
         }
 
         private void StoreTimestamp(Timestamp timestamp)

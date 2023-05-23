@@ -139,12 +139,18 @@ namespace TrueVote.Api.Models
         [JsonProperty(PropertyName = "EndDate", Required = Required.Always)]
         public DateTime? EndDate { get; set; }
 
+        private DateTime _DateCreated;
+
         [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
         [OpenApiProperty(Description = "DateCreated")]
         [MaxLength(2048)]
         [DataType(DataType.Date)]
         [JsonProperty(PropertyName = "DateCreated")]
-        public DateTime DateCreated { get; set; } = DateTime.UtcNow;
+        public DateTime DateCreated
+        {
+            get => _DateCreated = _DateCreated == DateTime.MinValue ? DateTime.UtcNow : _DateCreated;
+            set => _DateCreated = value;
+        }
 
         [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
         [OpenApiProperty(Description = "List of Races")]
@@ -203,12 +209,18 @@ namespace TrueVote.Api.Models
         [JsonProperty(PropertyName = "EndDate")]
         public DateTime? EndDate { get; set; }
 
+        private DateTime _DateCreated;
+
         [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
         [OpenApiProperty(Description = "DateCreated")]
         [MaxLength(2048)]
         [DataType(DataType.Date)]
         [JsonProperty(PropertyName = "DateCreated")]
-        public DateTime DateCreated { get; set; } = DateTime.UtcNow;
+        public DateTime DateCreated
+        {
+            get => _DateCreated = _DateCreated == DateTime.MinValue ? DateTime.UtcNow : _DateCreated;
+            set => _DateCreated = value;
+        }
 
         [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
         [OpenApiProperty(Description = "List of Races")]
