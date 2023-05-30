@@ -18,6 +18,7 @@ namespace TrueVote.Api.Helpers
         private static readonly SHA256 s_sha256 = SHA256.Create();
         private static readonly ArrayPool<byte> s_bytePool = ArrayPool<byte>.Shared;
 
+        // Calculates the Merkle root hash from a list of data
         public static byte[] CalculateMerkleRoot<T>(List<T> data)
         {
             if (data == null || data.Count == 0)
@@ -30,8 +31,10 @@ namespace TrueVote.Api.Helpers
                 return GetHash(data[0]);
             }
 
+            // Convert each data item to its hash representation (leaf nodes)
             var leafNodes = data.Select(GetHash).ToList();
 
+            // Build the Merkle tree by computing parent nodes until only the root remains
             while (leafNodes.Count > 1)
             {
                 var parentNodes = new List<byte[]>();
@@ -49,12 +52,14 @@ namespace TrueVote.Api.Helpers
             return leafNodes[0];
         }
 
+        // Computes the hash of an object
         public static byte[] GetHash<T>(T value)
         {
             var serializer = Utf8Json.JsonSerializer.Serialize(value);
             return s_sha256.ComputeHash(serializer);
         }
 
+        // Computes the hash of the concatenation of two byte arrays
         public static byte[] GetHash(byte[] left, byte[] right)
         {
             var buffer = s_bytePool.Rent(left.Length + right.Length);
