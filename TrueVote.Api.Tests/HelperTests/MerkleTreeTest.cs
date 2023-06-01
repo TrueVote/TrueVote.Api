@@ -1,3 +1,4 @@
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -47,10 +48,12 @@ namespace TrueVote.Api.Tests.HelperTests
         [Fact]
         public void CreatesMerkleRootFromBallotObject()
         {
-            var merkleRoot = MerkleTree.CalculateMerkleRoot(MoqData.MockBallotData);
+            var dataJson = JsonConvert.SerializeObject(MoqData.MockBallotData);
+
+            var merkleRoot = MerkleTree.CalculateMerkleRoot(dataJson);
 
             Assert.NotNull(merkleRoot);
-            Assert.Equal("147", merkleRoot[0].ToString());
+            Assert.Equal("91", merkleRoot[0].ToString());
         }
 
         [Fact]
@@ -58,15 +61,20 @@ namespace TrueVote.Api.Tests.HelperTests
         {
             var data1 = MoqData.MockBallotData;
             var data2 = MoqData.MockBallotData;
-            Assert.Equal(data1, data2);
 
-            var hash1 = MerkleTree.GetHash(data1);
-            var hash2 = MerkleTree.GetHash(data1);
+            var data1Json = JsonConvert.SerializeObject(data1);
+            var data2Json = JsonConvert.SerializeObject(data2);
+
+            Assert.Equal(data1Json, data2Json);
+
+            var hash1 = MerkleTree.GetHash(data1Json);
+            var hash2 = MerkleTree.GetHash(data2Json);
 
             Assert.NotNull(hash1);
             Assert.NotNull(hash2);
             Assert.Equal(hash1, hash2);
-            Assert.Equal("126", hash1[0].ToString());
+            Assert.Equal("157", hash1[0].ToString());
+            Assert.Equal("157", hash2[0].ToString());
         }
     }
 }

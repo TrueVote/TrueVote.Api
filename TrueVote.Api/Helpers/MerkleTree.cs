@@ -1,15 +1,9 @@
-using Microsoft.Azure.Cosmos.Core;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
-using System.Text.Json;
-using Utf8Json;
 
 namespace TrueVote.Api.Helpers
 {
@@ -17,6 +11,21 @@ namespace TrueVote.Api.Helpers
     {
         private static readonly SHA256 s_sha256 = SHA256.Create();
         private static readonly ArrayPool<byte> s_bytePool = ArrayPool<byte>.Shared;
+
+        // Calculates the Merkle root hash from string (e.g. json)
+        public static byte[] CalculateMerkleRoot(string data)
+        {
+            if (string.IsNullOrEmpty(data))
+            {
+                return null;
+            }
+
+            // Convert the JSON string to a byte array
+            var leafNodes = Encoding.UTF8.GetBytes(data);
+
+            // Calculate the Merkle root hash
+            return CalculateMerkleRoot(new List<byte[]> { leafNodes });
+        }
 
         // Calculates the Merkle root hash from a list of data
         public static byte[] CalculateMerkleRoot<T>(List<T> data)
@@ -34,6 +43,13 @@ namespace TrueVote.Api.Helpers
             // Convert each data item to its hash representation (leaf nodes)
             var leafNodes = data.Select(GetHash).ToList();
 
+            // Calculate the Merkle root hash
+            return CalculateMerkleRoot(leafNodes);
+        }
+
+        // Calculates the Merkle root hash from a list of leaf nodes
+        private static byte[] CalculateMerkleRoot(List<byte[]> leafNodes)
+        {
             // Build the Merkle tree by computing parent nodes until only the root remains
             while (leafNodes.Count > 1)
             {

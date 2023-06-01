@@ -139,7 +139,7 @@ namespace TrueVote.Api.Models
         [JsonProperty(PropertyName = "EndDate", Required = Required.Always)]
         public DateTime? EndDate { get; set; }
 
-        private DateTime _DateCreated;
+        private DateTime? _DateCreated = null;
 
         [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
         [OpenApiProperty(Description = "DateCreated")]
@@ -148,7 +148,7 @@ namespace TrueVote.Api.Models
         [JsonProperty(PropertyName = "DateCreated")]
         public DateTime DateCreated
         {
-            get => _DateCreated = _DateCreated == DateTime.MinValue ? DateTime.UtcNow : _DateCreated;
+            get => _DateCreated ?? DateTime.UtcNow;
             set => _DateCreated = value;
         }
 
@@ -209,7 +209,7 @@ namespace TrueVote.Api.Models
         [JsonProperty(PropertyName = "EndDate")]
         public DateTime? EndDate { get; set; }
 
-        private DateTime _DateCreated;
+        private DateTime? _DateCreated = null;
 
         [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
         [OpenApiProperty(Description = "DateCreated")]
@@ -218,10 +218,9 @@ namespace TrueVote.Api.Models
         [JsonProperty(PropertyName = "DateCreated")]
         public DateTime DateCreated
         {
-            get => _DateCreated = _DateCreated == DateTime.MinValue ? DateTime.UtcNow : _DateCreated;
+            get => _DateCreated ?? DateTime.UtcNow;
             set => _DateCreated = value;
         }
-
         [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
         [OpenApiProperty(Description = "List of Races")]
         [DataType("ICollection<RaceModel>")]

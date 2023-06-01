@@ -275,8 +275,8 @@ namespace TrueVote.Api.Tests.ServiceTests
             var addsRacesElectionData = MoqData.MockElectionData;
 
             addsRacesElectionData[0].Races = _moqDataAccessor.mockRaceDataCollection;
-            addsRacesElectionData[0].ElectionId = "1";
-            addsRacesElectionData[1].ElectionId = "2";
+            addsRacesElectionData[0].ElectionId = "electionid1";
+            addsRacesElectionData[1].ElectionId = "electionid2";
 
             var mockElectionContext = new Mock<TrueVoteDbContext>();
 
@@ -286,7 +286,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             var mockRacesSet = _moqDataAccessor.mockRaceDataCollection.AsQueryable().BuildMockDbSet();
             mockElectionContext.Setup(m => m.Races).Returns(mockRacesSet.Object);
 
-            var addRacesObj = new AddRacesModel { ElectionId = "1", RaceIds = new List<string> { "1", "2", "3" } };
+            var addRacesObj = new AddRacesModel { ElectionId = "electionid1", RaceIds = new List<string> { "raceid1", "raceid2", "raceid3" } };
             var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(addRacesObj));
             _httpContext.Request.Body = new MemoryStream(byteArray);
 

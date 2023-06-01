@@ -100,7 +100,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             Assert.NotEmpty(val);
             Assert.Single(val);
             Assert.Equal("ballotid3", val[0].BallotId);
-            Assert.Equal("68", val[0].ElectionId);
+            Assert.Equal("electionid1", val[0].ElectionId);
 
             _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));

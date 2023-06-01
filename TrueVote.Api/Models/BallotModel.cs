@@ -52,7 +52,7 @@ namespace TrueVote.Api.Models
         [JsonProperty(PropertyName = "ElectionId")]
         public string ElectionId { get; set; }
 
-        private DateTime _DateCreated;
+        private DateTime? _DateCreated = null;
 
         [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
         [OpenApiProperty(Description = "DateCreated")]
@@ -61,7 +61,7 @@ namespace TrueVote.Api.Models
         [JsonProperty(PropertyName = "DateCreated")]
         public DateTime DateCreated
         {
-            get => _DateCreated = _DateCreated == DateTime.MinValue ? DateTime.UtcNow : _DateCreated;
+            get => _DateCreated ?? DateTime.UtcNow;
             set => _DateCreated = value;
         }
 

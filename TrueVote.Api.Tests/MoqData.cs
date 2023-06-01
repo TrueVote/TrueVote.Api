@@ -12,40 +12,43 @@ namespace TrueVote.Api.Tests
     public static class MoqData
     {
         public static DateTime startDate = DateTime.Parse("2023-02-25");
+        public static DateTime endDate = DateTime.Parse("2023-02-25").AddDays(30);
         public static DateTime createDate = DateTime.Parse("2022-12-17");
+        public static DateTime createDate2 = DateTime.Parse("2022-12-17").AddHours(1);
+        public static DateTime createDate3 = DateTime.Parse("2022-12-17").AddHours(2);
 
         public static List<UserModel> MockUserData => new()
         {
-            new UserModel { Email = "foo@foo.com", DateCreated = createDate, FirstName = "Foo", UserId = "1" },
-            new UserModel { Email = "foo2@bar.com", DateCreated = createDate.AddSeconds(1), FirstName = "Foo2", UserId = "2" },
-            new UserModel { Email = "boo@bar.com", DateCreated = createDate.AddSeconds(2), FirstName = "Boo", UserId = "3" }
+            new UserModel { UserId = "userid1", Email = "foo@foo.com", DateCreated = createDate, FirstName = "Foo" },
+            new UserModel { UserId = "userid2", Email = "foo2@bar.com", DateCreated = createDate2, FirstName = "Foo2" },
+            new UserModel { UserId = "userid3", Email = "boo@bar.com", DateCreated = createDate3, FirstName = "Boo" }
         };
 
         public static List<ElectionModel> MockElectionData => new()
         {
-            new ElectionModel { Name = "California State", DateCreated = createDate, StartDate = startDate, EndDate = startDate.AddDays(30) },
-            new ElectionModel { Name = "Los Angeles County", DateCreated = createDate.AddSeconds(1), StartDate = startDate, EndDate = startDate.AddDays(30) },
-            new ElectionModel { Name = "Federal", DateCreated = createDate.AddSeconds(1), StartDate = startDate, EndDate = startDate.AddDays(30), ElectionId = "68" },
+            new ElectionModel { ElectionId = "electionid1", Name = "California State", DateCreated = createDate, StartDate = startDate, EndDate = endDate },
+            new ElectionModel { ElectionId = "electionid2", Name = "Los Angeles County", DateCreated = createDate2, StartDate = startDate, EndDate = endDate },
+            new ElectionModel { ElectionId = "electionid3", Name = "Federal", DateCreated = createDate3, StartDate = startDate, EndDate = endDate },
         };
 
         public static List<BallotModel> MockBallotData => new()
         {
-            new BallotModel { BallotId = "ballotid1", ElectionId = "68", Election = MockElectionData[0] },
-            new BallotModel { BallotId = "ballotid2", ElectionId = "68", Election = MockElectionData[1] },
-            new BallotModel { BallotId = "ballotid3", ElectionId = "68", Election = MockElectionData[2] },
+            new BallotModel { BallotId = "ballotid1", DateCreated = createDate, ElectionId = "electionid1", Election = MockElectionData[0] },
+            new BallotModel { BallotId = "ballotid2", DateCreated = createDate2, ElectionId = "electionid1", Election = MockElectionData[0] },
+            new BallotModel { BallotId = "ballotid3", DateCreated = createDate3, ElectionId = "electionid1", Election = MockElectionData[0] },
         };
 
         public static List<CandidateModel> MockCandidateData => new()
         {
-            new CandidateModel { Name = "John Smith", DateCreated = createDate, PartyAffiliation = "Republican", CandidateId =  "1" },
-            new CandidateModel { Name = "Jane Doe", DateCreated = createDate.AddSeconds(1), PartyAffiliation = "Democrat", CandidateId = "2" }
+            new CandidateModel { CandidateId = "candidateid1", Name = "John Smith", DateCreated = createDate, PartyAffiliation = "Republican" },
+            new CandidateModel { CandidateId = "candidateid2", Name = "Jane Doe", DateCreated = createDate2, PartyAffiliation = "Democrat" }
         };
 
         public static List<RaceModel> MockRaceData => new()
         {
-            new RaceModel { Name = "President", DateCreated = createDate, RaceType = RaceTypes.ChooseOne, RaceId = "1" },
-            new RaceModel { Name = "Judge", DateCreated = createDate.AddSeconds(1), RaceType = RaceTypes.ChooseMany, RaceId = "2" },
-            new RaceModel { Name = "Governor", DateCreated = createDate.AddSeconds(2), RaceType = RaceTypes.ChooseOne, RaceId = "3" }
+            new RaceModel { RaceId = "raceid1", Name = "President", DateCreated = createDate, RaceType = RaceTypes.ChooseOne },
+            new RaceModel { RaceId = "raceid2", Name = "Judge", DateCreated = createDate2, RaceType = RaceTypes.ChooseMany },
+            new RaceModel { RaceId = "raceid3", Name = "Governor", DateCreated = createDate3, RaceType = RaceTypes.ChooseOne }
         };
     }
 
