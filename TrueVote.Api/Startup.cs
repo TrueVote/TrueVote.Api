@@ -22,6 +22,7 @@ using System.Threading.Tasks;
 using TrueVote.Api.Interfaces;
 using TrueVote.Api.Models;
 using TrueVote.Api.Services;
+using TrueVote.Api.Helpers;
 
 [assembly: FunctionsStartup(typeof(TrueVote.Api.Startup))]
 namespace TrueVote.Api
@@ -166,6 +167,9 @@ namespace TrueVote.Api
 
             builder.Services.TryAddSingleton<INamingConventions, TrueVoteNamingConventions>();
             builder.AddGraphQLFunction().AddQueryType<Query>();
+
+            // Additional classes for dependency injection
+            builder.Services.TryAddScoped<IOpenTimestampsClient, OpenTimestampsClient>();
 
             ConfigureServices(builder.Services).BuildServiceProvider(true);
         }

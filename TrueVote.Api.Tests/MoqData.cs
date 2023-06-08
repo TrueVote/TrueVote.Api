@@ -11,11 +11,11 @@ namespace TrueVote.Api.Tests
 {
     public static class MoqData
     {
-        public static DateTime startDate = DateTime.Parse("2023-02-25");
-        public static DateTime endDate = DateTime.Parse("2023-02-25").AddDays(30);
-        public static DateTime createDate = DateTime.Parse("2022-12-17");
-        public static DateTime createDate2 = DateTime.Parse("2022-12-17").AddHours(1);
-        public static DateTime createDate3 = DateTime.Parse("2022-12-17").AddHours(2);
+        private static readonly DateTime startDate = DateTime.Parse("2023-02-25");
+        private static readonly DateTime endDate = DateTime.Parse("2023-02-25").AddDays(30);
+        private static readonly DateTime createDate = DateTime.Parse("2022-12-17");
+        private static readonly DateTime createDate2 = DateTime.Parse("2022-12-17").AddHours(1);
+        private static readonly DateTime createDate3 = DateTime.Parse("2022-12-17").AddHours(2);
 
         public static List<UserModel> MockUserData => new()
         {

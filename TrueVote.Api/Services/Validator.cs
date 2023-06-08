@@ -20,11 +20,13 @@ namespace TrueVote.Api.Services
     {
         private readonly ITrueVoteDbContext _trueVoteDbContext;
         private readonly TelegramBot _telegramBot;
+        private readonly IOpenTimestampsClient _openTimestampsClient;
 
-        public Validator(ILogger log, ITrueVoteDbContext trueVoteDbContext, TelegramBot telegramBot) : base(log, telegramBot)
+        public Validator(ILogger log, ITrueVoteDbContext trueVoteDbContext, TelegramBot telegramBot, IOpenTimestampsClient openTimestampsClient) : base(log, telegramBot)
         {
             _trueVoteDbContext = trueVoteDbContext;
             _telegramBot = telegramBot;
+            _openTimestampsClient = openTimestampsClient;
         }
 
         public Timestamp HashBallots()
@@ -39,8 +41,7 @@ namespace TrueVote.Api.Services
             var merkleRootHash = MerkleTree.GetHash(merkleRoot);
 
             // Timestamp the Merkle root
-            var otsClient = new OpenTimestampsClient(new Uri("https://a.pool.opentimestamps.org"));
-            var result = otsClient.Stamp(merkleRootHash).Result;
+            var result = _openTimestampsClient.Stamp(merkleRootHash).Result;
 
             // Store the timestamp record in a model
             var timestamp = new Timestamp

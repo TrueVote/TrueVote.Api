@@ -4,18 +4,23 @@ using System.Threading.Tasks;
 
 namespace TrueVote.Api.Helpers
 {
-    public class OpenTimestampsClient : IDisposable
+    public interface IOpenTimestampsClient
+    {
+        Task<byte[]> Stamp(byte[] hash);
+    }
+
+    public class OpenTimestampsClient: IOpenTimestampsClient
     {
         private readonly Uri _uri;
         private readonly HttpClient _httpClient;
 
-        public OpenTimestampsClient(Uri uri)
+        public OpenTimestampsClient(Uri uri, HttpClient httpClient)
         {
             _uri = uri;
-            _httpClient = new HttpClient();
+            _httpClient = httpClient;
         }
 
-        public async Task<byte[]> Stamp(byte[] hash)
+        public async virtual Task<byte[]> Stamp(byte[] hash)
         {
             var requestUri = new Uri(_uri, "/digest");
 
@@ -28,11 +33,6 @@ namespace TrueVote.Api.Helpers
             var timestampBytes = await response.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
 
             return timestampBytes;
-        }
-
-        public void Dispose()
-        {
-            _httpClient.Dispose();
         }
     }
 }

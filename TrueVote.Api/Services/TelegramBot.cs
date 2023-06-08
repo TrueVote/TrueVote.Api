@@ -37,7 +37,7 @@ namespace TrueVote.Api.Services
 
         private async void Init()
         {
-            if (botClient != null) // In case the function is called again, if it's iniatialized, don't do it again
+            if (botClient != null) // In case the function is called again, if it's initialized, don't do it again
                 return;
 
             using var cts = new CancellationTokenSource();
@@ -54,21 +54,21 @@ namespace TrueVote.Api.Services
             var botKey = Environment.GetEnvironmentVariable("TelegramBotKey");
             if (string.IsNullOrEmpty(botKey))
             {
-                Console.WriteLine("Error retreiving Telegram BotKey");
+                Console.WriteLine("Error retrieving Telegram BotKey");
                 return;
             }
 
             TelegramRuntimeChannel = Environment.GetEnvironmentVariable("TelegramRuntimeChannel");
             if (string.IsNullOrEmpty(TelegramRuntimeChannel))
             {
-                Console.WriteLine("Error retreiving TelegramRuntimeChannel");
+                Console.WriteLine("Error retrieving TelegramRuntimeChannel");
                 return;
             }
 
             BaseApiUrl = Environment.GetEnvironmentVariable("BaseApiUrl");
             if (string.IsNullOrEmpty(BaseApiUrl))
             {
-                Console.WriteLine("Error retreiving BaseApiUrl");
+                Console.WriteLine("Error retrieving BaseApiUrl");
                 return;
             }
 

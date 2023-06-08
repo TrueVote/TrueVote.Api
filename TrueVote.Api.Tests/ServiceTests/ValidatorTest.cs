@@ -36,7 +36,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             var timestamp = _validatorApi.HashBallots();
 
             Assert.NotNull(timestamp);
-            // Assert.Equal(66, timestamp.MerkleRoot[0]);
+            Assert.Equal(50, timestamp.MerkleRoot[0]);
         }
     }
 }

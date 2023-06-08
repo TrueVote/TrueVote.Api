@@ -1,10 +1,7 @@
 using Newtonsoft.Json;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TrueVote.Api.Helpers;
+using TrueVote.Api.Models;
 using Xunit;
 
 namespace TrueVote.Api.Tests.HelperTests
@@ -75,6 +72,36 @@ namespace TrueVote.Api.Tests.HelperTests
             Assert.Equal(hash1, hash2);
             Assert.Equal("157", hash1[0].ToString());
             Assert.Equal("157", hash2[0].ToString());
+        }
+
+        [Fact]
+        public void HandlesNullString()
+        {
+            string dataString = null;
+
+            var merkleRoot = MerkleTree.CalculateMerkleRoot(dataString);
+
+            Assert.Null(merkleRoot);
+        }
+
+        [Fact]
+        public void HandlesNullObject()
+        {
+            List<BallotModel> dataObject = null;
+
+            var merkleRoot = MerkleTree.CalculateMerkleRoot(dataObject);
+
+            Assert.Null(merkleRoot);
+        }
+
+        [Fact]
+        public void HandlesEmptyObject()
+        {
+            var dataObject = new List<BallotModel>();
+
+            var merkleRoot = MerkleTree.CalculateMerkleRoot(dataObject);
+
+            Assert.Null(merkleRoot);
         }
     }
 }

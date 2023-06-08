@@ -6,8 +6,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Moq;
+using System;
 using System.IO;
 using System.IO.Abstractions;
+using System.Threading.Tasks;
 using TrueVote.Api.Helpers;
 using TrueVote.Api.Interfaces;
 using TrueVote.Api.Services;
@@ -30,6 +32,7 @@ namespace TrueVote.Api.Tests.Helpers
         protected readonly GraphQLExecutor _graphQLApi;
         protected readonly MoqDataAccessor _moqDataAccessor;
         protected readonly Mock<TelegramBot> _mockTelegram;
+        protected readonly Mock<IOpenTimestampsClient> _mockOpenTimestampsClient;
         protected readonly IGraphQLRequestExecutor requestExecutor;
 
         public TestHelper(ITestOutputHelper output)
@@ -42,6 +45,7 @@ namespace TrueVote.Api.Tests.Helpers
             serviceCollection.TryAddSingleton<ILoggerFactory, LoggerFactory>();
             serviceCollection.TryAddSingleton(typeof(ILogger), typeof(Logger<Startup>));
             serviceCollection.TryAddSingleton<TelegramBot, TelegramBot>();
+            serviceCollection.TryAddSingleton<IOpenTimestampsClient, OpenTimestampsClient>();
             serviceCollection.TryAddScoped<Query, Query>();
             serviceCollection.TryAddSingleton<INamingConventions, TrueVoteNamingConventions>();
             serviceCollection.AddGraphQLFunction().AddQueryType<Query>();
@@ -67,6 +71,9 @@ namespace TrueVote.Api.Tests.Helpers
             _mockTelegram = new Mock<TelegramBot>();
             _mockTelegram.Setup(m => m.SendChannelMessageAsync(It.IsAny<string>())).ReturnsAsync(new Telegram.Bot.Types.Message());
 
+            _mockOpenTimestampsClient = new Mock<IOpenTimestampsClient>();
+            _mockOpenTimestampsClient.Setup(m => m.Stamp(It.IsAny<byte[]>())).Returns<byte[]>(hash => Task.FromResult(hash));
+
             _moqDataAccessor = new MoqDataAccessor();
             _userApi = new User(_logHelper.Object, _moqDataAccessor.mockUserContext.Object, _mockTelegram.Object);
             _electionApi = new Election(_logHelper.Object, _moqDataAccessor.mockElectionContext.Object, _mockTelegram.Object);
@@ -74,7 +81,7 @@ namespace TrueVote.Api.Tests.Helpers
             _raceApi = new Race(_logHelper.Object, _moqDataAccessor.mockRaceContext.Object, _mockTelegram.Object);
             _candidateApi = new Candidate(_logHelper.Object, _moqDataAccessor.mockCandidateContext.Object, _mockTelegram.Object);
             _graphQLApi = new GraphQLExecutor(_logHelper.Object, _mockTelegram.Object);
-            _validatorApi = new Validator(_logHelper.Object, _moqDataAccessor.mockBallotContext.Object, _mockTelegram.Object);
+            _validatorApi = new Validator(_logHelper.Object, _moqDataAccessor.mockBallotContext.Object, _mockTelegram.Object, _mockOpenTimestampsClient.Object);
         }
     }
 }
