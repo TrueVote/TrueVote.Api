@@ -50,6 +50,13 @@ namespace TrueVote.Api.Tests
             new RaceModel { RaceId = "raceid2", Name = "Judge", DateCreated = createDate2, RaceType = RaceTypes.ChooseMany },
             new RaceModel { RaceId = "raceid3", Name = "Governor", DateCreated = createDate3, RaceType = RaceTypes.ChooseOne }
         };
+
+        public static List<TimestampModel> MockTimestampData => new()
+        {
+            new TimestampModel { },
+            new TimestampModel { }
+        };
+
     }
 
     public class MoqDataAccessor
@@ -59,6 +66,7 @@ namespace TrueVote.Api.Tests
         public readonly Mock<MoqTrueVoteDbContext> mockBallotContext;
         public readonly Mock<MoqTrueVoteDbContext> mockCandidateContext;
         public readonly Mock<MoqTrueVoteDbContext> mockRaceContext;
+        public readonly Mock<MoqTrueVoteDbContext> mockTimestampContext;
         public readonly IQueryable<UserModel> mockUserDataQueryable;
         public readonly IQueryable<ElectionModel> mockElectionDataQueryable;
         public readonly IQueryable<BallotModel> mockBallotDataQueryable;
@@ -66,12 +74,15 @@ namespace TrueVote.Api.Tests
         public readonly ICollection<CandidateModel> mockCandidateDataCollection;
         public readonly IQueryable<RaceModel> mockRaceDataQueryable;
         public readonly ICollection<RaceModel> mockRaceDataCollection;
+        public readonly IQueryable<TimestampModel> mockTimestampDataQueryable;
+        public readonly ICollection<TimestampModel> mockTimestampDataCollection;
 
         public Mock<DbSet<UserModel>> mockUserSet { get; private set; }
         public Mock<DbSet<RaceModel>> mockRaceSet { get; private set; }
         public Mock<DbSet<CandidateModel>> mockCandidateSet { get; private set; }
         public Mock<DbSet<ElectionModel>> mockElectionSet { get; private set; }
         public Mock<DbSet<BallotModel>> mockBallotSet { get; private set; }
+        public Mock<DbSet<TimestampModel>> mockTimestampSet { get; private set; }
 
         // https://docs.microsoft.com/en-us/ef/ef6/fundamentals/testing/mocking?redirectedfrom=MSDN
         // https://github.com/romantitov/MockQueryable
@@ -102,6 +113,14 @@ namespace TrueVote.Api.Tests
             mockCandidateContext.Setup(m => m.Candidates).Returns(mockCandidateSet.Object);
             mockCandidateContext.Setup(m => m.EnsureCreatedAsync()).Returns(Task.FromResult(true));
 
+            mockTimestampContext = new Mock<MoqTrueVoteDbContext>();
+            mockTimestampDataQueryable = MoqData.MockTimestampData.AsQueryable();
+            mockTimestampDataCollection = MoqData.MockTimestampData;
+            mockTimestampSet = DbMoqHelper.GetDbSet(mockTimestampDataQueryable);
+            mockTimestampContext.Setup(m => m.Timestamps).Returns(mockTimestampSet.Object);
+            mockTimestampContext.Setup(m => m.EnsureCreatedAsync()).Returns(Task.FromResult(true));
+            mockBallotContext.Setup(m => m.Timestamps).Returns(mockTimestampSet.Object);
+
             mockRaceContext = new Mock<MoqTrueVoteDbContext>();
             MoqData.MockRaceData[0].RaceId = "1";
             // TODO Fix this assignment
@@ -124,6 +143,7 @@ namespace TrueVote.Api.Tests
         public virtual DbSet<RaceModel> Races { get; set; }
         public virtual DbSet<CandidateModel> Candidates { get; set; }
         public virtual DbSet<BallotModel> Ballots { get; set; }
+        public virtual DbSet<TimestampModel> Timestamps { get; set; }
 
         protected MoqDataAccessor _moqDataAccessor;
 
@@ -136,6 +156,7 @@ namespace TrueVote.Api.Tests
             Races = _moqDataAccessor.mockRaceSet.Object;
             Candidates = _moqDataAccessor.mockCandidateSet.Object;
             Ballots = _moqDataAccessor.mockBallotSet.Object;
+            Timestamps = _moqDataAccessor.mockTimestampSet.Object;
         }
 
         public virtual async Task<bool> EnsureCreatedAsync()

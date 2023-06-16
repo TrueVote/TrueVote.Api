@@ -67,14 +67,6 @@ namespace TrueVote.Api.Services
             return timestamp;
         }
 
-        [FunctionName("Validator")]
-        public async Task Run([TimerTrigger("*/1 * * * *")] TimerInfo timerInfo)
-        {
-            LogInformation($"ValidatorTimer trigger function {timerInfo.Schedule} executed at: {DateTime.Now.ToUniversalTime():dddd, MMM dd, yyyy HH:mm:ss}");
-
-            await HashBallotsAsync();
-        }
-
         private async Task StoreTimestampAsync(TimestampModel timestamp)
         {
             try
@@ -88,6 +80,14 @@ namespace TrueVote.Api.Services
                 LogError($"Exception storing timestamp: {ex.Message}");
                 throw;
             }
+        }
+
+        [FunctionName("Validator")]
+        public async Task Run([TimerTrigger("*/1 * * * *")] TimerInfo timerInfo)
+        {
+            LogInformation($"ValidatorTimer trigger function {timerInfo.Schedule} executed at: {DateTime.Now.ToUniversalTime():dddd, MMM dd, yyyy HH:mm:ss}");
+
+            await HashBallotsAsync();
         }
     }
 }
