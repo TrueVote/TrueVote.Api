@@ -33,7 +33,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public void HashesBallotData()
         {
-            var timestamp = _validatorApi.HashBallots();
+            var timestamp = _validatorApi.HashBallotsAsync();
 
             Assert.NotNull(timestamp);
             Assert.Equal(50, timestamp.MerkleRoot[0]);

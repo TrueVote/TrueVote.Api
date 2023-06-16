@@ -98,17 +98,11 @@ namespace TrueVote.Api.Models
         [JsonProperty(PropertyName = "Email", Required = Required.Always)]
         public string Email { get; set; }
 
-        private DateTime? _DateCreated = null;
-
         [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
         [OpenApiProperty(Description = "DateCreated")]
         [MaxLength(2048)]
         [DataType(DataType.Date)]
         [JsonProperty(PropertyName = "DateCreated")]
-        public DateTime DateCreated
-        {
-            get => _DateCreated ?? DateTime.UtcNow;
-            set => _DateCreated = value;
-        }
+        public DateTime DateCreated { get; set; } = DateTime.UtcNow;
     }
 }

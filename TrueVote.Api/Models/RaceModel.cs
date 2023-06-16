@@ -101,18 +101,12 @@ namespace TrueVote.Api.Models
         [JsonProperty(PropertyName = "RaceTypeName")]
         public string RaceTypeName => RaceType.ToString();
 
-        private DateTime? _DateCreated = null;
-
         [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
         [OpenApiProperty(Description = "DateCreated")]
         [MaxLength(2048)]
         [DataType(DataType.Date)]
         [JsonProperty(PropertyName = "DateCreated")]
-        public DateTime DateCreated
-        {
-            get => _DateCreated ?? DateTime.UtcNow;
-            set => _DateCreated = value;
-        }
+        public DateTime DateCreated { get; set; } = DateTime.UtcNow;
 
         [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
         [OpenApiProperty(Description = "List of Candidates")]
@@ -156,18 +150,13 @@ namespace TrueVote.Api.Models
         [JsonProperty(PropertyName = "RaceTypeName")]
         public string RaceTypeName => RaceType.ToString();
 
-        private DateTime? _DateCreated = null;
-
         [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
         [OpenApiProperty(Description = "DateCreated")]
         [MaxLength(2048)]
         [DataType(DataType.Date)]
         [JsonProperty(PropertyName = "DateCreated")]
-        public DateTime DateCreated
-        {
-            get => _DateCreated ?? DateTime.UtcNow;
-            set => _DateCreated = value;
-        }
+        public DateTime DateCreated { get; set; } = DateTime.UtcNow;
+
         [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
         [OpenApiProperty(Description = "List of Candidates")]
         [DataType("ICollection<CandidateModel>")]

@@ -5,17 +5,12 @@ using TrueVote.Api.Helpers;
 using System.Linq;
 using TrueVote.Api.Interfaces;
 using System.Text;
+using System.Threading.Tasks;
+using Newtonsoft.Json;
+using TrueVote.Api.Models;
 
 namespace TrueVote.Api.Services
 {
-    public class Timestamp
-    {
-        public byte[] MerkleRoot { get; set; }
-        public byte[] MerkleRootHash { get; set; }
-        public string TimestampHash { get; set; }
-        public DateTime TimestampAt { get; set; }
-    }
-
     public class Validator : LoggerHelper
     {
         private readonly ITrueVoteDbContext _trueVoteDbContext;
@@ -29,7 +24,7 @@ namespace TrueVote.Api.Services
             _openTimestampsClient = openTimestampsClient;
         }
 
-        public Timestamp HashBallots()
+        public async Task<TimestampModel> HashBallotsAsync()
         {
             // Get all the ballots
             var items = _trueVoteDbContext.Ballots.OrderByDescending(e => e.DateCreated).ToList();
@@ -41,34 +36,58 @@ namespace TrueVote.Api.Services
             var merkleRootHash = MerkleTree.GetHash(merkleRoot);
 
             // Timestamp the Merkle root
-            var result = _openTimestampsClient.Stamp(merkleRootHash).Result;
+            byte[] result;
+            try
+            {
+                result = await _openTimestampsClient.Stamp(merkleRootHash);
+            }
+            catch (Exception ex)
+            {
+                LogError($"Exception stamping merkleRoot: {ex.Message}");
+                throw;
+            }
 
             // Store the timestamp record in a model
-            var timestamp = new Timestamp
+            var timestamp = new TimestampModel
             {
                 MerkleRoot = merkleRoot,
                 MerkleRootHash = merkleRootHash,
-                TimestampHash = Encoding.UTF8.GetString(result),
+                TimestampHash = result,
+                TimestampHashS = Encoding.UTF8.GetString(result),
                 TimestampAt = DateTime.UtcNow
             };
+            timestamp.CalendarServerUrl = timestamp.TimestampHashS.ExtractUrl();
 
             // Store the timestamp in Database
-            StoreTimestamp(timestamp);
+            await StoreTimestampAsync(timestamp);
+
+            var timestampJson = JsonConvert.SerializeObject(timestamp, Formatting.Indented);
+            await _telegramBot.SendChannelMessageAsync($"New Ballot Timestamp created. Timestamp: {timestampJson}");
 
             return timestamp;
         }
 
         [FunctionName("Validator")]
-        public void Run([TimerTrigger("*/1 * * * *")] TimerInfo timerInfo)
+        public async Task Run([TimerTrigger("*/1 * * * *")] TimerInfo timerInfo)
         {
-            LogInformation($"ValidatorTimer trigger function {timerInfo.Schedule} executed at: {DateTime.Now.ToUniversalTime().ToString("dddd, MMM dd, yyyy HH:mm:ss")}");
+            LogInformation($"ValidatorTimer trigger function {timerInfo.Schedule} executed at: {DateTime.Now.ToUniversalTime():dddd, MMM dd, yyyy HH:mm:ss}");
 
-            HashBallots();
+            await HashBallotsAsync();
         }
 
-        private void StoreTimestamp(Timestamp timestamp)
+        private async Task StoreTimestampAsync(TimestampModel timestamp)
         {
-            Console.WriteLine(timestamp.ToString());
+            try
+            {
+                await _trueVoteDbContext.EnsureCreatedAsync();
+                await _trueVoteDbContext.Timestamps.AddAsync(timestamp);
+                await _trueVoteDbContext.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                LogError($"Exception storing timestamp: {ex.Message}");
+                throw;
+            }
         }
     }
 }
