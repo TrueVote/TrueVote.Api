@@ -6,7 +6,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Moq;
-using System;
 using System.IO;
 using System.IO.Abstractions;
 using System.Threading.Tasks;
@@ -83,7 +82,7 @@ namespace TrueVote.Api.Tests.Helpers
             _candidateApi = new Candidate(_logHelper.Object, _moqDataAccessor.mockCandidateContext.Object, _mockTelegram.Object);
             _graphQLApi = new GraphQLExecutor(_logHelper.Object, _mockTelegram.Object);
             _validatorApi = new Validator(_logHelper.Object, _moqDataAccessor.mockBallotContext.Object, _mockTelegram.Object, _mockOpenTimestampsClient.Object);
-            _timestampApi = new Timestamp(_logHelper.Object, _moqDataAccessor.mockUserContext.Object, _mockTelegram.Object);
+            _timestampApi = new Timestamp(_logHelper.Object, _moqDataAccessor.mockTimestampContext.Object, _mockTelegram.Object);
         }
     }
 }
