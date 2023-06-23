@@ -2,7 +2,6 @@ using System;
 using System.Threading.Tasks;
 using Telegram.Bot;
 using Telegram.Bot.Exceptions;
-using Telegram.Bot.Extensions.Polling;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using System.Collections.Generic;
@@ -14,6 +13,7 @@ using Newtonsoft.Json;
 using TrueVote.Api.Models;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using TrueVote.Api.Services;
+using Telegram.Bot.Polling;
 
 // TODO Localize this service, since it returns English messages to Telegram
 // See local.settings.json for local settings and Azure Portal for production settings
