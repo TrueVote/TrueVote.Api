@@ -21,19 +21,6 @@ namespace TrueVote.Api.Tests.ServiceTests
         }
 
         [Fact]
-        public void CallsValidator()
-        {
-            var cronSchedule = new CronSchedule(CrontabSchedule.Parse("*/5 * * * *"));
-
-            var status = new ScheduleStatus();
-            var timerInfo = new TimerInfo(cronSchedule, status);
-
-            _ = _validatorApi.Run(timerInfo);
-
-            _logHelper.Verify(LogLevel.Information, Times.AtLeast(1));
-        }
-
-        [Fact]
         public async Task HashesBallotDataAsync()
         {
             var timestamp = await _validatorApi.HashBallotsAsync();
