@@ -14,7 +14,7 @@ namespace TrueVote.Api.Services
         [FunctionName("HealthTimer")]
         public void Run([TimerTrigger("*/5 * * * *")] TimerInfo timerInfo)
         {
-            LogInformation($"HealthTimer trigger function {timerInfo.Schedule} executed at: {DateTime.Now.ToUniversalTime().ToString("dddd, MMM dd, yyyy HH:mm:ss")}");
+            LogInformation($"HealthTimer trigger function {timerInfo.Schedule} executed at: {DateTime.Now.ToUniversalTime():dddd, MMM dd, yyyy HH:mm:ss}");
         }
     }
 }

@@ -184,7 +184,7 @@ namespace TrueVote.Api
             ConfigureServices(builder.Services).BuildServiceProvider(true);
         }
 
-        private IServiceCollection ConfigureServices(IServiceCollection services)
+        private static IServiceCollection ConfigureServices(IServiceCollection services)
         {
             services.AddLogging();
             services.AddSingleton(typeof(ILogger), typeof(Logger<Startup>));

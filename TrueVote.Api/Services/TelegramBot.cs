@@ -45,6 +45,7 @@ namespace TrueVote.Api.Services
             // List of BotCommands
             var commands = new List<BotCommand>() {
                 new BotCommand { Command = "help", Description = "📖 View summary of what the bot can do" },
+                new BotCommand { Command = "ballots", Description = "🖥 View the count of total number of ballots" },
                 new BotCommand { Command = "elections", Description = "🖥 View the count of total number of elections" },
                 new BotCommand { Command = "status", Description = "🖥 View the API status" },
                 new BotCommand { Command = "version", Description = "🤖 View the API version" }
@@ -163,6 +164,13 @@ namespace TrueVote.Api.Services
                         break;
                     }
 
+                case "/ballots":
+                    {
+                        var ret = await GetBallotsCountAsync();
+                        messageResponse = $"Total Ballots: {ret}";
+                        break;
+                    }
+
                 case "/status":
                     {
                         var ret = await GetStatusAsync();
@@ -206,7 +214,7 @@ namespace TrueVote.Api.Services
             return Task.CompletedTask;
         }
 
-        private async Task<Message> SendMessageAsync(ChatId chatId, string text, CancellationToken cancellationToken)
+        private static async Task<Message> SendMessageAsync(ChatId chatId, string text, CancellationToken cancellationToken)
         {
             try
             {
@@ -232,7 +240,7 @@ namespace TrueVote.Api.Services
             }
         }
 
-        private async Task<string> GetElectionsCountAsync()
+        private static async Task<string> GetElectionsCountAsync()
         {
             try
             {
@@ -253,7 +261,28 @@ namespace TrueVote.Api.Services
             }
         }
 
-        private async Task<string> GetStatusAsync()
+        private static async Task<string> GetBallotsCountAsync()
+        {
+            try
+            {
+                var client = new HttpClient(httpClientHandler);
+
+                var countBallotsObj = new CountBallotModel { DateCreatedStart = new DateTime(2023, 01, 01), DateCreatedEnd = new DateTime(2033, 12, 31) };
+                var json = JsonConvert.SerializeObject(countBallotsObj);
+                var httpRequestMessage = new HttpRequestMessage { RequestUri = new Uri($"{BaseApiUrl}/ballot/count"), Method = HttpMethod.Get, Content = new StringContent(json.ToString()) };
+                var ret = await client.SendAsync(httpRequestMessage);
+
+                var retCount = await ret.Content.ReadAsAsync<int>();
+
+                return retCount.ToString();
+            }
+            catch (Exception e)
+            {
+                return $"Error: {e.Message}";
+            }
+        }
+
+        private static async Task<string> GetStatusAsync()
         {
             try
             {
@@ -275,7 +304,7 @@ namespace TrueVote.Api.Services
         }
 
         // TODO Need to really get version from assembly info. Better than Git tag
-        private async Task<string> GetVersionAsync()
+        private static async Task<string> GetVersionAsync()
         {
             try
             {
