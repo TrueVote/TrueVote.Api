@@ -56,7 +56,6 @@ namespace TrueVote.Api.Tests
             new TimestampModel { TimestampId = "1", TimestampHashS = "SampleHash1", DateCreated = new DateTime(2023, 01, 01, 11, 11, 11) },
             new TimestampModel { TimestampId = "2", TimestampHashS = "SampleHash2", DateCreated = new DateTime(2023, 01, 01, 11, 11, 21) }
         };
-
     }
 
     public class MoqDataAccessor
