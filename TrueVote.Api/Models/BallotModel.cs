@@ -32,6 +32,24 @@ namespace TrueVote.Api.Models
     }
 
     [ExcludeFromCodeCoverage]
+    public class CountBallotModel
+    {
+        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
+        [OpenApiProperty(Description = "DateCreatedStart")]
+        [MaxLength(2048)]
+        [DataType(DataType.Date)]
+        [JsonProperty(PropertyName = "DateCreatedStart", Required = Required.Always)]
+        public DateTime DateCreatedStart { get; set; }
+
+        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
+        [OpenApiProperty(Description = "DateCreatedEnd")]
+        [MaxLength(2048)]
+        [DataType(DataType.Date)]
+        [JsonProperty(PropertyName = "DateCreatedEnd", Required = Required.Always)]
+        public DateTime DateCreatedEnd { get; set; }
+    }
+
+    [ExcludeFromCodeCoverage]
     public class BallotModel
     {
         [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]

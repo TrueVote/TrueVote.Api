@@ -43,6 +43,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             try
             {
                 _ = await error500.ThrowError500(_httpContext.Request);
+                Assert.True(false);
             }
             catch (Exception ex)
             {

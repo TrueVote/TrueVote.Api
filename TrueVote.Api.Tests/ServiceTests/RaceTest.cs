@@ -182,7 +182,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             var mockCandidatesSet = MoqData.MockCandidateData.AsQueryable().BuildMockDbSet();
             mockRaceContext.Setup(m => m.Candidates).Returns(mockCandidatesSet.Object);
 
-            var addCandidatesObj = new AddCandidatesModel { RaceId = "1", CandidateIds = new List<string> { MoqData.MockCandidateData[0].CandidateId, MoqData.MockCandidateData[1].CandidateId } };
+            var addCandidatesObj = new AddCandidatesModel { RaceId = "raceid1", CandidateIds = new List<string> { MoqData.MockCandidateData[0].CandidateId, MoqData.MockCandidateData[1].CandidateId } };
             var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(addCandidatesObj));
             _httpContext.Request.Body = new MemoryStream(byteArray);
 
@@ -261,7 +261,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             var mockCandidatesSet = _moqDataAccessor.mockCandidateDataQueryable.AsQueryable().BuildMockDbSet();
             mockRaceContext.Setup(m => m.Candidates).Returns(mockCandidatesSet.Object);
 
-            var addCandidatesObj = new AddCandidatesModel { RaceId = "1", CandidateIds = new List<string> { "68", "69" } };
+            var addCandidatesObj = new AddCandidatesModel { RaceId = "raceid1", CandidateIds = new List<string> { "68", "69" } };
             var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(addCandidatesObj));
             _httpContext.Request.Body = new MemoryStream(byteArray);
 
@@ -291,7 +291,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             var mockCandidatesSet = _moqDataAccessor.mockCandidateDataQueryable.AsQueryable().BuildMockDbSet();
             mockRaceContext.Setup(m => m.Candidates).Returns(mockCandidatesSet.Object);
 
-            var addCandidatesObj = new AddCandidatesModel { RaceId = "1", CandidateIds = new List<string> { "1", "2" } };
+            var addCandidatesObj = new AddCandidatesModel { RaceId = "raceid1", CandidateIds = new List<string> { "candidateid1", "candidateid2" } };
             var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(addCandidatesObj));
             _httpContext.Request.Body = new MemoryStream(byteArray);
 

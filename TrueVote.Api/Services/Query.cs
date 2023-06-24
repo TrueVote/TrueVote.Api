@@ -16,12 +16,10 @@ namespace TrueVote.Api.Services
     public class Query : LoggerHelper
     {
         private readonly ITrueVoteDbContext _trueVoteDbContext;
-        private readonly TelegramBot _telegramBot;
 
         public Query(ILogger log, ITrueVoteDbContext trueVoteDbContext, TelegramBot telegramBot) : base(log, telegramBot)
         {
             _trueVoteDbContext = trueVoteDbContext;
-            _telegramBot = telegramBot;
         }
 
         public async Task<IReadOnlyList<CandidateModel>> GetCandidate()

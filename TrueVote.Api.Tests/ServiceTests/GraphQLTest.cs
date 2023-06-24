@@ -132,7 +132,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public async Task RunsElectionByIdQuery()
         {
-            var electionId = "68";
+            var electionId = "electionid3";
 
             var graphQLRequest = new GraphQLRequest
             {
@@ -154,7 +154,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             var elections = JsonConvert.DeserializeObject<List<ElectionModelResponse>>(JsonConvert.SerializeObject(graphQLRoot.GetElectionById));
             Assert.NotNull(elections);
             Assert.Equal("Federal", elections[0].Name);
-            Assert.Equal("68", elections[0].ElectionId);
+            Assert.Equal("electionid3", elections[0].ElectionId);
             Assert.True(elections.Count == 1);
 
             Assert.Equal((int) HttpStatusCode.OK, _httpContext.Response.StatusCode);
@@ -234,7 +234,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             var graphQLRoot = await GraphQLQuerySetup(graphQLRequestJson);
 
             var ballots = JsonConvert.DeserializeObject<List<BallotModel>>(JsonConvert.SerializeObject(graphQLRoot.GetBallot));
-            Assert.Equal("68", ballots[0].ElectionId);
+            Assert.Equal("electionid1", ballots[0].ElectionId);
             Assert.Equal("ballotid3", ballots[0].BallotId);
             Assert.True(ballots.Count == 3);
 
@@ -266,7 +266,7 @@ namespace TrueVote.Api.Tests.ServiceTests
 
             var ballots = JsonConvert.DeserializeObject<List<BallotModel>>(JsonConvert.SerializeObject(graphQLRoot.GetBallotById));
             Assert.NotNull(ballots);
-            Assert.Equal("68", ballots[0].ElectionId);
+            Assert.Equal("electionid1", ballots[0].ElectionId);
             Assert.Equal("ballotid3", ballots[0].BallotId);
             Assert.True(ballots.Count == 1);
 

@@ -100,7 +100,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             Assert.NotEmpty(val);
             Assert.Single(val);
             Assert.Equal("ballotid3", val[0].BallotId);
-            Assert.Equal("68", val[0].ElectionId);
+            Assert.Equal("electionid1", val[0].ElectionId);
 
             _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
@@ -121,6 +121,43 @@ namespace TrueVote.Api.Tests.ServiceTests
             Assert.Equal((int) HttpStatusCode.NotFound, objectResult.StatusCode);
 
             _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+        }
+
+        [Fact]
+        public async Task CountsBallots()
+        {
+            var countBallotsObj = new CountBallotModel { DateCreatedStart = new DateTime(2022, 01, 01), DateCreatedEnd = new DateTime(2033, 12, 31) };
+            var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(countBallotsObj));
+            _httpContext.Request.Body = new MemoryStream(byteArray);
+
+            var ballotApi = new Ballot(_logHelper.Object, _moqDataAccessor.mockBallotContext.Object, _mockTelegram.Object);
+
+            var ret = await ballotApi.BallotCount(_httpContext.Request);
+            Assert.NotNull(ret);
+            var objectResult = Assert.IsType<OkObjectResult>(ret);
+            Assert.Equal((int) HttpStatusCode.OK, objectResult.StatusCode);
+
+            var val = objectResult.Value;
+            Assert.Equal(3, val);
+
+            _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+        }
+
+        [Fact]
+        public async Task HandlesCountBallotsError()
+        {
+            var countBallotsObj = "blah";
+            var byteArray = Encoding.ASCII.GetBytes(countBallotsObj);
+            _httpContext.Request.Body = new MemoryStream(byteArray);
+
+            var ret = await _ballotApi.BallotCount(_httpContext.Request);
+            Assert.NotNull(ret);
+            var objectResult = Assert.IsType<BadRequestObjectResult>(ret);
+            Assert.Equal((int) HttpStatusCode.BadRequest, objectResult.StatusCode);
+
+            _logHelper.Verify(LogLevel.Error, Times.Exactly(1));
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
         }
     }

@@ -22,6 +22,7 @@ using System.Threading.Tasks;
 using TrueVote.Api.Interfaces;
 using TrueVote.Api.Models;
 using TrueVote.Api.Services;
+using TrueVote.Api.Helpers;
 
 [assembly: FunctionsStartup(typeof(TrueVote.Api.Startup))]
 namespace TrueVote.Api
@@ -90,6 +91,7 @@ namespace TrueVote.Api
         public virtual DbSet<RaceModel> Races { get; set; }
         public virtual DbSet<CandidateModel> Candidates { get; set; }
         public virtual DbSet<BallotModel> Ballots { get; set; }
+        public virtual DbSet<TimestampModel> Timestamps { get; set; }
 
         public virtual async Task<bool> EnsureCreatedAsync()
         {
@@ -149,6 +151,10 @@ namespace TrueVote.Api
             modelBuilder.HasDefaultContainer("Candidates");
             modelBuilder.Entity<CandidateModel>().ToContainer("Candidates");
             modelBuilder.Entity<CandidateModel>().HasNoDiscriminator();
+
+            modelBuilder.HasDefaultContainer("Timestamps");
+            modelBuilder.Entity<TimestampModel>().ToContainer("Timestamps");
+            modelBuilder.Entity<TimestampModel>().HasNoDiscriminator();
         }
     }
 
@@ -167,10 +173,18 @@ namespace TrueVote.Api
             builder.Services.TryAddSingleton<INamingConventions, TrueVoteNamingConventions>();
             builder.AddGraphQLFunction().AddQueryType<Query>();
 
+            // Additional classes for dependency injection
+            builder.Services.TryAddSingleton(new Uri("https://a.pool.opentimestamps.org")); // TODO Need to pull the Timestamp URL from Config. Also, TrueVote needs to stand up its own Timestamp servers.
+            builder.Services.AddHttpClient<IOpenTimestampsClient, OpenTimestampsClient>().ConfigureHttpClient((provider, client) => 
+            {
+                var uri = provider.GetRequiredService<Uri>();
+                client.BaseAddress = uri;
+            });
+
             ConfigureServices(builder.Services).BuildServiceProvider(true);
         }
 
-        private IServiceCollection ConfigureServices(IServiceCollection services)
+        private static IServiceCollection ConfigureServices(IServiceCollection services)
         {
             services.AddLogging();
             services.AddSingleton(typeof(ILogger), typeof(Logger<Startup>));

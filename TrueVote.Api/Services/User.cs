@@ -110,7 +110,7 @@ namespace TrueVote.Api.Services
 
             LogInformation($"Request Data: {findUser}");
 
-            // TODO Simplify this query by putting the and conditions in an extension methods to build the where clause more idomatically. It should iterate
+            // TODO Simplify this query by putting the and conditions in an extension methods to build the where clause more idiomatically. It should iterate
             // through all the properties in FindUserModel and build the .Where clause dynamically.
             var items = await _trueVoteDbContext.Users
                 .Where(u =>

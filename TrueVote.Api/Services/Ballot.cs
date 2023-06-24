@@ -125,5 +125,45 @@ namespace TrueVote.Api.Services
 
             return items.Count == 0 ? new NotFoundResult() : new OkObjectResult(items);
         }
+
+        [FunctionName(nameof(BallotCount))]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [OpenApiOperation(operationId: "BallotCount", tags: new[] { "Ballot" })]
+        [OpenApiSecurity("oidc_auth", SecuritySchemeType.OpenIdConnect, OpenIdConnectUrl = "https://login.microsoftonline.com/{tenant_id}/v2.0/.well-known/openid-configuration", OpenIdConnectScopes = "openid,profile")]
+        [OpenApiRequestBody(contentType: "application/json", bodyType: typeof(CountBallotModel), Description = "Fields to search for Ballots", Example = typeof(CountBallotModel))]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(int), Description = "Returns count of Ballots")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.Forbidden, contentType: "application/json", bodyType: typeof(SecureString), Description = "Forbidden")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.Unauthorized, contentType: "application/json", bodyType: typeof(SecureString), Description = "Unauthorized")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.NotAcceptable, contentType: "application/json", bodyType: typeof(SecureString), Description = "Not Acceptable")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.TooManyRequests, contentType: "application/json", bodyType: typeof(SecureString), Description = "Too Many Requests")]
+        public async Task<IActionResult> BallotCount(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "ballot/count")] HttpRequest req)
+        {
+            LogDebug("HTTP trigger - BallotCount:Begin");
+
+            CountBallotModel countBallot;
+            try
+            {
+                var requestBody = await new StreamReader(req.Body).ReadToEndAsync();
+                countBallot = JsonConvert.DeserializeObject<CountBallotModel>(requestBody);
+            }
+            catch (Exception e)
+            {
+                LogError("ballotCount: invalid format");
+                LogDebug("HTTP trigger - BallotCount:End");
+
+                return new BadRequestObjectResult(e.Message);
+            }
+
+            LogInformation($"Request Data: {countBallot}");
+
+            var items = await _trueVoteDbContext.Ballots
+                .Where(c => c.DateCreated >= countBallot.DateCreatedStart && c.DateCreated <= countBallot.DateCreatedEnd)
+                .OrderByDescending(c => c.DateCreated).ToListAsync();
+
+            LogDebug("HTTP trigger - BallotFind:End");
+
+            return new OkObjectResult(items.Count);
+        }
     }
 }

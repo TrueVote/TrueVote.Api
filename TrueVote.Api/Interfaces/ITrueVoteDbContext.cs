@@ -11,6 +11,7 @@ namespace TrueVote.Api.Interfaces
         DbSet<RaceModel> Races { get; set; }
         DbSet<CandidateModel> Candidates { get; set; }
         DbSet<BallotModel> Ballots { get; set; }
+        DbSet<TimestampModel> Timestamps { get; set; }
 
         Task<bool> EnsureCreatedAsync();
         Task<int> SaveChangesAsync();
