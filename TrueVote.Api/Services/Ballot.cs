@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -22,11 +23,13 @@ namespace TrueVote.Api.Services
     {
         private readonly ITrueVoteDbContext _trueVoteDbContext;
         private readonly TelegramBot _telegramBot;
+        private readonly Validator _validator;
 
-        public Ballot(ILogger log, ITrueVoteDbContext trueVoteDbContext, TelegramBot telegramBot) : base(log, telegramBot)
+        public Ballot(ILogger log, ITrueVoteDbContext trueVoteDbContext, TelegramBot telegramBot, Validator validator) : base(log, telegramBot)
         {
             _trueVoteDbContext = trueVoteDbContext;
             _telegramBot = telegramBot;
+            _validator = validator;
         }
 
         [FunctionName(nameof(SubmitBallot))]
@@ -62,7 +65,7 @@ namespace TrueVote.Api.Services
 
             // TODO Validate the ballot
 
-            var ballot = new BallotModel { ElectionId = bindSubmitBallotModel.ElectionId, Election = bindSubmitBallotModel.Election };
+            var ballot = new BallotModel { ElectionId = bindSubmitBallotModel.ElectionId, Election = bindSubmitBallotModel.Election, ClientBallotHash = bindSubmitBallotModel.ClientBallotHash };
 
             await _trueVoteDbContext.EnsureCreatedAsync();
 
@@ -76,6 +79,11 @@ namespace TrueVote.Api.Services
             };
 
             await _telegramBot.SendChannelMessageAsync($"New TrueVote Ballot successfully submitted. Election ID: {bindSubmitBallotModel.ElectionId}, Ballot ID: {ballot.BallotId}");
+
+            // TODO Post a message to Service Bus for this Ballot
+            // FOR NOW ONLY - THIS LINE SHOULD BE REPLACED WITH A POST TO SERVICE BUS
+            // Hash the ballot
+            await _validator.HashBallotAsync(ballot);
 
             LogDebug("HTTP trigger - SubmitBallot:End");
 
@@ -164,6 +172,49 @@ namespace TrueVote.Api.Services
             LogDebug("HTTP trigger - BallotFind:End");
 
             return new OkObjectResult(items.Count);
+        }
+
+        [FunctionName(nameof(BallotHashFind))]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [OpenApiOperation(operationId: "BallotHashFind", tags: new[] { "Ballot" })]
+        [OpenApiSecurity("oidc_auth", SecuritySchemeType.OpenIdConnect, OpenIdConnectUrl = "https://login.microsoftonline.com/{tenant_id}/v2.0/.well-known/openid-configuration", OpenIdConnectScopes = "openid,profile")]
+        [OpenApiRequestBody(contentType: "application/json", bodyType: typeof(FindBallotHashModel), Description = "Fields to search for Ballot Hashes", Example = typeof(FindBallotHashModel))]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(List<BallotHashModel>), Description = "Returns collection of Ballot Hashes")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.Forbidden, contentType: "application/json", bodyType: typeof(SecureString), Description = "Forbidden")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.Unauthorized, contentType: "application/json", bodyType: typeof(SecureString), Description = "Unauthorized")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.NotFound, contentType: "application/json", bodyType: typeof(SecureString), Description = "Not Found")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.NotAcceptable, contentType: "application/json", bodyType: typeof(SecureString), Description = "Not Acceptable")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.TooManyRequests, contentType: "application/json", bodyType: typeof(SecureString), Description = "Too Many Requests")]
+        public async Task<IActionResult> BallotHashFind(
+                    [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "ballot/findhash")] HttpRequest req)
+        {
+            LogDebug("HTTP trigger - BallotHashFind:Begin");
+
+            FindBallotHashModel findBallotHash;
+            try
+            {
+                var requestBody = await new StreamReader(req.Body).ReadToEndAsync();
+                findBallotHash = JsonConvert.DeserializeObject<FindBallotHashModel>(requestBody);
+            }
+            catch (Exception e)
+            {
+                LogError("findBallotHash: invalid format");
+                LogDebug("HTTP trigger - BallotHashFind:End");
+
+                return new BadRequestObjectResult(e.Message);
+            }
+
+            LogInformation($"Request Data: {findBallotHash}");
+
+            var items = await _trueVoteDbContext.BallotHashes
+                .Where(e =>
+                    findBallotHash.BallotId == null || (e.BallotId ?? string.Empty).ToLower().Contains(findBallotHash.BallotId.ToLower()))
+                .OrderByDescending(e => e.DateCreated).ToListAsync();
+
+            LogDebug("HTTP trigger - BallotHashFind:End");
+
+            return items.Count == 0 ? new NotFoundResult() : new OkObjectResult(items);
         }
     }
 }
