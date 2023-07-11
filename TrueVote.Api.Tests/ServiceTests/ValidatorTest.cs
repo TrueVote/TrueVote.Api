@@ -26,7 +26,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             var timestamp = await _validatorApi.HashBallotsAsync();
 
             Assert.NotNull(timestamp);
-            Assert.Equal(50, timestamp.MerkleRoot[0]);
+            Assert.Equal(116, timestamp.MerkleRoot[0]);
         }
 
         [Fact]
@@ -55,8 +55,11 @@ namespace TrueVote.Api.Tests.ServiceTests
         {
             var mockBallotContext = new Mock<MoqTrueVoteDbContext>();
             var mockBallotDataQueryable = MoqData.MockBallotData.AsQueryable();
+            var mockBallotHashDataQueryable = MoqData.MockBallotHashData.AsQueryable();
             var MockBallotSet = DbMoqHelper.GetDbSet(mockBallotDataQueryable);
+            var MockBallotHashSet = DbMoqHelper.GetDbSet(mockBallotHashDataQueryable);
             mockBallotContext.Setup(m => m.Ballots).Returns(MockBallotSet.Object);
+            mockBallotContext.Setup(m => m.BallotHashes).Returns(MockBallotHashSet.Object);
             mockBallotContext.Setup(m => m.EnsureCreatedAsync()).Throws(new Exception("Storing data exception"));
 
             var validatorApi = new Validator(_logHelper.Object, mockBallotContext.Object, _mockTelegram.Object, _mockOpenTimestampsClient.Object);

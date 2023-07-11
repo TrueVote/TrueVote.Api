@@ -48,7 +48,9 @@ namespace TrueVote.Api.Tests.Helpers
             serviceCollection.TryAddSingleton<IOpenTimestampsClient, OpenTimestampsClient>();
             serviceCollection.TryAddScoped<Query, Query>();
             serviceCollection.TryAddSingleton<INamingConventions, TrueVoteNamingConventions>();
+            serviceCollection.TryAddScoped<IFileSystem, FileSystem>();
             serviceCollection.AddGraphQLFunction().AddQueryType<Query>();
+            serviceCollection.TryAddScoped<Validator, Validator>();
 
             var serviceProvider = serviceCollection.BuildServiceProvider();
             requestExecutor = serviceProvider.GetRequiredService<IGraphQLRequestExecutor>();
@@ -77,11 +79,11 @@ namespace TrueVote.Api.Tests.Helpers
             _moqDataAccessor = new MoqDataAccessor();
             _userApi = new User(_logHelper.Object, _moqDataAccessor.mockUserContext.Object, _mockTelegram.Object);
             _electionApi = new Election(_logHelper.Object, _moqDataAccessor.mockElectionContext.Object, _mockTelegram.Object);
-            _ballotApi = new Ballot(_logHelper.Object, _moqDataAccessor.mockBallotContext.Object, _mockTelegram.Object);
+            _validatorApi = new Validator(_logHelper.Object, _moqDataAccessor.mockBallotContext.Object, _mockTelegram.Object, _mockOpenTimestampsClient.Object);
+            _ballotApi = new Ballot(_logHelper.Object, _moqDataAccessor.mockBallotContext.Object, _mockTelegram.Object, _validatorApi);
             _raceApi = new Race(_logHelper.Object, _moqDataAccessor.mockRaceContext.Object, _mockTelegram.Object);
             _candidateApi = new Candidate(_logHelper.Object, _moqDataAccessor.mockCandidateContext.Object, _mockTelegram.Object);
             _graphQLApi = new GraphQLExecutor(_logHelper.Object, _mockTelegram.Object);
-            _validatorApi = new Validator(_logHelper.Object, _moqDataAccessor.mockBallotContext.Object, _mockTelegram.Object, _mockOpenTimestampsClient.Object);
             _timestampApi = new Timestamp(_logHelper.Object, _moqDataAccessor.mockTimestampContext.Object, _mockTelegram.Object);
         }
     }

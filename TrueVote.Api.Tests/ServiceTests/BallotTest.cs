@@ -89,7 +89,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(findBallotObj));
             _httpContext.Request.Body = new MemoryStream(byteArray);
 
-            var ballotApi = new Ballot(_logHelper.Object, _moqDataAccessor.mockBallotContext.Object, _mockTelegram.Object);
+            var ballotApi = new Ballot(_logHelper.Object, _moqDataAccessor.mockBallotContext.Object, _mockTelegram.Object, _validatorApi);
 
             var ret = await ballotApi.BallotFind(_httpContext.Request);
             Assert.NotNull(ret);
@@ -113,7 +113,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(findBallotObj));
             _httpContext.Request.Body = new MemoryStream(byteArray);
 
-            var ballotApi = new Ballot(_logHelper.Object, _moqDataAccessor.mockBallotContext.Object, _mockTelegram.Object);
+            var ballotApi = new Ballot(_logHelper.Object, _moqDataAccessor.mockBallotContext.Object, _mockTelegram.Object, _validatorApi);
 
             var ret = await ballotApi.BallotFind(_httpContext.Request);
             Assert.NotNull(ret);
@@ -131,7 +131,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(countBallotsObj));
             _httpContext.Request.Body = new MemoryStream(byteArray);
 
-            var ballotApi = new Ballot(_logHelper.Object, _moqDataAccessor.mockBallotContext.Object, _mockTelegram.Object);
+            var ballotApi = new Ballot(_logHelper.Object, _moqDataAccessor.mockBallotContext.Object, _mockTelegram.Object, _validatorApi);
 
             var ret = await ballotApi.BallotCount(_httpContext.Request);
             Assert.NotNull(ret);
