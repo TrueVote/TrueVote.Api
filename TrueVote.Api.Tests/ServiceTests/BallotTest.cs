@@ -160,5 +160,57 @@ namespace TrueVote.Api.Tests.ServiceTests
             _logHelper.Verify(LogLevel.Error, Times.Exactly(1));
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
         }
+
+        [Fact]
+        public async Task FindsBallotHash()
+        {
+            var findBallotHashObj = new FindBallotHashModel { BallotId = "ballotid1" };
+            var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(findBallotHashObj));
+            _httpContext.Request.Body = new MemoryStream(byteArray);
+
+            var ret = await _ballotApi.BallotHashFind(_httpContext.Request);
+            Assert.NotNull(ret);
+            var objectResult = Assert.IsType<OkObjectResult>(ret);
+            Assert.Equal((int) HttpStatusCode.OK, objectResult.StatusCode);
+
+            var val = objectResult.Value as List<BallotHashModel>;
+            Assert.NotEmpty(val);
+            Assert.Single(val);
+            Assert.Equal("ballotid1", val[0].BallotId);
+
+            _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+        }
+        [Fact]
+        public async Task HandlesFindBallotHashError()
+        {
+            var findBallotHashObj = "blah";
+            var byteArray = Encoding.ASCII.GetBytes(findBallotHashObj);
+            _httpContext.Request.Body = new MemoryStream(byteArray);
+
+            var ret = await _ballotApi.BallotHashFind(_httpContext.Request);
+            Assert.NotNull(ret);
+            var objectResult = Assert.IsType<BadRequestObjectResult>(ret);
+            Assert.Equal((int) HttpStatusCode.BadRequest, objectResult.StatusCode);
+
+            _logHelper.Verify(LogLevel.Error, Times.Exactly(1));
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+        }
+
+        [Fact]
+        public async Task HandlesUnfoundBallotHash()
+        {
+            var findBallotHashObj = new FindBallotHashModel { BallotId = "not going to find anything" };
+            var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(findBallotHashObj));
+            _httpContext.Request.Body = new MemoryStream(byteArray);
+
+            var ret = await _ballotApi.BallotHashFind(_httpContext.Request);
+            Assert.NotNull(ret);
+            var objectResult = Assert.IsType<NotFoundResult>(ret);
+            Assert.Equal((int) HttpStatusCode.NotFound, objectResult.StatusCode);
+
+            _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+        }
     }
 }
