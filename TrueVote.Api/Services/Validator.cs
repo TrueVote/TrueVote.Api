@@ -23,7 +23,7 @@ namespace TrueVote.Api.Services
             _openTimestampsClient = openTimestampsClient;
         }
 
-        public async Task<BallotHashModel> HashBallotAsync(BallotModel ballot)
+        public async Task<BallotHashModel> HashBallotAsync(BallotModel ballot, string ClientBallotHash)
         {
             // Determine if this ballot has already been hashed
             var items = _trueVoteDbContext.BallotHashes.Where(e => e.BallotId == ballot.BallotId).ToList();
@@ -41,7 +41,7 @@ namespace TrueVote.Api.Services
 
             // Check the hash against the client hash. They must be the same.
             // TODO - For now, if ClientBallotHash is null, let it continue
-            if (ballot.ClientBallotHash != null && ballotHashS != ballot.ClientBallotHash)
+            if (ClientBallotHash != null && ballotHashS != ClientBallotHash)
             {
                 var msg = $"Ballot: {ballot.BallotId} client hash is different from server hash";
 
@@ -54,7 +54,7 @@ namespace TrueVote.Api.Services
             {
                 ServerBallotHash = ballotHash,
                 ServerBallotHashS = ballotHashS,
-                ClientBallotHashS= ballot.ClientBallotHash,
+                ClientBallotHashS= ClientBallotHash,
                 BallotId = ballot.BallotId
             };
 
@@ -138,7 +138,7 @@ namespace TrueVote.Api.Services
             }
         }
 
-        private async Task StoreBallotHashAsync(BallotHashModel ballotHashModel)
+        public async Task StoreBallotHashAsync(BallotHashModel ballotHashModel)
         {
             try
             {

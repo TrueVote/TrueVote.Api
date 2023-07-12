@@ -82,13 +82,6 @@ namespace TrueVote.Api.Models
         [OpenApiProperty(Description = "Election for the Ballot")]
         [JsonProperty(PropertyName = "Election")]
         public ElectionModel Election { get; set; }
-
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "Client Ballot Hash")]
-        [MaxLength(2048)]
-        [DataType(DataType.Text)]
-        [JsonProperty(PropertyName = "ClientBallotHash")]
-        public string ClientBallotHash { get; set; }
     }
 
     [ExcludeFromCodeCoverage]

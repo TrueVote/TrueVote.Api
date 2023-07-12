@@ -65,8 +65,7 @@ namespace TrueVote.Api.Services
 
             // TODO Validate the ballot
 
-            var ballot = new BallotModel { ElectionId = bindSubmitBallotModel.ElectionId, Election = bindSubmitBallotModel.Election, ClientBallotHash = bindSubmitBallotModel.ClientBallotHash };
-
+            var ballot = new BallotModel { ElectionId = bindSubmitBallotModel.ElectionId, Election = bindSubmitBallotModel.Election };
             await _trueVoteDbContext.EnsureCreatedAsync();
 
             await _trueVoteDbContext.Ballots.AddAsync(ballot);
@@ -83,7 +82,7 @@ namespace TrueVote.Api.Services
             // TODO Post a message to Service Bus for this Ballot
             // FOR NOW ONLY - THIS LINE SHOULD BE REPLACED WITH A POST TO SERVICE BUS
             // Hash the ballot
-            await _validator.HashBallotAsync(ballot);
+            await _validator.HashBallotAsync(ballot, bindSubmitBallotModel.ClientBallotHash);
 
             LogDebug("HTTP trigger - SubmitBallot:End");
 
