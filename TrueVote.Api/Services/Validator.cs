@@ -26,7 +26,7 @@ namespace TrueVote.Api.Services
         public async Task<BallotHashModel> HashBallotAsync(BallotModel ballot, string ClientBallotHash)
         {
             // Determine if this ballot has already been hashed
-            var items = _trueVoteDbContext.BallotHashes.Where(e => e.BallotId == ballot.BallotId).ToList();
+            var items = _trueVoteDbContext.BallotHashes.Where(e => e.BallotId == ballot.BallotId && !string.IsNullOrEmpty(e.ServerBallotHashS)).ToList();
             if (items.Any())
             {
                 var msg = $"Ballot: {ballot.BallotId} has already been hashed. Ballot Hash Id: {items.First().BallotHashId}";
@@ -124,7 +124,7 @@ namespace TrueVote.Api.Services
             return timestamp;
         }
 
-        private async Task StoreTimestampAsync(TimestampModel timestamp)
+        public async Task StoreTimestampAsync(TimestampModel timestamp)
         {
             try
             {

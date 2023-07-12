@@ -1,11 +1,6 @@
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Timers;
-using Microsoft.Extensions.Logging;
 using Moq;
-using NCrontab;
 using System;
 using System.Linq;
-using System.Reactive;
 using System.Threading.Tasks;
 using TrueVote.Api.Helpers;
 using TrueVote.Api.Services;
@@ -141,6 +136,30 @@ namespace TrueVote.Api.Tests.ServiceTests
             try
             {
                 await validatorApi.StoreBallotHashAsync(MoqData.MockBallotHashData[0]);
+                Assert.True(false);
+            }
+            catch (Exception ex)
+            {
+                _output.WriteLine($"{ex}");
+                Assert.NotNull(ex);
+                Assert.Contains("Storing data exception", ex.Message);
+            }
+        }
+
+        [Fact]
+        public async Task StoreTimestampAsyncThrowsException()
+        {
+            var mockTimestampContext = new Mock<MoqTrueVoteDbContext>();
+            var mockTimestampDataQueryable = MoqData.MockTimestampData.AsQueryable();
+            var MockTimestampSet = DbMoqHelper.GetDbSet(mockTimestampDataQueryable);
+            mockTimestampContext.Setup(m => m.Timestamps).Returns(MockTimestampSet.Object);
+            mockTimestampContext.Setup(m => m.EnsureCreatedAsync()).Throws(new Exception("Storing data exception"));
+
+            var validatorApi = new Validator(_logHelper.Object, mockTimestampContext.Object, _mockTelegram.Object, _mockOpenTimestampsClient.Object);
+
+            try
+            {
+                await validatorApi.StoreTimestampAsync(MoqData.MockTimestampData[0]);
                 Assert.True(false);
             }
             catch (Exception ex)
