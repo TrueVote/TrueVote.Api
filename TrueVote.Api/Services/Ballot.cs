@@ -64,6 +64,10 @@ namespace TrueVote.Api.Services
             LogInformation($"Request Data: {bindSubmitBallotModel}");
 
             // TODO Validate the ballot
+            // 1. Must have a UserId and not have already submitted a ballot for this election
+            // 2. Confirm the election id exists
+            // 3. Confirm the election data for this ballot has not been altered.
+            // ADD CODE FOR ABOVE ITEMS HERE
 
             var ballot = new BallotModel { ElectionId = bindSubmitBallotModel.ElectionId, Election = bindSubmitBallotModel.Election };
             await _trueVoteDbContext.EnsureCreatedAsync();
