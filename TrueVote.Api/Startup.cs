@@ -92,6 +92,7 @@ namespace TrueVote.Api
         public virtual DbSet<CandidateModel> Candidates { get; set; }
         public virtual DbSet<BallotModel> Ballots { get; set; }
         public virtual DbSet<TimestampModel> Timestamps { get; set; }
+        public virtual DbSet<BallotHashModel> BallotHashes { get; set; }
 
         public virtual async Task<bool> EnsureCreatedAsync()
         {
@@ -155,6 +156,10 @@ namespace TrueVote.Api
             modelBuilder.HasDefaultContainer("Timestamps");
             modelBuilder.Entity<TimestampModel>().ToContainer("Timestamps");
             modelBuilder.Entity<TimestampModel>().HasNoDiscriminator();
+
+            modelBuilder.HasDefaultContainer("BallotHashes");
+            modelBuilder.Entity<BallotHashModel>().ToContainer("BallotHashes");
+            modelBuilder.Entity<BallotHashModel>().HasNoDiscriminator();
         }
     }
 
@@ -180,6 +185,7 @@ namespace TrueVote.Api
                 var uri = provider.GetRequiredService<Uri>();
                 client.BaseAddress = uri;
             });
+            builder.Services.TryAddScoped<Validator, Validator>();
 
             ConfigureServices(builder.Services).BuildServiceProvider(true);
         }

@@ -19,8 +19,8 @@
     <None Include="..\.editorconfig" Link=".editorconfig" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="HotChocolate.AzureFunctions" Version="13.2.1" />
-    <PackageReference Include="HotChocolate.Types.Filters" Version="13.2.1" />
+    <PackageReference Include="HotChocolate.AzureFunctions" Version="13.3.3" />
+    <PackageReference Include="HotChocolate.Types.Filters" Version="13.3.3" />
     <PackageReference Include="Microsoft.Azure.Functions.Extensions" Version="1.1.0" />
     <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.OpenApi" Version="1.5.1" />
     <PackageReference Include="Microsoft.CodeAnalysis" Version="4.6.0" />
