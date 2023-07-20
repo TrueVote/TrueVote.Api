@@ -96,11 +96,10 @@ namespace TrueVote.Api.Tests.ServiceTests
             var objectResult = Assert.IsType<OkObjectResult>(ret);
             Assert.Equal((int) HttpStatusCode.OK, objectResult.StatusCode);
 
-            var val = objectResult.Value as List<BallotModel>;
-            Assert.NotEmpty(val);
-            Assert.Single(val);
-            Assert.Equal("ballotid3", val[0].BallotId);
-            Assert.Equal("electionid1", val[0].ElectionId);
+            var val = objectResult.Value as BallotList;
+            Assert.NotNull(val);
+            Assert.Equal("ballotid3", val.Ballots[0].BallotId);
+            Assert.Equal("electionid1", val.Ballots[0].ElectionId);
 
             _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));

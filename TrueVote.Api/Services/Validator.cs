@@ -40,7 +40,7 @@ namespace TrueVote.Api.Services
             var ballotHashS = (string) JToken.Parse(Utf8Json.JsonSerializer.ToJsonString(ballotHash));
 
             // Check the hash against the client hash. They must be the same.
-            // TODO - For now, if ClientBallotHash is null, let it continue
+            // TODO For now, if ClientBallotHash is null, let it continue
             if (ClientBallotHash != null && ballotHashS != ClientBallotHash)
             {
                 var msg = $"Ballot: {ballot.BallotId} client hash is different from server hash";

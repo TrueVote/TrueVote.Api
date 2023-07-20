@@ -100,7 +100,7 @@ namespace TrueVote.Api.Services
         [OpenApiOperation(operationId: "BallotFind", tags: new[] { "Ballot" })]
         [OpenApiSecurity("oidc_auth", SecuritySchemeType.OpenIdConnect, OpenIdConnectUrl = "https://login.microsoftonline.com/{tenant_id}/v2.0/.well-known/openid-configuration", OpenIdConnectScopes = "openid,profile")]
         [OpenApiRequestBody(contentType: "application/json", bodyType: typeof(FindBallotModel), Description = "Fields to search for Ballots", Example = typeof(FindBallotModel))]
-        [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(BallotModelList), Description = "Returns collection of Ballots")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(BallotList), Description = "Returns collection of Ballots")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.Forbidden, contentType: "application/json", bodyType: typeof(SecureString), Description = "Forbidden")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.Unauthorized, contentType: "application/json", bodyType: typeof(SecureString), Description = "Unauthorized")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.NotFound, contentType: "application/json", bodyType: typeof(SecureString), Description = "Not Found")]
@@ -127,14 +127,21 @@ namespace TrueVote.Api.Services
 
             LogInformation($"Request Data: {findBallot}");
 
-            var items = await _trueVoteDbContext.Ballots
+            var items = new BallotList
+            {
+                Ballots = await _trueVoteDbContext.Ballots
                 .Where(e =>
                     findBallot.BallotId == null || (e.BallotId ?? string.Empty).ToLower().Contains(findBallot.BallotId.ToLower()))
-                .OrderByDescending(e => e.DateCreated).ToListAsync();
+                .OrderByDescending(e => e.DateCreated).ToListAsync(),
+                BallotHashes = await _trueVoteDbContext.BallotHashes
+                .Where(e =>
+                    findBallot.BallotId == null || (e.BallotId ?? string.Empty).ToLower().Contains(findBallot.BallotId.ToLower()))
+                .OrderByDescending(e => e.DateCreated).ToListAsync()
+            };
 
             LogDebug("HTTP trigger - BallotFind:End");
 
-            return items.Count == 0 ? new NotFoundResult() : new OkObjectResult(items);
+            return items.Ballots.Count == 0 ? new NotFoundResult() : new OkObjectResult(items);
         }
 
         [FunctionName(nameof(BallotCount))]

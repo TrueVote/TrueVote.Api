@@ -10,13 +10,19 @@ using System.Diagnostics.CodeAnalysis;
 namespace TrueVote.Api.Models
 {
     [ExcludeFromCodeCoverage]
-    public class BallotModelList
+    public class BallotList
     {
         [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
         [MaxLength(2048)]
         [OpenApiProperty(Description = "List of Ballots")]
         [JsonProperty(PropertyName = "Ballots")]
         public List<BallotModel> Ballots { get; set; }
+
+        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
+        [MaxLength(2048)]
+        [OpenApiProperty(Description = "List of Ballot Hashes")]
+        [JsonProperty(PropertyName = "BallotHashes")]
+        public List<BallotHashModel> BallotHashes { get; set; }
     }
 
     [ExcludeFromCodeCoverage]
