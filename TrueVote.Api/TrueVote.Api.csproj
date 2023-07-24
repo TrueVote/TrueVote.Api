@@ -19,15 +19,15 @@
     <None Include="..\.editorconfig" Link=".editorconfig" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="HotChocolate.AzureFunctions" Version="13.3.3" />
-    <PackageReference Include="HotChocolate.Types.Filters" Version="13.3.3" />
+    <PackageReference Include="HotChocolate.AzureFunctions" Version="13.4.0" />
+    <PackageReference Include="HotChocolate.Types.Filters" Version="13.4.0" />
     <PackageReference Include="Microsoft.Azure.Functions.Extensions" Version="1.1.0" />
     <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.OpenApi" Version="1.5.1" />
     <PackageReference Include="Microsoft.CodeAnalysis" Version="4.6.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.19" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Cosmos" Version="6.0.19" />
     <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="4.2.0" />
-    <PackageReference Include="Microsoft.OpenApi" Version="1.6.5" />
+    <PackageReference Include="Microsoft.OpenApi" Version="1.6.6" />
     <PackageReference Include="SecurityCodeScan.VS2019" Version="5.6.7">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
