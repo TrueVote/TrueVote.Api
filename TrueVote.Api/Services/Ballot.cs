@@ -45,6 +45,7 @@ namespace TrueVote.Api.Services
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.NotAcceptable, contentType: "application/json", bodyType: typeof(SecureString), Description = "Not Acceptable")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.TooManyRequests, contentType: "application/json", bodyType: typeof(SecureString), Description = "Too Many Requests")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.UnsupportedMediaType, contentType: "application/json", bodyType: typeof(SecureString), Description = "Unsupported Media Type")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.Conflict, contentType: "application/json", bodyType: typeof(SecureString), Description = "Conflict with input model")]
         public async Task<IActionResult> SubmitBallot(
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "ballot/submitballot")] HttpRequest req) {
             LogDebug("HTTP trigger - SubmitBallot:Begin");
@@ -75,6 +76,7 @@ namespace TrueVote.Api.Services
             await _trueVoteDbContext.Ballots.AddAsync(ballot);
             await _trueVoteDbContext.SaveChangesAsync();
 
+            // TODO Localize .Message
             var submitBallotResponse = new SubmitBallotModelResponse {
                 ElectionId = bindSubmitBallotModel.ElectionId,
                 BallotId = ballot.BallotId,
@@ -86,7 +88,19 @@ namespace TrueVote.Api.Services
             // TODO Post a message to Service Bus for this Ballot
             // FOR NOW ONLY - THIS LINE SHOULD BE REPLACED WITH A POST TO SERVICE BUS
             // Hash the ballot
-            await _validator.HashBallotAsync(ballot, bindSubmitBallotModel.ClientBallotHash);
+            try
+            {
+                await _validator.HashBallotAsync(ballot, bindSubmitBallotModel.ClientBallotHash);
+            }
+            catch (Exception e)
+            {
+                LogError("HashBallotAsync()");
+                LogDebug("HTTP trigger - SubmitBallot:End");
+
+                submitBallotResponse.Message += " - " + e.Message;
+
+                return new ConflictObjectResult(submitBallotResponse);
+            }
 
             LogDebug("HTTP trigger - SubmitBallot:End");
 

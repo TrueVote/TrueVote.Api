@@ -23,12 +23,13 @@ namespace TrueVote.Api.Services
             _openTimestampsClient = openTimestampsClient;
         }
 
-        public async Task<BallotHashModel> HashBallotAsync(BallotModel ballot, string ClientBallotHash)
+        public async Task<BallotHashModel> HashBallotAsync(BallotModel ballot, byte[] ClientBallotHash)
         {
             // Determine if this ballot hash record already exists
             var items = _trueVoteDbContext.BallotHashes.Where(e => e.BallotId == ballot.BallotId).ToList();
             if (items.Any())
             {
+                // TODO Localize msg
                 var msg = $"Ballot: {ballot.BallotId} has already been hashed. Ballot Hash Id: {items.First().BallotHashId}";
 
                 LogError(msg);
@@ -36,13 +37,16 @@ namespace TrueVote.Api.Services
             }
 
             // Hash this ballot
-            var ballotHash = MerkleTree.GetHash(ballot);
-            var ballotHashS = (string) JToken.Parse(Utf8Json.JsonSerializer.ToJsonString(ballotHash));
+            var serverBallotHash = MerkleTree.GetHash(ballot);
+            var serverBallotHashS = (string) JToken.Parse(Utf8Json.JsonSerializer.ToJsonString(serverBallotHash));
 
-            // Check the hash against the client hash. They must be the same.
-            // TODO For now, if ClientBallotHash is null, let it continue
-            if (ClientBallotHash != null && ballotHashS != ClientBallotHash)
+            // Convert the passed in hash from the client to a string
+            var clientBallotHashS = (string) JToken.Parse(Utf8Json.JsonSerializer.ToJsonString(ClientBallotHash));
+
+            // Check the server hash against the client hash. They must be the same.
+            if (serverBallotHash != ClientBallotHash || serverBallotHashS != clientBallotHashS)
             {
+                // TODO Localize msg
                 var msg = $"Ballot: {ballot.BallotId} client hash is different from server hash";
 
                 LogError(msg);
@@ -52,9 +56,10 @@ namespace TrueVote.Api.Services
             // Store the BallotHash record in a model
             var ballotHashModel = new BallotHashModel
             {
-                ServerBallotHash = ballotHash,
-                ServerBallotHashS = ballotHashS,
-                ClientBallotHashS= ClientBallotHash,
+                ServerBallotHash = serverBallotHash,
+                ServerBallotHashS = serverBallotHashS,
+                ClientBallotHash = ClientBallotHash,
+                ClientBallotHashS = clientBallotHashS,
                 BallotId = ballot.BallotId
             };
 

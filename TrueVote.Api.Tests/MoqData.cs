@@ -61,6 +61,12 @@ namespace TrueVote.Api.Tests
         {
             new BallotHashModel { BallotId = "ballotid1", DateCreated = createDate, ClientBallotHashS = "123", ServerBallotHashS = "123" }
         };
+
+        public static BallotList MockBallotList => new()
+        {
+            Ballots = MockBallotData,
+            BallotHashes = MockBallotHashData
+        };
     }
 
     public class MoqDataAccessor

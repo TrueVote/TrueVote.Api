@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
+using TrueVote.Api.Helpers;
 
 namespace TrueVote.Api.Models
 {
@@ -109,10 +110,10 @@ namespace TrueVote.Api.Models
 
         [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
         [OpenApiProperty(Description = "Client Ballot Hash")]
-        [MaxLength(2048)]
-        [DataType(DataType.Text)]
+        [DataType(DataType.Custom)]
         [JsonProperty(PropertyName = "ClientBallotHash")]
-        public string ClientBallotHash { get; set; }
+        [JsonConverter(typeof(ByteConverter))]
+        public byte[] ClientBallotHash { get; set; }
 
         // TODO Add Bindings of User / Ballot connection
         // Requires encryption for binding stored at client and server for match
@@ -182,6 +183,12 @@ namespace TrueVote.Api.Models
         [RegularExpression(Constants.GenericStringRegex)]
         [JsonProperty(PropertyName = "ServerBallotHashS")]
         public string ServerBallotHashS { get; set; }
+
+        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
+        [OpenApiProperty(Description = "Client Ballot Hash")]
+        [DataType(DataType.Custom)]
+        [JsonProperty(PropertyName = "ClientBallotHash")]
+        public byte[] ClientBallotHash { get; set; }
 
         [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
         [OpenApiProperty(Description = "Client Ballot Hash String")]

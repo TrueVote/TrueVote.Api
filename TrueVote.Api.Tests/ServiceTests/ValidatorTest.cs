@@ -1,6 +1,8 @@
 using Moq;
+using Newtonsoft.Json;
 using System;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using TrueVote.Api.Helpers;
 using TrueVote.Api.Services;
@@ -94,7 +96,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         {
             try
             {
-                var ballotHashModel = await _validatorApi.HashBallotAsync(MoqData.MockBallotData[1], "123");
+                var ballotHashModel = await _validatorApi.HashBallotAsync(MoqData.MockBallotData[1], new byte[] { 1, 2, 3 });
                 Assert.True(false);
             }
             catch (Exception ex)
@@ -108,13 +110,15 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public async Task HashesBallot()
         {
-            var ballotData2HashVal = "2lJ95YKyxyKjffwTd76bW7mELYv79AXeaTR3K4lKTBI=";
+            var clientHashS = "2lJ95YKyxyKjffwTd76bW7mELYv79AXeaTR3K4lKTBI=";
+            var clientHash = Convert.FromBase64String(clientHashS);
 
             try
             {
-                var ballotHashModel = await _validatorApi.HashBallotAsync(MoqData.MockBallotData[2], ballotData2HashVal);
+                var ballotHashModel = await _validatorApi.HashBallotAsync(MoqData.MockBallotData[2], clientHash);
                 Assert.NotNull(ballotHashModel);
-                Assert.Equal(ballotData2HashVal, ballotHashModel.ServerBallotHashS);
+                Assert.Equal(clientHashS, ballotHashModel.ServerBallotHashS);
+                Assert.Equal(clientHash, ballotHashModel.ServerBallotHash);
             }
             catch
             {
