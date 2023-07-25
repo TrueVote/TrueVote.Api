@@ -111,8 +111,8 @@ namespace TrueVote.Api.Models
         [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
         [OpenApiProperty(Description = "Client Ballot Hash")]
         [DataType(DataType.Custom)]
-        [JsonProperty(PropertyName = "ClientBallotHash")]
         [JsonConverter(typeof(ByteConverter))]
+        [JsonProperty(PropertyName = "ClientBallotHash")]
         public byte[] ClientBallotHash { get; set; }
 
         // TODO Add Bindings of User / Ballot connection
@@ -173,6 +173,7 @@ namespace TrueVote.Api.Models
         [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
         [OpenApiProperty(Description = "Server Ballot Hash")]
         [DataType(DataType.Custom)]
+        [JsonConverter(typeof(ByteConverter))]
         [JsonProperty(PropertyName = "ServerBallotHash")]
         public byte[] ServerBallotHash { get; set; }
 
@@ -187,6 +188,7 @@ namespace TrueVote.Api.Models
         [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
         [OpenApiProperty(Description = "Client Ballot Hash")]
         [DataType(DataType.Custom)]
+        [JsonConverter(typeof(ByteConverter))]
         [JsonProperty(PropertyName = "ClientBallotHash")]
         public byte[] ClientBallotHash { get; set; }
 
