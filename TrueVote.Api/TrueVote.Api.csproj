@@ -66,6 +66,6 @@
     <EmbeddedResource Include="dist\favicon.ico" />
   </ItemGroup>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="$(ProjectDir)../scripts/build-version.sh $(ProjectDir) $(TargetDir)" />
+    <Exec Command="cscript.exe ..\scripts\build-version.vbs" />
   </Target>
 </Project>
