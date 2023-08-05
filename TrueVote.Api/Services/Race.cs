@@ -140,7 +140,7 @@ namespace TrueVote.Api.Services
             }
 
             // If made through the loop of checks above, ok to persist. This will write a new Race
-            race.DateCreated = DateTime.UtcNow;
+            race.DateCreated = UtcNowProviderFactory.GetProvider().UtcNow;
             race.RaceId = Guid.NewGuid().ToString();
 
             await _trueVoteDbContext.EnsureCreatedAsync();

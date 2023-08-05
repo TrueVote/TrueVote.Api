@@ -183,7 +183,7 @@ namespace TrueVote.Api.Services
             }
 
             // If made through the loop of checks above, ok to persist. This will write a new Election
-            election.DateCreated = DateTime.UtcNow;
+            election.DateCreated = UtcNowProviderFactory.GetProvider().UtcNow;
             election.ElectionId = Guid.NewGuid().ToString();
 
             await _trueVoteDbContext.EnsureCreatedAsync();

@@ -103,7 +103,7 @@ namespace TrueVote.Api.Services
                 MerkleRootHash = merkleRootHash,
                 TimestampHash = result,
                 TimestampHashS = (string) JToken.Parse(Utf8Json.JsonSerializer.ToJsonString(result)),
-                TimestampAt = DateTime.UtcNow
+                TimestampAt = UtcNowProviderFactory.GetProvider().UtcNow
             };
             timestamp.CalendarServerUrl = timestamp.TimestampHashS.ExtractUrl();
 
@@ -117,7 +117,7 @@ namespace TrueVote.Api.Services
             items.ToList().ForEach(e =>
             {
                 e.TimestampId = timestamp.TimestampId;
-                e.DateUpdated = DateTime.UtcNow;
+                e.DateUpdated = UtcNowProviderFactory.GetProvider().UtcNow;
                 _trueVoteDbContext.BallotHashes.Update(e);
             });
 
