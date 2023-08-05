@@ -44,7 +44,7 @@ namespace TrueVote.Api.Services
             var clientBallotHashS = (string) JToken.Parse(Utf8Json.JsonSerializer.ToJsonString(ClientBallotHash));
 
             // Check the server hash against the client hash. They must be the same.
-            if (serverBallotHash != ClientBallotHash || serverBallotHashS != clientBallotHashS)
+            if (!serverBallotHash.SequenceEqual(ClientBallotHash) || serverBallotHashS != clientBallotHashS)
             {
                 // TODO Localize msg
                 var msg = $"Ballot: {ballot.BallotId} client hash is different from server hash";

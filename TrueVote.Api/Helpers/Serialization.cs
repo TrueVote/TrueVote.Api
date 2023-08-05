@@ -15,18 +15,17 @@ namespace TrueVote.Api.Helpers
 
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
-            // Deserialize the JSON object as a dictionary of key-value pairs
-            var jsonObject = serializer.Deserialize<JObject>(reader);
+            // Load the JSON data as a JArray
+            var jsonArray = JArray.Load(reader);
 
             // Create a new byte array to store the result
-            var byteArray = new byte[jsonObject.Count];
+            var byteArray = new byte[jsonArray.Count];
 
-            // Iterate through the properties of the JObject and convert values to bytes
-            foreach (var property in jsonObject.Properties())
+            // Iterate through the elements of the JArray and convert values to bytes
+            for (var i = 0; i < jsonArray.Count; i++)
             {
-                var index = int.Parse(property.Name);
-                var byteValue = property.Value.Value<byte>();
-                byteArray[index] = byteValue;
+                var byteValue = jsonArray[i].Value<byte>();
+                byteArray[i] = byteValue;
             }
 
             return byteArray;
@@ -34,11 +33,25 @@ namespace TrueVote.Api.Helpers
 
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {
-            // Not implemented for this example as we only deserialize
-            // Possible implementation:
-            // var byteArray = (byte[]) value;
-            // writer.WriteValue(BitConverter.ToString(byteArray).Replace("-", ""));
-            throw new NotImplementedException();
+            // Check if the value is a byte array
+            if (value is byte[] byteArray)
+            {
+                // Start writing the JSON array
+                writer.WriteStartArray();
+
+                // Write each byte value as a separate JSON integer
+                foreach (var b in byteArray)
+                {
+                    writer.WriteValue(b);
+                }
+
+                // End the JSON array
+                writer.WriteEndArray();
+            }
+            else
+            {
+                throw new NotSupportedException("Expected a byte array.");
+            }
         }
     }
 }
