@@ -110,7 +110,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public async Task HashesBallot()
         {
-            var clientHashS = "2lJ95YKyxyKjffwTd76bW7mELYv79AXeaTR3K4lKTBI=";
+            var clientHashS = "H0dNEgOfqCraWB2DRp8WrqA914n4mHslKP9dttL9DQM=";
             var clientHash = Convert.FromBase64String(clientHashS);
 
             try

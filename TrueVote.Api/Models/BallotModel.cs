@@ -70,12 +70,10 @@ namespace TrueVote.Api.Models
         public string BallotId { get; set; }
 
         [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "Election Id")]
         [MaxLength(2048)]
-        [DataType(DataType.Text)]
-        [RegularExpression(Constants.GenericStringRegex)]
-        [JsonProperty(PropertyName = "ElectionId", Required = Required.Always)]
-        public string ElectionId { get; set; }
+        [OpenApiProperty(Description = "Election for the Ballot")]
+        [JsonProperty(PropertyName = "Election")]
+        public ElectionModel Election { get; set; }
 
         [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
         [OpenApiProperty(Description = "DateCreated")]
@@ -84,11 +82,6 @@ namespace TrueVote.Api.Models
         [JsonProperty(PropertyName = "DateCreated")]
         public DateTime DateCreated { get; set; } = UtcNowProviderFactory.GetProvider().UtcNow;
 
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [MaxLength(2048)]
-        [OpenApiProperty(Description = "Election for the Ballot")]
-        [JsonProperty(PropertyName = "Election")]
-        public ElectionModel Election { get; set; }
     }
 
     [ExcludeFromCodeCoverage]
@@ -101,15 +94,6 @@ namespace TrueVote.Api.Models
         [JsonProperty(PropertyName = "BallotId", Required = Required.Always)]
         [Key]
         public string BallotId { get; set; }
-
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "Election Id")]
-        [MaxLength(2048)]
-        [DataType(DataType.Text)]
-        [RegularExpression(Constants.GenericStringRegex)]
-        [JsonProperty(PropertyName = "ElectionId", Required = Required.Always)]
-        [Key]
-        public string ElectionId { get; set; }
 
         [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
         [OpenApiProperty(Description = "Election")]

@@ -226,7 +226,11 @@ namespace TrueVote.Api.Tests.ServiceTests
                     query {
                         GetBallot {
                             Ballots {
-                                BallotId, ElectionId, DateCreated
+                                BallotId, DateCreated, Election {
+                                    Name, StartDate, EndDate, ElectionId, Races {
+                                        RaceId
+                                    }
+                                }
                             }
                         }
                     }"
@@ -237,7 +241,7 @@ namespace TrueVote.Api.Tests.ServiceTests
 
             var items = JsonConvert.DeserializeObject<BallotList>(JsonConvert.SerializeObject(graphQLRoot.GetBallot));
             Assert.NotNull(items);
-            Assert.Equal("electionid1", items.Ballots[0].ElectionId);
+            Assert.Equal("electionid1", items.Ballots[0].Election.ElectionId);
             Assert.Equal("ballotid3", items.Ballots[0].BallotId);
             Assert.True(items.Ballots.Count == 3);
 
@@ -256,7 +260,11 @@ namespace TrueVote.Api.Tests.ServiceTests
                     query ($BallotId: String!) {
                         GetBallotById(BallotId: $BallotId) {
                             Ballots {
-                                BallotId, ElectionId, DateCreated
+                                BallotId, DateCreated, Election {
+                                    Name, StartDate, EndDate, ElectionId, Races {
+                                        RaceId
+                                    }
+                                }
                             }
                         }
                     }",
@@ -271,7 +279,7 @@ namespace TrueVote.Api.Tests.ServiceTests
 
             var items = JsonConvert.DeserializeObject<BallotList>(JsonConvert.SerializeObject(graphQLRoot.GetBallotById));
             Assert.NotNull(items);
-            Assert.Equal("electionid1", items.Ballots[0].ElectionId);
+            Assert.Equal("electionid1", items.Ballots[0].Election.ElectionId);
             Assert.Equal("ballotid3", items.Ballots[0].BallotId);
             Assert.True(items.Ballots.Count == 1);
 

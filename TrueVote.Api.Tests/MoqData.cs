@@ -34,9 +34,9 @@ namespace TrueVote.Api.Tests
 
         public static List<BallotModel> MockBallotData => new()
         {
-            new BallotModel { BallotId = "ballotid1", DateCreated = createDate, ElectionId = "electionid1", Election = MockElectionData[0] },
-            new BallotModel { BallotId = "ballotid2", DateCreated = createDate2, ElectionId = "electionid1", Election = MockElectionData[0] },
-            new BallotModel { BallotId = "ballotid3", DateCreated = createDate3, ElectionId = "electionid1", Election = MockElectionData[0] },
+            new BallotModel { BallotId = "ballotid1", DateCreated = createDate, Election = MockElectionData[0] },
+            new BallotModel { BallotId = "ballotid2", DateCreated = createDate2, Election = MockElectionData[0] },
+            new BallotModel { BallotId = "ballotid3", DateCreated = createDate3, Election = MockElectionData[0] },
         };
 
         public static List<CandidateModel> MockCandidateData => new()

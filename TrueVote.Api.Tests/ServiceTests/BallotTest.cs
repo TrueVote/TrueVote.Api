@@ -25,10 +25,10 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public async Task SubmitsBallot()
         {
-            var clientHashS = "tVR+h6/Il1tztHLRrposBD1Gwc6OKHA2mAC5JzYdGK8=";
+            var clientHashS = "9AEWqbLLzU0RiFZZUrC+2zlEY03cU4lmUxawAZgRjIM=";
             var clientHash = Convert.FromBase64String(clientHashS);
 
-            var baseBallotObj = new SubmitBallotModel { BallotId = MoqData.MockBallotData[1].BallotId, ElectionId = MoqData.MockBallotData[1].ElectionId, Election = MoqData.MockBallotData[1].Election, ClientBallotHash = clientHash };
+            var baseBallotObj = new SubmitBallotModel { BallotId = MoqData.MockBallotData[1].BallotId, Election = MoqData.MockBallotData[1].Election, ClientBallotHash = clientHash };
             var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(baseBallotObj));
             _httpContext.Request.Body = new MemoryStream(byteArray);
 
@@ -101,7 +101,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             var val = objectResult.Value as BallotList;
             Assert.NotNull(val);
             Assert.Equal("ballotid3", val.Ballots[0].BallotId);
-            Assert.Equal("electionid1", val.Ballots[0].ElectionId);
+            Assert.Equal("electionid1", val.Ballots[0].Election.ElectionId);
 
             _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));

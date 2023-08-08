@@ -71,7 +71,7 @@ namespace TrueVote.Api.Services
             // 4. BallotId must be a valid GUID
             // ADD CODE FOR ABOVE ITEMS HERE
 
-            var ballot = new BallotModel { BallotId = bindSubmitBallotModel.BallotId, ElectionId = bindSubmitBallotModel.ElectionId, Election = bindSubmitBallotModel.Election };
+            var ballot = new BallotModel { BallotId = bindSubmitBallotModel.BallotId, Election = bindSubmitBallotModel.Election };
             await _trueVoteDbContext.EnsureCreatedAsync();
 
             await _trueVoteDbContext.Ballots.AddAsync(ballot);
@@ -79,12 +79,12 @@ namespace TrueVote.Api.Services
 
             // TODO Localize .Message
             var submitBallotResponse = new SubmitBallotModelResponse {
-                ElectionId = bindSubmitBallotModel.ElectionId,
+                ElectionId = bindSubmitBallotModel.Election.ElectionId,
                 BallotId = ballot.BallotId,
-                Message = $"Ballot successfully submitted. Election ID: {bindSubmitBallotModel.ElectionId}, Ballot ID: {ballot.BallotId}"
+                Message = $"Ballot successfully submitted. Election ID: {bindSubmitBallotModel.Election.ElectionId}, Ballot ID: {ballot.BallotId}"
             };
 
-            await _telegramBot.SendChannelMessageAsync($"New TrueVote Ballot successfully submitted. Election ID: {bindSubmitBallotModel.ElectionId}, Ballot ID: {ballot.BallotId}");
+            await _telegramBot.SendChannelMessageAsync($"New TrueVote Ballot successfully submitted. Election ID: {bindSubmitBallotModel.Election.ElectionId}, Ballot ID: {ballot.BallotId}");
 
             // TODO Post a message to Service Bus for this Ballot
             // FOR NOW ONLY - THIS LINE SHOULD BE REPLACED WITH A POST TO SERVICE BUS
