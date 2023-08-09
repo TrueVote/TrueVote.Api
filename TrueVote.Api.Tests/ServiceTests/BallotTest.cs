@@ -25,8 +25,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public async Task SubmitsBallot()
         {
-            var electionObj = new ElectionModel { ElectionId = "68", Name = "California State", StartDate = DateTime.Now, EndDate = DateTime.Now.AddDays(30) };
-            var baseBallotObj = new SubmitBallotModel { ElectionId = "68", Election = electionObj };
+            var baseBallotObj = new SubmitBallotModel { Election = MoqData.MockBallotData[1].Election };
             var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(baseBallotObj));
             _httpContext.Request.Body = new MemoryStream(byteArray);
 
@@ -67,6 +66,31 @@ namespace TrueVote.Api.Tests.ServiceTests
         }
 
         [Fact]
+        public async Task HandlesSubmitBallotHashingError()
+        {
+            var baseBallotObj = new SubmitBallotModel { Election = MoqData.MockBallotData[1].Election };
+            var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(baseBallotObj));
+            _httpContext.Request.Body = new MemoryStream(byteArray);
+
+            var mockValidator = new Mock<IValidator>();
+            mockValidator.Setup(m => m.HashBallotAsync(It.IsAny<BallotModel>())).Throws(new Exception("Hash Ballot Exception"));
+
+            var ballotApi = new Ballot(_logHelper.Object, _moqDataAccessor.mockBallotContext.Object, _mockTelegram.Object, mockValidator.Object);
+            var ret = await ballotApi.SubmitBallot(_httpContext.Request) as ConflictObjectResult;
+            Assert.NotNull(ret);
+            var objectResult = Assert.IsType<ConflictObjectResult>(ret);
+            Assert.Equal((int) HttpStatusCode.Conflict, objectResult.StatusCode);
+
+            var val = ret.Value as SubmitBallotModelResponse;
+            Assert.NotNull(val);
+
+            Assert.Contains("Hash Ballot Exception", val.Message);
+
+            _logHelper.Verify(LogLevel.Error, Times.Exactly(1));
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+        }
+
+        [Fact]
         public async Task HandlesFindBallotError()
         {
             var findBallotObj = "blah";
@@ -96,11 +120,10 @@ namespace TrueVote.Api.Tests.ServiceTests
             var objectResult = Assert.IsType<OkObjectResult>(ret);
             Assert.Equal((int) HttpStatusCode.OK, objectResult.StatusCode);
 
-            var val = objectResult.Value as List<BallotModel>;
-            Assert.NotEmpty(val);
-            Assert.Single(val);
-            Assert.Equal("ballotid3", val[0].BallotId);
-            Assert.Equal("electionid1", val[0].ElectionId);
+            var val = objectResult.Value as BallotList;
+            Assert.NotNull(val);
+            Assert.Equal("ballotid3", val.Ballots[0].BallotId);
+            Assert.Equal("electionid1", val.Ballots[0].Election.ElectionId);
 
             _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));

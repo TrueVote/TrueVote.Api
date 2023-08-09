@@ -225,7 +225,13 @@ namespace TrueVote.Api.Tests.ServiceTests
                 Query = @"
                     query {
                         GetBallot {
-                            BallotId, ElectionId, DateCreated
+                            Ballots {
+                                BallotId, DateCreated, Election {
+                                    Name, StartDate, EndDate, ElectionId, Races {
+                                        RaceId
+                                    }
+                                }
+                            }
                         }
                     }"
             };
@@ -233,10 +239,11 @@ namespace TrueVote.Api.Tests.ServiceTests
             var graphQLRequestJson = JsonConvert.SerializeObject(graphQLRequest);
             var graphQLRoot = await GraphQLQuerySetup(graphQLRequestJson);
 
-            var ballots = JsonConvert.DeserializeObject<List<BallotModel>>(JsonConvert.SerializeObject(graphQLRoot.GetBallot));
-            Assert.Equal("electionid1", ballots[0].ElectionId);
-            Assert.Equal("ballotid3", ballots[0].BallotId);
-            Assert.True(ballots.Count == 3);
+            var items = JsonConvert.DeserializeObject<BallotList>(JsonConvert.SerializeObject(graphQLRoot.GetBallot));
+            Assert.NotNull(items);
+            Assert.Equal("electionid1", items.Ballots[0].Election.ElectionId);
+            Assert.Equal("ballotid3", items.Ballots[0].BallotId);
+            Assert.True(items.Ballots.Count == 3);
 
             Assert.Equal((int) HttpStatusCode.OK, _httpContext.Response.StatusCode);
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
@@ -252,7 +259,13 @@ namespace TrueVote.Api.Tests.ServiceTests
                 Query = @"
                     query ($BallotId: String!) {
                         GetBallotById(BallotId: $BallotId) {
-                            BallotId, ElectionId, DateCreated
+                            Ballots {
+                                BallotId, DateCreated, Election {
+                                    Name, StartDate, EndDate, ElectionId, Races {
+                                        RaceId
+                                    }
+                                }
+                            }
                         }
                     }",
                 Variables = new
@@ -264,11 +277,11 @@ namespace TrueVote.Api.Tests.ServiceTests
             var graphQLRequestJson = JsonConvert.SerializeObject(graphQLRequest);
             var graphQLRoot = await GraphQLQuerySetup(graphQLRequestJson);
 
-            var ballots = JsonConvert.DeserializeObject<List<BallotModel>>(JsonConvert.SerializeObject(graphQLRoot.GetBallotById));
-            Assert.NotNull(ballots);
-            Assert.Equal("electionid1", ballots[0].ElectionId);
-            Assert.Equal("ballotid3", ballots[0].BallotId);
-            Assert.True(ballots.Count == 1);
+            var items = JsonConvert.DeserializeObject<BallotList>(JsonConvert.SerializeObject(graphQLRoot.GetBallotById));
+            Assert.NotNull(items);
+            Assert.Equal("electionid1", items.Ballots[0].Election.ElectionId);
+            Assert.Equal("ballotid3", items.Ballots[0].BallotId);
+            Assert.True(items.Ballots.Count == 1);
 
             Assert.Equal((int) HttpStatusCode.OK, _httpContext.Response.StatusCode);
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));

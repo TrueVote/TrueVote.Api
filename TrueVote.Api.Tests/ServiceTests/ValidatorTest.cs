@@ -1,6 +1,8 @@
 using Moq;
+using Newtonsoft.Json;
 using System;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using TrueVote.Api.Helpers;
 using TrueVote.Api.Services;
@@ -78,7 +80,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         {
             try
             {
-                var ballotHashModel = await _validatorApi.HashBallotAsync(MoqData.MockBallotData[0], null);
+                var ballotHashModel = await _validatorApi.HashBallotAsync(MoqData.MockBallotData[0]);
                 Assert.True(false);
             }
             catch (Exception ex)
@@ -90,31 +92,12 @@ namespace TrueVote.Api.Tests.ServiceTests
         }
 
         [Fact]
-        public async Task HandlesBallotHashMismatch()
-        {
-            try
-            {
-                var ballotHashModel = await _validatorApi.HashBallotAsync(MoqData.MockBallotData[1], "123");
-                Assert.True(false);
-            }
-            catch (Exception ex)
-            {
-                _output.WriteLine($"{ex}");
-                Assert.NotNull(ex);
-                Assert.Contains("client hash is different from server hash", ex.Message);
-            }
-        }
-
-        [Fact]
         public async Task HashesBallot()
         {
-            var ballotData2HashVal = "2lJ95YKyxyKjffwTd76bW7mELYv79AXeaTR3K4lKTBI=";
-
             try
             {
-                var ballotHashModel = await _validatorApi.HashBallotAsync(MoqData.MockBallotData[2], ballotData2HashVal);
+                var ballotHashModel = await _validatorApi.HashBallotAsync(MoqData.MockBallotData[2]);
                 Assert.NotNull(ballotHashModel);
-                Assert.Equal(ballotData2HashVal, ballotHashModel.ServerBallotHashS);
             }
             catch
             {

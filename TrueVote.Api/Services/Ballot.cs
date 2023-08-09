@@ -23,9 +23,9 @@ namespace TrueVote.Api.Services
     {
         private readonly ITrueVoteDbContext _trueVoteDbContext;
         private readonly TelegramBot _telegramBot;
-        private readonly Validator _validator;
+        private readonly IValidator _validator;
 
-        public Ballot(ILogger log, ITrueVoteDbContext trueVoteDbContext, TelegramBot telegramBot, Validator validator) : base(log, telegramBot)
+        public Ballot(ILogger log, ITrueVoteDbContext trueVoteDbContext, TelegramBot telegramBot, IValidator validator) : base(log, telegramBot)
         {
             _trueVoteDbContext = trueVoteDbContext;
             _telegramBot = telegramBot;
@@ -45,6 +45,7 @@ namespace TrueVote.Api.Services
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.NotAcceptable, contentType: "application/json", bodyType: typeof(SecureString), Description = "Not Acceptable")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.TooManyRequests, contentType: "application/json", bodyType: typeof(SecureString), Description = "Too Many Requests")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.UnsupportedMediaType, contentType: "application/json", bodyType: typeof(SecureString), Description = "Unsupported Media Type")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.Conflict, contentType: "application/json", bodyType: typeof(SecureString), Description = "Conflict with input model")]
         public async Task<IActionResult> SubmitBallot(
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "ballot/submitballot")] HttpRequest req) {
             LogDebug("HTTP trigger - SubmitBallot:Begin");
@@ -69,24 +70,37 @@ namespace TrueVote.Api.Services
             // 3. Confirm the election data for this ballot has not been altered.
             // ADD CODE FOR ABOVE ITEMS HERE
 
-            var ballot = new BallotModel { ElectionId = bindSubmitBallotModel.ElectionId, Election = bindSubmitBallotModel.Election };
+            var ballot = new BallotModel { Election = bindSubmitBallotModel.Election };
             await _trueVoteDbContext.EnsureCreatedAsync();
 
             await _trueVoteDbContext.Ballots.AddAsync(ballot);
             await _trueVoteDbContext.SaveChangesAsync();
 
+            // TODO Localize .Message
             var submitBallotResponse = new SubmitBallotModelResponse {
-                ElectionId = bindSubmitBallotModel.ElectionId,
+                ElectionId = bindSubmitBallotModel.Election.ElectionId,
                 BallotId = ballot.BallotId,
-                Message = $"Ballot successfully submitted. Election ID: {bindSubmitBallotModel.ElectionId}, Ballot ID: {ballot.BallotId}"
+                Message = $"Ballot successfully submitted. Election ID: {bindSubmitBallotModel.Election.ElectionId}, Ballot ID: {ballot.BallotId}"
             };
 
-            await _telegramBot.SendChannelMessageAsync($"New TrueVote Ballot successfully submitted. Election ID: {bindSubmitBallotModel.ElectionId}, Ballot ID: {ballot.BallotId}");
+            await _telegramBot.SendChannelMessageAsync($"New TrueVote Ballot successfully submitted. Election ID: {bindSubmitBallotModel.Election.ElectionId}, Ballot ID: {ballot.BallotId}");
 
             // TODO Post a message to Service Bus for this Ballot
             // FOR NOW ONLY - THIS LINE SHOULD BE REPLACED WITH A POST TO SERVICE BUS
             // Hash the ballot
-            await _validator.HashBallotAsync(ballot, bindSubmitBallotModel.ClientBallotHash);
+            try
+            {
+                await _validator.HashBallotAsync(ballot);
+            }
+            catch (Exception e)
+            {
+                LogError("HashBallotAsync()");
+                LogDebug("HTTP trigger - SubmitBallot:End");
+
+                submitBallotResponse.Message += " - " + e.Message;
+
+                return new ConflictObjectResult(submitBallotResponse);
+            }
 
             LogDebug("HTTP trigger - SubmitBallot:End");
 
@@ -100,7 +114,7 @@ namespace TrueVote.Api.Services
         [OpenApiOperation(operationId: "BallotFind", tags: new[] { "Ballot" })]
         [OpenApiSecurity("oidc_auth", SecuritySchemeType.OpenIdConnect, OpenIdConnectUrl = "https://login.microsoftonline.com/{tenant_id}/v2.0/.well-known/openid-configuration", OpenIdConnectScopes = "openid,profile")]
         [OpenApiRequestBody(contentType: "application/json", bodyType: typeof(FindBallotModel), Description = "Fields to search for Ballots", Example = typeof(FindBallotModel))]
-        [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(BallotModelList), Description = "Returns collection of Ballots")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(BallotList), Description = "Returns collection of Ballots")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.Forbidden, contentType: "application/json", bodyType: typeof(SecureString), Description = "Forbidden")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.Unauthorized, contentType: "application/json", bodyType: typeof(SecureString), Description = "Unauthorized")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.NotFound, contentType: "application/json", bodyType: typeof(SecureString), Description = "Not Found")]
@@ -127,14 +141,21 @@ namespace TrueVote.Api.Services
 
             LogInformation($"Request Data: {findBallot}");
 
-            var items = await _trueVoteDbContext.Ballots
+            var items = new BallotList
+            {
+                Ballots = await _trueVoteDbContext.Ballots
                 .Where(e =>
                     findBallot.BallotId == null || (e.BallotId ?? string.Empty).ToLower().Contains(findBallot.BallotId.ToLower()))
-                .OrderByDescending(e => e.DateCreated).ToListAsync();
+                .OrderByDescending(e => e.DateCreated).ToListAsync(),
+                BallotHashes = await _trueVoteDbContext.BallotHashes
+                .Where(e =>
+                    findBallot.BallotId == null || (e.BallotId ?? string.Empty).ToLower().Contains(findBallot.BallotId.ToLower()))
+                .OrderByDescending(e => e.DateCreated).ToListAsync()
+            };
 
             LogDebug("HTTP trigger - BallotFind:End");
 
-            return items.Count == 0 ? new NotFoundResult() : new OkObjectResult(items);
+            return items.Ballots.Count == 0 ? new NotFoundResult() : new OkObjectResult(items);
         }
 
         [FunctionName(nameof(BallotCount))]

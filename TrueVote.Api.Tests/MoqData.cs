@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using TrueVote.Api.Helpers;
 using TrueVote.Api.Interfaces;
 using TrueVote.Api.Models;
 
@@ -11,11 +12,11 @@ namespace TrueVote.Api.Tests
 {
     public static class MoqData
     {
-        private static readonly DateTime startDate = DateTime.Parse("2023-02-25");
-        private static readonly DateTime endDate = DateTime.Parse("2023-02-25").AddDays(30);
-        private static readonly DateTime createDate = DateTime.Parse("2022-12-17");
-        private static readonly DateTime createDate2 = DateTime.Parse("2022-12-17").AddHours(1);
-        private static readonly DateTime createDate3 = DateTime.Parse("2022-12-17").AddHours(2);
+        public static readonly DateTime startDate = DateTime.Parse("2023-02-25");
+        public static readonly DateTime endDate = DateTime.Parse("2023-02-25").AddDays(30);
+        public static readonly DateTime createDate = DateTime.Parse("2022-12-17");
+        public static readonly DateTime createDate2 = DateTime.Parse("2022-12-17").AddHours(1);
+        public static readonly DateTime createDate3 = DateTime.Parse("2022-12-17").AddHours(2);
 
         public static List<UserModel> MockUserData => new()
         {
@@ -33,9 +34,9 @@ namespace TrueVote.Api.Tests
 
         public static List<BallotModel> MockBallotData => new()
         {
-            new BallotModel { BallotId = "ballotid1", DateCreated = createDate, ElectionId = "electionid1", Election = MockElectionData[0] },
-            new BallotModel { BallotId = "ballotid2", DateCreated = createDate2, ElectionId = "electionid1", Election = MockElectionData[0] },
-            new BallotModel { BallotId = "ballotid3", DateCreated = createDate3, ElectionId = "electionid1", Election = MockElectionData[0] },
+            new BallotModel { BallotId = "ballotid1", DateCreated = createDate, Election = MockElectionData[0] },
+            new BallotModel { BallotId = "ballotid2", DateCreated = createDate2, Election = MockElectionData[0] },
+            new BallotModel { BallotId = "ballotid3", DateCreated = createDate3, Election = MockElectionData[0] },
         };
 
         public static List<CandidateModel> MockCandidateData => new()
@@ -59,7 +60,13 @@ namespace TrueVote.Api.Tests
 
         public static List<BallotHashModel> MockBallotHashData => new()
         {
-            new BallotHashModel { BallotId = "ballotid1", DateCreated = createDate, ClientBallotHashS = "123", ServerBallotHashS = "123" }
+            new BallotHashModel { BallotId = "ballotid1", DateCreated = createDate, ServerBallotHashS = "123" }
+        };
+
+        public static BallotList MockBallotList => new()
+        {
+            Ballots = MockBallotData,
+            BallotHashes = MockBallotHashData
         };
     }
 
@@ -149,6 +156,10 @@ namespace TrueVote.Api.Tests
             MockRaceSet = DbMoqHelper.GetDbSet(mockRaceDataQueryable);
             mockRaceContext.Setup(m => m.Races).Returns(MockRaceSet.Object);
             mockRaceContext.Setup(m => m.EnsureCreatedAsync()).Returns(Task.FromResult(true));
+
+            var mockUtcNowProvider = new Mock<IUtcNowProvider>();
+            mockUtcNowProvider.Setup(p => p.UtcNow).Returns(MoqData.startDate);
+            UtcNowProviderFactory.SetProvider(mockUtcNowProvider.Object);
         }
     }
 

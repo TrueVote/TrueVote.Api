@@ -10,7 +10,15 @@ using Newtonsoft.Json.Linq;
 
 namespace TrueVote.Api.Services
 {
-    public class Validator : LoggerHelper
+    public interface IValidator
+    {
+        Task<BallotHashModel> HashBallotAsync(BallotModel ballot);
+        Task<TimestampModel> HashBallotsAsync();
+        Task StoreTimestampAsync(TimestampModel timestamp);
+        Task StoreBallotHashAsync(BallotHashModel ballotHashModel);
+    }
+
+    public class Validator : LoggerHelper, IValidator
     {
         private readonly ITrueVoteDbContext _trueVoteDbContext;
         private readonly TelegramBot _telegramBot;
@@ -23,12 +31,13 @@ namespace TrueVote.Api.Services
             _openTimestampsClient = openTimestampsClient;
         }
 
-        public async Task<BallotHashModel> HashBallotAsync(BallotModel ballot, string ClientBallotHash)
+        public async virtual Task<BallotHashModel> HashBallotAsync(BallotModel ballot)
         {
             // Determine if this ballot hash record already exists
             var items = _trueVoteDbContext.BallotHashes.Where(e => e.BallotId == ballot.BallotId).ToList();
             if (items.Any())
             {
+                // TODO Localize msg
                 var msg = $"Ballot: {ballot.BallotId} has already been hashed. Ballot Hash Id: {items.First().BallotHashId}";
 
                 LogError(msg);
@@ -36,25 +45,14 @@ namespace TrueVote.Api.Services
             }
 
             // Hash this ballot
-            var ballotHash = MerkleTree.GetHash(ballot);
-            var ballotHashS = (string) JToken.Parse(Utf8Json.JsonSerializer.ToJsonString(ballotHash));
-
-            // Check the hash against the client hash. They must be the same.
-            // TODO - For now, if ClientBallotHash is null, let it continue
-            if (ClientBallotHash != null && ballotHashS != ClientBallotHash)
-            {
-                var msg = $"Ballot: {ballot.BallotId} client hash is different from server hash";
-
-                LogError(msg);
-                throw new Exception(msg);
-            }
+            var serverBallotHash = MerkleTree.GetHash(ballot);
+            var serverBallotHashS = (string) JToken.Parse(Utf8Json.JsonSerializer.ToJsonString(serverBallotHash));
 
             // Store the BallotHash record in a model
             var ballotHashModel = new BallotHashModel
             {
-                ServerBallotHash = ballotHash,
-                ServerBallotHashS = ballotHashS,
-                ClientBallotHashS= ClientBallotHash,
+                ServerBallotHash = serverBallotHash,
+                ServerBallotHashS = serverBallotHashS,
                 BallotId = ballot.BallotId
             };
 
@@ -68,7 +66,7 @@ namespace TrueVote.Api.Services
             return ballotHashModel;
         }
 
-        public async Task<TimestampModel> HashBallotsAsync()
+        public async virtual Task<TimestampModel> HashBallotsAsync()
         {
             // Get all the ballots that don't have a TimestampId
             var items = _trueVoteDbContext.BallotHashes.Where(e => e.TimestampId == null).OrderByDescending(e => e.DateCreated);
@@ -98,7 +96,7 @@ namespace TrueVote.Api.Services
                 MerkleRootHash = merkleRootHash,
                 TimestampHash = result,
                 TimestampHashS = (string) JToken.Parse(Utf8Json.JsonSerializer.ToJsonString(result)),
-                TimestampAt = DateTime.UtcNow
+                TimestampAt = UtcNowProviderFactory.GetProvider().UtcNow
             };
             timestamp.CalendarServerUrl = timestamp.TimestampHashS.ExtractUrl();
 
@@ -112,7 +110,7 @@ namespace TrueVote.Api.Services
             items.ToList().ForEach(e =>
             {
                 e.TimestampId = timestamp.TimestampId;
-                e.DateUpdated = DateTime.UtcNow;
+                e.DateUpdated = UtcNowProviderFactory.GetProvider().UtcNow;
                 _trueVoteDbContext.BallotHashes.Update(e);
             });
 
@@ -124,7 +122,7 @@ namespace TrueVote.Api.Services
             return timestamp;
         }
 
-        public async Task StoreTimestampAsync(TimestampModel timestamp)
+        public async virtual Task StoreTimestampAsync(TimestampModel timestamp)
         {
             try
             {
@@ -138,7 +136,7 @@ namespace TrueVote.Api.Services
             }
         }
 
-        public async Task StoreBallotHashAsync(BallotHashModel ballotHashModel)
+        public async virtual Task StoreBallotHashAsync(BallotHashModel ballotHashModel)
         {
             try
             {

@@ -64,16 +64,24 @@ namespace TrueVote.Api.Services
             return items;
         }
 
-        public async Task<IReadOnlyList<BallotModel>> GetBallot()
+        public async Task<BallotList> GetBallot()
         {
-            var items = await _trueVoteDbContext.Ballots.OrderByDescending(c => c.DateCreated).ToListAsync();
+            var items = new BallotList
+            {
+                Ballots = await _trueVoteDbContext.Ballots.OrderByDescending(e => e.DateCreated).ToListAsync(),
+                BallotHashes = await _trueVoteDbContext.BallotHashes.OrderByDescending(e => e.DateCreated).ToListAsync()
+            };
 
             return items;
         }
 
-        public async Task<IReadOnlyList<BallotModel>> GetBallotById([GraphQLName("BallotId")] string BallotId)
+        public async Task<BallotList> GetBallotById([GraphQLName("BallotId")] string BallotId)
         {
-            var items = await _trueVoteDbContext.Ballots.Where(e => e.BallotId == BallotId).OrderByDescending(c => c.DateCreated).ToListAsync();
+            var items = new BallotList
+            {
+                Ballots = await _trueVoteDbContext.Ballots.Where(e => e.BallotId == BallotId).OrderByDescending(c => c.DateCreated).ToListAsync(),
+                BallotHashes = await _trueVoteDbContext.BallotHashes.Where(e => e.BallotId == BallotId).OrderByDescending(e => e.DateCreated).ToListAsync()
+            };
 
             return items;
         }

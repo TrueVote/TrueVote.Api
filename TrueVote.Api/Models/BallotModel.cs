@@ -6,17 +6,24 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
+using TrueVote.Api.Helpers;
 
 namespace TrueVote.Api.Models
 {
     [ExcludeFromCodeCoverage]
-    public class BallotModelList
+    public class BallotList
     {
         [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
         [MaxLength(2048)]
         [OpenApiProperty(Description = "List of Ballots")]
         [JsonProperty(PropertyName = "Ballots")]
         public List<BallotModel> Ballots { get; set; }
+
+        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
+        [MaxLength(2048)]
+        [OpenApiProperty(Description = "List of Ballot Hashes")]
+        [JsonProperty(PropertyName = "BallotHashes")]
+        public List<BallotHashModel> BallotHashes { get; set; }
     }
 
     [ExcludeFromCodeCoverage]
@@ -58,55 +65,32 @@ namespace TrueVote.Api.Models
         [MaxLength(2048)]
         [DataType(DataType.Text)]
         [RegularExpression(Constants.GenericStringRegex)]
-        [JsonProperty(PropertyName = "BallotId")]
+        [JsonProperty(PropertyName = "BallotId", Required = Required.Always)]
         [Key]
         public string BallotId { get; set; } = Guid.NewGuid().ToString();
-
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "Election Id")]
-        [MaxLength(2048)]
-        [DataType(DataType.Text)]
-        [RegularExpression(Constants.GenericStringRegex)]
-        [JsonProperty(PropertyName = "ElectionId")]
-        public string ElectionId { get; set; }
-
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "DateCreated")]
-        [MaxLength(2048)]
-        [DataType(DataType.Date)]
-        [JsonProperty(PropertyName = "DateCreated")]
-        public DateTime DateCreated { get; set; } = DateTime.UtcNow;
 
         [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
         [MaxLength(2048)]
         [OpenApiProperty(Description = "Election for the Ballot")]
         [JsonProperty(PropertyName = "Election")]
         public ElectionModel Election { get; set; }
+
+        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
+        [OpenApiProperty(Description = "DateCreated")]
+        [MaxLength(2048)]
+        [DataType(DataType.Date)]
+        [JsonProperty(PropertyName = "DateCreated")]
+        public DateTime DateCreated { get; set; } = UtcNowProviderFactory.GetProvider().UtcNow;
+
     }
 
     [ExcludeFromCodeCoverage]
     public class SubmitBallotModel {
         [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "Election Id")]
-        [MaxLength(2048)]
-        [DataType(DataType.Text)]
-        [RegularExpression(Constants.GenericStringRegex)]
-        [JsonProperty(PropertyName = "ElectionId")]
-        [Key]
-        public string ElectionId { get; set; }
-
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
         [OpenApiProperty(Description = "Election")]
         [DataType("ElectionModel")]
         [JsonProperty(PropertyName = "Election", Required = Required.Always)]
         public ElectionModel Election { get; set; }
-
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "Client Ballot Hash")]
-        [MaxLength(2048)]
-        [DataType(DataType.Text)]
-        [JsonProperty(PropertyName = "ClientBallotHash")]
-        public string ClientBallotHash { get; set; }
 
         // TODO Add Bindings of User / Ballot connection
         // Requires encryption for binding stored at client and server for match
@@ -166,6 +150,7 @@ namespace TrueVote.Api.Models
         [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
         [OpenApiProperty(Description = "Server Ballot Hash")]
         [DataType(DataType.Custom)]
+        [JsonConverter(typeof(ByteConverter))]
         [JsonProperty(PropertyName = "ServerBallotHash")]
         public byte[] ServerBallotHash { get; set; }
 
@@ -178,26 +163,18 @@ namespace TrueVote.Api.Models
         public string ServerBallotHashS { get; set; }
 
         [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "Client Ballot Hash String")]
-        [MaxLength(2048)]
-        [DataType(DataType.Text)]
-        [RegularExpression(Constants.GenericStringRegex)]
-        [JsonProperty(PropertyName = "ClientBallotHashS")]
-        public string ClientBallotHashS { get; set; }
-
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
         [OpenApiProperty(Description = "DateCreated")]
         [MaxLength(2048)]
         [DataType(DataType.Date)]
         [JsonProperty(PropertyName = "DateCreated")]
-        public DateTime DateCreated { get; set; } = DateTime.UtcNow;
+        public DateTime DateCreated { get; set; } = UtcNowProviderFactory.GetProvider().UtcNow;
 
         [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
         [OpenApiProperty(Description = "DateUpdated")]
         [MaxLength(2048)]
         [DataType(DataType.Date)]
         [JsonProperty(PropertyName = "DateUpdated")]
-        public DateTime DateUpdated { get; set; } = DateTime.UtcNow;
+        public DateTime DateUpdated { get; set; } = UtcNowProviderFactory.GetProvider().UtcNow;
 
         [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
         [OpenApiProperty(Description = "Timestamp Id")]
