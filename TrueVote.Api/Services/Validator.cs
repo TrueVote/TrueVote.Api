@@ -10,7 +10,15 @@ using Newtonsoft.Json.Linq;
 
 namespace TrueVote.Api.Services
 {
-    public class Validator : LoggerHelper
+    public interface IValidator
+    {
+        Task<BallotHashModel> HashBallotAsync(BallotModel ballot);
+        Task<TimestampModel> HashBallotsAsync();
+        Task StoreTimestampAsync(TimestampModel timestamp);
+        Task StoreBallotHashAsync(BallotHashModel ballotHashModel);
+    }
+
+    public class Validator : LoggerHelper, IValidator
     {
         private readonly ITrueVoteDbContext _trueVoteDbContext;
         private readonly TelegramBot _telegramBot;
@@ -23,7 +31,7 @@ namespace TrueVote.Api.Services
             _openTimestampsClient = openTimestampsClient;
         }
 
-        public async Task<BallotHashModel> HashBallotAsync(BallotModel ballot)
+        public async virtual Task<BallotHashModel> HashBallotAsync(BallotModel ballot)
         {
             // Determine if this ballot hash record already exists
             var items = _trueVoteDbContext.BallotHashes.Where(e => e.BallotId == ballot.BallotId).ToList();
@@ -58,7 +66,7 @@ namespace TrueVote.Api.Services
             return ballotHashModel;
         }
 
-        public async Task<TimestampModel> HashBallotsAsync()
+        public async virtual Task<TimestampModel> HashBallotsAsync()
         {
             // Get all the ballots that don't have a TimestampId
             var items = _trueVoteDbContext.BallotHashes.Where(e => e.TimestampId == null).OrderByDescending(e => e.DateCreated);
@@ -114,7 +122,7 @@ namespace TrueVote.Api.Services
             return timestamp;
         }
 
-        public async Task StoreTimestampAsync(TimestampModel timestamp)
+        public async virtual Task StoreTimestampAsync(TimestampModel timestamp)
         {
             try
             {
@@ -128,7 +136,7 @@ namespace TrueVote.Api.Services
             }
         }
 
-        public async Task StoreBallotHashAsync(BallotHashModel ballotHashModel)
+        public async virtual Task StoreBallotHashAsync(BallotHashModel ballotHashModel)
         {
             try
             {

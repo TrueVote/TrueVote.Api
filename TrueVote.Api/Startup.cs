@@ -185,7 +185,7 @@ namespace TrueVote.Api
                 var uri = provider.GetRequiredService<Uri>();
                 client.BaseAddress = uri;
             });
-            builder.Services.TryAddScoped<Validator, Validator>();
+            builder.Services.TryAddScoped<IValidator, Validator>();
 
             ConfigureServices(builder.Services).BuildServiceProvider(true);
         }

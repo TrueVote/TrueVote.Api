@@ -23,9 +23,9 @@ namespace TrueVote.Api.Services
     {
         private readonly ITrueVoteDbContext _trueVoteDbContext;
         private readonly TelegramBot _telegramBot;
-        private readonly Validator _validator;
+        private readonly IValidator _validator;
 
-        public Ballot(ILogger log, ITrueVoteDbContext trueVoteDbContext, TelegramBot telegramBot, Validator validator) : base(log, telegramBot)
+        public Ballot(ILogger log, ITrueVoteDbContext trueVoteDbContext, TelegramBot telegramBot, IValidator validator) : base(log, telegramBot)
         {
             _trueVoteDbContext = trueVoteDbContext;
             _telegramBot = telegramBot;
