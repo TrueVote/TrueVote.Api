@@ -60,7 +60,7 @@ namespace TrueVote.Api.Tests
 
         public static List<BallotHashModel> MockBallotHashData => new()
         {
-            new BallotHashModel { BallotId = "ballotid1", DateCreated = createDate, ClientBallotHashS = "123", ServerBallotHashS = "123" }
+            new BallotHashModel { BallotId = "ballotid1", DateCreated = createDate, ServerBallotHashS = "123" }
         };
 
         public static BallotList MockBallotList => new()

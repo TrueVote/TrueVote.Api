@@ -67,7 +67,7 @@ namespace TrueVote.Api.Models
         [RegularExpression(Constants.GenericStringRegex)]
         [JsonProperty(PropertyName = "BallotId", Required = Required.Always)]
         [Key]
-        public string BallotId { get; set; }
+        public string BallotId { get; set; } = Guid.NewGuid().ToString();
 
         [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
         [MaxLength(2048)]
@@ -87,26 +87,10 @@ namespace TrueVote.Api.Models
     [ExcludeFromCodeCoverage]
     public class SubmitBallotModel {
         [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "Ballot Id")]
-        [MaxLength(2048)]
-        [DataType(DataType.Text)]
-        [RegularExpression(Constants.GenericStringRegex)]
-        [JsonProperty(PropertyName = "BallotId", Required = Required.Always)]
-        [Key]
-        public string BallotId { get; set; }
-
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
         [OpenApiProperty(Description = "Election")]
         [DataType("ElectionModel")]
         [JsonProperty(PropertyName = "Election", Required = Required.Always)]
         public ElectionModel Election { get; set; }
-
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "Client Ballot Hash")]
-        [DataType(DataType.Custom)]
-        [JsonConverter(typeof(ByteConverter))]
-        [JsonProperty(PropertyName = "ClientBallotHash", Required = Required.Always)]
-        public byte[] ClientBallotHash { get; set; }
 
         // TODO Add Bindings of User / Ballot connection
         // Requires encryption for binding stored at client and server for match
@@ -177,21 +161,6 @@ namespace TrueVote.Api.Models
         [RegularExpression(Constants.GenericStringRegex)]
         [JsonProperty(PropertyName = "ServerBallotHashS")]
         public string ServerBallotHashS { get; set; }
-
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "Client Ballot Hash")]
-        [DataType(DataType.Custom)]
-        [JsonConverter(typeof(ByteConverter))]
-        [JsonProperty(PropertyName = "ClientBallotHash")]
-        public byte[] ClientBallotHash { get; set; }
-
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "Client Ballot Hash String")]
-        [MaxLength(2048)]
-        [DataType(DataType.Text)]
-        [RegularExpression(Constants.GenericStringRegex)]
-        [JsonProperty(PropertyName = "ClientBallotHashS")]
-        public string ClientBallotHashS { get; set; }
 
         [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
         [OpenApiProperty(Description = "DateCreated")]

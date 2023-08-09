@@ -80,7 +80,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         {
             try
             {
-                var ballotHashModel = await _validatorApi.HashBallotAsync(MoqData.MockBallotData[0], null);
+                var ballotHashModel = await _validatorApi.HashBallotAsync(MoqData.MockBallotData[0]);
                 Assert.True(false);
             }
             catch (Exception ex)
@@ -92,33 +92,12 @@ namespace TrueVote.Api.Tests.ServiceTests
         }
 
         [Fact]
-        public async Task HandlesBallotHashMismatch()
-        {
-            try
-            {
-                var ballotHashModel = await _validatorApi.HashBallotAsync(MoqData.MockBallotData[1], new byte[] { 1, 2, 3 });
-                Assert.True(false);
-            }
-            catch (Exception ex)
-            {
-                _output.WriteLine($"{ex}");
-                Assert.NotNull(ex);
-                Assert.Contains("client hash is different from server hash", ex.Message);
-            }
-        }
-
-        [Fact]
         public async Task HashesBallot()
         {
-            var clientHashS = "H0dNEgOfqCraWB2DRp8WrqA914n4mHslKP9dttL9DQM=";
-            var clientHash = Convert.FromBase64String(clientHashS);
-
             try
             {
-                var ballotHashModel = await _validatorApi.HashBallotAsync(MoqData.MockBallotData[2], clientHash);
+                var ballotHashModel = await _validatorApi.HashBallotAsync(MoqData.MockBallotData[2]);
                 Assert.NotNull(ballotHashModel);
-                Assert.Equal(clientHashS, ballotHashModel.ServerBallotHashS);
-                Assert.Equal(clientHash, ballotHashModel.ServerBallotHash);
             }
             catch
             {

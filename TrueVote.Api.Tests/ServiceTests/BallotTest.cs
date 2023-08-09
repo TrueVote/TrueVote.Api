@@ -25,10 +25,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public async Task SubmitsBallot()
         {
-            var clientHashS = "9AEWqbLLzU0RiFZZUrC+2zlEY03cU4lmUxawAZgRjIM=";
-            var clientHash = Convert.FromBase64String(clientHashS);
-
-            var baseBallotObj = new SubmitBallotModel { BallotId = MoqData.MockBallotData[1].BallotId, Election = MoqData.MockBallotData[1].Election, ClientBallotHash = clientHash };
+            var baseBallotObj = new SubmitBallotModel { Election = MoqData.MockBallotData[1].Election };
             var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(baseBallotObj));
             _httpContext.Request.Body = new MemoryStream(byteArray);
 

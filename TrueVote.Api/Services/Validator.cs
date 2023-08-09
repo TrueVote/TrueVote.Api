@@ -23,7 +23,7 @@ namespace TrueVote.Api.Services
             _openTimestampsClient = openTimestampsClient;
         }
 
-        public async Task<BallotHashModel> HashBallotAsync(BallotModel ballot, byte[] ClientBallotHash)
+        public async Task<BallotHashModel> HashBallotAsync(BallotModel ballot)
         {
             // Determine if this ballot hash record already exists
             var items = _trueVoteDbContext.BallotHashes.Where(e => e.BallotId == ballot.BallotId).ToList();
@@ -40,26 +40,11 @@ namespace TrueVote.Api.Services
             var serverBallotHash = MerkleTree.GetHash(ballot);
             var serverBallotHashS = (string) JToken.Parse(Utf8Json.JsonSerializer.ToJsonString(serverBallotHash));
 
-            // Convert the passed in hash from the client to a string
-            var clientBallotHashS = (string) JToken.Parse(Utf8Json.JsonSerializer.ToJsonString(ClientBallotHash));
-
-            // Check the server hash against the client hash. They must be the same.
-            if (!serverBallotHash.SequenceEqual(ClientBallotHash) || serverBallotHashS != clientBallotHashS)
-            {
-                // TODO Localize msg
-                var msg = $"Ballot: {ballot.BallotId} client hash is different from server hash";
-
-                LogError(msg);
-                throw new Exception(msg);
-            }
-
             // Store the BallotHash record in a model
             var ballotHashModel = new BallotHashModel
             {
                 ServerBallotHash = serverBallotHash,
                 ServerBallotHashS = serverBallotHashS,
-                ClientBallotHash = ClientBallotHash,
-                ClientBallotHashS = clientBallotHashS,
                 BallotId = ballot.BallotId
             };
 
