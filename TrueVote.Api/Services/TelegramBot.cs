@@ -32,10 +32,10 @@ namespace TrueVote.Api.Services
 
         public override void Configure(IFunctionsHostBuilder builder)
         {
-            Init();
+            // Init();
         }
 
-        private async void Init()
+        private async Task Init()
         {
             if (botClient != null) // In case the function is called again, if it's initialized, don't do it again
                 return;

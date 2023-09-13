@@ -5,8 +5,8 @@ using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.Azure.Functions.Worker;
+using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -29,7 +29,7 @@ namespace TrueVote.Api.Services
             _telegramBot = telegramBot;
         }
 
-        [FunctionName(nameof(CreateElection))]
+        [Function(nameof(CreateElection))]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [OpenApiOperation(operationId: "CreateElection", tags: new[] { "Election" })]
@@ -43,7 +43,7 @@ namespace TrueVote.Api.Services
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.TooManyRequests, contentType: "application/json", bodyType: typeof(SecureString), Description = "Too Many Requests")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.UnsupportedMediaType, contentType: "application/json", bodyType: typeof(SecureString), Description = "Unsupported Media Type")]
         public async Task<IActionResult> CreateElection(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "election")] HttpRequest req)
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "election")] HttpRequestData req)
         {
             LogDebug("HTTP trigger - CreateElection:Begin");
 
@@ -77,7 +77,7 @@ namespace TrueVote.Api.Services
             return new CreatedResult(string.Empty, election);
         }
 
-        [FunctionName(nameof(ElectionFind))]
+        [Function(nameof(ElectionFind))]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [OpenApiOperation(operationId: "ElectionFind", tags: new[] { "Election" })]
@@ -90,7 +90,7 @@ namespace TrueVote.Api.Services
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.NotAcceptable, contentType: "application/json", bodyType: typeof(SecureString), Description = "Not Acceptable")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.TooManyRequests, contentType: "application/json", bodyType: typeof(SecureString), Description = "Too Many Requests")]
         public async Task<IActionResult> ElectionFind(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "election/find")] HttpRequest req)
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "election/find")] HttpRequestData req)
         {
             LogDebug("HTTP trigger - ElectionFind:Begin");
 
@@ -120,7 +120,7 @@ namespace TrueVote.Api.Services
             return items.Count == 0 ? new NotFoundResult() : new OkObjectResult(items);
         }
 
-        [FunctionName(nameof(AddRaces))]
+        [Function(nameof(AddRaces))]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [OpenApiOperation(operationId: "AddRaces", tags: new[] { "Election" })]
@@ -134,7 +134,7 @@ namespace TrueVote.Api.Services
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.TooManyRequests, contentType: "application/json", bodyType: typeof(SecureString), Description = "Too Many Requests")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.UnsupportedMediaType, contentType: "application/json", bodyType: typeof(SecureString), Description = "Unsupported Media Type")]
         public async Task<IActionResult> AddRaces(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "election/addraces")] HttpRequest req)
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "election/addraces")] HttpRequestData req)
         {
             LogDebug("HTTP trigger - AddRaces:Begin");
 

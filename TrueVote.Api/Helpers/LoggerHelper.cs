@@ -26,9 +26,9 @@ namespace TrueVote.Api.Helpers
             _log.LogWarning(message);
         }
 
-        public async void LogError(string message)
+        public void LogError(string message)
         {
-            await _telegramBot.SendChannelMessageAsync($"TrueVote API Error: {message}");
+            _ = _telegramBot.SendChannelMessageAsync($"TrueVote API Error: {message}");
 
             _log.LogError(message);
         }

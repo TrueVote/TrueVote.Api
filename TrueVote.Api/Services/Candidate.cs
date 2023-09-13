@@ -5,8 +5,8 @@ using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.Azure.Functions.Worker;
+using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -29,7 +29,7 @@ namespace TrueVote.Api.Services
             _telegramBot = telegramBot;
         }
 
-        [FunctionName(nameof(CreateCandidate))]
+        [Function(nameof(CreateCandidate))]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [OpenApiOperation(operationId: "CreateCandidate", tags: new[] { "Candidate" })]
@@ -43,7 +43,7 @@ namespace TrueVote.Api.Services
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.TooManyRequests, contentType: "application/json", bodyType: typeof(SecureString), Description = "Too Many Requests")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.UnsupportedMediaType, contentType: "application/json", bodyType: typeof(SecureString), Description = "Unsupported Media Type")]
         public async Task<IActionResult> CreateCandidate(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "candidate")] HttpRequest req)
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "candidate")] HttpRequestData req)
         {
             LogDebug("HTTP trigger - CreateCandidate:Begin");
 
@@ -77,7 +77,7 @@ namespace TrueVote.Api.Services
             return new CreatedResult(string.Empty, candidate);
         }
 
-        [FunctionName(nameof(CandidateFind))]
+        [Function(nameof(CandidateFind))]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [OpenApiOperation(operationId: "CandidateFind", tags: new[] { "Candidate" })]
@@ -90,7 +90,7 @@ namespace TrueVote.Api.Services
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.NotAcceptable, contentType: "application/json", bodyType: typeof(SecureString), Description = "Not Acceptable")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.TooManyRequests, contentType: "application/json", bodyType: typeof(SecureString), Description = "Too Many Requests")]
         public async Task<IActionResult> CandidateFind(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "candidate/find")] HttpRequest req)
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "candidate/find")] HttpRequestData req)
         {
             LogDebug("HTTP trigger - CandidateFind:Begin");
 

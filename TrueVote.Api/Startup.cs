@@ -1,12 +1,12 @@
-using HotChocolate.Types;
-using HotChocolate;
 using HotChocolate.Types.Descriptors;
+using HotChocolate.Types;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Abstractions;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Configurations;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
@@ -24,7 +24,6 @@ using TrueVote.Api.Models;
 using TrueVote.Api.Services;
 using TrueVote.Api.Helpers;
 
-[assembly: FunctionsStartup(typeof(TrueVote.Api.Startup))]
 namespace TrueVote.Api
 {
     // Modeled from here: https://github.com/Azure/azure-functions-openapi-extension/blob/main/docs/openapi-core.md#openapi-metadata-configuration
@@ -164,30 +163,35 @@ namespace TrueVote.Api
     }
 
     [ExcludeFromCodeCoverage]
-    public class Startup : FunctionsStartup
+    public class Startup
     {
-        public override void Configure(IFunctionsHostBuilder builder)
+        public static void Main()
         {
-            builder.Services.AddDbContext<ITrueVoteDbContext, TrueVoteDbContext>();
-            builder.Services.TryAddScoped<IFileSystem, FileSystem>();
-            builder.Services.TryAddSingleton<ILoggerFactory, LoggerFactory>();
-            // TODO Create ITelegramBot. Will make it easier to Mock it for testing
-            builder.Services.TryAddSingleton<TelegramBot, TelegramBot>();
-            builder.Services.TryAddScoped<Query, Query>();
-
-            builder.Services.TryAddSingleton<INamingConventions, TrueVoteNamingConventions>();
-            builder.AddGraphQLFunction().AddQueryType<Query>();
-
-            // Additional classes for dependency injection
-            builder.Services.TryAddSingleton(new Uri("https://a.pool.opentimestamps.org")); // TODO Need to pull the Timestamp URL from Config. Also, TrueVote needs to stand up its own Timestamp servers.
-            builder.Services.AddHttpClient<IOpenTimestampsClient, OpenTimestampsClient>().ConfigureHttpClient((provider, client) => 
+            var host = new HostBuilder().ConfigureFunctionsWorkerDefaults().ConfigureServices(s =>
             {
-                var uri = provider.GetRequiredService<Uri>();
-                client.BaseAddress = uri;
-            });
-            builder.Services.TryAddScoped<IValidator, Validator>();
+                s.AddDbContext<ITrueVoteDbContext, TrueVoteDbContext>();
+                s.TryAddScoped<IFileSystem, FileSystem>();
+                s.TryAddSingleton<ILoggerFactory, LoggerFactory>();
+                // TODO Create ITelegramBot. Will make it easier to Mock it for testing
+                s.TryAddSingleton<TelegramBot, TelegramBot>();
+                s.TryAddScoped<Query, Query>();
 
-            ConfigureServices(builder.Services).BuildServiceProvider(true);
+                s.TryAddSingleton<INamingConventions, TrueVoteNamingConventions>();
+                s.AddGraphQLFunction().AddQueryType<Query>();
+
+                // Additional classes for dependency injection
+                s.TryAddSingleton(new Uri("https://a.pool.opentimestamps.org")); // TODO Need to pull the Timestamp URL from Config. Also, TrueVote needs to stand up its own Timestamp servers.
+                s.AddHttpClient<IOpenTimestampsClient, OpenTimestampsClient>().ConfigureHttpClient((provider, client) =>
+                {
+                    var uri = provider.GetRequiredService<Uri>();
+                    client.BaseAddress = uri;
+                });
+                s.TryAddScoped<IValidator, Validator>();
+
+                ConfigureServices(s).BuildServiceProvider(true);
+            }).Build();
+
+            host.Run();
         }
 
         private static IServiceCollection ConfigureServices(IServiceCollection services)
