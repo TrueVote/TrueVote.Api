@@ -1,12 +1,10 @@
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Timers;
 using Microsoft.Extensions.Logging;
 using Moq;
-using NCrontab;
 using TrueVote.Api.Services;
 using TrueVote.Api.Tests.Helpers;
 using Xunit;
 using Xunit.Abstractions;
+using Microsoft.Azure.Functions.Worker;
 
 namespace TrueVote.Api.Tests.ServiceTests
 {
@@ -21,10 +19,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         {
             var health = new Health(_logHelper.Object, _mockTelegram.Object);
 
-            var cronSchedule = new CronSchedule(CrontabSchedule.Parse("*/5 * * * *"));
-
-            var status = new ScheduleStatus();
-            var timerInfo = new TimerInfo(cronSchedule, status);
+            var timerInfo = new TimerInfo();
 
             health.Run(timerInfo);
 

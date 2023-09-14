@@ -4,9 +4,7 @@ using Moq;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Net;
-using System.Text;
 using System.Threading.Tasks;
 using TrueVote.Api.Models;
 using TrueVote.Api.Services;
@@ -26,10 +24,9 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task SubmitsBallot()
         {
             var baseBallotObj = new SubmitBallotModel { Election = MoqData.MockBallotData[1].Election };
-            var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(baseBallotObj));
-            _httpContext.Request.Body = new MemoryStream(byteArray);
+            var requestData = new MockHttpRequestData(JsonConvert.SerializeObject(baseBallotObj));
 
-            var ret = await _ballotApi.SubmitBallot(_httpContext.Request) as CreatedResult;
+            var ret = await _ballotApi.SubmitBallot(requestData) as CreatedResult;
             Assert.NotNull(ret);
             var objectResult = Assert.IsType<CreatedResult>(ret);
             Assert.Equal((int) HttpStatusCode.Created, objectResult.StatusCode);
@@ -53,10 +50,9 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task HandlesSubmitBallotError()
         {
             var baseBallotObj = "blah";
-            var byteArray = Encoding.ASCII.GetBytes(baseBallotObj);
-            _httpContext.Request.Body = new MemoryStream(byteArray);
+            var requestData = new MockHttpRequestData(baseBallotObj);
 
-            var ret = await _ballotApi.SubmitBallot(_httpContext.Request);
+            var ret = await _ballotApi.SubmitBallot(requestData);
             Assert.NotNull(ret);
             var objectResult = Assert.IsType<BadRequestObjectResult>(ret);
             Assert.Equal((int) HttpStatusCode.BadRequest, objectResult.StatusCode);
@@ -69,14 +65,13 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task HandlesSubmitBallotHashingError()
         {
             var baseBallotObj = new SubmitBallotModel { Election = MoqData.MockBallotData[1].Election };
-            var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(baseBallotObj));
-            _httpContext.Request.Body = new MemoryStream(byteArray);
+            var requestData = new MockHttpRequestData(JsonConvert.SerializeObject(baseBallotObj));
 
             var mockValidator = new Mock<IValidator>();
             mockValidator.Setup(m => m.HashBallotAsync(It.IsAny<BallotModel>())).Throws(new Exception("Hash Ballot Exception"));
 
             var ballotApi = new Ballot(_logHelper.Object, _moqDataAccessor.mockBallotContext.Object, _mockTelegram.Object, mockValidator.Object);
-            var ret = await ballotApi.SubmitBallot(_httpContext.Request) as ConflictObjectResult;
+            var ret = await ballotApi.SubmitBallot(requestData) as ConflictObjectResult;
             Assert.NotNull(ret);
             var objectResult = Assert.IsType<ConflictObjectResult>(ret);
             Assert.Equal((int) HttpStatusCode.Conflict, objectResult.StatusCode);
@@ -94,10 +89,9 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task HandlesFindBallotError()
         {
             var findBallotObj = "blah";
-            var byteArray = Encoding.ASCII.GetBytes(findBallotObj);
-            _httpContext.Request.Body = new MemoryStream(byteArray);
+            var requestData = new MockHttpRequestData(findBallotObj);
 
-            var ret = await _ballotApi.BallotFind(_httpContext.Request);
+            var ret = await _ballotApi.BallotFind(requestData);
             Assert.NotNull(ret);
             var objectResult = Assert.IsType<BadRequestObjectResult>(ret);
             Assert.Equal((int) HttpStatusCode.BadRequest, objectResult.StatusCode);
@@ -110,12 +104,11 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task FindsBallot()
         {
             var findBallotObj = new FindBallotModel { BallotId = "ballotid3" };
-            var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(findBallotObj));
-            _httpContext.Request.Body = new MemoryStream(byteArray);
+            var requestData = new MockHttpRequestData(JsonConvert.SerializeObject(findBallotObj));
 
             var ballotApi = new Ballot(_logHelper.Object, _moqDataAccessor.mockBallotContext.Object, _mockTelegram.Object, _validatorApi);
 
-            var ret = await ballotApi.BallotFind(_httpContext.Request);
+            var ret = await ballotApi.BallotFind(requestData);
             Assert.NotNull(ret);
             var objectResult = Assert.IsType<OkObjectResult>(ret);
             Assert.Equal((int) HttpStatusCode.OK, objectResult.StatusCode);
@@ -133,12 +126,11 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task HandlesUnfoundBallot()
         {
             var findBallotObj = new FindBallotModel { BallotId = "not going to find anything" };
-            var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(findBallotObj));
-            _httpContext.Request.Body = new MemoryStream(byteArray);
+            var requestData = new MockHttpRequestData(JsonConvert.SerializeObject(findBallotObj));
 
             var ballotApi = new Ballot(_logHelper.Object, _moqDataAccessor.mockBallotContext.Object, _mockTelegram.Object, _validatorApi);
 
-            var ret = await ballotApi.BallotFind(_httpContext.Request);
+            var ret = await ballotApi.BallotFind(requestData);
             Assert.NotNull(ret);
             var objectResult = Assert.IsType<NotFoundResult>(ret);
             Assert.Equal((int) HttpStatusCode.NotFound, objectResult.StatusCode);
@@ -151,12 +143,11 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task CountsBallots()
         {
             var countBallotsObj = new CountBallotModel { DateCreatedStart = new DateTime(2022, 01, 01), DateCreatedEnd = new DateTime(2033, 12, 31) };
-            var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(countBallotsObj));
-            _httpContext.Request.Body = new MemoryStream(byteArray);
+            var requestData = new MockHttpRequestData(JsonConvert.SerializeObject(countBallotsObj));
 
             var ballotApi = new Ballot(_logHelper.Object, _moqDataAccessor.mockBallotContext.Object, _mockTelegram.Object, _validatorApi);
 
-            var ret = await ballotApi.BallotCount(_httpContext.Request);
+            var ret = await ballotApi.BallotCount(requestData);
             Assert.NotNull(ret);
             var objectResult = Assert.IsType<OkObjectResult>(ret);
             Assert.Equal((int) HttpStatusCode.OK, objectResult.StatusCode);
@@ -172,10 +163,9 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task HandlesCountBallotsError()
         {
             var countBallotsObj = "blah";
-            var byteArray = Encoding.ASCII.GetBytes(countBallotsObj);
-            _httpContext.Request.Body = new MemoryStream(byteArray);
+            var requestData = new MockHttpRequestData(countBallotsObj);
 
-            var ret = await _ballotApi.BallotCount(_httpContext.Request);
+            var ret = await _ballotApi.BallotCount(requestData);
             Assert.NotNull(ret);
             var objectResult = Assert.IsType<BadRequestObjectResult>(ret);
             Assert.Equal((int) HttpStatusCode.BadRequest, objectResult.StatusCode);
@@ -188,10 +178,9 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task FindsBallotHash()
         {
             var findBallotHashObj = new FindBallotHashModel { BallotId = "ballotid1" };
-            var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(findBallotHashObj));
-            _httpContext.Request.Body = new MemoryStream(byteArray);
+            var requestData = new MockHttpRequestData(JsonConvert.SerializeObject(findBallotHashObj));
 
-            var ret = await _ballotApi.BallotHashFind(_httpContext.Request);
+            var ret = await _ballotApi.BallotHashFind(requestData);
             Assert.NotNull(ret);
             var objectResult = Assert.IsType<OkObjectResult>(ret);
             Assert.Equal((int) HttpStatusCode.OK, objectResult.StatusCode);
@@ -208,10 +197,9 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task HandlesFindBallotHashError()
         {
             var findBallotHashObj = "blah";
-            var byteArray = Encoding.ASCII.GetBytes(findBallotHashObj);
-            _httpContext.Request.Body = new MemoryStream(byteArray);
+            var requestData = new MockHttpRequestData(findBallotHashObj);
 
-            var ret = await _ballotApi.BallotHashFind(_httpContext.Request);
+            var ret = await _ballotApi.BallotHashFind(requestData);
             Assert.NotNull(ret);
             var objectResult = Assert.IsType<BadRequestObjectResult>(ret);
             Assert.Equal((int) HttpStatusCode.BadRequest, objectResult.StatusCode);
@@ -224,10 +212,9 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task HandlesUnfoundBallotHash()
         {
             var findBallotHashObj = new FindBallotHashModel { BallotId = "not going to find anything" };
-            var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(findBallotHashObj));
-            _httpContext.Request.Body = new MemoryStream(byteArray);
+            var requestData = new MockHttpRequestData(JsonConvert.SerializeObject(findBallotHashObj));
 
-            var ret = await _ballotApi.BallotHashFind(_httpContext.Request);
+            var ret = await _ballotApi.BallotHashFind(requestData);
             Assert.NotNull(ret);
             var objectResult = Assert.IsType<NotFoundResult>(ret);
             Assert.Equal((int) HttpStatusCode.NotFound, objectResult.StatusCode);

@@ -16,7 +16,7 @@ namespace TrueVote.Api.Services
     {
         private readonly IGraphQLRequestExecutor _graphqlExecutor;
 
-        public GraphQLExecutor(ILogger log, TelegramBot telegramBot, IGraphQLRequestExecutor executor) : base(log, telegramBot)
+        public GraphQLExecutor(ILogger log, TelegramBot telegramBot, [GraphQL] IGraphQLRequestExecutor executor) : base(log, telegramBot)
         {
             _graphqlExecutor = executor;
         }

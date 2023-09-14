@@ -1,5 +1,5 @@
-using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
+using Microsoft.Azure.Functions.Worker;
 using System;
 using TrueVote.Api.Helpers;
 
@@ -11,10 +11,10 @@ namespace TrueVote.Api.Services
         {
         }
 
-        [FunctionName("HealthTimer")]
+        [Function("HealthTimer")]
         public void Run([TimerTrigger("*/5 * * * *")] TimerInfo timerInfo)
         {
-            LogInformation($"HealthTimer trigger function {timerInfo.Schedule} executed at: {DateTime.Now.ToUniversalTime():dddd, MMM dd, yyyy HH:mm:ss}");
+            LogInformation($"HealthTimer trigger function {timerInfo.ScheduleStatus} executed at: {DateTime.Now.ToUniversalTime():dddd, MMM dd, yyyy HH:mm:ss}");
         }
     }
 }

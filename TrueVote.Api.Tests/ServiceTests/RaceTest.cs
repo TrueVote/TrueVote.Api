@@ -4,10 +4,8 @@ using Moq;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Net;
-using System.Text;
 using System.Threading.Tasks;
 using TrueVote.Api.Models;
 using TrueVote.Api.Services;
@@ -41,10 +39,9 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task LogsMessages()
         {
             var baseRaceObj = new BaseRaceModel { Name = "President", RaceType = RaceTypes.ChooseOne };
-            var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(baseRaceObj));
-            _httpContext.Request.Body = new MemoryStream(byteArray);
+            var requestData = new MockHttpRequestData(JsonConvert.SerializeObject(baseRaceObj));
 
-            _ = await _raceApi.CreateRace(_httpContext.Request);
+            _ = await _raceApi.CreateRace(requestData);
 
             _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
@@ -54,10 +51,9 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task AddsRace()
         {
             var baseRaceObj = new BaseRaceModel { Name = "President", RaceType = RaceTypes.ChooseOne };
-            var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(baseRaceObj));
-            _httpContext.Request.Body = new MemoryStream(byteArray);
+            var requestData = new MockHttpRequestData(JsonConvert.SerializeObject(baseRaceObj));
 
-            var ret = await _raceApi.CreateRace(_httpContext.Request) as CreatedResult;
+            var ret = await _raceApi.CreateRace(requestData) as CreatedResult;
             Assert.NotNull(ret);
             var objectResult = Assert.IsType<CreatedResult>(ret);
             Assert.Equal((int) HttpStatusCode.Created, objectResult.StatusCode);
@@ -87,10 +83,9 @@ namespace TrueVote.Api.Tests.ServiceTests
         {
             // This object is missing required property (RaceType)
             var fakeBaseRaceObj = new FakeBaseRaceModel { Name = "President" };
-            var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(fakeBaseRaceObj));
-            _httpContext.Request.Body = new MemoryStream(byteArray);
+            var requestData = new MockHttpRequestData(JsonConvert.SerializeObject(fakeBaseRaceObj));
 
-            var ret = await _raceApi.CreateRace(_httpContext.Request);
+            var ret = await _raceApi.CreateRace(requestData);
             Assert.NotNull(ret);
             var objectResult = Assert.IsType<BadRequestObjectResult>(ret);
             Assert.Equal((int) HttpStatusCode.BadRequest, objectResult.StatusCode);
@@ -112,12 +107,11 @@ namespace TrueVote.Api.Tests.ServiceTests
             mockRaceContext.Setup(m => m.Races).Returns(mockRaceSet.Object);
 
             var findRaceObj = new FindRaceModel { Name = "President" };
-            var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(findRaceObj));
-            _httpContext.Request.Body = new MemoryStream(byteArray);
+            var requestData = new MockHttpRequestData(JsonConvert.SerializeObject(findRaceObj));
 
             var raceApi = new Race(_logHelper.Object, mockRaceContext.Object, _mockTelegram.Object);
 
-            var ret = await raceApi.RaceFind(_httpContext.Request);
+            var ret = await raceApi.RaceFind(requestData);
             Assert.NotNull(ret);
             var objectResult = Assert.IsType<OkObjectResult>(ret);
             Assert.Equal((int) HttpStatusCode.OK, objectResult.StatusCode);
@@ -137,12 +131,11 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task HandlesUnfoundRace()
         {
             var findRaceObj = new FindRaceModel { Name = "not going to find anything" };
-            var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(findRaceObj));
-            _httpContext.Request.Body = new MemoryStream(byteArray);
+            var requestData = new MockHttpRequestData(JsonConvert.SerializeObject(findRaceObj));
 
             var raceApi = new Race(_logHelper.Object, _moqDataAccessor.mockRaceContext.Object, _mockTelegram.Object);
 
-            var ret = await raceApi.RaceFind(_httpContext.Request);
+            var ret = await raceApi.RaceFind(requestData);
             Assert.NotNull(ret);
             var objectResult = Assert.IsType<NotFoundResult>(ret);
             Assert.Equal((int) HttpStatusCode.NotFound, objectResult.StatusCode);
@@ -155,10 +148,9 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task HandlesFindRaceError()
         {
             var findRaceObj = "blah";
-            var byteArray = Encoding.ASCII.GetBytes(findRaceObj);
-            _httpContext.Request.Body = new MemoryStream(byteArray);
+            var requestData = new MockHttpRequestData(findRaceObj);
 
-            var ret = await _raceApi.RaceFind(_httpContext.Request);
+            var ret = await _raceApi.RaceFind(requestData);
             Assert.NotNull(ret);
             var objectResult = Assert.IsType<BadRequestObjectResult>(ret);
             Assert.Equal((int) HttpStatusCode.BadRequest, objectResult.StatusCode);
@@ -183,12 +175,11 @@ namespace TrueVote.Api.Tests.ServiceTests
             mockRaceContext.Setup(m => m.Candidates).Returns(mockCandidatesSet.Object);
 
             var addCandidatesObj = new AddCandidatesModel { RaceId = "raceid1", CandidateIds = new List<string> { MoqData.MockCandidateData[0].CandidateId, MoqData.MockCandidateData[1].CandidateId } };
-            var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(addCandidatesObj));
-            _httpContext.Request.Body = new MemoryStream(byteArray);
+            var requestData = new MockHttpRequestData(JsonConvert.SerializeObject(addCandidatesObj));
 
             var raceApi = new Race(_logHelper.Object, mockRaceContext.Object, _mockTelegram.Object);
 
-            var ret = await raceApi.AddCandidates(_httpContext.Request);
+            var ret = await raceApi.AddCandidates(requestData);
 
             Assert.NotNull(ret);
             var objectResult = Assert.IsType<CreatedResult>(ret);
@@ -210,10 +201,9 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task HandlesAddCandidatesError()
         {
             var addCandidatesObj = "blah";
-            var byteArray = Encoding.ASCII.GetBytes(addCandidatesObj);
-            _httpContext.Request.Body = new MemoryStream(byteArray);
+            var requestData = new MockHttpRequestData(addCandidatesObj);
 
-            var ret = await _raceApi.AddCandidates(_httpContext.Request);
+            var ret = await _raceApi.AddCandidates(requestData);
             Assert.NotNull(ret);
             var objectResult = Assert.IsType<BadRequestObjectResult>(ret);
             Assert.Equal((int) HttpStatusCode.BadRequest, objectResult.StatusCode);
@@ -233,12 +223,11 @@ namespace TrueVote.Api.Tests.ServiceTests
             mockRaceContext.Setup(m => m.Races).Returns(mockRaceSet.Object);
 
             var addCandidatesObj = new AddCandidatesModel { RaceId = "blah", CandidateIds = new List<string>() { } };
-            var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(addCandidatesObj));
-            _httpContext.Request.Body = new MemoryStream(byteArray);
+            var requestData = new MockHttpRequestData(JsonConvert.SerializeObject(addCandidatesObj));
 
             var raceApi = new Race(_logHelper.Object, mockRaceContext.Object, _mockTelegram.Object);
 
-            var ret = await raceApi.AddCandidates(_httpContext.Request);
+            var ret = await raceApi.AddCandidates(requestData);
             Assert.NotNull(ret);
             var objectResult = Assert.IsType<NotFoundObjectResult>(ret);
             Assert.Equal((int) HttpStatusCode.NotFound, objectResult.StatusCode);
@@ -262,12 +251,11 @@ namespace TrueVote.Api.Tests.ServiceTests
             mockRaceContext.Setup(m => m.Candidates).Returns(mockCandidatesSet.Object);
 
             var addCandidatesObj = new AddCandidatesModel { RaceId = "raceid1", CandidateIds = new List<string> { "68", "69" } };
-            var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(addCandidatesObj));
-            _httpContext.Request.Body = new MemoryStream(byteArray);
+            var requestData = new MockHttpRequestData(JsonConvert.SerializeObject(addCandidatesObj));
 
             var raceApi = new Race(_logHelper.Object, mockRaceContext.Object, _mockTelegram.Object);
 
-            var ret = await raceApi.AddCandidates(_httpContext.Request);
+            var ret = await raceApi.AddCandidates(requestData);
             Assert.NotNull(ret);
             var objectResult = Assert.IsType<NotFoundObjectResult>(ret);
             Assert.Equal((int) HttpStatusCode.NotFound, objectResult.StatusCode);
@@ -292,12 +280,11 @@ namespace TrueVote.Api.Tests.ServiceTests
             mockRaceContext.Setup(m => m.Candidates).Returns(mockCandidatesSet.Object);
 
             var addCandidatesObj = new AddCandidatesModel { RaceId = "raceid1", CandidateIds = new List<string> { "candidateid1", "candidateid2" } };
-            var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(addCandidatesObj));
-            _httpContext.Request.Body = new MemoryStream(byteArray);
+            var requestData = new MockHttpRequestData(JsonConvert.SerializeObject(addCandidatesObj));
 
             var raceApi = new Race(_logHelper.Object, mockRaceContext.Object, _mockTelegram.Object);
 
-            var ret = await raceApi.AddCandidates(_httpContext.Request);
+            var ret = await raceApi.AddCandidates(requestData);
             Assert.NotNull(ret);
             var objectResult = Assert.IsType<ConflictObjectResult>(ret);
             Assert.Equal((int) HttpStatusCode.Conflict, objectResult.StatusCode);

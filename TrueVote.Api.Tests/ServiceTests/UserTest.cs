@@ -4,9 +4,7 @@ using Moq;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Net;
-using System.Text;
 using System.Threading.Tasks;
 using TrueVote.Api.Models;
 using TrueVote.Api.Services;
@@ -32,10 +30,9 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task LogsMessages()
         {
             var baseUserObj = new BaseUserModel { FirstName = "Joe", Email = "joe@joe.com" };
-            var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(baseUserObj));
-            _httpContext.Request.Body = new MemoryStream(byteArray);
+            var requestData = new MockHttpRequestData(JsonConvert.SerializeObject(baseUserObj));
 
-            _ = await _userApi.CreateUser(_httpContext.Request);
+            _ = await _userApi.CreateUser(requestData);
 
             _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
@@ -45,10 +42,9 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task AddsUser()
         {
             var baseUserObj = new BaseUserModel { FirstName = "Joe", Email = "joe@joe.com" };
-            var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(baseUserObj));
-            _httpContext.Request.Body = new MemoryStream(byteArray);
+            var requestData = new MockHttpRequestData(JsonConvert.SerializeObject(baseUserObj));
 
-            var ret = await _userApi.CreateUser(_httpContext.Request) as CreatedResult;
+            var ret = await _userApi.CreateUser(requestData) as CreatedResult;
             Assert.NotNull(ret);
             var objectResult = Assert.IsType<CreatedResult>(ret);
             Assert.Equal((int) HttpStatusCode.Created, objectResult.StatusCode);
@@ -77,10 +73,9 @@ namespace TrueVote.Api.Tests.ServiceTests
         {
             // This object is missing required property (email)
             var fakeBaseUserObj = new FakeBaseUserModel { FirstName = "Joe" };
-            var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(fakeBaseUserObj));
-            _httpContext.Request.Body = new MemoryStream(byteArray);
+            var requestData = new MockHttpRequestData(JsonConvert.SerializeObject(fakeBaseUserObj));
 
-            var ret = await _userApi.CreateUser(_httpContext.Request);
+            var ret = await _userApi.CreateUser(requestData);
             Assert.NotNull(ret);
             var objectResult = Assert.IsType<BadRequestObjectResult>(ret);
             Assert.Equal((int) HttpStatusCode.BadRequest, objectResult.StatusCode);
@@ -94,12 +89,11 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task FindsUser()
         {
             var findUserObj = new FindUserModel { FirstName = "Foo" };
-            var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(findUserObj));
-            _httpContext.Request.Body = new MemoryStream(byteArray);
+            var requestData = new MockHttpRequestData(JsonConvert.SerializeObject(findUserObj));
 
             var userApi = new User(_logHelper.Object, _moqDataAccessor.mockUserContext.Object, _mockTelegram.Object);
 
-            var ret = await userApi.UserFind(_httpContext.Request);
+            var ret = await userApi.UserFind(requestData);
             Assert.NotNull(ret);
             var objectResult = Assert.IsType<OkObjectResult>(ret);
             Assert.Equal((int) HttpStatusCode.OK, objectResult.StatusCode);
@@ -118,12 +112,11 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task HandlesUnfoundUser()
         {
             var findUserObj = new FindUserModel { FirstName = "not going to find anything" };
-            var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(findUserObj));
-            _httpContext.Request.Body = new MemoryStream(byteArray);
+            var requestData = new MockHttpRequestData(JsonConvert.SerializeObject(findUserObj));
 
             var userApi = new User(_logHelper.Object, _moqDataAccessor.mockUserContext.Object, _mockTelegram.Object);
 
-            var ret = await userApi.UserFind(_httpContext.Request);
+            var ret = await userApi.UserFind(requestData);
             Assert.NotNull(ret);
             var objectResult = Assert.IsType<NotFoundResult>(ret);
             Assert.Equal((int) HttpStatusCode.NotFound, objectResult.StatusCode);
@@ -136,10 +129,9 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task HandlesFindUserError()
         {
             var findUserObj = "blah";
-            var byteArray = Encoding.ASCII.GetBytes(findUserObj);
-            _httpContext.Request.Body = new MemoryStream(byteArray);
+            var requestData = new MockHttpRequestData(findUserObj);
 
-            var ret = await _userApi.UserFind(_httpContext.Request);
+            var ret = await _userApi.UserFind(requestData);
             Assert.NotNull(ret);
             var objectResult = Assert.IsType<BadRequestObjectResult>(ret);
             Assert.Equal((int) HttpStatusCode.BadRequest, objectResult.StatusCode);
