@@ -6,12 +6,14 @@ using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Threading.Tasks;
 using TrueVote.Api.Helpers;
 
 namespace TrueVote.Api.Services
 {
+    [ExcludeFromCodeCoverage]
     public class GraphQLExecutor : LoggerHelper
     {
         private readonly IGraphQLRequestExecutor _graphqlExecutor;
