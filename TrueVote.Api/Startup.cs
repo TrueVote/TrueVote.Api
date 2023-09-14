@@ -59,6 +59,12 @@ namespace TrueVote.Api
         public bool ForceHttp { get; set; } = false;
         public bool ForceHttps { get; set; } = false;
         public List<IDocumentFilter> DocumentFilters { get; set; } = new List<IDocumentFilter>();
+        public bool ExcludeRequestingHost { get; set; } = false;
+        public IOpenApiHttpTriggerAuthorization Security { get; set; } = new OpenApiHttpTriggerAuthorization(req =>
+        {
+            var result = default(OpenApiAuthorizationResult);
+            return Task.FromResult(result);
+        });
     }
 
     [ExcludeFromCodeCoverage]
