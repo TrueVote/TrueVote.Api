@@ -41,7 +41,7 @@ namespace TrueVote.Api.Services
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.NotFound, contentType: "application/json", bodyType: typeof(SecureString), Description = "Not Found")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.NotAcceptable, contentType: "application/json", bodyType: typeof(SecureString), Description = "Not Acceptable")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.TooManyRequests, contentType: "application/json", bodyType: typeof(SecureString), Description = "Too Many Requests")]
-        public async Task<IActionResult> TimestampFind(
+        public async Task<HttpResponseData> TimestampFind(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "timestamp/find")] HttpRequestData req)
         {
             LogDebug("HTTP trigger - TimestampFind:Begin");
@@ -57,7 +57,7 @@ namespace TrueVote.Api.Services
                 LogError("findTimestamp: invalid format");
                 LogDebug("HTTP trigger - TimestampFind:End");
 
-                return new BadRequestObjectResult(e.Message);
+                return await req.CreateBadRequestJsonResponseAsync(e.Message);
             }
 
             LogInformation($"Request Data: {findTimestamp}");
@@ -68,7 +68,7 @@ namespace TrueVote.Api.Services
 
             LogDebug("HTTP trigger - TimestampFind:End");
 
-            return items.Count == 0 ? new NotFoundResult() : new OkObjectResult(items);
+            return items.Count == 0 ? req.CreateNotFoundResponse() : await req.CreateOkJsonResponseAsync(items);
         }
     }
 }

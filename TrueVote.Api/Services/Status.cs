@@ -52,7 +52,7 @@ namespace TrueVote.Api.Services
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.NotFound, contentType: "application/json", bodyType: typeof(SecureString), Description = "Not Found")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.NotAcceptable, contentType: "application/json", bodyType: typeof(SecureString), Description = "Not Acceptable")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.TooManyRequests, contentType: "application/json", bodyType: typeof(SecureString), Description = "Too Many Requests")]
-        public async Task<IActionResult> GetStatus(
+        public async Task<HttpResponseData> GetStatus(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "status")] HttpRequestData req)
         {
             LogDebug("HTTP trigger - GetStatus:Begin");
@@ -106,7 +106,7 @@ namespace TrueVote.Api.Services
 
             LogDebug("HTTP trigger - GetStatus:End");
 
-            return new OkObjectResult(status);
+            return await req.CreateOkJsonResponseAsync(status);
         }
 
         private string GetBuildInfo()

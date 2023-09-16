@@ -32,7 +32,7 @@ namespace TrueVote.Api.Services
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.NotFound, contentType: "application/json", bodyType: typeof(SecureString), Description = "Not Found")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.NotAcceptable, contentType: "application/json", bodyType: typeof(SecureString), Description = "Not Acceptable")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.TooManyRequests, contentType: "application/json", bodyType: typeof(SecureString), Description = "Too Many Requests")]
-        public async Task<IActionResult> ThrowError500(
+        public async Task<HttpResponseData> ThrowError500(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "error500")] HttpRequestData req)
         {
             LogDebug("HTTP trigger - ThrowError500:Begin");
@@ -51,7 +51,7 @@ namespace TrueVote.Api.Services
 
             LogDebug("HTTP trigger - ThrowError500:End");
 
-            return new OkResult();
+            return req.CreateOkResponse();
         }
     }
 }

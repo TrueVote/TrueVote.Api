@@ -46,7 +46,7 @@ namespace TrueVote.Api.Services
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.TooManyRequests, contentType: "application/json", bodyType: typeof(SecureString), Description = "Too Many Requests")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.UnsupportedMediaType, contentType: "application/json", bodyType: typeof(SecureString), Description = "Unsupported Media Type")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.Conflict, contentType: "application/json", bodyType: typeof(SecureString), Description = "Conflict with input model")]
-        public async Task<IActionResult> SubmitBallot(
+        public async Task<HttpResponseData> SubmitBallot(
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "ballot/submitballot")] HttpRequestData req) {
             LogDebug("HTTP trigger - SubmitBallot:Begin");
 
@@ -59,7 +59,7 @@ namespace TrueVote.Api.Services
                 LogError("bindSubmitBallotModel: invalid format");
                 LogDebug("HTTP trigger - SubmitBallot:End");
 
-                return new BadRequestObjectResult(e.Message);
+                return await req.CreateBadRequestJsonResponseAsync(e.Message);
             }
 
             LogInformation($"Request Data: {bindSubmitBallotModel}");
@@ -99,13 +99,13 @@ namespace TrueVote.Api.Services
 
                 submitBallotResponse.Message += " - " + e.Message;
 
-                return new ConflictObjectResult(submitBallotResponse);
+                return await req.CreateConflictResponseAsync(submitBallotResponse);
             }
 
             LogDebug("HTTP trigger - SubmitBallot:End");
 
             // TODO Return a Ballot Submitted model response with critical key data to bind ballot / user
-            return new CreatedResult(string.Empty, submitBallotResponse);
+            return await req.CreateCreatedJsonResponseAsync(submitBallotResponse);
         }
 
         [Function(nameof(BallotFind))]
@@ -120,7 +120,7 @@ namespace TrueVote.Api.Services
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.NotFound, contentType: "application/json", bodyType: typeof(SecureString), Description = "Not Found")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.NotAcceptable, contentType: "application/json", bodyType: typeof(SecureString), Description = "Not Acceptable")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.TooManyRequests, contentType: "application/json", bodyType: typeof(SecureString), Description = "Too Many Requests")]
-        public async Task<IActionResult> BallotFind(
+        public async Task<HttpResponseData> BallotFind(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "ballot/find")] HttpRequestData req)
         {
             LogDebug("HTTP trigger - BallotFind:Begin");
@@ -136,7 +136,7 @@ namespace TrueVote.Api.Services
                 LogError("findBallot: invalid format");
                 LogDebug("HTTP trigger - BallotFind:End");
 
-                return new BadRequestObjectResult(e.Message);
+                return await req.CreateBadRequestJsonResponseAsync(e.Message);
             }
 
             LogInformation($"Request Data: {findBallot}");
@@ -155,7 +155,7 @@ namespace TrueVote.Api.Services
 
             LogDebug("HTTP trigger - BallotFind:End");
 
-            return items.Ballots.Count == 0 ? new NotFoundResult() : new OkObjectResult(items);
+            return items.Ballots.Count == 0 ? req.CreateNotFoundResponse() : await req.CreateOkJsonResponseAsync(items);
         }
 
         [Function(nameof(BallotCount))]
@@ -168,7 +168,7 @@ namespace TrueVote.Api.Services
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.Unauthorized, contentType: "application/json", bodyType: typeof(SecureString), Description = "Unauthorized")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.NotAcceptable, contentType: "application/json", bodyType: typeof(SecureString), Description = "Not Acceptable")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.TooManyRequests, contentType: "application/json", bodyType: typeof(SecureString), Description = "Too Many Requests")]
-        public async Task<IActionResult> BallotCount(
+        public async Task<HttpResponseData> BallotCount(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "ballot/count")] HttpRequestData req)
         {
             LogDebug("HTTP trigger - BallotCount:Begin");
@@ -184,7 +184,7 @@ namespace TrueVote.Api.Services
                 LogError("ballotCount: invalid format");
                 LogDebug("HTTP trigger - BallotCount:End");
 
-                return new BadRequestObjectResult(e.Message);
+                return await req.CreateBadRequestJsonResponseAsync(e.Message);
             }
 
             LogInformation($"Request Data: {countBallot}");
@@ -195,7 +195,7 @@ namespace TrueVote.Api.Services
 
             LogDebug("HTTP trigger - BallotFind:End");
 
-            return new OkObjectResult(items.Count);
+            return await req.CreateOkJsonResponseAsync(items.Count);
         }
 
         [Function(nameof(BallotHashFind))]
@@ -210,7 +210,7 @@ namespace TrueVote.Api.Services
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.NotFound, contentType: "application/json", bodyType: typeof(SecureString), Description = "Not Found")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.NotAcceptable, contentType: "application/json", bodyType: typeof(SecureString), Description = "Not Acceptable")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.TooManyRequests, contentType: "application/json", bodyType: typeof(SecureString), Description = "Too Many Requests")]
-        public async Task<IActionResult> BallotHashFind(
+        public async Task<HttpResponseData> BallotHashFind(
                     [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "ballot/findhash")] HttpRequestData req)
         {
             LogDebug("HTTP trigger - BallotHashFind:Begin");
@@ -226,7 +226,7 @@ namespace TrueVote.Api.Services
                 LogError("findBallotHash: invalid format");
                 LogDebug("HTTP trigger - BallotHashFind:End");
 
-                return new BadRequestObjectResult(e.Message);
+                return await req.CreateBadRequestJsonResponseAsync(e.Message);
             }
 
             LogInformation($"Request Data: {findBallotHash}");
@@ -238,7 +238,7 @@ namespace TrueVote.Api.Services
 
             LogDebug("HTTP trigger - BallotHashFind:End");
 
-            return items.Count == 0 ? new NotFoundResult() : new OkObjectResult(items);
+            return items.Count == 0 ? req.CreateNotFoundResponse() : await req.CreateOkJsonResponseAsync(items);
         }
     }
 }

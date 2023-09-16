@@ -42,7 +42,7 @@ namespace TrueVote.Api.Services
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.NotAcceptable, contentType: "application/json", bodyType: typeof(SecureString), Description = "Not Acceptable")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.TooManyRequests, contentType: "application/json", bodyType: typeof(SecureString), Description = "Too Many Requests")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.UnsupportedMediaType, contentType: "application/json", bodyType: typeof(SecureString), Description = "Unsupported Media Type")]
-        public async Task<IActionResult> CreateElection(
+        public async Task<HttpResponseData> CreateElection(
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "election")] HttpRequestData req)
         {
             LogDebug("HTTP trigger - CreateElection:Begin");
@@ -58,7 +58,7 @@ namespace TrueVote.Api.Services
                 LogError("baseElection: invalid format");
                 LogDebug("HTTP trigger - CreateElection:End");
 
-                return new BadRequestObjectResult(e.Message);
+                return await req.CreateBadRequestJsonResponseAsync(e.Message);
             }
 
             LogInformation($"Request Data: {baseElection}");
@@ -74,7 +74,7 @@ namespace TrueVote.Api.Services
 
             LogDebug("HTTP trigger - CreateElection:End");
 
-            return new CreatedResult(string.Empty, election);
+            return await req.CreateCreatedJsonResponseAsync(election);
         }
 
         [Function(nameof(ElectionFind))]
@@ -89,7 +89,7 @@ namespace TrueVote.Api.Services
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.NotFound, contentType: "application/json", bodyType: typeof(SecureString), Description = "Not Found")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.NotAcceptable, contentType: "application/json", bodyType: typeof(SecureString), Description = "Not Acceptable")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.TooManyRequests, contentType: "application/json", bodyType: typeof(SecureString), Description = "Too Many Requests")]
-        public async Task<IActionResult> ElectionFind(
+        public async Task<HttpResponseData> ElectionFind(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "election/find")] HttpRequestData req)
         {
             LogDebug("HTTP trigger - ElectionFind:Begin");
@@ -105,7 +105,7 @@ namespace TrueVote.Api.Services
                 LogError("findElection: invalid format");
                 LogDebug("HTTP trigger - ElectionFind:End");
 
-                return new BadRequestObjectResult(e.Message);
+                return await req.CreateBadRequestJsonResponseAsync(e.Message);
             }
 
             LogInformation($"Request Data: {findElection}");
@@ -117,7 +117,7 @@ namespace TrueVote.Api.Services
 
             LogDebug("HTTP trigger - ElectionFind:End");
 
-            return items.Count == 0 ? new NotFoundResult() : new OkObjectResult(items);
+            return items.Count == 0 ? req.CreateNotFoundResponse() : await req.CreateOkJsonResponseAsync(items);
         }
 
         [Function(nameof(AddRaces))]
@@ -133,7 +133,7 @@ namespace TrueVote.Api.Services
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.NotAcceptable, contentType: "application/json", bodyType: typeof(SecureString), Description = "Not Acceptable")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.TooManyRequests, contentType: "application/json", bodyType: typeof(SecureString), Description = "Too Many Requests")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.UnsupportedMediaType, contentType: "application/json", bodyType: typeof(SecureString), Description = "Unsupported Media Type")]
-        public async Task<IActionResult> AddRaces(
+        public async Task<HttpResponseData> AddRaces(
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "election/addraces")] HttpRequestData req)
         {
             LogDebug("HTTP trigger - AddRaces:Begin");
@@ -149,7 +149,7 @@ namespace TrueVote.Api.Services
                 LogError("bindRaceElectionModel: invalid format");
                 LogDebug("HTTP trigger - AddRaces:End");
 
-                return new BadRequestObjectResult(e.Message);
+                return await req.CreateBadRequestJsonResponseAsync(e.Message);
             }
 
             LogInformation($"Request Data: {bindRaceElectionModel}");
@@ -158,7 +158,7 @@ namespace TrueVote.Api.Services
             var election = await _trueVoteDbContext.Elections.Where(r => r.ElectionId == bindRaceElectionModel.ElectionId).AsNoTracking().OrderByDescending(r => r.DateCreated).FirstOrDefaultAsync();
             if (election == null)
             {
-                return new NotFoundObjectResult($"Election: '{bindRaceElectionModel.ElectionId}' not found");
+                return await req.CreateNotFoundResponseAsync($"Election: '{bindRaceElectionModel.ElectionId}' not found");
             }
 
             // Check if each Race exists or is already part of the election. If any problems, exit with error
@@ -168,14 +168,14 @@ namespace TrueVote.Api.Services
                 var race = await _trueVoteDbContext.Races.Where(r => r.RaceId == rid).OrderByDescending(c => c.DateCreated).FirstOrDefaultAsync();
                 if (race == null)
                 {
-                    return new NotFoundObjectResult($"Race: '{rid}' not found");
+                    return await req.CreateNotFoundResponseAsync($"Race: '{rid}' not found");
                 }
 
                 // Check if it's already part of the Election
                 var raceExists = election.Races?.Where(r => r.RaceId == rid).FirstOrDefault();
                 if (raceExists != null)
                 {
-                    return new ConflictObjectResult($"Race: '{rid}' already exists in Election");
+                    return await req.CreateConflictResponseAsync($"Race: '{rid}' already exists in Election");
                 }
 
                 // Made it this far, add the Race to the Election. Ok to add here because if another one in the list, it won't get persisted
@@ -193,7 +193,7 @@ namespace TrueVote.Api.Services
 
             LogDebug("HTTP trigger - AddRaces:End");
 
-            return new CreatedResult(string.Empty, election);
+            return await req.CreateCreatedJsonResponseAsync(election);
         }
     }
 }

@@ -42,7 +42,7 @@ namespace TrueVote.Api.Services
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.NotAcceptable, contentType: "application/json", bodyType: typeof(SecureString), Description = "Not Acceptable")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.TooManyRequests, contentType: "application/json", bodyType: typeof(SecureString), Description = "Too Many Requests")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.UnsupportedMediaType, contentType: "application/json", bodyType: typeof(SecureString), Description = "Unsupported Media Type")]
-        public async Task<IActionResult> CreateCandidate(
+        public async Task<HttpResponseData> CreateCandidate(
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "candidate")] HttpRequestData req)
         {
             LogDebug("HTTP trigger - CreateCandidate:Begin");
@@ -58,7 +58,7 @@ namespace TrueVote.Api.Services
                 LogError("baseCandidate: invalid format");
                 LogDebug("HTTP trigger - CreateCandidate:End");
 
-                return new BadRequestObjectResult(e.Message);
+                return await req.CreateBadRequestJsonResponseAsync(e.Message);
             }
 
             LogInformation($"Request Data: {baseCandidate}");
@@ -74,7 +74,7 @@ namespace TrueVote.Api.Services
 
             LogDebug("HTTP trigger - CreateCandidate:End");
 
-            return new CreatedResult(string.Empty, candidate);
+            return await req.CreateCreatedJsonResponseAsync(candidate);
         }
 
         [Function(nameof(CandidateFind))]
@@ -89,7 +89,7 @@ namespace TrueVote.Api.Services
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.NotFound, contentType: "application/json", bodyType: typeof(SecureString), Description = "Not Found")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.NotAcceptable, contentType: "application/json", bodyType: typeof(SecureString), Description = "Not Acceptable")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.TooManyRequests, contentType: "application/json", bodyType: typeof(SecureString), Description = "Too Many Requests")]
-        public async Task<IActionResult> CandidateFind(
+        public async Task<HttpResponseData> CandidateFind(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "candidate/find")] HttpRequestData req)
         {
             LogDebug("HTTP trigger - CandidateFind:Begin");
@@ -105,7 +105,7 @@ namespace TrueVote.Api.Services
                 LogError("findCandidate: invalid format");
                 LogDebug("HTTP trigger - CandidateFind:End");
 
-                return new BadRequestObjectResult(e.Message);
+                return await req.CreateBadRequestJsonResponseAsync(e.Message);
             }
 
             LogInformation($"Request Data: {findCandidate}");
@@ -118,7 +118,7 @@ namespace TrueVote.Api.Services
 
             LogDebug("HTTP trigger - CandidateFind:End");
 
-            return items.Count == 0 ? new NotFoundResult() : new OkObjectResult(items);
+            return items.Count == 0 ? req.CreateNotFoundResponse() : await req.CreateOkJsonResponseAsync(items);
         }
     }
 }

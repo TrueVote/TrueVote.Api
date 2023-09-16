@@ -42,7 +42,7 @@ namespace TrueVote.Api.Services
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.NotAcceptable, contentType: "application/json", bodyType: typeof(SecureString), Description = "Not Acceptable")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.TooManyRequests, contentType: "application/json", bodyType: typeof(SecureString), Description = "Too Many Requests")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.UnsupportedMediaType, contentType: "application/json", bodyType: typeof(SecureString), Description = "Unsupported Media Type")]
-        public async Task<IActionResult> CreateRace(
+        public async Task<HttpResponseData> CreateRace(
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "race")] HttpRequestData req)
         {
             LogDebug("HTTP trigger - CreateRace:Begin");
@@ -58,7 +58,7 @@ namespace TrueVote.Api.Services
                 LogError("baseRace: invalid format");
                 LogDebug("HTTP trigger - CreateRace:End");
 
-                return new BadRequestObjectResult(e.Message);
+                return await req.CreateBadRequestJsonResponseAsync(e.Message);
             }
 
             LogInformation($"Request Data: {baseRace}");
@@ -74,7 +74,7 @@ namespace TrueVote.Api.Services
 
             LogDebug("HTTP trigger - CreateRace:End");
 
-            return new CreatedResult(string.Empty, race);
+            return await req.CreateCreatedJsonResponseAsync(race);
         }
 
         [Function(nameof(AddCandidates))]
@@ -90,7 +90,7 @@ namespace TrueVote.Api.Services
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.NotAcceptable, contentType: "application/json", bodyType: typeof(SecureString), Description = "Not Acceptable")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.TooManyRequests, contentType: "application/json", bodyType: typeof(SecureString), Description = "Too Many Requests")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.UnsupportedMediaType, contentType: "application/json", bodyType: typeof(SecureString), Description = "Unsupported Media Type")]
-        public async Task<IActionResult> AddCandidates(
+        public async Task<HttpResponseData> AddCandidates(
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "race/addcandidates")] HttpRequestData req)
         {
             LogDebug("HTTP trigger - AddCandidates:Begin");
@@ -106,7 +106,7 @@ namespace TrueVote.Api.Services
                 LogError("addCandidates: invalid format");
                 LogDebug("HTTP trigger - AddCandidates:End");
 
-                return new BadRequestObjectResult(e.Message);
+                return await req.CreateBadRequestJsonResponseAsync(e.Message);
             }
 
             LogInformation($"Request Data: {addCandidatesModel}");
@@ -115,7 +115,7 @@ namespace TrueVote.Api.Services
             var race = await _trueVoteDbContext.Races.Where(r => r.RaceId == addCandidatesModel.RaceId).AsNoTracking().OrderByDescending(r => r.DateCreated).FirstOrDefaultAsync();
             if (race == null)
             {
-                return new NotFoundObjectResult($"Race: '{addCandidatesModel.RaceId}' not found");
+                return await req.CreateNotFoundResponseAsync($"Race: '{addCandidatesModel.RaceId}' not found");
             }
 
             // Check if each candidate exists or is already part of the race. If any problems, exit with error
@@ -125,14 +125,14 @@ namespace TrueVote.Api.Services
                 var candidate = await _trueVoteDbContext.Candidates.Where(c => c.CandidateId == cid).OrderByDescending(c => c.DateCreated).FirstOrDefaultAsync();
                 if (candidate == null)
                 {
-                    return new NotFoundObjectResult($"Candidate: '{cid}' not found");
+                    return await req.CreateNotFoundResponseAsync($"Candidate: '{cid}' not found");
                 }
 
                 // Check if it's already part of the Race
                 var candidateExists = race.Candidates?.Where(c => c.CandidateId == cid).FirstOrDefault();
                 if (candidateExists != null)
                 {
-                    return new ConflictObjectResult($"Candidate: '{cid}' already exists in Race");
+                    return await req.CreateConflictResponseAsync($"Candidate: '{cid}' already exists in Race");
                 }
 
                 // Made it this far, add the candidate to the Race. Ok to add here because if another one in the list, it won't get persisted
@@ -150,7 +150,7 @@ namespace TrueVote.Api.Services
 
             LogDebug("HTTP trigger - AddCandidates:End");
 
-            return new CreatedResult(string.Empty, race);
+            return await req.CreateCreatedJsonResponseAsync(race);
         }
 
         [Function(nameof(RaceFind))]
@@ -165,7 +165,7 @@ namespace TrueVote.Api.Services
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.NotFound, contentType: "application/json", bodyType: typeof(SecureString), Description = "Not Found")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.NotAcceptable, contentType: "application/json", bodyType: typeof(SecureString), Description = "Not Acceptable")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.TooManyRequests, contentType: "application/json", bodyType: typeof(SecureString), Description = "Too Many Requests")]
-        public async Task<IActionResult> RaceFind(
+        public async Task<HttpResponseData> RaceFind(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "race/find")] HttpRequestData req)
         {
             LogDebug("HTTP trigger - RaceFind:Begin");
@@ -181,7 +181,7 @@ namespace TrueVote.Api.Services
                 LogError("findRace: invalid format");
                 LogDebug("HTTP trigger - RaceFind:End");
 
-                return new BadRequestObjectResult(e.Message);
+                return await req.CreateBadRequestJsonResponseAsync(e.Message);
             }
 
             LogInformation($"Request Data: {findRace}");
@@ -195,7 +195,7 @@ namespace TrueVote.Api.Services
 
             LogDebug("HTTP trigger - RaceFind:End");
 
-            return items.Count == 0 ? new NotFoundResult() : new OkObjectResult(items);
+            return items.Count == 0 ? req.CreateNotFoundResponse() : await req.CreateOkJsonResponseAsync(items);
         }
     }
 }
