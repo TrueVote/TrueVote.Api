@@ -53,12 +53,12 @@ namespace TrueVote.Api.Tests.ServiceTests
             var baseRaceObj = new BaseRaceModel { Name = "President", RaceType = RaceTypes.ChooseOne };
             var requestData = new MockHttpRequestData(JsonConvert.SerializeObject(baseRaceObj));
 
-            var ret = await _raceApi.CreateRace(requestData) as CreatedResult;
+            var ret = await _raceApi.CreateRace(requestData);
             Assert.NotNull(ret);
             var objectResult = Assert.IsType<CreatedResult>(ret);
             Assert.Equal((int) HttpStatusCode.Created, objectResult.StatusCode);
 
-            var val = ret.Value as RaceModel;
+            var val = await ret.ReadAsJsonAsync<RaceModel>();
             Assert.NotNull(val);
 
             _output.WriteLine($"Item: {val}");

@@ -56,10 +56,10 @@ namespace TrueVote.Api.Tests.ServiceTests
         {
             var status = new Status(_fileSystem, _logHelper.Object, _mockTelegram.Object, true);
             var requestData = new MockHttpRequestData("");
-            var res = (OkObjectResult) await status.GetStatus(requestData);
+            var res = await status.GetStatus(requestData);
 
             Assert.NotNull(res);
-            var statusModel = (StatusModel) res.Value;
+            var statusModel = await res.ReadAsJsonAsync<StatusModel>();
             Assert.NotNull(statusModel);
             Assert.Equal("TrueVote.Api is responding", statusModel.RespondsMsg);
         }
@@ -69,10 +69,10 @@ namespace TrueVote.Api.Tests.ServiceTests
         {
             var status = new Status(_fileSystem, _logHelper.Object, _mockTelegram.Object, true);
             var requestData = new MockHttpRequestData("");
-            var res = (OkObjectResult) await status.GetStatus(requestData);
+            var res = await status.GetStatus(requestData);
 
             Assert.NotNull(res);
-            var statusModel = (StatusModel) res.Value;
+            var statusModel = await res.ReadAsJsonAsync<StatusModel>();
             Assert.NotNull(statusModel);
             Assert.NotNull(statusModel.BuildInfo);
         }
@@ -112,10 +112,10 @@ namespace TrueVote.Api.Tests.ServiceTests
 
             var statusMock = new Status(fileSystemMock.Object, _logHelper.Object, _mockTelegram.Object, true);
             var requestData = new MockHttpRequestData("");
-            var res = (OkObjectResult) await statusMock.GetStatus(requestData);
+            var res = await statusMock.GetStatus(requestData);
 
             Assert.NotNull(res);
-            var statusModel = (StatusModel) res.Value;
+            var statusModel = await res.ReadAsJsonAsync<StatusModel>();
             Assert.NotNull(statusModel);
             Assert.NotNull(statusModel.BuildInfo);
 
@@ -133,10 +133,10 @@ namespace TrueVote.Api.Tests.ServiceTests
         {
             var status = new Status(_fileSystem, _logHelper.Object, _mockTelegram.Object);
             var requestData = new MockHttpRequestData("");
-            var res = (OkObjectResult) await status.GetStatus(requestData);
+            var res = await status.GetStatus(requestData);
 
             Assert.NotNull(res);
-            var statusModel = (StatusModel) res.Value;
+            var statusModel = await res.ReadAsJsonAsync<StatusModel>();
             Assert.NotNull(statusModel);
             Assert.True(statusModel.ExecutionTime >= 0);
         }
@@ -150,10 +150,10 @@ namespace TrueVote.Api.Tests.ServiceTests
 
             var statusMock = new Status(fileSystemMock.Object, _logHelper.Object, _mockTelegram.Object, true);
             var requestData = new MockHttpRequestData("");
-            var res = (OkObjectResult) await statusMock.GetStatus(requestData);
+            var res = await statusMock.GetStatus(requestData);
 
             Assert.NotNull(res);
-            var statusModel = (StatusModel) res.Value;
+            var statusModel = await res.ReadAsJsonAsync<StatusModel>();
             Assert.NotNull(statusModel);
             Assert.Null(statusModel.BuildInfo);
             _logHelper.Verify(LogLevel.Error, Times.Exactly(1));

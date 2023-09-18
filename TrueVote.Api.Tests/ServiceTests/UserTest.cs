@@ -44,12 +44,12 @@ namespace TrueVote.Api.Tests.ServiceTests
             var baseUserObj = new BaseUserModel { FirstName = "Joe", Email = "joe@joe.com" };
             var requestData = new MockHttpRequestData(JsonConvert.SerializeObject(baseUserObj));
 
-            var ret = await _userApi.CreateUser(requestData) as CreatedResult;
+            var ret = await _userApi.CreateUser(requestData);
             Assert.NotNull(ret);
             var objectResult = Assert.IsType<CreatedResult>(ret);
             Assert.Equal((int) HttpStatusCode.Created, objectResult.StatusCode);
 
-            var val = ret.Value as UserModel;
+            var val = await ret.ReadAsJsonAsync<UserModel>();
             Assert.NotNull(val);
 
             _output.WriteLine($"Item: {val}");

@@ -5,6 +5,8 @@ using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.Azure.Functions.Worker.Http;
+using JsonSerializer = System.Text.Json.JsonSerializer;
+using System.IO;
 
 namespace TrueVote.Api
 {
@@ -83,6 +85,14 @@ namespace TrueVote.Api
             this HttpRequestData request, object content)
         {
             return await request.CreateJsonResponseAsync(HttpStatusCode.Created, content);
+        }
+
+        public static async Task<T> ReadAsJsonAsync<T>(this HttpResponseData response)
+        {
+            using var reader = new StreamReader(response.Body);
+            var responseBody = await reader.ReadToEndAsync();
+
+            return JsonSerializer.Deserialize<T>(responseBody);
         }
     }
 }

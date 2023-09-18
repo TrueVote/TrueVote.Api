@@ -26,12 +26,12 @@ namespace TrueVote.Api.Tests.ServiceTests
             var baseBallotObj = new SubmitBallotModel { Election = MoqData.MockBallotData[1].Election };
             var requestData = new MockHttpRequestData(JsonConvert.SerializeObject(baseBallotObj));
 
-            var ret = await _ballotApi.SubmitBallot(requestData) as CreatedResult;
+            var ret = await _ballotApi.SubmitBallot(requestData);
             Assert.NotNull(ret);
             var objectResult = Assert.IsType<CreatedResult>(ret);
             Assert.Equal((int) HttpStatusCode.Created, objectResult.StatusCode);
 
-            var val = ret.Value as SubmitBallotModelResponse;
+            var val = await ret.ReadAsJsonAsync<SubmitBallotModelResponse>();
             Assert.NotNull(val);
 
             _output.WriteLine($"Item: {val}");
@@ -71,12 +71,12 @@ namespace TrueVote.Api.Tests.ServiceTests
             mockValidator.Setup(m => m.HashBallotAsync(It.IsAny<BallotModel>())).Throws(new Exception("Hash Ballot Exception"));
 
             var ballotApi = new Ballot(_logHelper.Object, _moqDataAccessor.mockBallotContext.Object, _mockTelegram.Object, mockValidator.Object);
-            var ret = await ballotApi.SubmitBallot(requestData) as ConflictObjectResult;
+            var ret = await ballotApi.SubmitBallot(requestData);
             Assert.NotNull(ret);
             var objectResult = Assert.IsType<ConflictObjectResult>(ret);
             Assert.Equal((int) HttpStatusCode.Conflict, objectResult.StatusCode);
 
-            var val = ret.Value as SubmitBallotModelResponse;
+            var val = await ret.ReadAsJsonAsync<SubmitBallotModelResponse>();
             Assert.NotNull(val);
 
             Assert.Contains("Hash Ballot Exception", val.Message);

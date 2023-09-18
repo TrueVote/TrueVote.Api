@@ -47,12 +47,12 @@ namespace TrueVote.Api.Tests.ServiceTests
             var baseElectionObj = new BaseElectionModel { Name = "California State", StartDate = DateTime.Now, EndDate = DateTime.Now.AddDays(30) };
             var requestData = new MockHttpRequestData(JsonConvert.SerializeObject(baseElectionObj));
 
-            var ret = await _electionApi.CreateElection(requestData) as CreatedResult;
+            var ret = await _electionApi.CreateElection(requestData);
             Assert.NotNull(ret);
             var objectResult = Assert.IsType<CreatedResult>(ret);
             Assert.Equal((int) HttpStatusCode.Created, objectResult.StatusCode);
 
-            var val = ret.Value as ElectionModel;
+            var val = await ret.ReadAsJsonAsync<ElectionModel>();
             Assert.NotNull(val);
 
             _output.WriteLine($"Item: {val}");

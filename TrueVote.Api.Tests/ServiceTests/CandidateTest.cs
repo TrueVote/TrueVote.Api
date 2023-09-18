@@ -44,12 +44,12 @@ namespace TrueVote.Api.Tests.ServiceTests
             var baseCandidateObj = new BaseCandidateModel { Name = "John Smith", PartyAffiliation = "Republican" };
             var requestData = new MockHttpRequestData(JsonConvert.SerializeObject(baseCandidateObj));
 
-            var ret = await _candidateApi.CreateCandidate(requestData) as CreatedResult;
+            var ret = await _candidateApi.CreateCandidate(requestData);
             Assert.NotNull(ret);
             var objectResult = Assert.IsType<CreatedResult>(ret);
             Assert.Equal((int) HttpStatusCode.Created, objectResult.StatusCode);
 
-            var val = ret.Value as CandidateModel;
+            var val = await ret.ReadAsJsonAsync<CandidateModel>();
             Assert.NotNull(val);
 
             _output.WriteLine($"Item: {val}");
