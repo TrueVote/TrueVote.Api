@@ -58,7 +58,7 @@ namespace TrueVote.Api.Services
                 LogError("baseCandidate: invalid format");
                 LogDebug("HTTP trigger - CreateCandidate:End");
 
-                return await req.CreateBadRequestJsonResponseAsync(e.Message);
+                return await req.CreateBadRequestResponseAsync(new SecureString { Value = e.Message });
             }
 
             LogInformation($"Request Data: {baseCandidate}");
@@ -74,7 +74,7 @@ namespace TrueVote.Api.Services
 
             LogDebug("HTTP trigger - CreateCandidate:End");
 
-            return await req.CreateCreatedJsonResponseAsync(candidate);
+            return await req.CreateCreatedResponseAsync(candidate);
         }
 
         [Function(nameof(CandidateFind))]
@@ -105,7 +105,7 @@ namespace TrueVote.Api.Services
                 LogError("findCandidate: invalid format");
                 LogDebug("HTTP trigger - CandidateFind:End");
 
-                return await req.CreateBadRequestJsonResponseAsync(e.Message);
+                return await req.CreateBadRequestResponseAsync(new SecureString { Value = e.Message });
             }
 
             LogInformation($"Request Data: {findCandidate}");
@@ -118,7 +118,7 @@ namespace TrueVote.Api.Services
 
             LogDebug("HTTP trigger - CandidateFind:End");
 
-            return items.Count == 0 ? req.CreateNotFoundResponse() : await req.CreateOkJsonResponseAsync(items);
+            return items.Count == 0 ? req.CreateNotFoundResponse() : await req.CreateOkResponseAsync(items);
         }
     }
 }

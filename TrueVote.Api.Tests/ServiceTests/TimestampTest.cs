@@ -27,10 +27,9 @@ namespace TrueVote.Api.Tests.Services
 
             var ret = await _timestampApi.TimestampFind(requestData);
             Assert.NotNull(ret);
-            var objectResult = Assert.IsType<OkObjectResult>(ret);
-            Assert.Equal((int) HttpStatusCode.OK, objectResult.StatusCode);
+            Assert.Equal(HttpStatusCode.OK, ret.StatusCode);
 
-            var val = objectResult.Value as List<TimestampModel>;
+            var val = await ret.ReadAsJsonAsync<List<TimestampModel>>();
             Assert.NotEmpty(val);
             Assert.Equal(2, val.Count);
             Assert.Equal("2", val[0].TimestampId);
@@ -48,8 +47,7 @@ namespace TrueVote.Api.Tests.Services
 
             var ret = await _timestampApi.TimestampFind(requestData);
             Assert.NotNull(ret);
-            var objectResult = Assert.IsType<BadRequestObjectResult>(ret);
-            Assert.Equal((int) HttpStatusCode.BadRequest, objectResult.StatusCode);
+            Assert.Equal(HttpStatusCode.BadRequest, ret.StatusCode);
 
             _logHelper.Verify(LogLevel.Error, Times.Exactly(1));
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
@@ -63,8 +61,7 @@ namespace TrueVote.Api.Tests.Services
 
             var ret = await _timestampApi.TimestampFind(requestData);
             Assert.NotNull(ret);
-            var objectResult = Assert.IsType<NotFoundResult>(ret);
-            Assert.Equal((int) HttpStatusCode.NotFound, objectResult.StatusCode);
+            Assert.Equal(HttpStatusCode.NotFound, ret.StatusCode);
 
             _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));

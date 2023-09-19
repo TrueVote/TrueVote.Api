@@ -55,8 +55,7 @@ namespace TrueVote.Api.Tests.ServiceTests
 
             var ret = await _raceApi.CreateRace(requestData);
             Assert.NotNull(ret);
-            var objectResult = Assert.IsType<CreatedResult>(ret);
-            Assert.Equal((int) HttpStatusCode.Created, objectResult.StatusCode);
+            Assert.Equal(HttpStatusCode.Created, ret.StatusCode);
 
             var val = await ret.ReadAsJsonAsync<RaceModel>();
             Assert.NotNull(val);
@@ -87,9 +86,9 @@ namespace TrueVote.Api.Tests.ServiceTests
 
             var ret = await _raceApi.CreateRace(requestData);
             Assert.NotNull(ret);
-            var objectResult = Assert.IsType<BadRequestObjectResult>(ret);
-            Assert.Equal((int) HttpStatusCode.BadRequest, objectResult.StatusCode);
-            Assert.Contains("Required", objectResult.Value.ToString());
+            Assert.Equal(HttpStatusCode.BadRequest, ret.StatusCode);
+            var val = await ret.ReadAsJsonAsync<SecureString>();
+            Assert.Contains("Required", val.Value.ToString());
 
             _logHelper.Verify(LogLevel.Error, Times.Exactly(1));
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
@@ -113,10 +112,9 @@ namespace TrueVote.Api.Tests.ServiceTests
 
             var ret = await raceApi.RaceFind(requestData);
             Assert.NotNull(ret);
-            var objectResult = Assert.IsType<OkObjectResult>(ret);
-            Assert.Equal((int) HttpStatusCode.OK, objectResult.StatusCode);
+            Assert.Equal(HttpStatusCode.OK, ret.StatusCode);
 
-            var val = objectResult.Value as List<RaceModel>;
+            var val = await ret.ReadAsJsonAsync<List<RaceModel>>();
             Assert.NotEmpty(val);
             Assert.Single(val);
             Assert.Equal("President", val[0].Name);
@@ -137,8 +135,7 @@ namespace TrueVote.Api.Tests.ServiceTests
 
             var ret = await raceApi.RaceFind(requestData);
             Assert.NotNull(ret);
-            var objectResult = Assert.IsType<NotFoundResult>(ret);
-            Assert.Equal((int) HttpStatusCode.NotFound, objectResult.StatusCode);
+            Assert.Equal(HttpStatusCode.NotFound, ret.StatusCode);
 
             _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
@@ -152,8 +149,7 @@ namespace TrueVote.Api.Tests.ServiceTests
 
             var ret = await _raceApi.RaceFind(requestData);
             Assert.NotNull(ret);
-            var objectResult = Assert.IsType<BadRequestObjectResult>(ret);
-            Assert.Equal((int) HttpStatusCode.BadRequest, objectResult.StatusCode);
+            Assert.Equal(HttpStatusCode.BadRequest, ret.StatusCode);
 
             _logHelper.Verify(LogLevel.Error, Times.Exactly(1));
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
@@ -182,10 +178,9 @@ namespace TrueVote.Api.Tests.ServiceTests
             var ret = await raceApi.AddCandidates(requestData);
 
             Assert.NotNull(ret);
-            var objectResult = Assert.IsType<CreatedResult>(ret);
-            Assert.Equal((int) HttpStatusCode.Created, objectResult.StatusCode);
+            Assert.Equal(HttpStatusCode.Created, ret.StatusCode);
 
-            var val = objectResult.Value as RaceModel;
+            var val = await ret.ReadAsJsonAsync<RaceModel>();
             Assert.NotNull(val);
             Assert.Equal("President", val.Name);
             Assert.Equal("John Smith", val.Candidates.ToList()[0].Name);
@@ -205,8 +200,7 @@ namespace TrueVote.Api.Tests.ServiceTests
 
             var ret = await _raceApi.AddCandidates(requestData);
             Assert.NotNull(ret);
-            var objectResult = Assert.IsType<BadRequestObjectResult>(ret);
-            Assert.Equal((int) HttpStatusCode.BadRequest, objectResult.StatusCode);
+            Assert.Equal(HttpStatusCode.BadRequest, ret.StatusCode);
 
             _logHelper.Verify(LogLevel.Error, Times.Exactly(1));
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
@@ -229,10 +223,10 @@ namespace TrueVote.Api.Tests.ServiceTests
 
             var ret = await raceApi.AddCandidates(requestData);
             Assert.NotNull(ret);
-            var objectResult = Assert.IsType<NotFoundObjectResult>(ret);
-            Assert.Equal((int) HttpStatusCode.NotFound, objectResult.StatusCode);
-            Assert.Contains("Race", objectResult.Value.ToString());
-            Assert.Contains("not found", objectResult.Value.ToString());
+            Assert.Equal(HttpStatusCode.NotFound, ret.StatusCode);
+            var val = await ret.ReadAsJsonAsync<SecureString>();
+            Assert.Contains("Race", val.Value.ToString());
+            Assert.Contains("not found", val.Value.ToString());
 
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(1));
         }
@@ -257,10 +251,10 @@ namespace TrueVote.Api.Tests.ServiceTests
 
             var ret = await raceApi.AddCandidates(requestData);
             Assert.NotNull(ret);
-            var objectResult = Assert.IsType<NotFoundObjectResult>(ret);
-            Assert.Equal((int) HttpStatusCode.NotFound, objectResult.StatusCode);
-            Assert.Contains("Candidate", objectResult.Value.ToString());
-            Assert.Contains("not found", objectResult.Value.ToString());
+            Assert.Equal(HttpStatusCode.NotFound, ret.StatusCode);
+            var val = await ret.ReadAsJsonAsync<SecureString>();
+            Assert.Contains("Candidate", val.Value.ToString());
+            Assert.Contains("not found", val.Value.ToString());
 
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(1));
         }
@@ -286,10 +280,10 @@ namespace TrueVote.Api.Tests.ServiceTests
 
             var ret = await raceApi.AddCandidates(requestData);
             Assert.NotNull(ret);
-            var objectResult = Assert.IsType<ConflictObjectResult>(ret);
-            Assert.Equal((int) HttpStatusCode.Conflict, objectResult.StatusCode);
-            Assert.Contains("Candidate", objectResult.Value.ToString());
-            Assert.Contains("already exists", objectResult.Value.ToString());
+            Assert.Equal(HttpStatusCode.Conflict, ret.StatusCode);
+            var val = await ret.ReadAsJsonAsync<SecureString>();
+            Assert.Contains("Candidate", val.Value.ToString());
+            Assert.Contains("already exists", val.Value.ToString());
 
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(1));
         }

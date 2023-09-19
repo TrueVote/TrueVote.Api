@@ -58,7 +58,7 @@ namespace TrueVote.Api.Services
                 LogError("baseRace: invalid format");
                 LogDebug("HTTP trigger - CreateRace:End");
 
-                return await req.CreateBadRequestJsonResponseAsync(e.Message);
+                return await req.CreateBadRequestResponseAsync(new SecureString { Value = e.Message });
             }
 
             LogInformation($"Request Data: {baseRace}");
@@ -74,7 +74,7 @@ namespace TrueVote.Api.Services
 
             LogDebug("HTTP trigger - CreateRace:End");
 
-            return await req.CreateCreatedJsonResponseAsync(race);
+            return await req.CreateCreatedResponseAsync(race);
         }
 
         [Function(nameof(AddCandidates))]
@@ -106,7 +106,7 @@ namespace TrueVote.Api.Services
                 LogError("addCandidates: invalid format");
                 LogDebug("HTTP trigger - AddCandidates:End");
 
-                return await req.CreateBadRequestJsonResponseAsync(e.Message);
+                return await req.CreateBadRequestResponseAsync(new SecureString { Value = e.Message });
             }
 
             LogInformation($"Request Data: {addCandidatesModel}");
@@ -115,7 +115,7 @@ namespace TrueVote.Api.Services
             var race = await _trueVoteDbContext.Races.Where(r => r.RaceId == addCandidatesModel.RaceId).AsNoTracking().OrderByDescending(r => r.DateCreated).FirstOrDefaultAsync();
             if (race == null)
             {
-                return await req.CreateNotFoundResponseAsync($"Race: '{addCandidatesModel.RaceId}' not found");
+                return await req.CreateNotFoundResponseAsync(new SecureString { Value = $"Race: '{addCandidatesModel.RaceId}' not found" });
             }
 
             // Check if each candidate exists or is already part of the race. If any problems, exit with error
@@ -125,14 +125,14 @@ namespace TrueVote.Api.Services
                 var candidate = await _trueVoteDbContext.Candidates.Where(c => c.CandidateId == cid).OrderByDescending(c => c.DateCreated).FirstOrDefaultAsync();
                 if (candidate == null)
                 {
-                    return await req.CreateNotFoundResponseAsync($"Candidate: '{cid}' not found");
+                    return await req.CreateNotFoundResponseAsync(new SecureString { Value = $"Candidate: '{cid}' not found" });
                 }
 
                 // Check if it's already part of the Race
                 var candidateExists = race.Candidates?.Where(c => c.CandidateId == cid).FirstOrDefault();
                 if (candidateExists != null)
                 {
-                    return await req.CreateConflictResponseAsync($"Candidate: '{cid}' already exists in Race");
+                    return await req.CreateConflictResponseAsync(new SecureString { Value = $"Candidate: '{cid}' already exists in Race" });
                 }
 
                 // Made it this far, add the candidate to the Race. Ok to add here because if another one in the list, it won't get persisted
@@ -150,7 +150,7 @@ namespace TrueVote.Api.Services
 
             LogDebug("HTTP trigger - AddCandidates:End");
 
-            return await req.CreateCreatedJsonResponseAsync(race);
+            return await req.CreateCreatedResponseAsync(race);
         }
 
         [Function(nameof(RaceFind))]
@@ -181,7 +181,7 @@ namespace TrueVote.Api.Services
                 LogError("findRace: invalid format");
                 LogDebug("HTTP trigger - RaceFind:End");
 
-                return await req.CreateBadRequestJsonResponseAsync(e.Message);
+                return await req.CreateBadRequestResponseAsync(new SecureString { Value = e.Message });
             }
 
             LogInformation($"Request Data: {findRace}");
@@ -195,7 +195,7 @@ namespace TrueVote.Api.Services
 
             LogDebug("HTTP trigger - RaceFind:End");
 
-            return items.Count == 0 ? req.CreateNotFoundResponse() : await req.CreateOkJsonResponseAsync(items);
+            return items.Count == 0 ? req.CreateNotFoundResponse() : await req.CreateOkResponseAsync(items);
         }
     }
 }

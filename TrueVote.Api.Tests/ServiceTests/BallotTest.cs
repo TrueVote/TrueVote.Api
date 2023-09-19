@@ -28,8 +28,7 @@ namespace TrueVote.Api.Tests.ServiceTests
 
             var ret = await _ballotApi.SubmitBallot(requestData);
             Assert.NotNull(ret);
-            var objectResult = Assert.IsType<CreatedResult>(ret);
-            Assert.Equal((int) HttpStatusCode.Created, objectResult.StatusCode);
+            Assert.Equal(HttpStatusCode.Created, ret.StatusCode);
 
             var val = await ret.ReadAsJsonAsync<SubmitBallotModelResponse>();
             Assert.NotNull(val);
@@ -54,8 +53,7 @@ namespace TrueVote.Api.Tests.ServiceTests
 
             var ret = await _ballotApi.SubmitBallot(requestData);
             Assert.NotNull(ret);
-            var objectResult = Assert.IsType<BadRequestObjectResult>(ret);
-            Assert.Equal((int) HttpStatusCode.BadRequest, objectResult.StatusCode);
+            Assert.Equal(HttpStatusCode.BadRequest, ret.StatusCode);
 
             _logHelper.Verify(LogLevel.Error, Times.Exactly(1));
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
@@ -73,13 +71,12 @@ namespace TrueVote.Api.Tests.ServiceTests
             var ballotApi = new Ballot(_logHelper.Object, _moqDataAccessor.mockBallotContext.Object, _mockTelegram.Object, mockValidator.Object);
             var ret = await ballotApi.SubmitBallot(requestData);
             Assert.NotNull(ret);
-            var objectResult = Assert.IsType<ConflictObjectResult>(ret);
-            Assert.Equal((int) HttpStatusCode.Conflict, objectResult.StatusCode);
+            Assert.Equal(HttpStatusCode.Conflict, ret.StatusCode);
 
-            var val = await ret.ReadAsJsonAsync<SubmitBallotModelResponse>();
+            var val = await ret.ReadAsJsonAsync<SecureString>();
             Assert.NotNull(val);
 
-            Assert.Contains("Hash Ballot Exception", val.Message);
+            Assert.Contains("Hash Ballot Exception", val.Value);
 
             _logHelper.Verify(LogLevel.Error, Times.Exactly(1));
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
@@ -93,8 +90,7 @@ namespace TrueVote.Api.Tests.ServiceTests
 
             var ret = await _ballotApi.BallotFind(requestData);
             Assert.NotNull(ret);
-            var objectResult = Assert.IsType<BadRequestObjectResult>(ret);
-            Assert.Equal((int) HttpStatusCode.BadRequest, objectResult.StatusCode);
+            Assert.Equal(HttpStatusCode.BadRequest, ret.StatusCode);
 
             _logHelper.Verify(LogLevel.Error, Times.Exactly(1));
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
@@ -110,10 +106,9 @@ namespace TrueVote.Api.Tests.ServiceTests
 
             var ret = await ballotApi.BallotFind(requestData);
             Assert.NotNull(ret);
-            var objectResult = Assert.IsType<OkObjectResult>(ret);
-            Assert.Equal((int) HttpStatusCode.OK, objectResult.StatusCode);
+            Assert.Equal(HttpStatusCode.OK, ret.StatusCode);
 
-            var val = objectResult.Value as BallotList;
+            var val = await ret.ReadAsJsonAsync<BallotList>();
             Assert.NotNull(val);
             Assert.Equal("ballotid3", val.Ballots[0].BallotId);
             Assert.Equal("electionid1", val.Ballots[0].Election.ElectionId);
@@ -132,8 +127,7 @@ namespace TrueVote.Api.Tests.ServiceTests
 
             var ret = await ballotApi.BallotFind(requestData);
             Assert.NotNull(ret);
-            var objectResult = Assert.IsType<NotFoundResult>(ret);
-            Assert.Equal((int) HttpStatusCode.NotFound, objectResult.StatusCode);
+            Assert.Equal(HttpStatusCode.NotFound, ret.StatusCode);
 
             _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
@@ -149,11 +143,11 @@ namespace TrueVote.Api.Tests.ServiceTests
 
             var ret = await ballotApi.BallotCount(requestData);
             Assert.NotNull(ret);
-            var objectResult = Assert.IsType<OkObjectResult>(ret);
-            Assert.Equal((int) HttpStatusCode.OK, objectResult.StatusCode);
+            Assert.Equal(HttpStatusCode.OK, ret.StatusCode);
+            var val = await ret.ReadAsJsonAsync<CountBallotModelResponse>();
+            Assert.NotNull(val);
 
-            var val = objectResult.Value;
-            Assert.Equal(3, val);
+            Assert.Equal(3, val.BallotCount);
 
             _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
@@ -167,8 +161,7 @@ namespace TrueVote.Api.Tests.ServiceTests
 
             var ret = await _ballotApi.BallotCount(requestData);
             Assert.NotNull(ret);
-            var objectResult = Assert.IsType<BadRequestObjectResult>(ret);
-            Assert.Equal((int) HttpStatusCode.BadRequest, objectResult.StatusCode);
+            Assert.Equal(HttpStatusCode.BadRequest, ret.StatusCode);
 
             _logHelper.Verify(LogLevel.Error, Times.Exactly(1));
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
@@ -182,10 +175,9 @@ namespace TrueVote.Api.Tests.ServiceTests
 
             var ret = await _ballotApi.BallotHashFind(requestData);
             Assert.NotNull(ret);
-            var objectResult = Assert.IsType<OkObjectResult>(ret);
-            Assert.Equal((int) HttpStatusCode.OK, objectResult.StatusCode);
+            Assert.Equal(HttpStatusCode.OK, ret.StatusCode);
+            var val = await ret.ReadAsJsonAsync<List<BallotHashModel>>();
 
-            var val = objectResult.Value as List<BallotHashModel>;
             Assert.NotEmpty(val);
             Assert.Single(val);
             Assert.Equal("ballotid1", val[0].BallotId);
@@ -193,6 +185,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
         }
+
         [Fact]
         public async Task HandlesFindBallotHashError()
         {
@@ -201,8 +194,7 @@ namespace TrueVote.Api.Tests.ServiceTests
 
             var ret = await _ballotApi.BallotHashFind(requestData);
             Assert.NotNull(ret);
-            var objectResult = Assert.IsType<BadRequestObjectResult>(ret);
-            Assert.Equal((int) HttpStatusCode.BadRequest, objectResult.StatusCode);
+            Assert.Equal(HttpStatusCode.BadRequest, ret.StatusCode);
 
             _logHelper.Verify(LogLevel.Error, Times.Exactly(1));
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
@@ -216,8 +208,7 @@ namespace TrueVote.Api.Tests.ServiceTests
 
             var ret = await _ballotApi.BallotHashFind(requestData);
             Assert.NotNull(ret);
-            var objectResult = Assert.IsType<NotFoundResult>(ret);
-            Assert.Equal((int) HttpStatusCode.NotFound, objectResult.StatusCode);
+            Assert.Equal(HttpStatusCode.NotFound, ret.StatusCode);
 
             _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));

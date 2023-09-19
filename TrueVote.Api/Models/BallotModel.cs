@@ -58,6 +58,16 @@ namespace TrueVote.Api.Models
     }
 
     [ExcludeFromCodeCoverage]
+    public class CountBallotModelResponse
+    {
+        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
+        [OpenApiProperty(Description = "Number of Ballots")]
+        [Range(0, long.MaxValue)]
+        [JsonProperty(PropertyName = "BallotCount")]
+        public long BallotCount { get; set; }
+    }
+
+    [ExcludeFromCodeCoverage]
     public class BallotModel
     {
         [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]

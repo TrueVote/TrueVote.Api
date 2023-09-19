@@ -46,8 +46,7 @@ namespace TrueVote.Api.Tests.ServiceTests
 
             var ret = await _userApi.CreateUser(requestData);
             Assert.NotNull(ret);
-            var objectResult = Assert.IsType<CreatedResult>(ret);
-            Assert.Equal((int) HttpStatusCode.Created, objectResult.StatusCode);
+            Assert.Equal(HttpStatusCode.Created, ret.StatusCode);
 
             var val = await ret.ReadAsJsonAsync<UserModel>();
             Assert.NotNull(val);
@@ -77,9 +76,9 @@ namespace TrueVote.Api.Tests.ServiceTests
 
             var ret = await _userApi.CreateUser(requestData);
             Assert.NotNull(ret);
-            var objectResult = Assert.IsType<BadRequestObjectResult>(ret);
-            Assert.Equal((int) HttpStatusCode.BadRequest, objectResult.StatusCode);
-            Assert.Contains("Required", objectResult.Value.ToString());
+            Assert.Equal(HttpStatusCode.BadRequest, ret.StatusCode);
+            var val = await ret.ReadAsJsonAsync<SecureString>();
+            Assert.Contains("Required", val.Value.ToString());
 
             _logHelper.Verify(LogLevel.Error, Times.Exactly(1));
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
@@ -95,10 +94,9 @@ namespace TrueVote.Api.Tests.ServiceTests
 
             var ret = await userApi.UserFind(requestData);
             Assert.NotNull(ret);
-            var objectResult = Assert.IsType<OkObjectResult>(ret);
-            Assert.Equal((int) HttpStatusCode.OK, objectResult.StatusCode);
+            Assert.Equal(HttpStatusCode.OK, ret.StatusCode);
 
-            var val = objectResult.Value as List<UserModel>;
+            var val = await ret.ReadAsJsonAsync<List<UserModel>>();
             Assert.NotEmpty(val);
             Assert.Equal(2, val.Count);
             Assert.Equal("Foo2", val[0].FirstName);
@@ -118,8 +116,7 @@ namespace TrueVote.Api.Tests.ServiceTests
 
             var ret = await userApi.UserFind(requestData);
             Assert.NotNull(ret);
-            var objectResult = Assert.IsType<NotFoundResult>(ret);
-            Assert.Equal((int) HttpStatusCode.NotFound, objectResult.StatusCode);
+            Assert.Equal(HttpStatusCode.NotFound, ret.StatusCode);
 
             _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
@@ -133,8 +130,7 @@ namespace TrueVote.Api.Tests.ServiceTests
 
             var ret = await _userApi.UserFind(requestData);
             Assert.NotNull(ret);
-            var objectResult = Assert.IsType<BadRequestObjectResult>(ret);
-            Assert.Equal((int) HttpStatusCode.BadRequest, objectResult.StatusCode);
+            Assert.Equal(HttpStatusCode.BadRequest, ret.StatusCode);
 
             _logHelper.Verify(LogLevel.Error, Times.Exactly(1));
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));

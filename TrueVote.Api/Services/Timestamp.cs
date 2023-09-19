@@ -57,7 +57,7 @@ namespace TrueVote.Api.Services
                 LogError("findTimestamp: invalid format");
                 LogDebug("HTTP trigger - TimestampFind:End");
 
-                return await req.CreateBadRequestJsonResponseAsync(e.Message);
+                return await req.CreateBadRequestResponseAsync(new SecureString { Value = e.Message });
             }
 
             LogInformation($"Request Data: {findTimestamp}");
@@ -68,7 +68,7 @@ namespace TrueVote.Api.Services
 
             LogDebug("HTTP trigger - TimestampFind:End");
 
-            return items.Count == 0 ? req.CreateNotFoundResponse() : await req.CreateOkJsonResponseAsync(items);
+            return items.Count == 0 ? req.CreateNotFoundResponse() : await req.CreateOkResponseAsync(items);
         }
     }
 }

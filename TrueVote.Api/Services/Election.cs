@@ -58,7 +58,7 @@ namespace TrueVote.Api.Services
                 LogError("baseElection: invalid format");
                 LogDebug("HTTP trigger - CreateElection:End");
 
-                return await req.CreateBadRequestJsonResponseAsync(e.Message);
+                return await req.CreateBadRequestResponseAsync(new SecureString { Value = e.Message });
             }
 
             LogInformation($"Request Data: {baseElection}");
@@ -74,7 +74,7 @@ namespace TrueVote.Api.Services
 
             LogDebug("HTTP trigger - CreateElection:End");
 
-            return await req.CreateCreatedJsonResponseAsync(election);
+            return await req.CreateCreatedResponseAsync(election);
         }
 
         [Function(nameof(ElectionFind))]
@@ -105,7 +105,7 @@ namespace TrueVote.Api.Services
                 LogError("findElection: invalid format");
                 LogDebug("HTTP trigger - ElectionFind:End");
 
-                return await req.CreateBadRequestJsonResponseAsync(e.Message);
+                return await req.CreateBadRequestResponseAsync(new SecureString { Value = e.Message });
             }
 
             LogInformation($"Request Data: {findElection}");
@@ -117,7 +117,7 @@ namespace TrueVote.Api.Services
 
             LogDebug("HTTP trigger - ElectionFind:End");
 
-            return items.Count == 0 ? req.CreateNotFoundResponse() : await req.CreateOkJsonResponseAsync(items);
+            return items.Count == 0 ? req.CreateNotFoundResponse() : await req.CreateOkResponseAsync(items);
         }
 
         [Function(nameof(AddRaces))]
@@ -149,7 +149,7 @@ namespace TrueVote.Api.Services
                 LogError("bindRaceElectionModel: invalid format");
                 LogDebug("HTTP trigger - AddRaces:End");
 
-                return await req.CreateBadRequestJsonResponseAsync(e.Message);
+                return await req.CreateBadRequestResponseAsync(new SecureString { Value = e.Message });
             }
 
             LogInformation($"Request Data: {bindRaceElectionModel}");
@@ -158,7 +158,7 @@ namespace TrueVote.Api.Services
             var election = await _trueVoteDbContext.Elections.Where(r => r.ElectionId == bindRaceElectionModel.ElectionId).AsNoTracking().OrderByDescending(r => r.DateCreated).FirstOrDefaultAsync();
             if (election == null)
             {
-                return await req.CreateNotFoundResponseAsync($"Election: '{bindRaceElectionModel.ElectionId}' not found");
+                return await req.CreateNotFoundResponseAsync(new SecureString { Value = $"Election: '{bindRaceElectionModel.ElectionId}' not found" });
             }
 
             // Check if each Race exists or is already part of the election. If any problems, exit with error
@@ -168,14 +168,14 @@ namespace TrueVote.Api.Services
                 var race = await _trueVoteDbContext.Races.Where(r => r.RaceId == rid).OrderByDescending(c => c.DateCreated).FirstOrDefaultAsync();
                 if (race == null)
                 {
-                    return await req.CreateNotFoundResponseAsync($"Race: '{rid}' not found");
+                    return await req.CreateNotFoundResponseAsync(new SecureString { Value = $"Race: '{rid}' not found" });
                 }
 
                 // Check if it's already part of the Election
                 var raceExists = election.Races?.Where(r => r.RaceId == rid).FirstOrDefault();
                 if (raceExists != null)
                 {
-                    return await req.CreateConflictResponseAsync($"Race: '{rid}' already exists in Election");
+                    return await req.CreateConflictResponseAsync(new SecureString { Value = $"Race: '{rid}' already exists in Election" });
                 }
 
                 // Made it this far, add the Race to the Election. Ok to add here because if another one in the list, it won't get persisted
@@ -193,7 +193,7 @@ namespace TrueVote.Api.Services
 
             LogDebug("HTTP trigger - AddRaces:End");
 
-            return await req.CreateCreatedJsonResponseAsync(election);
+            return await req.CreateCreatedResponseAsync(election);
         }
     }
 }

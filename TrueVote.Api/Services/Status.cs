@@ -106,7 +106,7 @@ namespace TrueVote.Api.Services
 
             LogDebug("HTTP trigger - GetStatus:End");
 
-            return await req.CreateOkJsonResponseAsync(status);
+            return await req.CreateOkResponseAsync(status);
         }
 
         private string GetBuildInfo()
