@@ -4,12 +4,17 @@
   "logging": {
     "applicationInsights": {
       "samplingSettings": {
-        "isEnabled": true,
-        "excludedTypes": "Request"
+        "isEnabled": true
       }
     },
     "logLevel": {
       "default": "Debug"
+    },
+    "console": {
+      "isEnabled": "true"
     }
+  },
+  "Values": {
+    "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated"
   }
 }
