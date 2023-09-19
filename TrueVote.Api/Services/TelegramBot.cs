@@ -269,9 +269,9 @@ namespace TrueVote.Api.Services
                 var httpRequestMessage = new HttpRequestMessage { RequestUri = new Uri($"{BaseApiUrl}/ballot/count"), Method = HttpMethod.Get, Content = new StringContent(json.ToString()) };
                 var ret = await client.SendAsync(httpRequestMessage);
 
-                var retCount = await ret.Content.ReadAsAsync<int>();
+                var retCount = await ret.Content.ReadAsAsync<CountBallotModelResponse>();
 
-                return retCount.ToString();
+                return retCount.BallotCount.ToString();
             }
             catch (Exception e)
             {
