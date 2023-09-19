@@ -20,8 +20,8 @@
     <None Include="..\.editorconfig" Link=".editorconfig" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="HotChocolate.AzureFunctions.IsolatedProcess" Version="13.6.0-preview.12" />
-    <PackageReference Include="HotChocolate.Types.Filters" Version="13.6.0-preview.12" />
+    <PackageReference Include="HotChocolate.AzureFunctions.IsolatedProcess" Version="13.6.0-preview.17" />
+    <PackageReference Include="HotChocolate.Types.Filters" Version="13.6.0-preview.17" />
     <PackageReference Include="Microsoft.CodeAnalysis" Version="4.8.0-1.final" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.0-rc.1.23419.6" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Cosmos" Version="8.0.0-rc.1.23419.6" />
