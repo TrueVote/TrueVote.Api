@@ -1,6 +1,7 @@
 using HotChocolate.Types.Descriptors;
 using HotChocolate.Types;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
+using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Abstractions;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Configurations;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Enums;
@@ -175,6 +176,8 @@ namespace TrueVote.Api
         {
             var host = new HostBuilder().ConfigureFunctionsWorkerDefaults().ConfigureServices(s =>
             {
+                s.AddApplicationInsightsTelemetryWorkerService();
+                s.ConfigureFunctionsApplicationInsights();
                 s.AddDbContext<ITrueVoteDbContext, TrueVoteDbContext>();
                 s.TryAddScoped<IFileSystem, FileSystem>();
                 s.TryAddSingleton<ILoggerFactory, LoggerFactory>();
