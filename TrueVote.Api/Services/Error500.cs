@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.Azure.Functions.Worker;
+using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
@@ -21,7 +21,7 @@ namespace TrueVote.Api.Services
         {
         }
 
-        [FunctionName(nameof(ThrowError500))]
+        [Function(nameof(ThrowError500))]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [OpenApiOperation(operationId: "ThrowError500", tags: new[] { "Errors" })]
@@ -32,8 +32,8 @@ namespace TrueVote.Api.Services
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.NotFound, contentType: "application/json", bodyType: typeof(SecureString), Description = "Not Found")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.NotAcceptable, contentType: "application/json", bodyType: typeof(SecureString), Description = "Not Acceptable")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.TooManyRequests, contentType: "application/json", bodyType: typeof(SecureString), Description = "Too Many Requests")]
-        public async Task<IActionResult> ThrowError500(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "error500")] HttpRequest req)
+        public async Task<HttpResponseData> ThrowError500(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "error500")] HttpRequestData req)
         {
             LogDebug("HTTP trigger - ThrowError500:Begin");
 
@@ -51,7 +51,7 @@ namespace TrueVote.Api.Services
 
             LogDebug("HTTP trigger - ThrowError500:End");
 
-            return new OkResult();
+            return req.CreateOkResponse();
         }
     }
 }

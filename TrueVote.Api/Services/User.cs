@@ -5,8 +5,8 @@ using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.Azure.Functions.Worker;
+using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -29,7 +29,7 @@ namespace TrueVote.Api.Services
             _telegramBot = telegramBot;
         }
 
-        [FunctionName(nameof(CreateUser))]
+        [Function(nameof(CreateUser))]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [OpenApiOperation(operationId: "CreateUser", tags: new[] { "User" })]
@@ -42,8 +42,8 @@ namespace TrueVote.Api.Services
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.NotAcceptable, contentType: "application/json", bodyType: typeof(SecureString), Description = "Not Acceptable")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.TooManyRequests, contentType: "application/json", bodyType: typeof(SecureString), Description = "Too Many Requests")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.UnsupportedMediaType, contentType: "application/json", bodyType: typeof(SecureString), Description = "Unsupported Media Type")]
-        public async Task<IActionResult> CreateUser(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "user")] HttpRequest req)
+        public async Task<HttpResponseData> CreateUser(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "user")] HttpRequestData req)
         {
             LogDebug("HTTP trigger - CreateUser:Begin");
 
@@ -58,7 +58,7 @@ namespace TrueVote.Api.Services
                 LogError("baseUser: invalid format");
                 LogDebug("HTTP trigger - CreateUser:End");
 
-                return new BadRequestObjectResult(e.Message);
+                return await req.CreateBadRequestResponseAsync(new SecureString { Value = e.Message });
             }
 
             LogInformation($"Request Data: {baseUser}");
@@ -74,10 +74,10 @@ namespace TrueVote.Api.Services
 
             LogDebug("HTTP trigger - CreateUser:End");
 
-            return new CreatedResult(string.Empty, user);
+            return await req.CreateCreatedResponseAsync(user);
         }
 
-        [FunctionName(nameof(UserFind))]
+        [Function(nameof(UserFind))]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [OpenApiOperation(operationId: "UserFind", tags: new[] { "User" })]
@@ -89,8 +89,8 @@ namespace TrueVote.Api.Services
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.NotFound, contentType: "application/json", bodyType: typeof(SecureString), Description = "Not Found")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.NotAcceptable, contentType: "application/json", bodyType: typeof(SecureString), Description = "Not Acceptable")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.TooManyRequests, contentType: "application/json", bodyType: typeof(SecureString), Description = "Too Many Requests")]
-        public async Task<IActionResult> UserFind(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "user/find")] HttpRequest req)
+        public async Task<HttpResponseData> UserFind(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "user/find")] HttpRequestData req)
         {
             LogDebug("HTTP trigger - UserFind:Begin");
 
@@ -105,7 +105,7 @@ namespace TrueVote.Api.Services
                 LogError("findUser: invalid format");
                 LogDebug("HTTP trigger - UserFind:End");
 
-                return new BadRequestObjectResult(e.Message);
+                return await req.CreateBadRequestResponseAsync(new SecureString { Value = e.Message });
             }
 
             LogInformation($"Request Data: {findUser}");
@@ -120,7 +120,7 @@ namespace TrueVote.Api.Services
 
             LogDebug("HTTP trigger - UserFind:End");
 
-            return items.Count == 0 ? new NotFoundResult() : new OkObjectResult(items);
+            return items.Count == 0 ? req.CreateNotFoundResponse() : await req.CreateOkResponseAsync(items);
         }
     }
 }

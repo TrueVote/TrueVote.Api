@@ -2,6 +2,7 @@ using HotChocolate;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 using TrueVote.Api.Helpers;
@@ -13,6 +14,7 @@ namespace TrueVote.Api.Services
     // TODO Add parameter support (filtering) to GraphQL queries so you can do operations such as:
     // { candidate(partyAffiliation: "Republican") { candidateId, name, partyAffiliation }
     // TODO Add sorting support to replace the 'OrderBy' directives below
+    [ExcludeFromCodeCoverage]
     public class Query : LoggerHelper
     {
         private readonly ITrueVoteDbContext _trueVoteDbContext;

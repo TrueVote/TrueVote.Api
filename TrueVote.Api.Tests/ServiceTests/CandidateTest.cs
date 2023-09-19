@@ -4,9 +4,7 @@ using Moq;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Net;
-using System.Text;
 using System.Threading.Tasks;
 using TrueVote.Api.Models;
 using TrueVote.Api.Services;
@@ -32,10 +30,9 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task LogsMessages()
         {
             var baseCandidateObj = new BaseCandidateModel { Name = "John Smith", PartyAffiliation = "Republican" };
-            var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(baseCandidateObj));
-            _httpContext.Request.Body = new MemoryStream(byteArray);
+            var requestData = new MockHttpRequestData(JsonConvert.SerializeObject(baseCandidateObj));
 
-            _ = await _candidateApi.CreateCandidate(_httpContext.Request);
+            _ = await _candidateApi.CreateCandidate(requestData);
 
             _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
@@ -45,15 +42,13 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task AddsCandidate()
         {
             var baseCandidateObj = new BaseCandidateModel { Name = "John Smith", PartyAffiliation = "Republican" };
-            var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(baseCandidateObj));
-            _httpContext.Request.Body = new MemoryStream(byteArray);
+            var requestData = new MockHttpRequestData(JsonConvert.SerializeObject(baseCandidateObj));
 
-            var ret = await _candidateApi.CreateCandidate(_httpContext.Request) as CreatedResult;
+            var ret = await _candidateApi.CreateCandidate(requestData);
             Assert.NotNull(ret);
-            var objectResult = Assert.IsType<CreatedResult>(ret);
-            Assert.Equal((int) HttpStatusCode.Created, objectResult.StatusCode);
+            Assert.Equal(HttpStatusCode.Created, ret.StatusCode);
 
-            var val = ret.Value as CandidateModel;
+            var val = await ret.ReadAsJsonAsync<CandidateModel>();
             Assert.NotNull(val);
 
             _output.WriteLine($"Item: {val}");
@@ -77,14 +72,13 @@ namespace TrueVote.Api.Tests.ServiceTests
         {
             // This object is missing required property (Name)
             var fakeBaseCandidateObj = new FakeBaseCandidateModel { PartyAffiliation = "Republican" };
-            var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(fakeBaseCandidateObj));
-            _httpContext.Request.Body = new MemoryStream(byteArray);
+            var requestData = new MockHttpRequestData(JsonConvert.SerializeObject(fakeBaseCandidateObj));
 
-            var ret = await _candidateApi.CreateCandidate(_httpContext.Request);
+            var ret = await _candidateApi.CreateCandidate(requestData);
             Assert.NotNull(ret);
-            var objectResult = Assert.IsType<BadRequestObjectResult>(ret);
-            Assert.Equal((int) HttpStatusCode.BadRequest, objectResult.StatusCode);
-            Assert.Contains("Required", objectResult.Value.ToString());
+            Assert.Equal(HttpStatusCode.BadRequest, ret.StatusCode);
+            var val = await ret.ReadAsJsonAsync<SecureString>();
+            Assert.Contains("Required", val.Value.ToString());
 
             _logHelper.Verify(LogLevel.Error, Times.Exactly(1));
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
@@ -94,17 +88,15 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task FindsCandidate()
         {
             var findCandidateObj = new FindCandidateModel { Name = "J" };
-            var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(findCandidateObj));
-            _httpContext.Request.Body = new MemoryStream(byteArray);
+            var requestData = new MockHttpRequestData(JsonConvert.SerializeObject(findCandidateObj));
 
             var candidateApi = new Candidate(_logHelper.Object, _moqDataAccessor.mockCandidateContext.Object, _mockTelegram.Object);
 
-            var ret = await candidateApi.CandidateFind(_httpContext.Request);
+            var ret = await candidateApi.CandidateFind(requestData);
             Assert.NotNull(ret);
-            var objectResult = Assert.IsType<OkObjectResult>(ret);
-            Assert.Equal((int) HttpStatusCode.OK, objectResult.StatusCode);
+            Assert.Equal(HttpStatusCode.OK, ret.StatusCode);
 
-            var val = objectResult.Value as List<CandidateModel>;
+            var val = await ret.ReadAsJsonAsync<List<CandidateModel>>();
             Assert.NotEmpty(val);
             Assert.Equal(2, val.Count);
             Assert.Equal("John Smith", val[1].Name);
@@ -118,15 +110,13 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task HandlesUnfoundCandidate()
         {
             var findCandidateObj = new FindCandidateModel { Name = "not going to find anything" };
-            var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(findCandidateObj));
-            _httpContext.Request.Body = new MemoryStream(byteArray);
+            var requestData = new MockHttpRequestData(JsonConvert.SerializeObject(findCandidateObj));
 
             var candidateApi = new Candidate(_logHelper.Object, _moqDataAccessor.mockCandidateContext.Object, _mockTelegram.Object);
 
-            var ret = await candidateApi.CandidateFind(_httpContext.Request);
+            var ret = await candidateApi.CandidateFind(requestData);
             Assert.NotNull(ret);
-            var objectResult = Assert.IsType<NotFoundResult>(ret);
-            Assert.Equal((int) HttpStatusCode.NotFound, objectResult.StatusCode);
+            Assert.Equal(HttpStatusCode.NotFound, ret.StatusCode);
 
             _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
@@ -136,13 +126,11 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task HandlesFindCandidateError()
         {
             var findCandidateObj = "blah";
-            var byteArray = Encoding.ASCII.GetBytes(findCandidateObj);
-            _httpContext.Request.Body = new MemoryStream(byteArray);
+            var requestData = new MockHttpRequestData(findCandidateObj);
 
-            var ret = await _candidateApi.CandidateFind(_httpContext.Request);
+            var ret = await _candidateApi.CandidateFind(requestData);
             Assert.NotNull(ret);
-            var objectResult = Assert.IsType<BadRequestObjectResult>(ret);
-            Assert.Equal((int) HttpStatusCode.BadRequest, objectResult.StatusCode);
+            Assert.Equal(HttpStatusCode.BadRequest, ret.StatusCode);
 
             _logHelper.Verify(LogLevel.Error, Times.Exactly(1));
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));

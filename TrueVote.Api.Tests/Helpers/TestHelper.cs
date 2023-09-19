@@ -1,12 +1,9 @@
 using HotChocolate.AzureFunctions;
 using HotChocolate.Types.Descriptors;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Moq;
-using System.IO;
 using System.IO.Abstractions;
 using System.Threading.Tasks;
 using TrueVote.Api.Helpers;
@@ -19,7 +16,6 @@ namespace TrueVote.Api.Tests.Helpers
     public class TestHelper
     {
         protected readonly ITestOutputHelper _output;
-        protected readonly HttpContext _httpContext;
         protected readonly IFileSystem _fileSystem;
         protected readonly Mock<ILogger<LoggerHelper>> _logHelper;
         protected readonly User _userApi;
@@ -51,16 +47,10 @@ namespace TrueVote.Api.Tests.Helpers
             serviceCollection.TryAddScoped<IFileSystem, FileSystem>();
             serviceCollection.AddGraphQLFunction().AddQueryType<Query>();
             serviceCollection.TryAddScoped<Validator, Validator>();
-
             var serviceProvider = serviceCollection.BuildServiceProvider();
             requestExecutor = serviceProvider.GetRequiredService<IGraphQLRequestExecutor>();
 
             _output = output;
-
-            _httpContext = new DefaultHttpContext();
-            _httpContext.Request.ContentType = "application/json";
-            // https://stackoverflow.com/questions/59159565/initializing-defaulthttpcontext-response-body-to-memorystream-throws-nullreferen
-            _httpContext.Features.Set<IHttpResponseBodyFeature>(new StreamResponseBodyFeature(new MemoryStream()));
 
             _fileSystem = new FileSystem();
 
@@ -83,7 +73,7 @@ namespace TrueVote.Api.Tests.Helpers
             _ballotApi = new Ballot(_logHelper.Object, _moqDataAccessor.mockBallotContext.Object, _mockTelegram.Object, _validatorApi);
             _raceApi = new Race(_logHelper.Object, _moqDataAccessor.mockRaceContext.Object, _mockTelegram.Object);
             _candidateApi = new Candidate(_logHelper.Object, _moqDataAccessor.mockCandidateContext.Object, _mockTelegram.Object);
-            _graphQLApi = new GraphQLExecutor(_logHelper.Object, _mockTelegram.Object);
+            _graphQLApi = new GraphQLExecutor(_logHelper.Object, _mockTelegram.Object, requestExecutor);
             _timestampApi = new Timestamp(_logHelper.Object, _moqDataAccessor.mockTimestampContext.Object, _mockTelegram.Object);
         }
     }

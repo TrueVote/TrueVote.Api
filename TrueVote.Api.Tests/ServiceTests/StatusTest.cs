@@ -44,7 +44,8 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task LogsMessages()
         {
             var status = new Status(_fileSystem, _logHelper.Object, _mockTelegram.Object, true);
-            _ = await status.GetStatus(_httpContext.Request);
+            var requestData = new MockHttpRequestData("");
+            _ = await status.GetStatus(requestData);
 
             _logHelper.Verify(LogLevel.Information, Times.AtLeast(4));
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
@@ -54,10 +55,11 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task ReturnsValidModel()
         {
             var status = new Status(_fileSystem, _logHelper.Object, _mockTelegram.Object, true);
-            var res = (OkObjectResult) await status.GetStatus(_httpContext.Request);
+            var requestData = new MockHttpRequestData("");
+            var res = await status.GetStatus(requestData);
 
             Assert.NotNull(res);
-            var statusModel = (StatusModel) res.Value;
+            var statusModel = await res.ReadAsJsonAsync<StatusModel>();
             Assert.NotNull(statusModel);
             Assert.Equal("TrueVote.Api is responding", statusModel.RespondsMsg);
         }
@@ -66,10 +68,11 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task ReturnsValidBuildInfoModel()
         {
             var status = new Status(_fileSystem, _logHelper.Object, _mockTelegram.Object, true);
-            var res = (OkObjectResult) await status.GetStatus(_httpContext.Request);
+            var requestData = new MockHttpRequestData("");
+            var res = await status.GetStatus(requestData);
 
             Assert.NotNull(res);
-            var statusModel = (StatusModel) res.Value;
+            var statusModel = await res.ReadAsJsonAsync<StatusModel>();
             Assert.NotNull(statusModel);
             Assert.NotNull(statusModel.BuildInfo);
         }
@@ -108,10 +111,11 @@ namespace TrueVote.Api.Tests.ServiceTests
             }).Returns(() => ret);
 
             var statusMock = new Status(fileSystemMock.Object, _logHelper.Object, _mockTelegram.Object, true);
-            var res = (OkObjectResult) await statusMock.GetStatus(_httpContext.Request);
+            var requestData = new MockHttpRequestData("");
+            var res = await statusMock.GetStatus(requestData);
 
             Assert.NotNull(res);
-            var statusModel = (StatusModel) res.Value;
+            var statusModel = await res.ReadAsJsonAsync<StatusModel>();
             Assert.NotNull(statusModel);
             Assert.NotNull(statusModel.BuildInfo);
 
@@ -128,10 +132,11 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task RunsStopwatch()
         {
             var status = new Status(_fileSystem, _logHelper.Object, _mockTelegram.Object);
-            var res = (OkObjectResult) await status.GetStatus(_httpContext.Request);
+            var requestData = new MockHttpRequestData("");
+            var res = await status.GetStatus(requestData);
 
             Assert.NotNull(res);
-            var statusModel = (StatusModel) res.Value;
+            var statusModel = await res.ReadAsJsonAsync<StatusModel>();
             Assert.NotNull(statusModel);
             Assert.True(statusModel.ExecutionTime >= 0);
         }
@@ -144,10 +149,11 @@ namespace TrueVote.Api.Tests.ServiceTests
             fileSystemMock.Setup(x => x.File.ReadAllText(It.IsAny<string>())).Throws(new Exception());
 
             var statusMock = new Status(fileSystemMock.Object, _logHelper.Object, _mockTelegram.Object, true);
-            var res = (OkObjectResult) await statusMock.GetStatus(_httpContext.Request);
+            var requestData = new MockHttpRequestData("");
+            var res = await statusMock.GetStatus(requestData);
 
             Assert.NotNull(res);
-            var statusModel = (StatusModel) res.Value;
+            var statusModel = await res.ReadAsJsonAsync<StatusModel>();
             Assert.NotNull(statusModel);
             Assert.Null(statusModel.BuildInfo);
             _logHelper.Verify(LogLevel.Error, Times.Exactly(1));

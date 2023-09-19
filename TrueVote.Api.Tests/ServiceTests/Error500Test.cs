@@ -2,8 +2,6 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using Newtonsoft.Json;
 using System;
-using System.IO;
-using System.Text;
 using System.Threading.Tasks;
 using TrueVote.Api.Services;
 using TrueVote.Api.Tests.Helpers;
@@ -22,7 +20,8 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task LogsMessages()
         {
             var error500 = new Error500(_logHelper.Object, _mockTelegram.Object);
-            _ = await error500.ThrowError500(_httpContext.Request);
+            var requestData = new MockHttpRequestData("");
+            _ = await error500.ThrowError500(requestData);
 
             _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
@@ -38,11 +37,11 @@ namespace TrueVote.Api.Tests.ServiceTests
                 Error = true
             };
 
-            var byteArray = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(errorObj));
-            _httpContext.Request.Body = new MemoryStream(byteArray);
+            var requestData = new MockHttpRequestData(JsonConvert.SerializeObject(errorObj));
+            
             try
             {
-                _ = await error500.ThrowError500(_httpContext.Request);
+                _ = await error500.ThrowError500(requestData);
                 Assert.True(false);
             }
             catch (Exception ex)

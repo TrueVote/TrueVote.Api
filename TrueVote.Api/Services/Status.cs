@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.Azure.Functions.Worker;
+using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
@@ -42,7 +42,7 @@ namespace TrueVote.Api.Services
             _BuildInfoReadTime = null;
         }
 
-        [FunctionName(nameof(GetStatus))]
+        [Function(nameof(GetStatus))]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [OpenApiOperation(operationId: "GetStatus", tags: new[] { "Status" })]
         [OpenApiSecurity("oidc_auth", SecuritySchemeType.OpenIdConnect, OpenIdConnectUrl = "https://login.microsoftonline.com/{tenant_id}/v2.0/.well-known/openid-configuration", OpenIdConnectScopes = "openid,profile")]
@@ -52,8 +52,8 @@ namespace TrueVote.Api.Services
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.NotFound, contentType: "application/json", bodyType: typeof(SecureString), Description = "Not Found")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.NotAcceptable, contentType: "application/json", bodyType: typeof(SecureString), Description = "Not Acceptable")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.TooManyRequests, contentType: "application/json", bodyType: typeof(SecureString), Description = "Too Many Requests")]
-        public async Task<IActionResult> GetStatus(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "status")] HttpRequest req)
+        public async Task<HttpResponseData> GetStatus(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "status")] HttpRequestData req)
         {
             LogDebug("HTTP trigger - GetStatus:Begin");
 
@@ -106,7 +106,7 @@ namespace TrueVote.Api.Services
 
             LogDebug("HTTP trigger - GetStatus:End");
 
-            return new OkObjectResult(status);
+            return await req.CreateOkResponseAsync(status);
         }
 
         private string GetBuildInfo()

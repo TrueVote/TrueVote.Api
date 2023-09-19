@@ -1,24 +1,29 @@
 using HotChocolate.AzureFunctions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.Azure.Functions.Worker;
+using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Threading.Tasks;
 using TrueVote.Api.Helpers;
 
 namespace TrueVote.Api.Services
 {
+    [ExcludeFromCodeCoverage]
     public class GraphQLExecutor : LoggerHelper
     {
-        public GraphQLExecutor(ILogger log, TelegramBot telegramBot) : base(log, telegramBot)
+        private readonly IGraphQLRequestExecutor _graphqlExecutor;
+
+        public GraphQLExecutor(ILogger log, TelegramBot telegramBot, [GraphQL] IGraphQLRequestExecutor executor) : base(log, telegramBot)
         {
+            _graphqlExecutor = executor;
         }
 
-        [FunctionName("GraphQL")]
+        [Function("GraphQL")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [OpenApiOperation(operationId: "GraphQL", tags: new[] { "GraphQL" })]
@@ -26,12 +31,12 @@ namespace TrueVote.Api.Services
         [OpenApiRequestBody(contentType: "application/json", bodyType: typeof(string), Description = "GraphQL Query Entry Point")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(string), Description = "Returns GraphQL Query Response")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.BadRequest, contentType: "application/json", bodyType: typeof(string), Description = "Bad Request")]
-        public async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = "graphql/{**slug}")] HttpRequest req, [GraphQL] IGraphQLRequestExecutor executor)
+        public async Task<HttpResponseData> Run(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = "graphql/{**slug}")] HttpRequestData req)
         {
             LogDebug("HTTP trigger - GraphQL:Begin");
 
-            var ret = await executor.ExecuteAsync(req);
+            var ret = await _graphqlExecutor.ExecuteAsync(req);
 
             LogDebug("HTTP trigger - GraphQL:End");
 

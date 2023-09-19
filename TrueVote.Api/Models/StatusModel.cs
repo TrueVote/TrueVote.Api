@@ -41,32 +41,32 @@ namespace TrueVote.Api.Models
         [RegularExpression(Constants.GenericStringRegex)]
         [MaxLength(2048)]
         [JsonProperty(PropertyName = "CurrentTime")]
-        public string CurrentTime { get; internal set; }
+        public string CurrentTime { get; set; }
 
         [OpenApiProperty(Description = "Stopwatch time to run this method")]
-        [Range(0, Int32.MaxValue)]
+        [Range(0, long.MaxValue)]
         [JsonProperty(PropertyName = "ExecutionTime")]
-        public long ExecutionTime { get; internal set; }
+        public long ExecutionTime { get; set; }
 
         [OpenApiProperty(Description = "Stopwatch time to run this method (message)")]
         [RegularExpression(Constants.GenericStringRegex)]
         [MaxLength(2048)]
         [JsonProperty(PropertyName = "ExecutionTimeMsg")]
-        public string ExecutionTimeMsg { get; internal set; }
+        public string ExecutionTimeMsg { get; set; }
 
         [OpenApiProperty(Description = "True if method responds. Likely never false")]
         [JsonProperty(PropertyName = "Responds")]
-        public bool Responds { get; internal set; }
+        public bool Responds { get; set; }
 
         [OpenApiProperty(Description = "True if method responds. Likely never false (message)")]
         [RegularExpression(Constants.GenericStringRegex)]
         [MaxLength(2048)]
         [JsonProperty(PropertyName = "RespondsMsg")]
-        public string RespondsMsg { get; internal set; }
+        public string RespondsMsg { get; set; }
 
         [OpenApiProperty(Description = "Build information model")]
         [JsonProperty(PropertyName = "BuildInfo")]
-        public BuildInfo BuildInfo { get; internal set; }
+        public BuildInfo BuildInfo { get; set; }
 
         [OpenApiProperty(Description = "Timestamp this Build information data model was populated")]
         [RegularExpression(Constants.GenericStringRegex)]

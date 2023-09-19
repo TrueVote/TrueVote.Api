@@ -1,3 +1,5 @@
+using Microsoft.Azure.Functions.Worker;
+using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.Extensions.Logging;
@@ -6,14 +8,54 @@ using Moq.Language.Flow;
 using System;
 using System.Collections.Generic;
 using System.Data.Entity.Infrastructure;
+using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Net;
+using System.Security.Claims;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
 #pragma warning disable IDE0060 // Remove unused parameter
 namespace TrueVote.Api.Tests
 {
+    public sealed class MockHttpResponseData : HttpResponseData
+    {
+        public MockHttpResponseData(FunctionContext context) : base(context)
+        {
+        }
+
+        public override HttpStatusCode StatusCode { get; set; }
+        public override HttpHeadersCollection Headers { get; set; }
+        public override Stream Body { get; set; } = new MemoryStream();
+        public override HttpCookies Cookies { get; }
+    }
+
+    public sealed class MockHttpRequestData : HttpRequestData
+    {
+        private static readonly FunctionContext Context = Mock.Of<FunctionContext>();
+
+        public MockHttpRequestData(string body) : base(Context)
+        {
+            var bytes = Encoding.ASCII.GetBytes(body);
+            Body = new MemoryStream(bytes);
+        }
+
+        public override HttpResponseData CreateResponse()
+        {
+            // The actual response creation is done via extension methods
+            return new MockHttpResponseData(Context);
+        }
+
+        public override Stream Body { get; }
+        public override HttpHeadersCollection Headers { get; }
+        public override IReadOnlyCollection<IHttpCookie> Cookies { get; }
+        public override Uri Url { get; }
+        public override IEnumerable<ClaimsIdentity> Identities { get; }
+        public override string Method { get; }
+    }
+
     public static class LoggerMoqHelper
     {
         public static ISetup<ILogger<T>> MockLog<T>(this Mock<ILogger<T>> logger, LogLevel level)

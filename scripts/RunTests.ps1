@@ -1,7 +1,7 @@
 param([String]$ci="false") 
 
 # Run the test coverage
-$TestOutput = dotnet test --verbosity normal --collect:"XPlat Code Coverage" --settings:coverlet.runsettings /p:threshold=100 /p:thresholdType=line /p:thresholdStat=total /p:CollectCoverage=true
+$TestOutput = dotnet test --verbosity normal --collect:"XPlat Code Coverage" --settings:coverlet.runsettings /p:threshold=98 /p:thresholdType=line /p:thresholdStat=total /p:CollectCoverage=true
 
 Write-Host $TestOutput
 

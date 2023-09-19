@@ -11,18 +11,15 @@ using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using Newtonsoft.Json;
 using TrueVote.Api.Models;
-using Microsoft.Azure.Functions.Extensions.DependencyInjection;
-using TrueVote.Api.Services;
 using Telegram.Bot.Polling;
 
 // TODO Localize this service, since it returns English messages to Telegram
 // See local.settings.json for local settings and Azure Portal for production settings
-[assembly: FunctionsStartup(typeof(TelegramBot))]
 namespace TrueVote.Api.Services
 {
 #pragma warning disable SCS0004 // Certificate Validation has been disabled.
     [ExcludeFromCodeCoverage] // TODO Write tests. This requires mocking the Telegram API
-    public class TelegramBot : FunctionsStartup
+    public class TelegramBot
     {
         private static HttpClientHandler httpClientHandler;
         private static TelegramBotClient botClient = null; // To connect to bot: https://t.me/TrueVoteAPI_bot
@@ -30,12 +27,12 @@ namespace TrueVote.Api.Services
         private static string BaseApiUrl = string.Empty; // TODO Would be better to pull this from the environment instead of a setting. e.g. For local it would be https://localhost:7071/api
         private static readonly string HelpText = "📖 TrueVote API Bot enables you execute some commands on the API. Simply use / in this chat to see a list of commands. To view broadcast messages, be sure and join the TrueVote API Runtime Channel: https://t.me/{0}";
 
-        public override void Configure(IFunctionsHostBuilder builder)
+        public TelegramBot()
         {
-            Init();
+            _ = Init();
         }
 
-        private async void Init()
+        private async Task Init()
         {
             if (botClient != null) // In case the function is called again, if it's initialized, don't do it again
                 return;
@@ -272,9 +269,9 @@ namespace TrueVote.Api.Services
                 var httpRequestMessage = new HttpRequestMessage { RequestUri = new Uri($"{BaseApiUrl}/ballot/count"), Method = HttpMethod.Get, Content = new StringContent(json.ToString()) };
                 var ret = await client.SendAsync(httpRequestMessage);
 
-                var retCount = await ret.Content.ReadAsAsync<int>();
+                var retCount = await ret.Content.ReadAsAsync<CountBallotModelResponse>();
 
-                return retCount.ToString();
+                return retCount.BallotCount.ToString();
             }
             catch (Exception e)
             {

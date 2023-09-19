@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
 	<AzureFunctionsVersion>v4</AzureFunctionsVersion>
 	<Description>TrueVote Core Api - Tests</Description>
 	<Copyright>Copyright TrueVote, Inc.</Copyright>
@@ -18,12 +18,12 @@
     </PackageReference>
     <PackageReference Include="EntityFramework" Version="6.4.4" />
     <PackageReference Include="GraphQL.Client" Version="6.0.0" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.7.2" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0-preview-23424-02" />
     <PackageReference Include="MockQueryable.Moq" Version="7.0.0" />
     <PackageReference Include="Moq" Version="4.20.69" />
-    <PackageReference Include="xunit" Version="2.5.0" />
-    <PackageReference Include="xunit.extensibility.execution" Version="2.5.0" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.5.0">
+    <PackageReference Include="xunit" Version="2.5.1" />
+    <PackageReference Include="xunit.extensibility.execution" Version="2.5.1" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.5.1">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
