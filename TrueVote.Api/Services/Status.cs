@@ -107,26 +107,26 @@ namespace TrueVote.Api.Services
 
         private string GetBuildInfo()
         {
-            var codeBase = new Uri(Assembly.GetExecutingAssembly().Location).ToString();
-            var binDir = codeBase.Replace(codeBase.Split('/').Last(), "");
-            binDir = binDir.Remove(binDir.LastIndexOf("bin/"));
-            if (binDir.Contains(".Tests/")) {
-                binDir = binDir.Remove(binDir.LastIndexOf(".Tests/"));
-            }
-            binDir = binDir.Replace("file:///", "");
-
-            LogInformation($"binDir: {binDir}");
-
-            // On Linux we may need to add a leading /
-            if (!_fileSystem.Path.IsPathFullyQualified(binDir))
-            {
-                binDir = "/" + binDir;
-                LogInformation("Added leading '/' to binDir");
-                LogInformation($"Modified binDir: {binDir}");
-            }
-
             try
             {
+                var codeBase = new Uri(Assembly.GetExecutingAssembly().Location).ToString();
+                var binDir = codeBase.Replace(codeBase.Split('/').Last(), "");
+                binDir = binDir.Remove(binDir.LastIndexOf("bin/"));
+                if (binDir.Contains(".Tests/")) {
+                    binDir = binDir.Remove(binDir.LastIndexOf(".Tests/"));
+                }
+                binDir = binDir.Replace("file:///", "");
+
+                LogInformation($"binDir: {binDir}");
+
+                // On Linux we may need to add a leading /
+                if (!_fileSystem.Path.IsPathFullyQualified(binDir))
+                {
+                    binDir = "/" + binDir;
+                    LogInformation("Added leading '/' to binDir");
+                    LogInformation($"Modified binDir: {binDir}");
+                }
+
                 var versionFile = _fileSystem.Path.Combine(binDir, "version.json");
 
                 LogInformation($"Loading build info from: {versionFile}");
