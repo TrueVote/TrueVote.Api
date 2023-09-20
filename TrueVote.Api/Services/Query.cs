@@ -19,7 +19,7 @@ namespace TrueVote.Api.Services
     {
         private readonly ITrueVoteDbContext _trueVoteDbContext;
 
-        public Query(ILogger log, ITrueVoteDbContext trueVoteDbContext, TelegramBot telegramBot) : base(log, telegramBot)
+        public Query(ILogger log, ITrueVoteDbContext trueVoteDbContext) : base(log)
         {
             _trueVoteDbContext = trueVoteDbContext;
         }

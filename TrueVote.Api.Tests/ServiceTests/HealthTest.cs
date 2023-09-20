@@ -17,7 +17,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public void LogsMessages()
         {
-            var health = new Health(_logHelper.Object, _mockTelegram.Object);
+            var health = new Health(_logHelper.Object);
 
             var timerInfo = new TimerInfo();
 

@@ -21,12 +21,10 @@ namespace TrueVote.Api.Services
     public class User : LoggerHelper
     {
         private readonly ITrueVoteDbContext _trueVoteDbContext;
-        private readonly TelegramBot _telegramBot;
 
-        public User(ILogger log, ITrueVoteDbContext trueVoteDbContext, TelegramBot telegramBot) : base(log, telegramBot)
+        public User(ILogger log, ITrueVoteDbContext trueVoteDbContext) : base(log)
         {
             _trueVoteDbContext = trueVoteDbContext;
-            _telegramBot = telegramBot;
         }
 
         [Function(nameof(CreateUser))]
@@ -69,8 +67,6 @@ namespace TrueVote.Api.Services
 
             await _trueVoteDbContext.Users.AddAsync(user);
             await _trueVoteDbContext.SaveChangesAsync();
-
-            await _telegramBot.SendChannelMessageAsync("New TrueVote User created");
 
             LogDebug("HTTP trigger - CreateUser:End");
 

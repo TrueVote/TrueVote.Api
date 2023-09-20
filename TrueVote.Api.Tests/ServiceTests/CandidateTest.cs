@@ -90,7 +90,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             var findCandidateObj = new FindCandidateModel { Name = "J" };
             var requestData = new MockHttpRequestData(JsonConvert.SerializeObject(findCandidateObj));
 
-            var candidateApi = new Candidate(_logHelper.Object, _moqDataAccessor.mockCandidateContext.Object, _mockTelegram.Object);
+            var candidateApi = new Candidate(_logHelper.Object, _moqDataAccessor.mockCandidateContext.Object);
 
             var ret = await candidateApi.CandidateFind(requestData);
             Assert.NotNull(ret);
@@ -112,7 +112,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             var findCandidateObj = new FindCandidateModel { Name = "not going to find anything" };
             var requestData = new MockHttpRequestData(JsonConvert.SerializeObject(findCandidateObj));
 
-            var candidateApi = new Candidate(_logHelper.Object, _moqDataAccessor.mockCandidateContext.Object, _mockTelegram.Object);
+            var candidateApi = new Candidate(_logHelper.Object, _moqDataAccessor.mockCandidateContext.Object);
 
             var ret = await candidateApi.CandidateFind(requestData);
             Assert.NotNull(ret);

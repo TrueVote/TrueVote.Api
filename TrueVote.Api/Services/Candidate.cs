@@ -21,12 +21,10 @@ namespace TrueVote.Api.Services
     public class Candidate : LoggerHelper
     {
         private readonly ITrueVoteDbContext _trueVoteDbContext;
-        private readonly TelegramBot _telegramBot;
 
-        public Candidate(ILogger log, ITrueVoteDbContext trueVoteDbContext, TelegramBot telegramBot) : base(log, telegramBot)
+        public Candidate(ILogger log, ITrueVoteDbContext trueVoteDbContext) : base(log)
         {
             _trueVoteDbContext = trueVoteDbContext;
-            _telegramBot = telegramBot;
         }
 
         [Function(nameof(CreateCandidate))]
@@ -69,8 +67,6 @@ namespace TrueVote.Api.Services
 
             await _trueVoteDbContext.Candidates.AddAsync(candidate);
             await _trueVoteDbContext.SaveChangesAsync();
-
-            await _telegramBot.SendChannelMessageAsync($"New TrueVote Candidate created: {baseCandidate.Name}");
 
             LogDebug("HTTP trigger - CreateCandidate:End");
 

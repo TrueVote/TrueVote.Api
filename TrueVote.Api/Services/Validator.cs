@@ -21,13 +21,11 @@ namespace TrueVote.Api.Services
     public class Validator : LoggerHelper, IValidator
     {
         private readonly ITrueVoteDbContext _trueVoteDbContext;
-        private readonly TelegramBot _telegramBot;
         private readonly IOpenTimestampsClient _openTimestampsClient;
 
-        public Validator(ILogger log, ITrueVoteDbContext trueVoteDbContext, TelegramBot telegramBot, IOpenTimestampsClient openTimestampsClient) : base(log, telegramBot)
+        public Validator(ILogger log, ITrueVoteDbContext trueVoteDbContext, IOpenTimestampsClient openTimestampsClient) : base(log)
         {
             _trueVoteDbContext = trueVoteDbContext;
-            _telegramBot = telegramBot;
             _openTimestampsClient = openTimestampsClient;
         }
 
@@ -61,7 +59,6 @@ namespace TrueVote.Api.Services
             await _trueVoteDbContext.SaveChangesAsync();
 
             var ballotHashJson = JsonConvert.SerializeObject(ballotHashModel, Formatting.Indented);
-            await _telegramBot.SendChannelMessageAsync($"New Ballot Hash created for Ballot: {ballot.BallotId}. BallotHash: {ballotHashJson}");
 
             return ballotHashModel;
         }
@@ -117,7 +114,6 @@ namespace TrueVote.Api.Services
             await _trueVoteDbContext.SaveChangesAsync();
 
             var timestampJson = JsonConvert.SerializeObject(timestamp, Formatting.Indented);
-            await _telegramBot.SendChannelMessageAsync($"New Ballot Timestamp created for {items.Count()} Ballots. Timestamp: {timestampJson}");
 
             return timestamp;
         }
