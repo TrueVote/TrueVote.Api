@@ -21,12 +21,10 @@ namespace TrueVote.Api.Services
     public class Timestamp : LoggerHelper
     {
         private readonly ITrueVoteDbContext _trueVoteDbContext;
-        private readonly TelegramBot _telegramBot;
 
-        public Timestamp(ILogger log, ITrueVoteDbContext trueVoteDbContext, TelegramBot telegramBot) : base(log, telegramBot)
+        public Timestamp(ILogger log, ITrueVoteDbContext trueVoteDbContext) : base(log)
         {
             _trueVoteDbContext = trueVoteDbContext;
-            _telegramBot = telegramBot;
         }
 
         [Function(nameof(TimestampFind))]

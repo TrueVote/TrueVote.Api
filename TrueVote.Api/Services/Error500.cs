@@ -17,7 +17,7 @@ namespace TrueVote.Api.Services
 {
     public class Error500 : LoggerHelper
     {
-        public Error500(ILogger log, TelegramBot telegramBot): base(log, telegramBot)
+        public Error500(ILogger log): base(log)
         {
         }
 

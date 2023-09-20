@@ -181,8 +181,6 @@ namespace TrueVote.Api
                 s.AddDbContext<ITrueVoteDbContext, TrueVoteDbContext>();
                 s.TryAddScoped<IFileSystem, FileSystem>();
                 s.TryAddSingleton<ILoggerFactory, LoggerFactory>();
-                // TODO Create ITelegramBot. Will make it easier to Mock it for testing
-                s.TryAddSingleton<TelegramBot, TelegramBot>();
                 s.TryAddScoped<Query, Query>();
 
                 s.TryAddSingleton<INamingConventions, TrueVoteNamingConventions>();

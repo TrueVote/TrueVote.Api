@@ -21,12 +21,10 @@ namespace TrueVote.Api.Services
     public class Race : LoggerHelper
     {
         private readonly ITrueVoteDbContext _trueVoteDbContext;
-        private readonly TelegramBot _telegramBot;
 
-        public Race(ILogger log, ITrueVoteDbContext trueVoteDbContext, TelegramBot telegramBot) : base(log, telegramBot)
+        public Race(ILogger log, ITrueVoteDbContext trueVoteDbContext) : base(log)
         {
             _trueVoteDbContext = trueVoteDbContext;
-            _telegramBot = telegramBot;
         }
 
         [Function(nameof(CreateRace))]
@@ -69,8 +67,6 @@ namespace TrueVote.Api.Services
 
             await _trueVoteDbContext.Races.AddAsync(race);
             await _trueVoteDbContext.SaveChangesAsync();
-
-            await _telegramBot.SendChannelMessageAsync($"New TrueVote Race created: {baseRace.Name}");
 
             LogDebug("HTTP trigger - CreateRace:End");
 

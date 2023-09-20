@@ -27,7 +27,6 @@ namespace TrueVote.Api.Tests.Helpers
         protected readonly Timestamp _timestampApi;
         protected readonly GraphQLExecutor _graphQLApi;
         protected readonly MoqDataAccessor _moqDataAccessor;
-        protected readonly Mock<TelegramBot> _mockTelegram;
         protected readonly Mock<IOpenTimestampsClient> _mockOpenTimestampsClient;
         protected readonly IGraphQLRequestExecutor requestExecutor;
 
@@ -40,7 +39,6 @@ namespace TrueVote.Api.Tests.Helpers
             serviceCollection.TryAddScoped<IFileSystem, FileSystem>();
             serviceCollection.TryAddSingleton<ILoggerFactory, LoggerFactory>();
             serviceCollection.TryAddSingleton(typeof(ILogger), typeof(Logger<Startup>));
-            serviceCollection.TryAddSingleton<TelegramBot, TelegramBot>();
             serviceCollection.TryAddSingleton<IOpenTimestampsClient, OpenTimestampsClient>();
             serviceCollection.TryAddScoped<Query, Query>();
             serviceCollection.TryAddSingleton<INamingConventions, TrueVoteNamingConventions>();
@@ -60,21 +58,18 @@ namespace TrueVote.Api.Tests.Helpers
             _logHelper.MockLog(LogLevel.Warning);
             _logHelper.MockLog(LogLevel.Error);
 
-            _mockTelegram = new Mock<TelegramBot>();
-            _mockTelegram.Setup(m => m.SendChannelMessageAsync(It.IsAny<string>())).ReturnsAsync(new Telegram.Bot.Types.Message());
-
             _mockOpenTimestampsClient = new Mock<IOpenTimestampsClient>();
             _mockOpenTimestampsClient.Setup(m => m.Stamp(It.IsAny<byte[]>())).Returns<byte[]>(hash => Task.FromResult(hash));
 
             _moqDataAccessor = new MoqDataAccessor();
-            _userApi = new User(_logHelper.Object, _moqDataAccessor.mockUserContext.Object, _mockTelegram.Object);
-            _electionApi = new Election(_logHelper.Object, _moqDataAccessor.mockElectionContext.Object, _mockTelegram.Object);
-            _validatorApi = new Validator(_logHelper.Object, _moqDataAccessor.mockBallotContext.Object, _mockTelegram.Object, _mockOpenTimestampsClient.Object);
-            _ballotApi = new Ballot(_logHelper.Object, _moqDataAccessor.mockBallotContext.Object, _mockTelegram.Object, _validatorApi);
-            _raceApi = new Race(_logHelper.Object, _moqDataAccessor.mockRaceContext.Object, _mockTelegram.Object);
-            _candidateApi = new Candidate(_logHelper.Object, _moqDataAccessor.mockCandidateContext.Object, _mockTelegram.Object);
-            _graphQLApi = new GraphQLExecutor(_logHelper.Object, _mockTelegram.Object, requestExecutor);
-            _timestampApi = new Timestamp(_logHelper.Object, _moqDataAccessor.mockTimestampContext.Object, _mockTelegram.Object);
+            _userApi = new User(_logHelper.Object, _moqDataAccessor.mockUserContext.Object);
+            _electionApi = new Election(_logHelper.Object, _moqDataAccessor.mockElectionContext.Object);
+            _validatorApi = new Validator(_logHelper.Object, _moqDataAccessor.mockBallotContext.Object, _mockOpenTimestampsClient.Object);
+            _ballotApi = new Ballot(_logHelper.Object, _moqDataAccessor.mockBallotContext.Object, _validatorApi);
+            _raceApi = new Race(_logHelper.Object, _moqDataAccessor.mockRaceContext.Object);
+            _candidateApi = new Candidate(_logHelper.Object, _moqDataAccessor.mockCandidateContext.Object);
+            _graphQLApi = new GraphQLExecutor(_logHelper.Object, requestExecutor);
+            _timestampApi = new Timestamp(_logHelper.Object, _moqDataAccessor.mockTimestampContext.Object);
         }
     }
 }

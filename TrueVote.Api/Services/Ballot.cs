@@ -22,13 +22,11 @@ namespace TrueVote.Api.Services
     public class Ballot : LoggerHelper
     {
         private readonly ITrueVoteDbContext _trueVoteDbContext;
-        private readonly TelegramBot _telegramBot;
         private readonly IValidator _validator;
 
-        public Ballot(ILogger log, ITrueVoteDbContext trueVoteDbContext, TelegramBot telegramBot, IValidator validator) : base(log, telegramBot)
+        public Ballot(ILogger log, ITrueVoteDbContext trueVoteDbContext, IValidator validator) : base(log)
         {
             _trueVoteDbContext = trueVoteDbContext;
-            _telegramBot = telegramBot;
             _validator = validator;
         }
 
@@ -82,8 +80,6 @@ namespace TrueVote.Api.Services
                 BallotId = ballot.BallotId,
                 Message = $"Ballot successfully submitted. Election ID: {bindSubmitBallotModel.Election.ElectionId}, Ballot ID: {ballot.BallotId}"
             };
-
-            await _telegramBot.SendChannelMessageAsync($"New TrueVote Ballot successfully submitted. Election ID: {bindSubmitBallotModel.Election.ElectionId}, Ballot ID: {ballot.BallotId}");
 
             // TODO Post a message to Service Bus for this Ballot
             // FOR NOW ONLY - THIS LINE SHOULD BE REPLACED WITH A POST TO SERVICE BUS

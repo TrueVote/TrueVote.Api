@@ -1,6 +1,5 @@
 using Microsoft.Extensions.Logging;
 using System.Diagnostics.CodeAnalysis;
-using TrueVote.Api.Services;
 
 namespace TrueVote.Api.Helpers
 {
@@ -8,12 +7,10 @@ namespace TrueVote.Api.Helpers
     public class LoggerHelper
     {
         private readonly ILogger _log;
-        private readonly TelegramBot _telegramBot;
 
-        public LoggerHelper(ILogger log, TelegramBot telegramBot)
+        public LoggerHelper(ILogger log)
         {
             _log = log;
-            _telegramBot = telegramBot;
         }
 
         public void LogInformation(string message)
@@ -28,8 +25,6 @@ namespace TrueVote.Api.Helpers
 
         public void LogError(string message)
         {
-            _ = _telegramBot.SendChannelMessageAsync($"TrueVote API Error: {message}");
-
             _log.LogError(message);
         }
 
