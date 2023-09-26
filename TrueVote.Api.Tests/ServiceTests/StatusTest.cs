@@ -23,7 +23,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         {
             try
             {
-                var status = new Status(_fileSystem, _logHelper.Object, true);
+                var status = new Status(_fileSystem, _logHelper.Object);
                 _ = await status.GetStatus(null);
             }
             catch (ArgumentNullException ane)
@@ -43,7 +43,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public async Task LogsMessages()
         {
-            var status = new Status(_fileSystem, _logHelper.Object, true);
+            var status = new Status(_fileSystem, _logHelper.Object);
             var requestData = new MockHttpRequestData("");
             _ = await status.GetStatus(requestData);
 
@@ -54,7 +54,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public async Task ReturnsValidModel()
         {
-            var status = new Status(_fileSystem, _logHelper.Object, true);
+            var status = new Status(_fileSystem, _logHelper.Object);
             var requestData = new MockHttpRequestData("");
             var res = await status.GetStatus(requestData);
 
@@ -67,7 +67,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public async Task ReturnsValidBuildInfoModel()
         {
-            var status = new Status(_fileSystem, _logHelper.Object, true);
+            var status = new Status(_fileSystem, _logHelper.Object);
             var requestData = new MockHttpRequestData("");
             var res = await status.GetStatus(requestData);
 
@@ -110,7 +110,7 @@ namespace TrueVote.Api.Tests.ServiceTests
                 ret = _fileSystem.File.ReadAllText(p);
             }).Returns(() => ret);
 
-            var statusMock = new Status(fileSystemMock.Object, _logHelper.Object, true);
+            var statusMock = new Status(fileSystemMock.Object, _logHelper.Object);
             var requestData = new MockHttpRequestData("");
             var res = await statusMock.GetStatus(requestData);
 
@@ -148,7 +148,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             fileSystemMock.Setup(x => x.Path.IsPathFullyQualified(It.IsAny<string>())).Returns(true);
             fileSystemMock.Setup(x => x.File.ReadAllText(It.IsAny<string>())).Throws(new Exception());
 
-            var statusMock = new Status(fileSystemMock.Object, _logHelper.Object, true);
+            var statusMock = new Status(fileSystemMock.Object, _logHelper.Object);
             var requestData = new MockHttpRequestData("");
             var res = await statusMock.GetStatus(requestData);
 
