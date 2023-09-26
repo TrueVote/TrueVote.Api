@@ -1,8 +1,6 @@
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Moq;
 using System;
-using System.IO.Abstractions;
 using System.Threading.Tasks;
 using TrueVote.Api.Models;
 using TrueVote.Api.Services;
