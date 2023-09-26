@@ -19,13 +19,11 @@ namespace TrueVote.Api.Services
 {
     public class Status : LoggerHelper
     {
-        protected IFileSystem _fileSystem;
         private static BuildInfo _BuildInfo = null;
         private static string _BuildInfoReadTime = null;
 
-        public Status(IFileSystem fileSystem, ILogger log): base(log)
+        public Status(ILogger log): base(log)
         {
-            _fileSystem = fileSystem;
         }
 
         [Function(nameof(GetStatus))]
