@@ -36,29 +36,25 @@ echo $template
 
 # Set the path to the output file
 projectoutputfile=$DIR/../TrueVote.Api/version.json
-echo "Version Output FilePath: " $projectoutputfile
+echo "Version Output FilePath (.json): " $projectoutputfile
 
 # Format the replaced JSON and output to version.json file
 #echo $template | grep -Eo '"[^"]*" *(: *([0-9]*|"[^"]*")[^{}\["]*|,)?|[^"\]\[\}\{]*|\{|\},?|\[|\],?|[0-9 ]*,?' | awk '{if ($0 ~ /^[}\]]/ ) offset-=2; printf "%*c%s\n", offset, " ", $0; if ($0 ~ /^[{\[]/) offset+=2}' > $projectoutputfile
 echo $template | sed '$s/ *}$/}/' > $projectoutputfile
 
 # Do the same for the Version.cs file
-projectoutputfile2=$DIR/../TrueVote.Api/Version.cs
-echo "Version Output FilePath: " $projectoutputfile2
+# Read the template .cs file into a variable for replacements
+template2=`cat $DIR/Version_Template.cs`
 
-# First, reset the file
-GITREST=`git checkout HEAD -- $projectoutputfile2`
-echo $GITREST
-
-# Load the reset .cs file into a variable for replacements
-template2=`cat $DIR/../TrueVote.Api/Version.cs`
-
-# Rewrite the file
-template2=${template2//master/$branchname}
-template2=${template2//Thursday, Aug 26, 2021 18:16:27/$buildtime}
-template2=${template2//1.0.0/$lasttag}
-template2=${template2//b00224c3f849f8f6cb4bf434e10bd571529621c6/$commit}
+template2=${template2//\{\{branch\}\}/$branchname}
+template2=${template2//\{\{buildtime\}\}/$buildtime}
+template2=${template2//\{\{lasttag\}\}/$lasttag}
+template2=${template2//\{\{commit\}\}/$commit}
 echo $template2
+
+# Set the path to the C# output file
+projectoutputfile2=$DIR/../TrueVote.Api/Version.cs
+echo "Version Output FilePath (.cs): " $projectoutputfile2
 
 # Output the replaced Version.cs file
 echo $template2 > $projectoutputfile2
