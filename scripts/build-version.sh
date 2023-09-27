@@ -59,6 +59,10 @@ echo "Version Output FilePath (.cs): " $projectoutputfile2
 # Output the replaced Version.cs file
 echo $template2 > $projectoutputfile2
 
+# Send a Git command to ignore these changes
+ignoreversion=`git update-index --assume-unchanged $projectoutputfile2`
+echo $ignoreversion
+
 # If command args are passed, call another script
 if [ "$1" != "" ]; then
 	bash $DIR/copy-version.sh $1 $2
