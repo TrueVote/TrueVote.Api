@@ -10,9 +10,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Abstractions;
-using System.Linq;
 using System.Net;
-using System.Reflection;
 using System.Threading.Tasks;
 using TrueVote.Api.Helpers;
 using TrueVote.Api.Models;
@@ -21,23 +19,11 @@ namespace TrueVote.Api.Services
 {
     public class Status : LoggerHelper
     {
-        protected IFileSystem _fileSystem;
-        public static BuildInfo _BuildInfo = null;
+        private static BuildInfo _BuildInfo = null;
         private static string _BuildInfoReadTime = null;
 
-        public Status(IFileSystem fileSystem, ILogger log, bool clearStatics = false): base(log)
+        public Status(ILogger log): base(log)
         {
-            _fileSystem = fileSystem;
-            if (clearStatics)
-            {
-                ClearStatics();
-            }
-        }
-
-        private void ClearStatics()
-        {
-            _BuildInfo = null;
-            _BuildInfoReadTime = null;
         }
 
         [Function(nameof(GetStatus))]
@@ -68,25 +54,20 @@ namespace TrueVote.Api.Services
             status.Responds = true;
             status.RespondsMsg = "TrueVote.Api is responding";
 
-            // Check if the static is already been initialized. If not, fetch the properties from the version.json file and set them.
+            // Check if the static is already been initialized. If not, fetch the properties from the Version.cs static.
             if (_BuildInfo == null)
             {
-                // Read the version file
-                var buildInfoString = GetBuildInfo();
-                if (buildInfoString != null)
+                // Marshall the contents of the Version.cs static into a model
+                _BuildInfo = JsonConvert.DeserializeObject<BuildInfo>(VersionInfo.BuildInfo);
+
+                // Convert the time for consistency
+                if (_BuildInfo.BuildTime != string.Empty)
                 {
-                    // Marshall the contents of the version.json file into a model
-                    _BuildInfo = JsonConvert.DeserializeObject<BuildInfo>(buildInfoString);
-
-                    // Convert the time for consistency
-                    if (_BuildInfo.BuildTime != string.Empty)
-                    {
-                        _BuildInfo.BuildTime = $"{DateTime.Parse(_BuildInfo.BuildTime)} UTC";
-                    }
-
-                    // Set the read time to now. This should never change because it's stored in a static.
-                    _BuildInfoReadTime = DateTime.Now.ToUniversalTime().ToString("dddd, MMM dd, yyyy HH:mm:ss");
+                    _BuildInfo.BuildTime = $"{DateTime.Parse(_BuildInfo.BuildTime)} UTC";
                 }
+
+                // Set the read time to now. This should never change because it's stored in a static.
+                _BuildInfoReadTime = DateTime.Now.ToUniversalTime().ToString("dddd, MMM dd, yyyy HH:mm:ss");
             }
 
             // Attach the static to the returned object
@@ -103,46 +84,6 @@ namespace TrueVote.Api.Services
             LogDebug("HTTP trigger - GetStatus:End");
 
             return await req.CreateOkResponseAsync(status);
-        }
-
-        private string GetBuildInfo()
-        {
-            try
-            {
-                var codeBase = new Uri(Assembly.GetExecutingAssembly().Location).ToString();
-                var binDir = codeBase.Replace(codeBase.Split('/').Last(), "");
-                binDir = binDir.Remove(binDir.LastIndexOf("bin/"));
-                if (binDir.Contains(".Tests/")) {
-                    binDir = binDir.Remove(binDir.LastIndexOf(".Tests/"));
-                }
-                binDir = binDir.Replace("file:///", "");
-
-                LogInformation($"binDir: {binDir}");
-
-                // On Linux we may need to add a leading /
-                if (!_fileSystem.Path.IsPathFullyQualified(binDir))
-                {
-                    binDir = "/" + binDir;
-                    LogInformation("Added leading '/' to binDir");
-                    LogInformation($"Modified binDir: {binDir}");
-                }
-
-                var versionFile = _fileSystem.Path.Combine(binDir, "version.json");
-
-                LogInformation($"Loading build info from: {versionFile}");
-
-                var versionContents = _fileSystem.File.ReadAllText(versionFile);
-
-                LogInformation($"Loaded build info from version.json");
-
-                return versionContents;
-            }
-            catch (Exception e)
-            {
-                LogError($"Could not load version.json file. Exception: {e.Message}");
-
-                return null;
-            }
         }
     }
 }

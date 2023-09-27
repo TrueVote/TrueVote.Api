@@ -267,3 +267,5 @@ coverage.info
 coverage.opencover.xml
 coverage-html
 version.json
+Version.cs
+TrueVote.Api/Version.cs
