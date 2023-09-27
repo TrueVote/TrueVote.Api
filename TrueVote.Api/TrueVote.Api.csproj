@@ -75,7 +75,7 @@
     <EmbeddedResource Include="dist\favicon-32x32.png" />
     <EmbeddedResource Include="dist\favicon.ico" />
   </ItemGroup>
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+  <Target Name="PreBuild" AfterTargets="PreBuildEvent">
     <Exec Condition="$(OS) == 'Windows_NT'" Command="cscript.exe ..\scripts\build-version.vbs" />
     <Exec Condition="$(OS) != 'Windows_NT'" Command="$(ProjectDir)../scripts/build-version.sh $(ProjectDir) $(TargetDir)" />
   </Target>
