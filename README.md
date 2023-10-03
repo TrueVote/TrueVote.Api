@@ -13,25 +13,22 @@
 
 TrueVote.Api is the core backend for [TrueVote](https://truevote.org).
 
-The main technology stack platform is [.NET Core](https://dotnet.microsoft.com/) 6.0.
+The main technology stack platform is [.NET Core](https://dotnet.microsoft.com/) 7.0.
 
 ## 🛠 Prerequisites
 
-* Install Visual Studio 2022 (preview) or later, or Visual Studio Code. Ensure that `$ dotnet --version` is at least 6.0.
+* Install Visual Studio 2022 (preview) or later, or Visual Studio Code. Ensure that `$ dotnet --version` is at least 7.0.
 * Install Azure [CosmosDB Emulator](https://learn.microsoft.com/en-us/azure/cosmos-db/local-emulator-release-notes)
 
 ## ⌨️ Install, Build, and Serve the Site
 
-Create a new file at the root of TrueVote.Api named `local.settings.json` and add the following, replacing the account key with the actual account key from the [CosmosDB Emulator start page](https://localhost:8081/_explorer/index.html). To use the functions of the Telegram Bot locally, create a new Bot using ['BotFather'](https://core.telegram.org/bots#3-how-do-i-create-a-bot) and place the key in the `local.settings.json` file.
+Create a new file at the root of the TrueVote.Api project named `local.settings.json` and add the following, replacing the account key with the actual account key from the [CosmosDB Emulator start page](https://localhost:8081/_explorer/index.html).
 
 ```json
 {
   "IsEncrypted": false,
   "Values": {
-    "BaseApiUrl": "https://localhost:7071/api",
     "CosmosDbConnectionString": "AccountEndpoint=https://localhost:8081/;AccountKey=<AccountKeyFromCosmosDBEmulator>",
-    "TelegramBotKey": "<TelegramBotKey>",
-    "TelegramRuntimeChannel": "TrueVote_Api_Runtime_Channel_Dev",
     "AzureWebJobsStorage": "UseDevelopmentStorage=true"
   }
 }

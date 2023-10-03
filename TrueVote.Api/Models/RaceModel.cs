@@ -178,7 +178,6 @@ namespace TrueVote.Api.Models
 
         [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
         [OpenApiProperty(Description = "Candidate Ids")]
-        [DataType(DataType.Text)]
         [RegularExpression(Constants.GenericStringRegex)]
         [JsonProperty(PropertyName = "CandidateIds", Required = Required.Always)]
         public List<string> CandidateIds { get; set; }

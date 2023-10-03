@@ -103,7 +103,6 @@ namespace TrueVote.Api.Models
 
         [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
         [OpenApiProperty(Description = "Selected")]
-        [DataType(DataType.Text)]
         [JsonProperty(PropertyName = "Selected")]
         public bool Selected { get; set; } = false;
     }
