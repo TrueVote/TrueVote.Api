@@ -30,6 +30,7 @@ Get the `ServiceBusConnectionString` from Azure portal. Currently Service Bus is
 {
   "IsEncrypted": false,
   "Values": {
+    "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
     "CosmosDbConnectionString": "AccountEndpoint=https://localhost:8081/;AccountKey=<AccountKeyFromCosmosDBEmulator>",
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
     "ServiceBusConnectionString": "<ServiceBusConnectionString>",
