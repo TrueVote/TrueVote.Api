@@ -182,6 +182,7 @@ namespace TrueVote.Api
                 s.TryAddScoped<IFileSystem, FileSystem>();
                 s.TryAddSingleton<ILoggerFactory, LoggerFactory>();
                 s.TryAddScoped<Query, Query>();
+                s.TryAddScoped<IServiceBus, ServiceBus>();
 
                 s.TryAddSingleton<INamingConventions, TrueVoteNamingConventions>();
                 s.AddGraphQLFunction().AddQueryType<Query>();
