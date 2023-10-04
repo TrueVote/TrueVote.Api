@@ -23,11 +23,13 @@ namespace TrueVote.Api.Services
     {
         private readonly ITrueVoteDbContext _trueVoteDbContext;
         private readonly IValidator _validator;
+        private readonly IServiceBus _serviceBus;
 
-        public Ballot(ILogger log, ITrueVoteDbContext trueVoteDbContext, IValidator validator) : base(log)
+        public Ballot(ILogger log, ITrueVoteDbContext trueVoteDbContext, IValidator validator, IServiceBus serviceBus) : base(log, serviceBus)
         {
             _trueVoteDbContext = trueVoteDbContext;
             _validator = validator;
+            _serviceBus = serviceBus;
         }
 
         [Function(nameof(SubmitBallot))]
@@ -81,7 +83,9 @@ namespace TrueVote.Api.Services
                 Message = $"Ballot successfully submitted. Election ID: {bindSubmitBallotModel.Election.ElectionId}, Ballot ID: {ballot.BallotId}"
             };
 
-            // TODO Post a message to Service Bus for this Ballot
+            // Post a message to Service Bus for this Ballot
+            await _serviceBus.SendAsync($"New TrueVote Ballot successfully submitted. Election ID: {bindSubmitBallotModel.Election.ElectionId}, Ballot ID: {ballot.BallotId}");
+
             // FOR NOW ONLY - THIS LINE SHOULD BE REPLACED WITH A POST TO SERVICE BUS
             // Hash the ballot
             try

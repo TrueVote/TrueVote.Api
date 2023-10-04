@@ -24,12 +24,16 @@ The main technology stack platform is [.NET Core](https://dotnet.microsoft.com/)
 
 Create a new file at the root of the TrueVote.Api project named `local.settings.json` and add the following, replacing the account key with the actual account key from the [CosmosDB Emulator start page](https://localhost:8081/_explorer/index.html).
 
+Get the `ServiceBusConnectionString` from Azure portal. Currently Service Bus is not available to run locally.
+
 ```json
 {
   "IsEncrypted": false,
   "Values": {
     "CosmosDbConnectionString": "AccountEndpoint=https://localhost:8081/;AccountKey=<AccountKeyFromCosmosDBEmulator>",
-    "AzureWebJobsStorage": "UseDevelopmentStorage=true"
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "ServiceBusConnectionString": "<ServiceBusConnectionString>",
+    "ServiceBusApiEventQueueName": "apieventqueue-dev"
   }
 }
 ```

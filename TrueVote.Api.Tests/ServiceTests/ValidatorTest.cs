@@ -31,7 +31,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             var mockOpenTimestampsClient = new Mock<IOpenTimestampsClient>();
             mockOpenTimestampsClient.Setup(m => m.Stamp(It.IsAny<byte[]>())).Throws(new Exception("Stamp exception"));
 
-            var validatorApi = new Validator(_logHelper.Object, _moqDataAccessor.mockBallotContext.Object, mockOpenTimestampsClient.Object);
+            var validatorApi = new Validator(_logHelper.Object, _moqDataAccessor.mockBallotContext.Object, mockOpenTimestampsClient.Object, _mockServiceBus.Object);
 
             try
             {
@@ -58,7 +58,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             mockBallotContext.Setup(m => m.BallotHashes).Returns(MockBallotHashSet.Object);
             mockBallotContext.Setup(m => m.EnsureCreatedAsync()).Throws(new Exception("Storing data exception"));
 
-            var validatorApi = new Validator(_logHelper.Object, mockBallotContext.Object, _mockOpenTimestampsClient.Object);
+            var validatorApi = new Validator(_logHelper.Object, mockBallotContext.Object, _mockOpenTimestampsClient.Object, _mockServiceBus.Object);
 
             try
             {
@@ -112,7 +112,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             mockBallotHashContext.Setup(m => m.BallotHashes).Returns(MockBallotHashSet.Object);
             mockBallotHashContext.Setup(m => m.EnsureCreatedAsync()).Throws(new Exception("Storing data exception"));
 
-            var validatorApi = new Validator(_logHelper.Object, mockBallotHashContext.Object, _mockOpenTimestampsClient.Object);
+            var validatorApi = new Validator(_logHelper.Object, mockBallotHashContext.Object, _mockOpenTimestampsClient.Object, _mockServiceBus.Object);
 
             try
             {
@@ -136,7 +136,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             mockTimestampContext.Setup(m => m.Timestamps).Returns(MockTimestampSet.Object);
             mockTimestampContext.Setup(m => m.EnsureCreatedAsync()).Throws(new Exception("Storing data exception"));
 
-            var validatorApi = new Validator(_logHelper.Object, mockTimestampContext.Object, _mockOpenTimestampsClient.Object);
+            var validatorApi = new Validator(_logHelper.Object, mockTimestampContext.Object, _mockOpenTimestampsClient.Object, _mockServiceBus.Object);
 
             try
             {

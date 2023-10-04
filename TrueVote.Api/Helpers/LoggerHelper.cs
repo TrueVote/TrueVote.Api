@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using System.Diagnostics.CodeAnalysis;
+using TrueVote.Api.Services;
 
 namespace TrueVote.Api.Helpers
 {
@@ -7,10 +8,12 @@ namespace TrueVote.Api.Helpers
     public class LoggerHelper
     {
         private readonly ILogger _log;
+        private readonly IServiceBus _serviceBus;
 
-        public LoggerHelper(ILogger log)
+        public LoggerHelper(ILogger log, IServiceBus serviceBus)
         {
             _log = log;
+            _serviceBus = serviceBus;
         }
 
         public void LogInformation(string message)
@@ -25,6 +28,8 @@ namespace TrueVote.Api.Helpers
 
         public void LogError(string message)
         {
+            _serviceBus.SendAsync($"TrueVote API Error: {message}");
+
             _log.LogError(message);
         }
 

@@ -21,10 +21,12 @@ namespace TrueVote.Api.Services
     public class Candidate : LoggerHelper
     {
         private readonly ITrueVoteDbContext _trueVoteDbContext;
+        private readonly IServiceBus _serviceBus;
 
-        public Candidate(ILogger log, ITrueVoteDbContext trueVoteDbContext) : base(log)
+        public Candidate(ILogger log, ITrueVoteDbContext trueVoteDbContext, IServiceBus serviceBus) : base(log, serviceBus)
         {
             _trueVoteDbContext = trueVoteDbContext;
+            _serviceBus = serviceBus;
         }
 
         [Function(nameof(CreateCandidate))]
@@ -67,6 +69,8 @@ namespace TrueVote.Api.Services
 
             await _trueVoteDbContext.Candidates.AddAsync(candidate);
             await _trueVoteDbContext.SaveChangesAsync();
+
+            await _serviceBus.SendAsync($"New TrueVote Candidate created: {baseCandidate.Name}");
 
             LogDebug("HTTP trigger - CreateCandidate:End");
 

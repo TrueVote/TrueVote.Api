@@ -21,10 +21,12 @@ namespace TrueVote.Api.Services
     public class Race : LoggerHelper
     {
         private readonly ITrueVoteDbContext _trueVoteDbContext;
+        private readonly IServiceBus _serviceBus;
 
-        public Race(ILogger log, ITrueVoteDbContext trueVoteDbContext) : base(log)
+        public Race(ILogger log, ITrueVoteDbContext trueVoteDbContext, IServiceBus serviceBus) : base(log, serviceBus)
         {
             _trueVoteDbContext = trueVoteDbContext;
+            _serviceBus = serviceBus;
         }
 
         [Function(nameof(CreateRace))]
@@ -67,6 +69,8 @@ namespace TrueVote.Api.Services
 
             await _trueVoteDbContext.Races.AddAsync(race);
             await _trueVoteDbContext.SaveChangesAsync();
+
+            await _serviceBus.SendAsync($"New TrueVote Race created: {baseRace.Name}");
 
             LogDebug("HTTP trigger - CreateRace:End");
 

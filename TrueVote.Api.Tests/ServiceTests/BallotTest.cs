@@ -68,7 +68,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             var mockValidator = new Mock<IValidator>();
             mockValidator.Setup(m => m.HashBallotAsync(It.IsAny<BallotModel>())).Throws(new Exception("Hash Ballot Exception"));
 
-            var ballotApi = new Ballot(_logHelper.Object, _moqDataAccessor.mockBallotContext.Object, mockValidator.Object);
+            var ballotApi = new Ballot(_logHelper.Object, _moqDataAccessor.mockBallotContext.Object, mockValidator.Object, _mockServiceBus.Object);
             var ret = await ballotApi.SubmitBallot(requestData);
             Assert.NotNull(ret);
             Assert.Equal(HttpStatusCode.Conflict, ret.StatusCode);
@@ -102,7 +102,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             var findBallotObj = new FindBallotModel { BallotId = "ballotid3" };
             var requestData = new MockHttpRequestData(JsonConvert.SerializeObject(findBallotObj));
 
-            var ballotApi = new Ballot(_logHelper.Object, _moqDataAccessor.mockBallotContext.Object, _validatorApi);
+            var ballotApi = new Ballot(_logHelper.Object, _moqDataAccessor.mockBallotContext.Object, _validatorApi, _mockServiceBus.Object);
 
             var ret = await ballotApi.BallotFind(requestData);
             Assert.NotNull(ret);
@@ -123,7 +123,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             var findBallotObj = new FindBallotModel { BallotId = "not going to find anything" };
             var requestData = new MockHttpRequestData(JsonConvert.SerializeObject(findBallotObj));
 
-            var ballotApi = new Ballot(_logHelper.Object, _moqDataAccessor.mockBallotContext.Object, _validatorApi);
+            var ballotApi = new Ballot(_logHelper.Object, _moqDataAccessor.mockBallotContext.Object, _validatorApi, _mockServiceBus.Object);
 
             var ret = await ballotApi.BallotFind(requestData);
             Assert.NotNull(ret);
@@ -139,7 +139,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             var countBallotsObj = new CountBallotModel { DateCreatedStart = new DateTime(2022, 01, 01), DateCreatedEnd = new DateTime(2033, 12, 31) };
             var requestData = new MockHttpRequestData(JsonConvert.SerializeObject(countBallotsObj));
 
-            var ballotApi = new Ballot(_logHelper.Object, _moqDataAccessor.mockBallotContext.Object, _validatorApi);
+            var ballotApi = new Ballot(_logHelper.Object, _moqDataAccessor.mockBallotContext.Object, _validatorApi, _mockServiceBus.Object);
 
             var ret = await ballotApi.BallotCount(requestData);
             Assert.NotNull(ret);
