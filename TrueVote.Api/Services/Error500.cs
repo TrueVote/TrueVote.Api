@@ -17,8 +17,11 @@ namespace TrueVote.Api.Services
 {
     public class Error500 : LoggerHelper
     {
-        public Error500(ILogger log): base(log)
+        private readonly IServiceBus _serviceBus;
+
+        public Error500(ILogger log, IServiceBus serviceBus): base(log, serviceBus)
         {
+            _serviceBus = serviceBus;
         }
 
         [Function(nameof(ThrowError500))]
@@ -46,6 +49,7 @@ namespace TrueVote.Api.Services
                 // Throw this random exception for no reason other than the requester wants it
                 LogError($"error500 - throwing a sample exception");
                 LogDebug("HTTP trigger - ThrowError500:End");
+                await _serviceBus.SendAsync($"error500 - throwing a sample exception");
                 throw new Exception("error500 - throwing a sample exception");
             }
 

@@ -18,7 +18,7 @@ namespace TrueVote.Api.Services
     {
         private readonly IGraphQLRequestExecutor _graphqlExecutor;
 
-        public GraphQLExecutor(ILogger log, [GraphQL] IGraphQLRequestExecutor executor) : base(log)
+        public GraphQLExecutor(ILogger log, [GraphQL] IGraphQLRequestExecutor executor, IServiceBus serviceBus) : base(log, serviceBus)
         {
             _graphqlExecutor = executor;
         }

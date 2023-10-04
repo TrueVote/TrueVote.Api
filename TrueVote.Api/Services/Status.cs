@@ -9,7 +9,6 @@ using Newtonsoft.Json;
 using System;
 using System.Diagnostics;
 using System.IO;
-using System.IO.Abstractions;
 using System.Net;
 using System.Threading.Tasks;
 using TrueVote.Api.Helpers;
@@ -21,9 +20,11 @@ namespace TrueVote.Api.Services
     {
         private static BuildInfo _BuildInfo = null;
         private static string _BuildInfoReadTime = null;
+        private readonly IServiceBus _serviceBus;
 
-        public Status(ILogger log): base(log)
+        public Status(ILogger log, IServiceBus serviceBus) : base(log, serviceBus)
         {
+            _serviceBus = serviceBus;
         }
 
         [Function(nameof(GetStatus))]
@@ -80,6 +81,8 @@ namespace TrueVote.Api.Services
             status.ExecutionTime = watch.ElapsedMilliseconds;
             status.ExecutionTimeMsg = $"Time to run: {watch.ElapsedMilliseconds}ms";
             status.CurrentTime = DateTime.Now.ToUniversalTime().ToString("dddd, MMM dd, yyyy HH:mm:ss");
+
+            await _serviceBus.SendAsync($"Status Check");
 
             LogDebug("HTTP trigger - GetStatus:End");
 

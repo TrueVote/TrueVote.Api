@@ -19,7 +19,7 @@ namespace TrueVote.Api.Services
     {
         private readonly ITrueVoteDbContext _trueVoteDbContext;
 
-        public Query(ILogger log, ITrueVoteDbContext trueVoteDbContext) : base(log)
+        public Query(ILogger log, ITrueVoteDbContext trueVoteDbContext, IServiceBus serviceBus) : base(log, serviceBus)
         {
             _trueVoteDbContext = trueVoteDbContext;
         }

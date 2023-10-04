@@ -22,11 +22,13 @@ namespace TrueVote.Api.Services
     {
         private readonly ITrueVoteDbContext _trueVoteDbContext;
         private readonly IOpenTimestampsClient _openTimestampsClient;
+        private readonly IServiceBus _serviceBus;
 
-        public Validator(ILogger log, ITrueVoteDbContext trueVoteDbContext, IOpenTimestampsClient openTimestampsClient) : base(log)
+        public Validator(ILogger log, ITrueVoteDbContext trueVoteDbContext, IOpenTimestampsClient openTimestampsClient, IServiceBus serviceBus) : base(log, serviceBus)
         {
             _trueVoteDbContext = trueVoteDbContext;
             _openTimestampsClient = openTimestampsClient;
+            _serviceBus = serviceBus;
         }
 
         public async virtual Task<BallotHashModel> HashBallotAsync(BallotModel ballot)
@@ -59,6 +61,8 @@ namespace TrueVote.Api.Services
             await _trueVoteDbContext.SaveChangesAsync();
 
             var ballotHashJson = JsonConvert.SerializeObject(ballotHashModel, Formatting.Indented);
+
+            await _serviceBus.SendAsync($"New Ballot Hash created for Ballot: {ballot.BallotId}. BallotHash: {ballotHashJson}");
 
             return ballotHashModel;
         }
@@ -114,6 +118,8 @@ namespace TrueVote.Api.Services
             await _trueVoteDbContext.SaveChangesAsync();
 
             var timestampJson = JsonConvert.SerializeObject(timestamp, Formatting.Indented);
+
+            await _serviceBus.SendAsync($"New Ballot Timestamp created for {items.Count()} Ballots. Timestamp: {timestampJson}");
 
             return timestamp;
         }

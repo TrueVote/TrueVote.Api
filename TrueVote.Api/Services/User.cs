@@ -21,10 +21,12 @@ namespace TrueVote.Api.Services
     public class User : LoggerHelper
     {
         private readonly ITrueVoteDbContext _trueVoteDbContext;
+        private readonly IServiceBus _serviceBus;
 
-        public User(ILogger log, ITrueVoteDbContext trueVoteDbContext) : base(log)
+        public User(ILogger log, ITrueVoteDbContext trueVoteDbContext, IServiceBus serviceBus) : base(log, serviceBus)
         {
             _trueVoteDbContext = trueVoteDbContext;
+            _serviceBus = serviceBus;
         }
 
         [Function(nameof(CreateUser))]
@@ -67,6 +69,8 @@ namespace TrueVote.Api.Services
 
             await _trueVoteDbContext.Users.AddAsync(user);
             await _trueVoteDbContext.SaveChangesAsync();
+
+            await _serviceBus.SendAsync($"New TrueVote User created: {user.FirstName}");
 
             LogDebug("HTTP trigger - CreateUser:End");
 
