@@ -21,7 +21,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         {
             try
             {
-                var status = new Status(_logHelper.Object);
+                var status = new Status(_logHelper.Object, _mockServiceBus.Object);
                 _ = await status.GetStatus(null);
             }
             catch (ArgumentNullException ane)
@@ -41,7 +41,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public async Task LogsMessages()
         {
-            var status = new Status(_logHelper.Object);
+            var status = new Status(_logHelper.Object, _mockServiceBus.Object);
             var requestData = new MockHttpRequestData("");
             _ = await status.GetStatus(requestData);
 
@@ -52,7 +52,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public async Task ReturnsValidModel()
         {
-            var status = new Status(_logHelper.Object);
+            var status = new Status(_logHelper.Object, _mockServiceBus.Object);
             var requestData = new MockHttpRequestData("");
             var res = await status.GetStatus(requestData);
 
@@ -65,7 +65,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public async Task ReturnsValidBuildInfoModel()
         {
-            var status = new Status(_logHelper.Object);
+            var status = new Status(_logHelper.Object, _mockServiceBus.Object);
             var requestData = new MockHttpRequestData("");
             var res = await status.GetStatus(requestData);
 
@@ -78,7 +78,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public async Task RunsStopwatch()
         {
-            var status = new Status(_logHelper.Object);
+            var status = new Status(_logHelper.Object, _mockServiceBus.Object);
             var requestData = new MockHttpRequestData("");
             var res = await status.GetStatus(requestData);
 

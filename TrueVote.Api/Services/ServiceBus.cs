@@ -1,5 +1,6 @@
 using Azure.Messaging.ServiceBus;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 
 namespace TrueVote.Api.Services
@@ -9,6 +10,7 @@ namespace TrueVote.Api.Services
         Task SendAsync(string message);
     }
 
+    [ExcludeFromCodeCoverage]
     public class ServiceBus : IServiceBus
     {
         private readonly ServiceBusClient _serviceBusClient;

@@ -28,6 +28,7 @@ namespace TrueVote.Api.Tests.Helpers
         protected readonly GraphQLExecutor _graphQLApi;
         protected readonly MoqDataAccessor _moqDataAccessor;
         protected readonly Mock<IOpenTimestampsClient> _mockOpenTimestampsClient;
+        protected readonly Mock<IServiceBus> _mockServiceBus;
         protected readonly IGraphQLRequestExecutor requestExecutor;
 
         public TestHelper(ITestOutputHelper output)
@@ -45,6 +46,7 @@ namespace TrueVote.Api.Tests.Helpers
             serviceCollection.TryAddScoped<IFileSystem, FileSystem>();
             serviceCollection.AddGraphQLFunction().AddQueryType<Query>();
             serviceCollection.TryAddScoped<Validator, Validator>();
+            serviceCollection.TryAddScoped<IServiceBus, ServiceBus>();
             var serviceProvider = serviceCollection.BuildServiceProvider();
             requestExecutor = serviceProvider.GetRequiredService<IGraphQLRequestExecutor>();
 
@@ -61,15 +63,18 @@ namespace TrueVote.Api.Tests.Helpers
             _mockOpenTimestampsClient = new Mock<IOpenTimestampsClient>();
             _mockOpenTimestampsClient.Setup(m => m.Stamp(It.IsAny<byte[]>())).Returns<byte[]>(hash => Task.FromResult(hash));
 
+            _mockServiceBus = new Mock<IServiceBus>();
+            _mockServiceBus.Setup(m => m.SendAsync(It.IsAny<string>())).Returns(Task.FromResult(""));
+
             _moqDataAccessor = new MoqDataAccessor();
-            _userApi = new User(_logHelper.Object, _moqDataAccessor.mockUserContext.Object);
-            _electionApi = new Election(_logHelper.Object, _moqDataAccessor.mockElectionContext.Object);
-            _validatorApi = new Validator(_logHelper.Object, _moqDataAccessor.mockBallotContext.Object, _mockOpenTimestampsClient.Object);
-            _ballotApi = new Ballot(_logHelper.Object, _moqDataAccessor.mockBallotContext.Object, _validatorApi);
-            _raceApi = new Race(_logHelper.Object, _moqDataAccessor.mockRaceContext.Object);
-            _candidateApi = new Candidate(_logHelper.Object, _moqDataAccessor.mockCandidateContext.Object);
-            _graphQLApi = new GraphQLExecutor(_logHelper.Object, requestExecutor);
-            _timestampApi = new Timestamp(_logHelper.Object, _moqDataAccessor.mockTimestampContext.Object);
+            _userApi = new User(_logHelper.Object, _moqDataAccessor.mockUserContext.Object, _mockServiceBus.Object);
+            _electionApi = new Election(_logHelper.Object, _moqDataAccessor.mockElectionContext.Object, _mockServiceBus.Object);
+            _validatorApi = new Validator(_logHelper.Object, _moqDataAccessor.mockBallotContext.Object, _mockOpenTimestampsClient.Object, _mockServiceBus.Object);
+            _ballotApi = new Ballot(_logHelper.Object, _moqDataAccessor.mockBallotContext.Object, _validatorApi, _mockServiceBus.Object);
+            _raceApi = new Race(_logHelper.Object, _moqDataAccessor.mockRaceContext.Object, _mockServiceBus.Object);
+            _candidateApi = new Candidate(_logHelper.Object, _moqDataAccessor.mockCandidateContext.Object, _mockServiceBus.Object);
+            _graphQLApi = new GraphQLExecutor(_logHelper.Object, requestExecutor, _mockServiceBus.Object);
+            _timestampApi = new Timestamp(_logHelper.Object, _moqDataAccessor.mockTimestampContext.Object, _mockServiceBus.Object);
         }
     }
 }

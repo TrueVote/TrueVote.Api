@@ -90,7 +90,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             var findUserObj = new FindUserModel { FirstName = "Foo" };
             var requestData = new MockHttpRequestData(JsonConvert.SerializeObject(findUserObj));
 
-            var userApi = new User(_logHelper.Object, _moqDataAccessor.mockUserContext.Object);
+            var userApi = new User(_logHelper.Object, _moqDataAccessor.mockUserContext.Object, _mockServiceBus.Object);
 
             var ret = await userApi.UserFind(requestData);
             Assert.NotNull(ret);
@@ -112,7 +112,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             var findUserObj = new FindUserModel { FirstName = "not going to find anything" };
             var requestData = new MockHttpRequestData(JsonConvert.SerializeObject(findUserObj));
 
-            var userApi = new User(_logHelper.Object, _moqDataAccessor.mockUserContext.Object);
+            var userApi = new User(_logHelper.Object, _moqDataAccessor.mockUserContext.Object, _mockServiceBus.Object);
 
             var ret = await userApi.UserFind(requestData);
             Assert.NotNull(ret);

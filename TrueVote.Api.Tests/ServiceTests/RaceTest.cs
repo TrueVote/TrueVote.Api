@@ -108,7 +108,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             var findRaceObj = new FindRaceModel { Name = "President" };
             var requestData = new MockHttpRequestData(JsonConvert.SerializeObject(findRaceObj));
 
-            var raceApi = new Race(_logHelper.Object, mockRaceContext.Object);
+            var raceApi = new Race(_logHelper.Object, mockRaceContext.Object, _mockServiceBus.Object);
 
             var ret = await raceApi.RaceFind(requestData);
             Assert.NotNull(ret);
@@ -131,7 +131,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             var findRaceObj = new FindRaceModel { Name = "not going to find anything" };
             var requestData = new MockHttpRequestData(JsonConvert.SerializeObject(findRaceObj));
 
-            var raceApi = new Race(_logHelper.Object, _moqDataAccessor.mockRaceContext.Object);
+            var raceApi = new Race(_logHelper.Object, _moqDataAccessor.mockRaceContext.Object, _mockServiceBus.Object);
 
             var ret = await raceApi.RaceFind(requestData);
             Assert.NotNull(ret);
@@ -173,7 +173,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             var addCandidatesObj = new AddCandidatesModel { RaceId = "raceid1", CandidateIds = new List<string> { MoqData.MockCandidateData[0].CandidateId, MoqData.MockCandidateData[1].CandidateId } };
             var requestData = new MockHttpRequestData(JsonConvert.SerializeObject(addCandidatesObj));
 
-            var raceApi = new Race(_logHelper.Object, mockRaceContext.Object);
+            var raceApi = new Race(_logHelper.Object, mockRaceContext.Object, _mockServiceBus.Object);
 
             var ret = await raceApi.AddCandidates(requestData);
 
@@ -219,7 +219,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             var addCandidatesObj = new AddCandidatesModel { RaceId = "blah", CandidateIds = new List<string>() { } };
             var requestData = new MockHttpRequestData(JsonConvert.SerializeObject(addCandidatesObj));
 
-            var raceApi = new Race(_logHelper.Object, mockRaceContext.Object);
+            var raceApi = new Race(_logHelper.Object, mockRaceContext.Object, _mockServiceBus.Object);
 
             var ret = await raceApi.AddCandidates(requestData);
             Assert.NotNull(ret);
@@ -247,7 +247,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             var addCandidatesObj = new AddCandidatesModel { RaceId = "raceid1", CandidateIds = new List<string> { "68", "69" } };
             var requestData = new MockHttpRequestData(JsonConvert.SerializeObject(addCandidatesObj));
 
-            var raceApi = new Race(_logHelper.Object, mockRaceContext.Object);
+            var raceApi = new Race(_logHelper.Object, mockRaceContext.Object, _mockServiceBus.Object);
 
             var ret = await raceApi.AddCandidates(requestData);
             Assert.NotNull(ret);
@@ -276,7 +276,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             var addCandidatesObj = new AddCandidatesModel { RaceId = "raceid1", CandidateIds = new List<string> { "candidateid1", "candidateid2" } };
             var requestData = new MockHttpRequestData(JsonConvert.SerializeObject(addCandidatesObj));
 
-            var raceApi = new Race(_logHelper.Object, mockRaceContext.Object);
+            var raceApi = new Race(_logHelper.Object, mockRaceContext.Object, _mockServiceBus.Object);
 
             var ret = await raceApi.AddCandidates(requestData);
             Assert.NotNull(ret);
