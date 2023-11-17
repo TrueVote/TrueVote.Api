@@ -58,7 +58,7 @@ namespace TrueVote.Api.Models
 
         [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
         [OpenApiProperty(Description = "HeaderImageUrl")]
-        [MaxLength(32768)]
+        [MaxLength(1024)]
         [DataType(DataType.Text)]
         [JsonProperty(PropertyName = "HeaderImageUrl", Required = Required.Default)]
         public string HeaderImageUrl { get; set; } = string.Empty;

@@ -95,6 +95,13 @@ namespace TrueVote.Api.Models
         public string PartyAffiliation { get; set; } = string.Empty;
 
         [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
+        [OpenApiProperty(Description = "CandidateImageUrl")]
+        [MaxLength(1024)]
+        [DataType(DataType.Text)]
+        [JsonProperty(PropertyName = "CandidateImageUrl", Required = Required.Default)]
+        public string CandidateImageUrl { get; set; } = string.Empty;
+
+        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
         [OpenApiProperty(Description = "DateCreated")]
         [MaxLength(2048)]
         [DataType(DataType.Date)]
