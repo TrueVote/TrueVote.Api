@@ -103,6 +103,14 @@ namespace TrueVote.Api.Models
         public string RaceTypeName => RaceType.ToString();
 
         [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
+        [OpenApiProperty(Description = "Race Type Metadata")]
+        [MaxLength(2048)]
+        [DataType(DataType.Text)]
+        [RegularExpression(Constants.GenericStringRegex)]
+        [JsonProperty(PropertyName = "RaceTypeMetadata")]
+        public string RaceTypeMetadata { get; set; }
+
+        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
         [OpenApiProperty(Description = "DateCreated")]
         [MaxLength(2048)]
         [DataType(DataType.Date)]
