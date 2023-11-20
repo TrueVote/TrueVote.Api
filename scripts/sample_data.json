@@ -1,10 +1,97 @@
+[
 {
-  "_comment": "Election Sample Data",
+  "_comment": "California Election Sample Data",
   "Name": "California State Election",
   "Description": "Election for the great state of California. All eligibile California voters, use this election to make your voice heard!",
-  "HeaderImageUrl": "https://truevote.org/images/ca_secretary_of_state.png",
-  "StartDate": "2023-02-25",
-  "EndDate": "2023-04-04",
+  "HeaderImageUrl": "/static/sample-elections/ca_secretary_of_state.png",
+  "StartDate": "2023-11-06",
+  "EndDate": "2023-11-24",
+  "Races": [
+    {
+      "Name": "Governor",
+      "RaceType": 0,
+      "Candidates": [
+        {
+          "Name": "Kevin Brunner",
+          "PartyAffiliation": "Democratic",
+          "CandidateImageUrl": "/static/sample-elections/kevinbrunner.jpg"
+        },
+        {
+          "Name": "Andrew Newman",
+          "PartyAffiliation": "Republican",
+          "CandidateImageUrl": "/static/sample-elections/andrewnewman.jpg"
+        },
+        {
+          "Name": "Ron O'Donnell",
+          "PartyAffiliation": "Libertarian",
+          "CandidateImageUrl": "/static/sample-elections/ronodonnell.jpg"
+        }
+      ]
+    },
+    {
+      "Name": "County Commissioner",
+      "RaceType": 0,
+      "Candidates": [
+        {
+          "Name": "Judy Tyack",
+          "PartyAffiliation": "Republican",
+          "CandidateImageUrl": "/static/sample-elections/judytyack.jpg"
+        },
+        {
+          "Name": "Sharon Goodrow",
+          "CandidateImageUrl": "/static/sample-elections/sharongoodrow.jpg"
+        },
+        {
+          "Name": "John R. Hood",
+          "PartyAffiliation": "Republican",
+          "CandidateImageUrl": "/static/sample-elections/johnhood.jpg"
+        }
+      ]
+    },
+    {
+      "Name": "Justice of State Supreme Court",
+      "RaceType": 1,
+      "RaceTypeMetadata": "2",
+      "Candidates": [
+        {
+          "Name": "Stephen Pitlick",
+          "CandidateImageUrl": "/static/sample-elections/stephenpitlick.jpg"
+        },
+        {
+          "Name": "Jason Roenick",
+          "CandidateImageUrl": "/static/sample-elections/jasonroenick.jpg"
+        },
+        {
+          "Name": "Lucy Lingren",
+          "CandidateImageUrl": "/static/sample-elections/lucylingren.jpg"
+        },
+        {
+          "Name": "Ian Danforth",
+          "CandidateImageUrl": "/static/sample-elections/iandanforth.jpg"
+        }
+      ]
+    },
+    {
+      "Name": "Proposition 18 - Water purification center",
+      "RaceType": 0,
+      "Candidates": [
+        {
+          "Name": "For"
+        },
+        {
+          "Name": "Against"
+        }
+      ]
+    }
+  ]
+},
+{
+  "_comment": "Ohio Election Sample Data",
+  "Name": "Franklin County Ohio Election",
+  "Description": "Election for the great state of Ohio, The Heart of it All. All eligibile Franklin County voters, use this election to make your voice heard!",
+  "HeaderImageUrl": "/static/sample-elections/Franklin-County-Logo.jpg",
+  "StartDate": "2024-02-25",
+  "EndDate": "2024-04-04",
   "Races": [
     {
       "Name": "Governor",
@@ -51,4 +138,41 @@
       ]
     }
   ]
+},
+{
+  "_comment": "NCAA Board of Governors",
+  "Name": "NCAA Board of Governors",
+  "Description": "Election for board of governors for the National Collegiate Athletic Association",
+  "HeaderImageUrl": "",
+  "StartDate": "2023-12-17",
+  "EndDate": "2024-02-25",
+  "Races": []
+},
+{
+  "_comment": "National Parks Conservation Association (NPCA)",
+  "Name": "National Parks Conservation Association (NPCA)",
+  "Description": "Election for National Parks Conservation Association (NPCA)",
+  "HeaderImageUrl": "",
+  "StartDate": "2023-12-17",
+  "EndDate": "2024-02-25",
+  "Races": []
+},
+{
+  "_comment": "United Auto Workers (UAW)",
+  "Name": "United Auto Workers (UAW)",
+  "Description": "Election for United Auto Workers (UAW)",
+  "HeaderImageUrl": "",
+  "StartDate": "2023-12-17",
+  "EndDate": "2024-02-25",
+  "Races": []
+},
+{
+  "_comment": "Society for the Prevention of Cruelty to Animals (SPCA) ",
+  "Name": "Society for the Prevention of Cruelty to Animals (SPCA) ",
+  "Description": "Election for Society for the Prevention of Cruelty to Animals (SPCA) ",
+  "HeaderImageUrl": "",
+  "StartDate": "2023-12-17",
+  "EndDate": "2024-02-25",
+  "Races": []
 }
+]
