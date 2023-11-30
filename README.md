@@ -13,11 +13,11 @@
 
 TrueVote.Api is the core backend for [TrueVote](https://truevote.org).
 
-The main technology stack platform is [.NET Core](https://dotnet.microsoft.com/) 7.0.
+The main technology stack platform is [.NET Core](https://dotnet.microsoft.com/) 8.0.
 
 ## 🛠 Prerequisites
 
-* Install Visual Studio 2022 (preview) or later, or Visual Studio Code. Ensure that `$ dotnet --version` is at least 7.0.
+* Install Visual Studio 2022 (preview) or later, or Visual Studio Code. Ensure that `$ dotnet --version` is at least 8.0.
 * Install Azure [CosmosDB Emulator](https://learn.microsoft.com/en-us/azure/cosmos-db/local-emulator-release-notes)
 
 ## ⌨️ Install, Build, and Serve the Site
