@@ -18,7 +18,9 @@ namespace TrueVote.Api.Models
         [EnumMember(Value = "CHOOSE_ONE")]
         ChooseOne = 0,
         [EnumMember(Value = "CHOOSE_MANY")]
-        ChooseMany = 1
+        ChooseMany = 1,
+        [EnumMember(Value = "RANKED_CHOICE")]
+        RankedChoice = 2
     }
 
     [ExcludeFromCodeCoverage]
