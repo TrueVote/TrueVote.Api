@@ -112,5 +112,13 @@ namespace TrueVote.Api.Models
         [OpenApiProperty(Description = "Selected")]
         [JsonProperty(PropertyName = "Selected")]
         public bool Selected { get; set; } = false;
+
+        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
+        [OpenApiProperty(Description = "SelectedMetadata")]
+        [MaxLength(1024)]
+        [DataType(DataType.Text)]
+        [JsonProperty(PropertyName = "SelectedMetadata", Required = Required.Default)]
+        public string SelectedMetadata { get; set; } = string.Empty;
+
     }
 }
