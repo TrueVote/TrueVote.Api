@@ -61,7 +61,7 @@ jobs:
       uses: coverallsapp/github-action@master
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
-        path-to-lcov: TrueVote.Api.Tests/TestResults/coverage.cobertura.xml
+        path-to-lcov: TrueVote.Api.Tests/TestResults/coverage.info
 
     #- name: Archive Production Artifacts
     #  if: github.ref == 'refs/heads/master'
