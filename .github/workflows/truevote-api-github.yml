@@ -97,7 +97,6 @@ jobs:
     #    creds: ${{ secrets.AZURE_CREDENTIALS }}
 
     - name: Publish to Azure Pre-Prod
-      if: github.ref != 'refs/heads/master'
       uses: Azure/functions-action@v1
       id: fa-preprod
       with:
