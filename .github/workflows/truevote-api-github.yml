@@ -54,15 +54,14 @@ jobs:
     - name: Test
       shell: pwsh  
       run: |
-        ./scripts/RunTests.ps1 ci=true
+        ./scripts/RunTests.ps1 -ci true
 
     - name: Publish Coverage to Coveralls
       if: github.ref == 'refs/heads/master'
       uses: coverallsapp/github-action@master
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
-        format: cobertura
-        file: TrueVote.Api.Tests/TestResults/coverage.cobertura.xml
+        path-to-lcov: TrueVote.Api.Tests/TestResults/coverage.cobertura.xml
 
     #- name: Archive Production Artifacts
     #  if: github.ref == 'refs/heads/master'
