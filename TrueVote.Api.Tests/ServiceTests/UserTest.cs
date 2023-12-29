@@ -145,7 +145,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             var signInEventModel = new SignInEventModel
             {
                 Kind = new StringWrapper { Value = "1" },
-                PubKey = new PubKeyWrapper { Value = keyPair.PubKey.ToBytes() },
+                PubKey = new PubKeyWrapper { Value = keyPair.PubKey.ToString() },
                 CreatedAt = new UInt64Wrapper { Value = (ulong) DateTime.Now.Ticks },
                 Signature = null
             };
@@ -165,7 +165,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             var signInEventModel1 = new SignInEventModel
             {
                 Kind = new StringWrapper { Value = "1" },
-                PubKey = new PubKeyWrapper { Value = keyPair1.PubKey.ToBytes() },
+                PubKey = new PubKeyWrapper { Value = keyPair1.PubKey.ToString() },
                 CreatedAt = new UInt64Wrapper { Value = tod },
                 Signature = null
             };
@@ -173,7 +173,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             var signInEventModel2 = new SignInEventModel
             {
                 Kind = new StringWrapper { Value = "1" },
-                PubKey = new PubKeyWrapper { Value = keyPair2.PubKey.ToBytes() },
+                PubKey = new PubKeyWrapper { Value = keyPair2.PubKey.ToString() },
                 CreatedAt = new UInt64Wrapper { Value = tod },
                 Signature = null
             };
@@ -193,7 +193,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             var signInEventModel1 = new SignInEventModel
             {
                 Kind = new StringWrapper { Value = "1" },
-                PubKey = new PubKeyWrapper { Value = keyPair.PubKey.ToBytes() },
+                PubKey = new PubKeyWrapper { Value = keyPair.PubKey.ToString() },
                 CreatedAt = new UInt64Wrapper { Value = tod },
                 Signature = Encoding.UTF8.GetBytes("InvalidSignature")
             };
@@ -201,7 +201,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             var signInEventModel2 = new SignInEventModel
             {
                 Kind = new StringWrapper { Value = "1" },
-                PubKey = new PubKeyWrapper { Value = keyPair.PubKey.ToBytes() },
+                PubKey = new PubKeyWrapper { Value = keyPair.PubKey.ToString() },
                 CreatedAt = new UInt64Wrapper { Value = tod },
                 Signature = null
             };
@@ -234,7 +234,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             var signInEventModel = new SignInEventModel
             {
                 Kind = new StringWrapper { Value = "1" },
-                PubKey = new PubKeyWrapper { Value = keyPair.PubKey.ToBytes() },
+                PubKey = new PubKeyWrapper { Value = keyPair.PubKey.ToString() },
                 CreatedAt = new UInt64Wrapper { Value = (ulong) DateTime.Now.Ticks },
                 Signature = Encoding.UTF8.GetBytes("InvalidSignature")
             };
@@ -260,7 +260,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             var signInEventModel = new SignInEventModel
             {
                 Kind = new StringWrapper { Value = "1" },
-                PubKey = new PubKeyWrapper { Value = Encoding.UTF8.GetBytes("INVALID KEY") },
+                PubKey = new PubKeyWrapper { Value = "INVALID KEY" },
                 CreatedAt = new UInt64Wrapper { Value = (ulong) DateTime.Now.Ticks },
                 Signature = Encoding.UTF8.GetBytes("InvalidSignature")
             };
@@ -274,7 +274,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             Assert.NotNull(ret);
             Assert.Equal(HttpStatusCode.BadRequest, ret.StatusCode);
             var val = await ret.ReadAsJsonAsync<SecureString>();
-            Assert.Contains("Invalid public key", val.Value.ToString());
+            Assert.Contains("Invalid Hex String", val.Value.ToString());
 
             _logHelper.Verify(LogLevel.Error, Times.Exactly(1));
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
@@ -287,7 +287,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             var signInEventModel = new SignInEventModel
             {
                 Kind = new StringWrapper { Value = "1" },
-                PubKey = new PubKeyWrapper { Value = keyPair.PubKey.ToBytes() },
+                PubKey = new PubKeyWrapper { Value = keyPair.PubKey.ToString() },
                 CreatedAt = new UInt64Wrapper { Value = (ulong) DateTime.Now.Ticks },
             };
 
@@ -321,7 +321,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             var signInEventModel = new SignInEventModel
             {
                 Kind = new StringWrapper { Value = "1" },
-                PubKey = new PubKeyWrapper { Value = keyPair.PubKey.ToBytes() },
+                PubKey = new PubKeyWrapper { Value = keyPair.PubKey.ToString() },
                 CreatedAt = new UInt64Wrapper { Value = (ulong) DateTime.Now.Ticks },
             };
 

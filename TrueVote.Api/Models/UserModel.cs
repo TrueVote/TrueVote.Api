@@ -183,11 +183,11 @@ namespace TrueVote.Api.Models
         [OpenApiProperty(Description = "Value")]
         [DataType(DataType.Custom)]
         [JsonProperty(PropertyName = "Value")]
-        public byte[] Value { get; set; }
+        public string Value { get; set; }
 
         public void ReadWrite(BitcoinStream stream)
         {
-            stream.ReadWrite(Value);
+            stream.ReadWrite(Encoding.UTF8.GetBytes(Value));
         }
     }
 }
