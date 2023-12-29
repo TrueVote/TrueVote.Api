@@ -15,20 +15,27 @@ namespace TrueVote.Api.Helpers
 
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
-            // Load the JSON data as a JArray
-            var jsonArray = JArray.Load(reader);
-
-            // Create a new byte array to store the result
-            var byteArray = new byte[jsonArray.Count];
-
-            // Iterate through the elements of the JArray and convert values to bytes
-            for (var i = 0; i < jsonArray.Count; i++)
+            try
             {
-                var byteValue = jsonArray[i].Value<byte>();
-                byteArray[i] = byteValue;
-            }
+                // Load the JSON data as a JArray
+                var jsonArray = JArray.Load(reader);
 
-            return byteArray;
+                // Create a new byte array to store the result
+                var byteArray = new byte[jsonArray.Count];
+
+                // Iterate through the elements of the JArray and convert values to bytes
+                for (var i = 0; i < jsonArray.Count; i++)
+                {
+                    var byteValue = jsonArray[i].Value<byte>();
+                    byteArray[i] = byteValue;
+                }
+
+                return byteArray;
+            }
+            catch
+            {
+                throw;
+            }
         }
 
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)

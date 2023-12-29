@@ -149,6 +149,10 @@ namespace TrueVote.Api.Models
     [ExcludeFromCodeCoverage]
     public class StringWrapper : IBitcoinSerializable
     {
+        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
+        [OpenApiProperty(Description = "Value")]
+        [DataType(DataType.Custom)]
+        [JsonProperty(PropertyName = "Value")]
         public string Value { get; set; }
 
         public void ReadWrite(BitcoinStream stream)
@@ -160,6 +164,10 @@ namespace TrueVote.Api.Models
     [ExcludeFromCodeCoverage]
     public class UInt64Wrapper : IBitcoinSerializable
     {
+        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
+        [OpenApiProperty(Description = "Value")]
+        [DataType(DataType.Custom)]
+        [JsonProperty(PropertyName = "Value")]
         public ulong Value { get; set; }
 
         public void ReadWrite(BitcoinStream stream)
@@ -171,6 +179,10 @@ namespace TrueVote.Api.Models
     [ExcludeFromCodeCoverage]
     public class PubKeyWrapper : IBitcoinSerializable
     {
+        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
+        [OpenApiProperty(Description = "Value")]
+        [DataType(DataType.Custom)]
+        [JsonProperty(PropertyName = "Value")]
         public byte[] Value { get; set; }
 
         public void ReadWrite(BitcoinStream stream)

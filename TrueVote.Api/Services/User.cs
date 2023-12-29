@@ -161,7 +161,7 @@ namespace TrueVote.Api.Services
             PubKey publicKey;
             try
             {
-                publicKey = new PubKey(signInEventModel.PubKey.ToBytes());
+                publicKey = new PubKey(signInEventModel.PubKey.Value);
             }
             catch (Exception e)
             {
