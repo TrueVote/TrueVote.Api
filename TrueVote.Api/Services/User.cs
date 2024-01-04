@@ -14,6 +14,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using NBitcoin;
 using Newtonsoft.Json;
+using Nostr.Client.Keys;
+using Nostr.Client.Messages;
 using TrueVote.Api.Helpers;
 using TrueVote.Api.Interfaces;
 using TrueVote.Api.Models;
@@ -158,10 +160,10 @@ namespace TrueVote.Api.Services
 
             LogInformation($"Request Data: {signInEventModel}");
 
-            PubKey publicKey;
+            NostrPublicKey publicKey;
             try
             {
-                publicKey = new PubKey(signInEventModel.PubKey.Value);
+                publicKey = NostrPublicKey.FromBech32(signInEventModel.PubKey);
             }
             catch (Exception e)
             {
@@ -171,16 +173,26 @@ namespace TrueVote.Api.Services
                 return await req.CreateBadRequestResponseAsync(new SecureString { Value = e.Message });
             }
 
-            var rawHash = GetHash(signInEventModel);
-
             bool isValid;
             try
             {
-                isValid = publicKey.Verify(rawHash, signInEventModel.Signature);
+                var convertedDate = DateTimeOffset.FromUnixTimeSeconds(int.Parse(signInEventModel.CreatedAt)).UtcDateTime;
+
+                // Create the Nostr Event same as the client did
+                var nostrEvent = new NostrEvent
+                {
+                    Kind = signInEventModel.Kind,
+                    CreatedAt = convertedDate,
+                    Pubkey = publicKey.Hex,
+                    Content = signInEventModel.Content,
+                    Sig = signInEventModel.Signature
+                };
+
+                isValid = nostrEvent.IsSignatureValid();
             }
             catch (Exception e)
             {
-                LogError($"SignIn: publicKey verification exception: {e.Message}");
+                LogError($"SignIn: Verification exception: {e.Message}");
                 LogDebug("HTTP trigger - SignIn:End");
 
                 return await req.CreateBadRequestResponseAsync(new SecureString { Value = e.Message });
@@ -201,22 +213,6 @@ namespace TrueVote.Api.Services
             LogDebug("HTTP trigger - SignIn:End");
 
             return await req.CreateOkResponseAsync(new SecureString { Value = "atoken" });
-        }
-
-        public static uint256 GetHash(SignInEventModel signInEventModel)
-        {
-            using var ms = new MemoryStream();
-            var writer = new BitcoinStream(ms, true);
-
-            writer.ReadWrite(signInEventModel.Kind);
-            writer.ReadWrite(signInEventModel.PubKey);
-            writer.ReadWrite(signInEventModel.CreatedAt);
-
-            // Compute raw hash bytes
-            var rawHash = SHA256.HashData(ms.ToArray());
-
-            // Convert to uint256
-            return new uint256(rawHash);
         }
     }
 }
