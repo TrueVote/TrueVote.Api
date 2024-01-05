@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using TrueVote.Api.Helpers;
+using Nostr.Client.Messages;
 
 namespace TrueVote.Api.Models
 {
@@ -82,6 +83,14 @@ namespace TrueVote.Api.Models
         public string UserId { get; set; } = Guid.NewGuid().ToString();
 
         [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
+        [OpenApiProperty(Description = "Nostr PubKey")]
+        [MaxLength(2048)]
+        [DataType(DataType.Text)]
+        [RegularExpression(Constants.GenericStringRegex)]
+        [JsonProperty(PropertyName = "NostrPubKey")]
+        public string NostrPubKey { get; set; } = string.Empty;
+
+        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
         [OpenApiProperty(Description = "First Name")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
@@ -105,5 +114,43 @@ namespace TrueVote.Api.Models
         [DataType(DataType.Date)]
         [JsonProperty(PropertyName = "DateCreated")]
         public DateTime DateCreated { get; set; } = UtcNowProviderFactory.GetProvider().UtcNow;
+    }
+
+    [ExcludeFromCodeCoverage]
+    public class SignInEventModel
+    {
+        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
+        [OpenApiProperty(Description = "Kind")]
+        [EnumDataType(typeof(NostrKind))]
+        [JsonProperty(PropertyName = "Kind", Required = Required.Always)]
+        public NostrKind Kind { get; set; }
+
+        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
+        [OpenApiProperty(Description = "PubKey")]
+        [MaxLength(2048)]
+        [DataType(DataType.Text)]
+        [JsonProperty(PropertyName = "PubKey", Required = Required.Always)]
+        public string PubKey { get; set; }
+
+        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
+        [OpenApiProperty(Description = "CreatedAt")]
+        [MaxLength(2048)]
+        [DataType(DataType.Date)]
+        [JsonProperty(PropertyName = "CreatedAt", Required = Required.Always)]
+        public DateTime CreatedAt { get; set; }
+
+        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
+        [OpenApiProperty(Description = "Signature")]
+        [MaxLength(2048)]
+        [DataType(DataType.Text)]
+        [JsonProperty(PropertyName = "Signature", Required = Required.Always)]
+        public string Signature { get; set; }
+
+        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
+        [OpenApiProperty(Description = "Content")]
+        [MaxLength(2048)]
+        [DataType(DataType.Text)]
+        [JsonProperty(PropertyName = "Content", Required = Required.Always)]
+        public string Content { get; set; }
     }
 }

@@ -1,7 +1,8 @@
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Newtonsoft.Json;
+using Nostr.Client.Keys;
+using Nostr.Client.Messages;
 using System;
 using System.Collections.Generic;
 using System.Net;
@@ -131,6 +132,172 @@ namespace TrueVote.Api.Tests.ServiceTests
             var ret = await _userApi.UserFind(requestData);
             Assert.NotNull(ret);
             Assert.Equal(HttpStatusCode.BadRequest, ret.StatusCode);
+
+            _logHelper.Verify(LogLevel.Error, Times.Exactly(1));
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+        }
+
+        [Fact]
+        public async Task HandlesSignInEventModelError()
+        {
+            var signInEventModel = "blah";
+            var requestData = new MockHttpRequestData(signInEventModel);
+
+            var ret = await _userApi.SignIn(requestData);
+            Assert.NotNull(ret);
+            Assert.Equal(HttpStatusCode.BadRequest, ret.StatusCode);
+
+            _logHelper.Verify(LogLevel.Error, Times.Exactly(1));
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+        }
+
+        [Fact]
+        public async Task HandlesSignInFailOnValidKeyInvalidSignature()
+        {
+            var utcTime = DateTimeOffset.UtcNow;
+            var keyPair = NostrKeyPair.GenerateNew();
+
+            var signInEventModel = new SignInEventModel
+            {
+                Kind = NostrKind.ShortTextNote,
+                PubKey = keyPair.PublicKey.Bech32,
+                CreatedAt = utcTime.DateTime,
+                Signature = "INVALID SIG",
+                Content = ""
+            };
+
+            var serialized = JsonConvert.SerializeObject(signInEventModel);
+
+            var requestData = new MockHttpRequestData(serialized);
+
+            var ret = await _userApi.SignIn(requestData);
+
+            Assert.NotNull(ret);
+            Assert.Equal(HttpStatusCode.BadRequest, ret.StatusCode);
+            var val = await ret.ReadAsJsonAsync<SecureString>();
+            Assert.Contains("The binary key cannot have an odd number of digits", val.Value.ToString());
+
+            _logHelper.Verify(LogLevel.Error, Times.Exactly(1));
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+        }
+
+        [Fact]
+        public async Task HandlesSignInFailOnInvalidKey()
+        {
+            var utcTime = DateTimeOffset.UtcNow;
+
+            var signInEventModel = new SignInEventModel
+            {
+                Kind = NostrKind.ShortTextNote,
+                PubKey = "INVALID KEY",
+                CreatedAt = utcTime.DateTime,
+                Signature = "INVALID SIG",
+                Content = ""
+            };
+
+            var serialized = JsonConvert.SerializeObject(signInEventModel);
+
+            var requestData = new MockHttpRequestData(serialized);
+
+            var ret = await _userApi.SignIn(requestData);
+
+            Assert.NotNull(ret);
+            Assert.Equal(HttpStatusCode.BadRequest, ret.StatusCode);
+            var val = await ret.ReadAsJsonAsync<SecureString>();
+            Assert.Contains("Provided bech32 key is not 'npub'", val.Value.ToString());
+
+            _logHelper.Verify(LogLevel.Error, Times.Exactly(1));
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+        }
+
+        [Fact]
+        public async Task SignInSuccess()
+        {
+            var keyPair = NostrKeyPair.GenerateNew();
+            var utcTime = DateTimeOffset.UtcNow;
+
+            // Simulate a client (e.g. TypeScript)
+            var nostrEvent = new NostrEvent
+            {
+                Kind = NostrKind.ShortTextNote,
+                CreatedAt = utcTime.DateTime,
+                Pubkey = keyPair.PublicKey.Hex,
+                Content = "SIGNIN"
+            };
+            var signature = nostrEvent.Sign(keyPair.PrivateKey);
+            var valid = signature.IsSignatureValid();
+            Assert.True(valid);
+
+            // Package it up into a TrueVote model the way the client side TypeScript would
+            var signInEventModel = new SignInEventModel
+            {
+                Kind = nostrEvent.Kind,
+                PubKey = keyPair.PublicKey.Bech32,
+                CreatedAt = utcTime.DateTime,
+                Content = nostrEvent.Content,
+                Signature = signature.Sig
+            };
+
+            var serialized = JsonConvert.SerializeObject(signInEventModel);
+
+            var requestData = new MockHttpRequestData(serialized);
+
+            var ret = await _userApi.SignIn(requestData);
+
+            Assert.NotNull(ret);
+            Assert.Equal(HttpStatusCode.OK, ret.StatusCode);
+            var val = await ret.ReadAsJsonAsync<SecureString>();
+            Assert.NotEmpty(val.Value);
+
+            // TODO Confirm valid token
+
+            _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+        }
+
+        [Fact]
+        public async Task HandlesSignInFailOnValidKeyWrongSignature()
+        {
+            var keyPair = NostrKeyPair.GenerateNew();
+            var keyPair2 = NostrKeyPair.GenerateNew();
+            var utcTime = DateTimeOffset.UtcNow;
+
+            // Simulate a client (e.g. TypeScript)
+            var nostrEvent = new NostrEvent
+            {
+                Kind = NostrKind.ShortTextNote,
+                CreatedAt = utcTime.DateTime,
+                Pubkey = keyPair.PublicKey.Hex,
+                Content = "SIGNIN"
+            };
+            var signature = nostrEvent.Sign(keyPair.PrivateKey);
+            var valid = signature.IsSignatureValid();
+            Assert.True(valid);
+
+            var signature2 = nostrEvent.Sign(keyPair2.PrivateKey);
+            var valid2 = signature2.IsSignatureValid();
+            Assert.True(valid2);
+
+            // Package it up into a TrueVote model the way the client side TypeScript would
+            var signInEventModel = new SignInEventModel
+            {
+                Kind = nostrEvent.Kind,
+                PubKey = keyPair.PublicKey.Bech32,
+                CreatedAt = utcTime.DateTime,
+                Content = nostrEvent.Content,
+                Signature = signature2.Sig
+            };
+
+            var serialized = JsonConvert.SerializeObject(signInEventModel);
+
+            var requestData = new MockHttpRequestData(serialized);
+
+            var ret = await _userApi.SignIn(requestData);
+
+            Assert.NotNull(ret);
+            Assert.Equal(HttpStatusCode.BadRequest, ret.StatusCode);
+            var val = await ret.ReadAsJsonAsync<SecureString>();
+            Assert.Contains("Signature did not verify", val.Value.ToString());
 
             _logHelper.Verify(LogLevel.Error, Times.Exactly(1));
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));

@@ -12,6 +12,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json;
+using Nostr.Client.Keys;
+using Nostr.Client.Messages;
 using TrueVote.Api.Helpers;
 using TrueVote.Api.Interfaces;
 using TrueVote.Api.Models;
@@ -121,6 +123,92 @@ namespace TrueVote.Api.Services
             LogDebug("HTTP trigger - UserFind:End");
 
             return items.Count == 0 ? req.CreateNotFoundResponse() : await req.CreateOkResponseAsync(items);
+        }
+
+        [Function(nameof(SignIn))]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [OpenApiOperation(operationId: "SignIn", tags: new[] { "User" })]
+        [OpenApiSecurity("oidc_auth", SecuritySchemeType.OpenIdConnect, OpenIdConnectUrl = "https://login.microsoftonline.com/{tenant_id}/v2.0/.well-known/openid-configuration", OpenIdConnectScopes = "openid,profile")]
+        [OpenApiRequestBody(contentType: "application/json", bodyType: typeof(SignInEventModel), Description = "Fields to search for Users", Example = typeof(SignInEventModel))]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(UserModelList), Description = "SignIn Success")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.Forbidden, contentType: "application/json", bodyType: typeof(SecureString), Description = "Forbidden")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.Unauthorized, contentType: "application/json", bodyType: typeof(SecureString), Description = "Unauthorized")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.NotFound, contentType: "application/json", bodyType: typeof(SecureString), Description = "Not Found")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.NotAcceptable, contentType: "application/json", bodyType: typeof(SecureString), Description = "Not Acceptable")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.TooManyRequests, contentType: "application/json", bodyType: typeof(SecureString), Description = "Too Many Requests")]
+        public async Task<HttpResponseData> SignIn(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "user/signin")] HttpRequestData req)
+        {
+            LogDebug("HTTP trigger - SignIn:Begin");
+
+            SignInEventModel signInEventModel;
+            try
+            {
+                var requestBody = await new StreamReader(req.Body).ReadToEndAsync();
+                signInEventModel = JsonConvert.DeserializeObject<SignInEventModel>(requestBody);
+            }
+            catch (Exception e)
+            {
+                LogError("signInEventModel: invalid format");
+                LogDebug("HTTP trigger - SignIn:End");
+
+                return await req.CreateBadRequestResponseAsync(new SecureString { Value = e.Message });
+            }
+
+            LogInformation($"Request Data: {signInEventModel}");
+
+            NostrPublicKey publicKey;
+            try
+            {
+                publicKey = NostrPublicKey.FromBech32(signInEventModel.PubKey);
+            }
+            catch (Exception e)
+            {
+                LogError($"SignIn: publicKey resolver failure: {e.Message}");
+                LogDebug("HTTP trigger - SignIn:End");
+
+                return await req.CreateBadRequestResponseAsync(new SecureString { Value = e.Message });
+            }
+
+            bool isValid;
+            try
+            {
+                // Create the Nostr Event same as the client did
+                var nostrEvent = new NostrEvent
+                {
+                    Kind = signInEventModel.Kind,
+                    CreatedAt = signInEventModel.CreatedAt,
+                    Pubkey = publicKey.Hex,
+                    Content = signInEventModel.Content,
+                    Sig = signInEventModel.Signature
+                };
+
+                isValid = nostrEvent.IsSignatureValid();
+            }
+            catch (Exception e)
+            {
+                LogError($"SignIn: Verification exception: {e.Message}");
+                LogDebug("HTTP trigger - SignIn:End");
+
+                return await req.CreateBadRequestResponseAsync(new SecureString { Value = e.Message });
+            }
+
+            if (!isValid)
+            {
+                LogError("SignIn: invalid signature");
+                LogDebug("HTTP trigger - SignIn:End");
+
+                return await req.CreateBadRequestResponseAsync(new SecureString { Value = "Signature did not verify" });
+            }
+
+            // TODO - Find the user by PubKey
+
+            // TODO - SignIn the user and return token for API access
+
+            LogDebug("HTTP trigger - SignIn:End");
+
+            return await req.CreateOkResponseAsync(new SecureString { Value = "atoken" });
         }
     }
 }
