@@ -1,13 +1,11 @@
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Enums;
 using Newtonsoft.Json;
-using NBitcoin;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using TrueVote.Api.Helpers;
-using System.Text;
 using Nostr.Client.Messages;
 
 namespace TrueVote.Api.Models

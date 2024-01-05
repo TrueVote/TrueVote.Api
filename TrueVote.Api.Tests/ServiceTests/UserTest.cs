@@ -1,14 +1,11 @@
 using Microsoft.Extensions.Logging;
 using Moq;
-using NBitcoin;
 using Newtonsoft.Json;
 using Nostr.Client.Keys;
 using Nostr.Client.Messages;
 using System;
 using System.Collections.Generic;
 using System.Net;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
 using System.Threading.Tasks;
 using TrueVote.Api.Models;
 using TrueVote.Api.Services;
