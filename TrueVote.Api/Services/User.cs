@@ -2,7 +2,6 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Security.Cryptography;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -12,7 +11,6 @@ using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
-using NBitcoin;
 using Newtonsoft.Json;
 using Nostr.Client.Keys;
 using Nostr.Client.Messages;
@@ -176,13 +174,11 @@ namespace TrueVote.Api.Services
             bool isValid;
             try
             {
-                var convertedDate = DateTimeOffset.FromUnixTimeSeconds(int.Parse(signInEventModel.CreatedAt)).UtcDateTime;
-
                 // Create the Nostr Event same as the client did
                 var nostrEvent = new NostrEvent
                 {
                     Kind = signInEventModel.Kind,
-                    CreatedAt = convertedDate,
+                    CreatedAt = signInEventModel.CreatedAt,
                     Pubkey = publicKey.Hex,
                     Content = signInEventModel.Content,
                     Sig = signInEventModel.Signature

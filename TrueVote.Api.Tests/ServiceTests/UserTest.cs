@@ -2,9 +2,12 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using NBitcoin;
 using Newtonsoft.Json;
+using Nostr.Client.Keys;
+using Nostr.Client.Messages;
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 using TrueVote.Api.Models;
@@ -138,81 +141,6 @@ namespace TrueVote.Api.Tests.ServiceTests
         }
 
         [Fact]
-        public void GetHashValid()
-        {
-            var keyPair = new Key();
-
-            var signInEventModel = new SignInEventModel
-            {
-                Kind = new StringWrapper { Value = "1" },
-                PubKey = new PubKeyWrapper { Value = keyPair.PubKey.ToString() },
-                CreatedAt = new UInt64Wrapper { Value = (ulong) DateTime.Now.Ticks },
-                Signature = null
-            };
-
-            var hash = User.GetHash(signInEventModel);
-
-            Assert.NotNull(hash);
-        }
-
-        [Fact]
-        public void GetHashValidDifferentHashesForDifferentInputs()
-        {
-            var keyPair1 = new Key();
-            var keyPair2 = new Key();
-            var tod = (ulong) DateTime.Now.Ticks;
-
-            var signInEventModel1 = new SignInEventModel
-            {
-                Kind = new StringWrapper { Value = "1" },
-                PubKey = new PubKeyWrapper { Value = keyPair1.PubKey.ToString() },
-                CreatedAt = new UInt64Wrapper { Value = tod },
-                Signature = null
-            };
-
-            var signInEventModel2 = new SignInEventModel
-            {
-                Kind = new StringWrapper { Value = "1" },
-                PubKey = new PubKeyWrapper { Value = keyPair2.PubKey.ToString() },
-                CreatedAt = new UInt64Wrapper { Value = tod },
-                Signature = null
-            };
-
-            var hash1 = User.GetHash(signInEventModel1);
-            var hash2 = User.GetHash(signInEventModel2);
-
-            Assert.NotEqual(hash1, hash2);
-        }
-
-        [Fact]
-        public void GetHashIgnoresSignatureProperty()
-        {
-            var keyPair = new Key();
-            var tod = (ulong) DateTime.Now.Ticks;
-
-            var signInEventModel1 = new SignInEventModel
-            {
-                Kind = new StringWrapper { Value = "1" },
-                PubKey = new PubKeyWrapper { Value = keyPair.PubKey.ToString() },
-                CreatedAt = new UInt64Wrapper { Value = tod },
-                Signature = Encoding.UTF8.GetBytes("InvalidSignature")
-            };
-
-            var signInEventModel2 = new SignInEventModel
-            {
-                Kind = new StringWrapper { Value = "1" },
-                PubKey = new PubKeyWrapper { Value = keyPair.PubKey.ToString() },
-                CreatedAt = new UInt64Wrapper { Value = tod },
-                Signature = null
-            };
-
-            var hash1 = User.GetHash(signInEventModel1);
-            var hash2 = User.GetHash(signInEventModel2);
-
-            Assert.Equal(hash1, hash2);
-        }
-
-        [Fact]
         public async Task HandlesSignInEventModelError()
         {
             var signInEventModel = "blah";
@@ -229,14 +157,16 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public async Task HandlesSignInFailOnValidKeyInvalidSignature()
         {
-            var keyPair = new Key();
+            var utcTime = DateTimeOffset.UtcNow;
+            var keyPair = NostrKeyPair.GenerateNew();
 
             var signInEventModel = new SignInEventModel
             {
-                Kind = new StringWrapper { Value = "1" },
-                PubKey = new PubKeyWrapper { Value = keyPair.PubKey.ToString() },
-                CreatedAt = new UInt64Wrapper { Value = (ulong) DateTime.Now.Ticks },
-                Signature = Encoding.UTF8.GetBytes("InvalidSignature")
+                Kind = NostrKind.ShortTextNote,
+                PubKey = keyPair.PublicKey.Bech32,
+                CreatedAt = utcTime.DateTime,
+                Signature = "INVALID SIG",
+                Content = ""
             };
 
             var serialized = JsonConvert.SerializeObject(signInEventModel);
@@ -248,7 +178,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             Assert.NotNull(ret);
             Assert.Equal(HttpStatusCode.BadRequest, ret.StatusCode);
             var val = await ret.ReadAsJsonAsync<SecureString>();
-            Assert.Contains("Invalid DER signature", val.Value.ToString());
+            Assert.Contains("The binary key cannot have an odd number of digits", val.Value.ToString());
 
             _logHelper.Verify(LogLevel.Error, Times.Exactly(1));
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
@@ -257,12 +187,15 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public async Task HandlesSignInFailOnInvalidKey()
         {
+            var utcTime = DateTimeOffset.UtcNow;
+
             var signInEventModel = new SignInEventModel
             {
-                Kind = new StringWrapper { Value = "1" },
-                PubKey = new PubKeyWrapper { Value = "INVALID KEY" },
-                CreatedAt = new UInt64Wrapper { Value = (ulong) DateTime.Now.Ticks },
-                Signature = Encoding.UTF8.GetBytes("InvalidSignature")
+                Kind = NostrKind.ShortTextNote,
+                PubKey = "INVALID KEY",
+                CreatedAt = utcTime.DateTime,
+                Signature = "INVALID SIG",
+                Content = ""
             };
 
             var serialized = JsonConvert.SerializeObject(signInEventModel);
@@ -274,7 +207,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             Assert.NotNull(ret);
             Assert.Equal(HttpStatusCode.BadRequest, ret.StatusCode);
             var val = await ret.ReadAsJsonAsync<SecureString>();
-            Assert.Contains("Invalid Hex String", val.Value.ToString());
+            Assert.Contains("Provided bech32 key is not 'npub'", val.Value.ToString());
 
             _logHelper.Verify(LogLevel.Error, Times.Exactly(1));
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
@@ -283,17 +216,30 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public async Task SignInSuccess()
         {
-            var keyPair = new Key();
+            var keyPair = NostrKeyPair.GenerateNew();
+            var utcTime = DateTimeOffset.UtcNow;
+
+            // Simulate a client (e.g. TypeScript)
+            var nostrEvent = new NostrEvent
+            {
+                Kind = NostrKind.ShortTextNote,
+                CreatedAt = utcTime.DateTime,
+                Pubkey = keyPair.PublicKey.Hex,
+                Content = "SIGNIN"
+            };
+            var signature = nostrEvent.Sign(keyPair.PrivateKey);
+            var valid = signature.IsSignatureValid();
+            Assert.True(valid);
+
+            // Package it up into a TrueVote model the way the client side TypeScript would
             var signInEventModel = new SignInEventModel
             {
-                Kind = new StringWrapper { Value = "1" },
-                PubKey = new PubKeyWrapper { Value = keyPair.PubKey.ToString() },
-                CreatedAt = new UInt64Wrapper { Value = (ulong) DateTime.Now.Ticks },
+                Kind = nostrEvent.Kind,
+                PubKey = keyPair.PublicKey.Bech32,
+                CreatedAt = utcTime.DateTime,
+                Content = nostrEvent.Content,
+                Signature = signature.Sig
             };
-
-            var hash = User.GetHash(signInEventModel);
-            var signature = keyPair.Sign(hash);
-            signInEventModel.Signature = signature.ToDER();
 
             var serialized = JsonConvert.SerializeObject(signInEventModel);
 
@@ -315,21 +261,35 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public async Task HandlesSignInFailOnValidKeyWrongSignature()
         {
-            var keyPair = new Key();
-            var keyPair2 = new Key();
+            var keyPair = NostrKeyPair.GenerateNew();
+            var keyPair2 = NostrKeyPair.GenerateNew();
+            var utcTime = DateTimeOffset.UtcNow;
 
+            // Simulate a client (e.g. TypeScript)
+            var nostrEvent = new NostrEvent
+            {
+                Kind = NostrKind.ShortTextNote,
+                CreatedAt = utcTime.DateTime,
+                Pubkey = keyPair.PublicKey.Hex,
+                Content = "SIGNIN"
+            };
+            var signature = nostrEvent.Sign(keyPair.PrivateKey);
+            var valid = signature.IsSignatureValid();
+            Assert.True(valid);
+
+            var signature2 = nostrEvent.Sign(keyPair2.PrivateKey);
+            var valid2 = signature2.IsSignatureValid();
+            Assert.True(valid2);
+
+            // Package it up into a TrueVote model the way the client side TypeScript would
             var signInEventModel = new SignInEventModel
             {
-                Kind = new StringWrapper { Value = "1" },
-                PubKey = new PubKeyWrapper { Value = keyPair.PubKey.ToString() },
-                CreatedAt = new UInt64Wrapper { Value = (ulong) DateTime.Now.Ticks },
+                Kind = nostrEvent.Kind,
+                PubKey = keyPair.PublicKey.Bech32,
+                CreatedAt = utcTime.DateTime,
+                Content = nostrEvent.Content,
+                Signature = signature2.Sig
             };
-
-            var hash = User.GetHash(signInEventModel);
-
-            // Sign with a different key than the one passed in
-            var signature = keyPair2.Sign(hash);
-            signInEventModel.Signature = signature.ToDER();
 
             var serialized = JsonConvert.SerializeObject(signInEventModel);
 

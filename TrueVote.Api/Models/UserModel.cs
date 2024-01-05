@@ -137,9 +137,9 @@ namespace TrueVote.Api.Models
         [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
         [OpenApiProperty(Description = "CreatedAt")]
         [MaxLength(2048)]
-        [DataType(DataType.Text)]
+        [DataType(DataType.Date)]
         [JsonProperty(PropertyName = "CreatedAt", Required = Required.Always)]
-        public string CreatedAt { get; set; }
+        public DateTime CreatedAt { get; set; }
 
         [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
         [OpenApiProperty(Description = "Signature")]
