@@ -1,3 +1,4 @@
+#pragma warning disable IDE0058 // Expression value is never used
 using HotChocolate.Types.Descriptors;
 using HotChocolate.Types;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
@@ -224,3 +225,4 @@ namespace TrueVote.Api
         }
     }
 }
+#pragma warning restore IDE0058 // Expression value is never used

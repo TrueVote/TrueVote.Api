@@ -1,3 +1,4 @@
+#pragma warning disable IDE0058 // Expression value is never used
 using System;
 using System.IO;
 using System.Linq;
@@ -212,3 +213,4 @@ namespace TrueVote.Api.Services
         }
     }
 }
+#pragma warning restore IDE0058 // Expression value is never used
