@@ -101,9 +101,15 @@ namespace TrueVote.Api
             return await request.CreateJsonResponseAsync(HttpStatusCode.Created, content);
         }
 
+        public static async Task<HttpResponseData> CreateUnauthorizedResponseAsync(
+            this HttpRequestData request, object content)
+        {
+            return await request.CreateJsonResponseAsync(HttpStatusCode.Unauthorized, content);
+        }
+
         public static async Task<T> ReadAsJsonAsync<T>(this HttpResponseData response)
         {
-            response.Body.Seek(0, SeekOrigin.Begin);
+            _ = response.Body.Seek(0, SeekOrigin.Begin);
             using var reader = new StreamReader(response.Body);
             var responseBody = await reader.ReadToEndAsync();
 

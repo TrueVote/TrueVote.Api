@@ -206,10 +206,12 @@ namespace TrueVote.Api.Services
             // TODO - Find the user by PubKey
 
             // TODO - SignIn the user and return token for API access
+            // TODO - Need to use TrueVote UserID here
+            var token = JwtHandler.GenerateToken(signInEventModel.PubKey, ["User"]);
 
             LogDebug("HTTP trigger - SignIn:End");
 
-            return await req.CreateOkResponseAsync(new SecureString { Value = "atoken" });
+            return await req.CreateOkResponseAsync(new SecureString { Value = token });
         }
     }
 }

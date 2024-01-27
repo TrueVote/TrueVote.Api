@@ -4,7 +4,9 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using NBitcoin.Logging;
 using Newtonsoft.Json;
 using System;
 using System.Diagnostics;
@@ -41,6 +43,23 @@ namespace TrueVote.Api.Services
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "status")] HttpRequestData req)
         {
             LogDebug("HTTP trigger - GetStatus:Begin");
+
+            try
+            {
+                var (principal, renewedToken) = req.ValidateAndRenewToken();
+            }
+            catch (SecurityTokenException e)
+            {
+                LogError(e.Message);
+                LogDebug("HTTP trigger - GetStatus:End");
+                return await req.CreateUnauthorizedResponseAsync(new SecureString { Value = e.Message });
+            }
+            catch (Exception e)
+            {
+                LogError(e.Message);
+                LogDebug("HTTP trigger - GetStatus:End");
+                return await req.CreateBadRequestResponseAsync(new SecureString { Value = e.Message });
+            }
 
             // For timing the running of this function
             var watch = Stopwatch.StartNew();
