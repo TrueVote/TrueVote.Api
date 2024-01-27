@@ -11,13 +11,13 @@ namespace TrueVote.Api.Helpers
 {
     public static class JwtHandler
     {
-        private const string SecretKey = "aCTQLkti+Bes/Gg/FlZOQJMOlHZJutFRvaW5hKGsg1M=";
         private const string Issuer = "TrueVoteApi";
         private const string Audience = "https://api.truevote.org/api/";
 
         // Generate a JWT token with a Expiration, UserID, and Roles claims
         public static string GenerateToken(string userId, IEnumerable<string> roles)
         {
+            var SecretKey = Environment.GetEnvironmentVariable("JWTSecret");
             var key = Convert.FromBase64String(SecretKey);
             // var key = Encoding.UTF8.GetBytes(SecretKey);
             var signingCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256);
@@ -55,6 +55,7 @@ namespace TrueVote.Api.Helpers
         {
             try
             {
+                var SecretKey = Environment.GetEnvironmentVariable("JWTSecret");
                 var key = Convert.FromBase64String(SecretKey);
                 var tokenValidationParameters = new TokenValidationParameters
                 {
