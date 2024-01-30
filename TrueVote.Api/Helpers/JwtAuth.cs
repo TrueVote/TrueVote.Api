@@ -5,17 +5,27 @@ using System.Linq;
 using System.Security.Claims;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.Azure.Functions.Worker.Http;
-using System.Text;
+using System.Threading.Tasks;
+using TrueVote.Api.Models;
+using Microsoft.Extensions.Logging;
+using TrueVote.Api.Services;
 
 namespace TrueVote.Api.Helpers
 {
-    public static class JwtHandler
+    public interface IJwtHandler
+    {
+        Task<HttpResponseData> ValidateOrAbortAsync(HttpRequestData req);
+        HttpResponseData ValidateOrAbort(HttpRequestData req);
+        string GenerateToken(string userId, IEnumerable<string> roles);
+    }
+
+    public class JwtHandler(ILogger log, IServiceBus serviceBus) : LoggerHelper(log, serviceBus), IJwtHandler
     {
         private const string Issuer = "TrueVoteApi";
         private const string Audience = "https://api.truevote.org/api/";
 
         // Generate a JWT token with a Expiration, UserID, and Roles claims
-        public static string GenerateToken(string userId, IEnumerable<string> roles)
+        public string GenerateToken(string userId, IEnumerable<string> roles)
         {
             var SecretKey = Environment.GetEnvironmentVariable("JWTSecret");
             var key = Convert.FromBase64String(SecretKey);
@@ -51,7 +61,7 @@ namespace TrueVote.Api.Helpers
         }
 
         // Validate a JWT token in the request header
-        public static ClaimsPrincipal ValidateToken(string token)
+        private static ClaimsPrincipal ValidateToken(string token)
         {
             try
             {
@@ -76,11 +86,52 @@ namespace TrueVote.Api.Helpers
                 throw new SecurityTokenException("Token validation failed.", ex);
             }
         }
-    }
 
-    public static class JwtAuthorizationExtensions
-    {
-        public static (ClaimsPrincipal, string) ValidateAndRenewToken(this HttpRequestData req)
+        public HttpResponseData ValidateOrAbort(HttpRequestData req)
+        {
+            try
+            {
+                var (principal, renewedToken) = ValidateAndRenewToken(req);
+            }
+            catch (SecurityTokenException e)
+            {
+                LogError(e.Message);
+                LogDebug("HTTP trigger - GetStatus:End");
+                return req.CreateUnauthorizedResponse(new SecureString { Value = e.Message });
+            }
+            catch (Exception e)
+            {
+                LogError(e.Message);
+                LogDebug("HTTP trigger - GetStatus:End");
+                return req.CreateBadRequestResponse(new SecureString { Value = e.Message });
+            }
+
+            return null;
+        }
+
+        public async Task<HttpResponseData> ValidateOrAbortAsync(HttpRequestData req)
+        {
+            try
+            {
+                var (principal, renewedToken) = ValidateAndRenewToken(req);
+            }
+            catch (SecurityTokenException e)
+            {
+                LogError($"{e.Message} : {e.InnerException}");
+                LogDebug("HTTP trigger - GetStatus:End");
+                return await req.CreateUnauthorizedResponseAsync(new SecureString { Value = $"{e.Message} : {e.InnerException}" });
+            }
+            catch (Exception e)
+            {
+                LogError($"{e.Message} : {e.InnerException}");
+                LogDebug("HTTP trigger - GetStatus:End");
+                return await req.CreateBadRequestResponseAsync(new SecureString { Value = $"{e.Message} : {e.InnerException}" });
+            }
+
+            return null;
+        }
+
+        public (ClaimsPrincipal, string) ValidateAndRenewToken(HttpRequestData req)
         {
             try
             {
@@ -94,7 +145,7 @@ namespace TrueVote.Api.Helpers
                 var token = authHeader.Replace("Bearer ", "");
 
                 // Validate or auto-renew the token
-                var principal = JwtHandler.ValidateToken(token);
+                var principal = ValidateToken(token);
                 var userId = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 var roles = principal.FindAll(ClaimTypes.Role)?.Select(c => c.Value);
 
@@ -106,7 +157,7 @@ namespace TrueVote.Api.Helpers
                     if (expirationDateTime < DateTime.UtcNow.AddMinutes(5))
                     {
                         // If the token is about to expire, generate a new token with the same UserID and Roles
-                        return (principal, JwtHandler.GenerateToken(userId, roles));
+                        return (principal, GenerateToken(userId, roles));
                     }
                 }
 

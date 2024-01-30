@@ -25,11 +25,13 @@ namespace TrueVote.Api.Services
     {
         private readonly ITrueVoteDbContext _trueVoteDbContext;
         private readonly IServiceBus _serviceBus;
+        private readonly IJwtHandler _jwtHandler;
 
-        public User(ILogger log, ITrueVoteDbContext trueVoteDbContext, IServiceBus serviceBus) : base(log, serviceBus)
+        public User(ILogger log, ITrueVoteDbContext trueVoteDbContext, IServiceBus serviceBus, IJwtHandler jwtHandler) : base(log, serviceBus)
         {
             _trueVoteDbContext = trueVoteDbContext;
             _serviceBus = serviceBus;
+            _jwtHandler = jwtHandler;
         }
 
         [Function(nameof(CreateUser))]
@@ -207,7 +209,7 @@ namespace TrueVote.Api.Services
 
             // TODO - SignIn the user and return token for API access
             // TODO - Need to use TrueVote UserID here
-            var token = JwtHandler.GenerateToken(signInEventModel.PubKey, ["User"]);
+            var token = _jwtHandler.GenerateToken(signInEventModel.PubKey, ["User"]);
 
             LogDebug("HTTP trigger - SignIn:End");
 

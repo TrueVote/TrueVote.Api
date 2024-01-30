@@ -59,6 +59,16 @@ namespace TrueVote.Api
             return response;
         }
 
+        private static HttpResponseData CreateJsonResponse(
+            this HttpRequestData request, HttpStatusCode statusCode, object content)
+        {
+            var response = request.CreateBasicResponse(statusCode);
+            var json = JsonSerializer.Serialize(content);
+            response.WriteString(json);
+
+            return response;
+        }
+
         public static HttpResponseData CreateNotFoundResponse(
             this HttpRequestData request)
         {
@@ -83,6 +93,12 @@ namespace TrueVote.Api
             return await request.CreateJsonResponseAsync(HttpStatusCode.BadRequest, content);
         }
 
+        public static HttpResponseData CreateBadRequestResponse(
+            this HttpRequestData request, SecureString content)
+        {
+            return request.CreateJsonResponse(HttpStatusCode.BadRequest, content);
+        }
+
         public static HttpResponseData CreateOkResponse(
             this HttpRequestData request)
         {
@@ -105,6 +121,12 @@ namespace TrueVote.Api
             this HttpRequestData request, object content)
         {
             return await request.CreateJsonResponseAsync(HttpStatusCode.Unauthorized, content);
+        }
+
+        public static HttpResponseData CreateUnauthorizedResponse(
+            this HttpRequestData request, object content)
+        {
+            return request.CreateJsonResponse(HttpStatusCode.Unauthorized, content);
         }
 
         public static async Task<T> ReadAsJsonAsync<T>(this HttpResponseData response)
