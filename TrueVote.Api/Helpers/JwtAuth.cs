@@ -19,19 +19,28 @@ namespace TrueVote.Api.Helpers
         string GenerateToken(string userId, IEnumerable<string> roles);
     }
 
-    public class JwtHandler(ILogger log, IServiceBus serviceBus) : LoggerHelper(log, serviceBus), IJwtHandler
+    public class JwtHandler : LoggerHelper, IJwtHandler
     {
         private const string Issuer = "TrueVoteApi";
         private const string Audience = "https://api.truevote.org/api/";
+        private const double ExpiresValidityPeriod = 0.2;
+        private const int TokenExpirationDays = 30;
+        private readonly SymmetricSecurityKey SymmetricSecurityKey;
+        private readonly SigningCredentials SigningCredentials;
+        private readonly TimeSpan ClockSkew;
+
+        public JwtHandler(ILogger log, IServiceBus serviceBus): base(log, serviceBus)
+        {
+            var secret = Environment.GetEnvironmentVariable("JWTSecret");
+            var secretByte = Convert.FromBase64String(secret);
+            SymmetricSecurityKey = new SymmetricSecurityKey(secretByte);
+            SigningCredentials = new SigningCredentials(SymmetricSecurityKey, SecurityAlgorithms.HmacSha256);
+            ClockSkew = TimeSpan.FromMinutes(1);
+        }
 
         // Generate a JWT token with a Expiration, UserID, and Roles claims
         public string GenerateToken(string userId, IEnumerable<string> roles)
         {
-            var SecretKey = Environment.GetEnvironmentVariable("JWTSecret");
-            var key = Convert.FromBase64String(SecretKey);
-            // var key = Encoding.UTF8.GetBytes(SecretKey);
-            var signingCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256);
-
             var claims = new List<Claim>
             {
                 new(ClaimTypes.NameIdentifier, userId),
@@ -51,8 +60,8 @@ namespace TrueVote.Api.Helpers
                 Issuer = Issuer,
                 Audience = Audience,
                 Subject = new ClaimsIdentity(claims),
-                Expires = DateTime.UtcNow.AddDays(30),
-                SigningCredentials = signingCredentials,
+                Expires = DateTime.UtcNow.AddDays(TokenExpirationDays),
+                SigningCredentials = SigningCredentials
             };
 
             var tokenHandler = new JwtSecurityTokenHandler();
@@ -61,21 +70,19 @@ namespace TrueVote.Api.Helpers
         }
 
         // Validate a JWT token in the request header
-        private static ClaimsPrincipal ValidateToken(string token)
+        private ClaimsPrincipal ValidateToken(string token)
         {
             try
             {
-                var SecretKey = Environment.GetEnvironmentVariable("JWTSecret");
-                var key = Convert.FromBase64String(SecretKey);
                 var tokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuer = true,
                     ValidateAudience = true,
                     ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(key),
+                    IssuerSigningKey = SymmetricSecurityKey,
                     ValidIssuer = Issuer,
                     ValidAudience = Audience,
-                    ClockSkew = TimeSpan.Zero, // No clock skew for simplicity, adjust as needed
+                    ClockSkew = ClockSkew
                 };
 
                 var tokenHandler = new JwtSecurityTokenHandler();
@@ -153,8 +160,12 @@ namespace TrueVote.Api.Helpers
                 var expirationClaim = principal.FindFirst(ClaimTypes.Expiration)?.Value;
                 if (expirationClaim != null && DateTime.TryParse(expirationClaim, out var expirationDateTime))
                 {
-                    // Check if the token is about to expire (e.g., within the last 5 minutes)
-                    if (expirationDateTime < DateTime.UtcNow.AddMinutes(5))
+                    var validFor = expirationDateTime - DateTimeOffset.UtcNow;
+
+                    // Renew if expires within 20% of validity period
+                    var renewalPeriod = validFor.TotalSeconds * ExpiresValidityPeriod;
+
+                    if (validFor < TimeSpan.FromSeconds(renewalPeriod))
                     {
                         // If the token is about to expire, generate a new token with the same UserID and Roles
                         return (principal, GenerateToken(userId, roles));
