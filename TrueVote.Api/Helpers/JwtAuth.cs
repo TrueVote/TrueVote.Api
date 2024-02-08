@@ -10,20 +10,35 @@ using TrueVote.Api.Models;
 using Microsoft.Extensions.Logging;
 using TrueVote.Api.Services;
 
+/* 
+ * This class shouldn't need to exist. The preferred method is to use the [Authorize] attribute on endpoints to
+ * protect. However, that doesn't work with Azure Functions. There is no documentation or workaround that will enable
+ * [Authorize] to work properly, hence the need for this class.
+ * 
+ * To protect a function, these lines need to be added to the top:
+ *
+    var (httpResponseData, renewedToken) = await _jwtHandler.ProcessTokenValidationAsync(req);
+    if (httpResponseData != null)
+        return httpResponseData;
+ *
+ * And something like this to the bottom:
+ * 
+    return await req.CreateOkResponseAsync(status, renewedToken);
+ *
+ */
 namespace TrueVote.Api.Helpers
 {
     public interface IJwtHandler
     {
-        Task<HttpResponseData> ValidateOrAbortAsync(HttpRequestData req);
-        HttpResponseData ValidateOrAbort(HttpRequestData req);
         string GenerateToken(string userId, IEnumerable<string> roles);
+        Task<(HttpResponseData Response, string RenewedToken)> ProcessTokenValidationAsync(HttpRequestData req);
     }
 
     public class JwtHandler : LoggerHelper, IJwtHandler
     {
         private const string Issuer = "TrueVoteApi";
         private const string Audience = "https://api.truevote.org/api/";
-        private const double ExpiresValidityPeriod = 0.2;
+        private const double ExpiresValidityPeriod = 0.5;
         private const int TokenExpirationDays = 30;
         private readonly SymmetricSecurityKey SymmetricSecurityKey;
         private readonly SigningCredentials SigningCredentials;
@@ -41,10 +56,12 @@ namespace TrueVote.Api.Helpers
         // Generate a JWT token with a Expiration, UserID, and Roles claims
         public string GenerateToken(string userId, IEnumerable<string> roles)
         {
-            var claims = new List<Claim>
+            if (userId == null)
             {
-                new(ClaimTypes.NameIdentifier, userId),
-            };
+                throw new SecurityTokenException("Token validation failed. userId cannot be null");
+            }
+
+            var claims = new List<Claim>();
 
             // Add roles to the claims
             if (roles != null)
@@ -55,12 +72,24 @@ namespace TrueVote.Api.Helpers
                 }
             }
 
+            var currentTime = DateTimeOffset.UtcNow;
+            var expirationTime = currentTime.AddMinutes(5);
+            claims.Add(new Claim(JwtRegisteredClaimNames.Exp, expirationTime.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64));
+
+            // Other essential claims
+            claims.Add(new Claim(JwtRegisteredClaimNames.Sub, userId));
+            claims.Add(new Claim(JwtRegisteredClaimNames.NameId, userId));
+            claims.Add(new Claim(JwtRegisteredClaimNames.Iss, Issuer));
+            claims.Add(new Claim(JwtRegisteredClaimNames.Aud, Audience));
+            claims.Add(new Claim(JwtRegisteredClaimNames.Iat, currentTime.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64));
+            claims.Add(new Claim(JwtRegisteredClaimNames.Nbf, currentTime.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64));
+            claims.Add(new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()));
+
             var tokenDescriptor = new SecurityTokenDescriptor
             {
-                Issuer = Issuer,
-                Audience = Audience,
+                // Other token descriptor properties...
                 Subject = new ClaimsIdentity(claims),
-                Expires = DateTime.UtcNow.AddDays(TokenExpirationDays),
+                Expires = expirationTime.UtcDateTime,
                 SigningCredentials = SigningCredentials
             };
 
@@ -94,50 +123,6 @@ namespace TrueVote.Api.Helpers
             }
         }
 
-        public HttpResponseData ValidateOrAbort(HttpRequestData req)
-        {
-            try
-            {
-                var (principal, renewedToken) = ValidateAndRenewToken(req);
-            }
-            catch (SecurityTokenException e)
-            {
-                LogError(e.Message);
-                LogDebug("HTTP trigger - GetStatus:End");
-                return req.CreateUnauthorizedResponse(new SecureString { Value = e.Message });
-            }
-            catch (Exception e)
-            {
-                LogError(e.Message);
-                LogDebug("HTTP trigger - GetStatus:End");
-                return req.CreateBadRequestResponse(new SecureString { Value = e.Message });
-            }
-
-            return null;
-        }
-
-        public async Task<HttpResponseData> ValidateOrAbortAsync(HttpRequestData req)
-        {
-            try
-            {
-                var (principal, renewedToken) = ValidateAndRenewToken(req);
-            }
-            catch (SecurityTokenException e)
-            {
-                LogError($"{e.Message} : {e.InnerException}");
-                LogDebug("HTTP trigger - GetStatus:End");
-                return await req.CreateUnauthorizedResponseAsync(new SecureString { Value = $"{e.Message} : {e.InnerException}" });
-            }
-            catch (Exception e)
-            {
-                LogError($"{e.Message} : {e.InnerException}");
-                LogDebug("HTTP trigger - GetStatus:End");
-                return await req.CreateBadRequestResponseAsync(new SecureString { Value = $"{e.Message} : {e.InnerException}" });
-            }
-
-            return null;
-        }
-
         public (ClaimsPrincipal, string) ValidateAndRenewToken(HttpRequestData req)
         {
             try
@@ -153,16 +138,24 @@ namespace TrueVote.Api.Helpers
 
                 // Validate or auto-renew the token
                 var principal = ValidateToken(token);
-                var userId = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+                // THIS should work, but it doesn't. So instead need to fully qualify claim name.
+                // var userId = principal.FindFirst(JwtRegisteredClaimNames.NameId)?.Value;
+                var userId = principal.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
+
                 var roles = principal.FindAll(ClaimTypes.Role)?.Select(c => c.Value);
 
                 // Extract the expiration claim
-                var expirationClaim = principal.FindFirst(ClaimTypes.Expiration)?.Value;
-                if (expirationClaim != null && DateTime.TryParse(expirationClaim, out var expirationDateTime))
+                var expirationClaim = principal.FindFirst(JwtRegisteredClaimNames.Exp)?.Value;
+                if (expirationClaim != null && long.TryParse(expirationClaim, out var expirationUnixTime))
                 {
+                    // Convert Unix time to DateTime
+                    var expirationDateTime = DateTimeOffset.FromUnixTimeSeconds(expirationUnixTime).UtcDateTime;
+
                     var validFor = expirationDateTime - DateTimeOffset.UtcNow;
 
-                    // Renew if expires within 20% of validity period
+                    // TODO - Confirm this is working!!
+                    // Renew if expires within x% of validity period
                     var renewalPeriod = validFor.TotalSeconds * ExpiresValidityPeriod;
 
                     if (validFor < TimeSpan.FromSeconds(renewalPeriod))
@@ -181,6 +174,29 @@ namespace TrueVote.Api.Helpers
             catch (Exception e)
             {
                 throw new Exception("An unexpected error occurred.", e);
+            }
+        }
+
+        public async Task<(HttpResponseData Response, string RenewedToken)> ProcessTokenValidationAsync(HttpRequestData req)
+        {
+            try
+            {
+                var (principal, token) = ValidateAndRenewToken(req);
+                return (Response: null, RenewedToken: token);
+            }
+            catch (SecurityTokenException e)
+            {
+                LogError($"{e.Message} : {e.InnerException}");
+                LogDebug("HTTP trigger - GetStatus:End");
+                var unauthorizedResponse = await req.CreateUnauthorizedResponseAsync(new SecureString { Value = $"{e.Message} : {e.InnerException}" });
+                return (Response: unauthorizedResponse, RenewedToken: null);
+            }
+            catch (Exception e)
+            {
+                LogError($"{e.Message} : {e.InnerException}");
+                LogDebug("HTTP trigger - GetStatus:End");
+                var badRequestResponse = await req.CreateBadRequestResponseAsync(new SecureString { Value = $"{e.Message} : {e.InnerException}" });
+                return (Response: badRequestResponse, RenewedToken: null);
             }
         }
     }

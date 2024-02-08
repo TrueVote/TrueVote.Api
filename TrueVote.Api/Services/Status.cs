@@ -44,7 +44,7 @@ namespace TrueVote.Api.Services
         {
             LogDebug("HTTP trigger - GetStatus:Begin");
 
-            var httpResponseData = await _jwtHandler.ValidateOrAbortAsync(req);
+            var (httpResponseData, renewedToken) = await _jwtHandler.ProcessTokenValidationAsync(req);
             if (httpResponseData != null)
                 return httpResponseData;
 
@@ -92,7 +92,7 @@ namespace TrueVote.Api.Services
 
             LogDebug("HTTP trigger - GetStatus:End");
 
-            return await req.CreateOkResponseAsync(status);
+            return await req.CreateOkResponseAsync(status, renewedToken);
         }
     }
 }

@@ -38,7 +38,7 @@ namespace TrueVote.Api
     [ExcludeFromCodeCoverage]
     public static class HttpResponseDataExtensions
     {
-        private static HttpResponseData CreateBasicResponse(this HttpRequestData request, HttpStatusCode statusCode)
+        private static HttpResponseData CreateBasicResponse(this HttpRequestData request, HttpStatusCode statusCode, string token = null)
         {
             var response = request.CreateResponse(statusCode);
             response.Headers = new HttpHeadersCollection
@@ -46,13 +46,18 @@ namespace TrueVote.Api
                 { "Content-Type", "application/json" }
             };
 
+            if (token != null)
+            {
+                response.Headers.Add("Authorization", $"Bearer {token}");
+            }
+
             return response;
         }
 
         private static async Task<HttpResponseData> CreateJsonResponseAsync(
-            this HttpRequestData request, HttpStatusCode statusCode, object content)
+            this HttpRequestData request, HttpStatusCode statusCode, object content, string token = null)
         {
-            var response = request.CreateBasicResponse(statusCode);
+            var response = request.CreateBasicResponse(statusCode, token);
             var json = JsonSerializer.Serialize(content);
             await response.WriteStringAsync(json);
 
@@ -106,9 +111,9 @@ namespace TrueVote.Api
         }
 
         public static async Task<HttpResponseData> CreateOkResponseAsync(
-            this HttpRequestData request, object content)
+            this HttpRequestData request, object content, string token = null)
         {
-            return await request.CreateJsonResponseAsync(HttpStatusCode.OK, content);
+            return await request.CreateJsonResponseAsync(HttpStatusCode.OK, content, token);
         }
 
         public static async Task<HttpResponseData> CreateCreatedResponseAsync(
