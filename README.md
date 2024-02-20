@@ -26,6 +26,8 @@ Create a new file at the root of the TrueVote.Api project named `local.settings.
 
 Get the `ServiceBusConnectionString` from Azure portal. Currently Service Bus is not available to run locally.
 
+Create a JWTSecret: `$ openssl rand -base64 32`
+
 ```json
 {
   "IsEncrypted": false,
@@ -34,7 +36,8 @@ Get the `ServiceBusConnectionString` from Azure portal. Currently Service Bus is
     "CosmosDbConnectionString": "AccountEndpoint=https://localhost:8081/;AccountKey=<AccountKeyFromCosmosDBEmulator>",
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
     "ServiceBusConnectionString": "<ServiceBusConnectionString>",
-    "ServiceBusApiEventQueueName": "apieventqueue-dev"
+    "ServiceBusApiEventQueueName": "apieventqueue-dev",
+    "JWTSecret": <JWTBase64Key>
   }
 }
 ```

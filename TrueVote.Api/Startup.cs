@@ -1,3 +1,4 @@
+#pragma warning disable IDE0058 // Expression value is never used
 using HotChocolate.Types.Descriptors;
 using HotChocolate.Types;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
@@ -174,7 +175,9 @@ namespace TrueVote.Api
     {
         public static void Main()
         {
-            var host = new HostBuilder().ConfigureFunctionsWorkerDefaults().ConfigureServices(s =>
+            var hostBuilder = new HostBuilder();
+            var hostBuilderDefaults = hostBuilder.ConfigureFunctionsWorkerDefaults();
+            var hostBuilderServices = hostBuilderDefaults.ConfigureServices(s =>
             {
                 s.AddApplicationInsightsTelemetryWorkerService();
                 s.ConfigureFunctionsApplicationInsights();
@@ -183,6 +186,7 @@ namespace TrueVote.Api
                 s.TryAddSingleton<ILoggerFactory, LoggerFactory>();
                 s.TryAddScoped<Query, Query>();
                 s.TryAddScoped<IServiceBus, ServiceBus>();
+                s.TryAddScoped<IJwtHandler, JwtHandler>();
 
                 s.TryAddSingleton<INamingConventions, TrueVoteNamingConventions>();
                 s.AddGraphQLFunction().AddQueryType<Query>();
@@ -197,7 +201,8 @@ namespace TrueVote.Api
                 s.TryAddScoped<IValidator, Validator>();
 
                 ConfigureServices(s).BuildServiceProvider(true);
-            }).Build();
+            });
+            var host = hostBuilderServices.Build();
 
             host.Run();
         }
@@ -224,3 +229,4 @@ namespace TrueVote.Api
         }
     }
 }
+#pragma warning restore IDE0058 // Expression value is never used

@@ -38,7 +38,7 @@ namespace TrueVote.Api
     [ExcludeFromCodeCoverage]
     public static class HttpResponseDataExtensions
     {
-        private static HttpResponseData CreateBasicResponse(this HttpRequestData request, HttpStatusCode statusCode)
+        private static HttpResponseData CreateBasicResponse(this HttpRequestData request, HttpStatusCode statusCode, string token = null)
         {
             var response = request.CreateResponse(statusCode);
             response.Headers = new HttpHeadersCollection
@@ -46,15 +46,30 @@ namespace TrueVote.Api
                 { "Content-Type", "application/json" }
             };
 
+            if (token != null)
+            {
+                response.Headers.Add("Authorization", $"Bearer {token}");
+            }
+
             return response;
         }
 
         private static async Task<HttpResponseData> CreateJsonResponseAsync(
+            this HttpRequestData request, HttpStatusCode statusCode, object content, string token = null)
+        {
+            var response = request.CreateBasicResponse(statusCode, token);
+            var json = JsonSerializer.Serialize(content);
+            await response.WriteStringAsync(json);
+
+            return response;
+        }
+
+        private static HttpResponseData CreateJsonResponse(
             this HttpRequestData request, HttpStatusCode statusCode, object content)
         {
             var response = request.CreateBasicResponse(statusCode);
             var json = JsonSerializer.Serialize(content);
-            await response.WriteStringAsync(json);
+            response.WriteString(json);
 
             return response;
         }
@@ -83,6 +98,12 @@ namespace TrueVote.Api
             return await request.CreateJsonResponseAsync(HttpStatusCode.BadRequest, content);
         }
 
+        public static HttpResponseData CreateBadRequestResponse(
+            this HttpRequestData request, SecureString content)
+        {
+            return request.CreateJsonResponse(HttpStatusCode.BadRequest, content);
+        }
+
         public static HttpResponseData CreateOkResponse(
             this HttpRequestData request)
         {
@@ -90,9 +111,9 @@ namespace TrueVote.Api
         }
 
         public static async Task<HttpResponseData> CreateOkResponseAsync(
-            this HttpRequestData request, object content)
+            this HttpRequestData request, object content, string token = null)
         {
-            return await request.CreateJsonResponseAsync(HttpStatusCode.OK, content);
+            return await request.CreateJsonResponseAsync(HttpStatusCode.OK, content, token);
         }
 
         public static async Task<HttpResponseData> CreateCreatedResponseAsync(
@@ -101,9 +122,21 @@ namespace TrueVote.Api
             return await request.CreateJsonResponseAsync(HttpStatusCode.Created, content);
         }
 
+        public static async Task<HttpResponseData> CreateUnauthorizedResponseAsync(
+            this HttpRequestData request, object content)
+        {
+            return await request.CreateJsonResponseAsync(HttpStatusCode.Unauthorized, content);
+        }
+
+        public static HttpResponseData CreateUnauthorizedResponse(
+            this HttpRequestData request, object content)
+        {
+            return request.CreateJsonResponse(HttpStatusCode.Unauthorized, content);
+        }
+
         public static async Task<T> ReadAsJsonAsync<T>(this HttpResponseData response)
         {
-            response.Body.Seek(0, SeekOrigin.Begin);
+            _ = response.Body.Seek(0, SeekOrigin.Begin);
             using var reader = new StreamReader(response.Body);
             var responseBody = await reader.ReadToEndAsync();
 

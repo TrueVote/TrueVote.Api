@@ -1,3 +1,4 @@
+#pragma warning disable IDE0058 // Expression value is never used
 using System;
 using System.IO;
 using System.Linq;
@@ -24,11 +25,13 @@ namespace TrueVote.Api.Services
     {
         private readonly ITrueVoteDbContext _trueVoteDbContext;
         private readonly IServiceBus _serviceBus;
+        private readonly IJwtHandler _jwtHandler;
 
-        public User(ILogger log, ITrueVoteDbContext trueVoteDbContext, IServiceBus serviceBus) : base(log, serviceBus)
+        public User(ILogger log, ITrueVoteDbContext trueVoteDbContext, IServiceBus serviceBus, IJwtHandler jwtHandler) : base(log, serviceBus)
         {
             _trueVoteDbContext = trueVoteDbContext;
             _serviceBus = serviceBus;
+            _jwtHandler = jwtHandler;
         }
 
         [Function(nameof(CreateUser))]
@@ -205,10 +208,13 @@ namespace TrueVote.Api.Services
             // TODO - Find the user by PubKey
 
             // TODO - SignIn the user and return token for API access
+            // TODO - Need to use TrueVote UserID here
+            var token = _jwtHandler.GenerateToken(signInEventModel.PubKey, ["User"]);
 
             LogDebug("HTTP trigger - SignIn:End");
 
-            return await req.CreateOkResponseAsync(new SecureString { Value = "atoken" });
+            return await req.CreateOkResponseAsync(new SecureString { Value = token });
         }
     }
 }
+#pragma warning restore IDE0058 // Expression value is never used
