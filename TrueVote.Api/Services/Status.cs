@@ -21,12 +21,10 @@ namespace TrueVote.Api.Services
         private static BuildInfo _BuildInfo = null;
         private static string _BuildInfoReadTime = null;
         private readonly IServiceBus _serviceBus;
-        private readonly IJwtHandler _jwtHandler;
 
-        public Status(ILogger log, IServiceBus serviceBus, IJwtHandler jwtHandler) : base(log, serviceBus)
+        public Status(ILogger log, IServiceBus serviceBus) : base(log, serviceBus)
         {
             _serviceBus = serviceBus;
-            _jwtHandler = jwtHandler;
         }
 
         [Function(nameof(GetStatus))]
@@ -43,10 +41,6 @@ namespace TrueVote.Api.Services
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "status")] HttpRequestData req)
         {
             LogDebug("HTTP trigger - GetStatus:Begin");
-
-            var (httpResponseData, renewedToken) = await _jwtHandler.ProcessTokenValidationAsync(req);
-            if (httpResponseData != null)
-                return httpResponseData;
 
             // For timing the running of this function
             var watch = Stopwatch.StartNew();
@@ -92,7 +86,7 @@ namespace TrueVote.Api.Services
 
             LogDebug("HTTP trigger - GetStatus:End");
 
-            return await req.CreateOkResponseAsync(status, renewedToken);
+            return await req.CreateOkResponseAsync(status);
         }
     }
 }
