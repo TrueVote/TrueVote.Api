@@ -175,7 +175,9 @@ namespace TrueVote.Api
     {
         public static void Main()
         {
-            var host = new HostBuilder().ConfigureFunctionsWorkerDefaults().ConfigureServices(s =>
+            var hostBuilder = new HostBuilder();
+            var hostBuilderDefaults = hostBuilder.ConfigureFunctionsWorkerDefaults();
+            var hostBuilderServices = hostBuilderDefaults.ConfigureServices(s =>
             {
                 s.AddApplicationInsightsTelemetryWorkerService();
                 s.ConfigureFunctionsApplicationInsights();
@@ -199,7 +201,8 @@ namespace TrueVote.Api
                 s.TryAddScoped<IValidator, Validator>();
 
                 ConfigureServices(s).BuildServiceProvider(true);
-            }).Build();
+            });
+            var host = hostBuilderServices.Build();
 
             host.Run();
         }
