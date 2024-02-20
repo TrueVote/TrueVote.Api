@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using TrueVote.Api.Models;
 using Microsoft.Extensions.Logging;
 using TrueVote.Api.Services;
+using System.Diagnostics.CodeAnalysis;
 
 /* 
  * This class shouldn't need to exist. The preferred method is to use the [Authorize] attribute on endpoints to
@@ -34,6 +35,7 @@ namespace TrueVote.Api.Helpers
         Task<(HttpResponseData Response, string RenewedToken)> ProcessTokenValidationAsync(HttpRequestData req);
     }
 
+    [ExcludeFromCodeCoverage] // TODO Add coverage for this
     public class JwtHandler : LoggerHelper, IJwtHandler
     {
         private const string Issuer = "TrueVoteApi";
