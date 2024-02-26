@@ -11,7 +11,7 @@ env:
   AZURE_APIM_SERVICENAME: TrueVoteApiManagement
   AZURE_APIM_API_ID: TrueVoteApiManagment
   AZURE_APIM_APPSERVICEURL: https://truevoteapiappservice.azurewebsites.net
-  SWASHBUCLE_ASPNET_CORE_CLI_PACKAGE_VERSION: 5.6.3
+  SWASHBUCLE_ASPNET_CORE_CLI_PACKAGE_VERSION: 6.5.0
   SWASHBUCKLE_DOTNET_CORE_VERSION: 3.1.x
   API_IMPORT_SPECIFICATION_PATH: TrueVote.Api2\publish\swagger.json
   API_IMPORT_DLL: TrueVote.Api2\publish\TrueVote.Api2.dll
