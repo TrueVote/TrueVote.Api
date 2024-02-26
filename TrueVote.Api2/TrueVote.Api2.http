@@ -1,0 +1,6 @@
+@TrueVote.Api2_HostAddress = http://localhost:5024
+
+GET {{TrueVote.Api2_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
