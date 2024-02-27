@@ -14,9 +14,15 @@ namespace TrueVote.Api2
         {
             if (env.IsDevelopment())
             {
-                app.UseSwagger();
-                app.UseSwaggerUI();
+                Console.WriteLine("Running Locally");
             }
+            else
+            {
+                Console.WriteLine("Running Deployed");
+            }
+
+            app.UseSwagger();
+            app.UseSwaggerUI();
 
             app.UseHttpsRedirection();
 
