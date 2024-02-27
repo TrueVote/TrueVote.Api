@@ -9,9 +9,9 @@ namespace TrueVote.Api2
 
         public static IHostBuilder CreateHostBuilder(string[] args)
         {
-            return Host.CreateDefaultBuilder(args).ConfigureWebHostDefaults(webBuilder =>
+            return Host.CreateDefaultBuilder(args).ConfigureWebHostDefaults(o =>
                 {
-                    _ = webBuilder.UseStartup<Startup>();
+                    _ = o.UseStartup<Startup>();
                 });
         }
     }

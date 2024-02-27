@@ -30,10 +30,7 @@ namespace TrueVote.Api2
 
             app.UseAuthorization();
 
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapControllers();
-            });
+            app.UseEndpoints(e => e.MapControllers());
         }
     }
 }
