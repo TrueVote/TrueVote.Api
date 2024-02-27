@@ -69,20 +69,12 @@ jobs:
         name: webapp
         path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
 
-    - name: Azure WebApp Login
-      uses: azure/login@v1
-      with:
-        creds: ${{ secrets.AZURE_CREDENTIALS }}
-
     - name: Deploy to Azure WebApp
       uses: azure/webapps-deploy@v3
       with:
         app-name: ${{ env.AZURE_WEBAPP_NAME }}
         package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
-
-    - name: Azure WebApp Logout
-      run: >
-        az logout
+        publish-profile: ${{ secrets.TrueVoteApiAppService_D74C }}
 
     - name: Azure SPN Login
       uses: azure/login@v1
