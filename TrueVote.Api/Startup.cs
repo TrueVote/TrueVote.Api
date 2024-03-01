@@ -15,7 +15,7 @@ using Newtonsoft.Json;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 using Microsoft.Extensions.FileProviders;
 using Path = System.IO.Path;
-using System.Runtime.InteropServices;
+using Newtonsoft.Json.Serialization;
 
 namespace TrueVote.Api
 {
@@ -31,6 +31,7 @@ namespace TrueVote.Api
                 o.SerializerSettings.Converters.Add(new Newtonsoft.Json.Converters.IsoDateTimeConverter());
                 o.SerializerSettings.DateTimeZoneHandling = DateTimeZoneHandling.Utc;
                 o.SerializerSettings.DateFormatHandling = DateFormatHandling.IsoDateFormat;
+                o.SerializerSettings.ContractResolver = new DefaultContractResolver();
             });
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen(o =>

@@ -2,13 +2,12 @@ using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Net.Http.Formatting;
-using System.Net;
 using TrueVote.Api.Models;
 
 namespace TrueVote.Api.Services
 {
     [ApiController]
+    [Consumes("application/json")]
     [Produces("application/json")]
     public class Status : ControllerBase
     {
@@ -33,7 +32,7 @@ namespace TrueVote.Api.Services
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
         [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
-        public async Task<HttpResponseMessage> GetStatus()
+        public async Task<IActionResult> GetStatus()
         {
             _log.LogDebug("HTTP trigger - GetStatus:Begin");
 
@@ -77,7 +76,7 @@ namespace TrueVote.Api.Services
 
             _log.LogDebug("HTTP trigger - GetStatus:End");
 
-            return new HttpResponseMessage { StatusCode = HttpStatusCode.OK, Content = new ObjectContent<StatusModel>(status, new JsonMediaTypeFormatter()) };
+            return Ok(status);
         }
     }
 }

@@ -46,7 +46,6 @@ namespace TrueVote.Api.Models
     {
         [Required]
         [Description("DateCreatedStart")]
-        [MaxLength(2048)]
         [DataType(DataType.Date)]
         [JsonPropertyName("DateCreatedStart")]
         public DateTime DateCreatedStart { get; set; }
@@ -54,7 +53,6 @@ namespace TrueVote.Api.Models
         [BindRequired]
         [Required]
         [Description("DateCreatedEnd")]
-        [MaxLength(2048)]
         [DataType(DataType.Date)]
         [JsonPropertyName("DateCreatedEnd")]
         public DateTime DateCreatedEnd { get; set; }
@@ -90,7 +88,6 @@ namespace TrueVote.Api.Models
 
         [Required]
         [Description("DateCreated")]
-        [MaxLength(2048)]
         [DataType(DataType.Date)]
         [JsonPropertyName("DateCreated")]
         public DateTime DateCreated { get; set; } = UtcNowProviderFactory.GetProvider().UtcNow;
@@ -177,14 +174,12 @@ namespace TrueVote.Api.Models
 
         [Required]
         [Description("DateCreated")]
-        [MaxLength(2048)]
         [DataType(DataType.Date)]
         [JsonPropertyName("DateCreated")]
         public DateTime DateCreated { get; set; } = UtcNowProviderFactory.GetProvider().UtcNow;
 
         [Required]
         [Description("DateUpdated")]
-        [MaxLength(2048)]
         [DataType(DataType.Date)]
         [JsonPropertyName("DateUpdated")]
         public DateTime DateUpdated { get; set; } = UtcNowProviderFactory.GetProvider().UtcNow;

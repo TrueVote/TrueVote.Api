@@ -63,14 +63,12 @@ namespace TrueVote.Api.Models
 
         [Required]
         [Description("StartDate")]
-        [MaxLength(2048)]
         [DataType(DataType.Date)]
         [JsonPropertyName("StartDate")]
         public DateTime? StartDate { get; set; }
 
         [Required]
         [Description("EndDate")]
-        [MaxLength(2048)]
         [DataType(DataType.Date)]
         [JsonPropertyName("EndDate")]
         public DateTime? EndDate { get; set; }
@@ -126,21 +124,18 @@ namespace TrueVote.Api.Models
 
         [Required]
         [Description("StartDate")]
-        [MaxLength(2048)]
         [DataType(DataType.Date)]
         [JsonPropertyName("StartDate")]
         public DateTime? StartDate { get; set; }
 
         [Required]
         [Description("EndDate")]
-        [MaxLength(2048)]
         [DataType(DataType.Date)]
         [JsonPropertyName("EndDate")]
         public DateTime? EndDate { get; set; }
 
         [Required]
         [Description("DateCreated")]
-        [MaxLength(2048)]
         [DataType(DataType.Date)]
         [JsonPropertyName("DateCreated")]
         public DateTime DateCreated { get; set; } = UtcNowProviderFactory.GetProvider().UtcNow;
@@ -190,21 +185,18 @@ namespace TrueVote.Api.Models
 
         [Required]
         [Description("StartDate")]
-        [MaxLength(2048)]
         [DataType(DataType.Date)]
         [JsonPropertyName("StartDate")]
         public DateTime? StartDate { get; set; }
 
         [Required]
         [Description("EndDate")]
-        [MaxLength(2048)]
         [DataType(DataType.Date)]
         [JsonPropertyName("EndDate")]
         public DateTime? EndDate { get; set; }
 
         [Required]
         [Description("DateCreated")]
-        [MaxLength(2048)]
         [DataType(DataType.Date)]
         [JsonPropertyName("DateCreated")]
         public DateTime DateCreated { get; set; } = UtcNowProviderFactory.GetProvider().UtcNow;

@@ -9,6 +9,7 @@ using TrueVote.Api.Models;
 namespace TrueVote.Api.Services
 {
     [ApiController]
+    [Consumes("application/json")]
     [Produces("application/json")]
     public class Election : ControllerBase
     {

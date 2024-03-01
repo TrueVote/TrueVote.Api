@@ -9,6 +9,7 @@ using TrueVote.Api.Models;
 namespace TrueVote.Api.Services
 {
     [ApiController]
+    [Consumes("application/json")]
     [Produces("application/json")]
     public class Ballot : ControllerBase
     {
@@ -125,12 +126,12 @@ namespace TrueVote.Api.Services
         [Route("ballot/count")]
         [Produces(typeof(CountBallotModelResponse))]
         [Description("Returns count of Ballots")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
-        [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
-        public async Task<HttpResponseMessage> BallotCount([FromBody] CountBallotModel countBallot)
+        [ProducesResponseType(typeof(CountBallotModelResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(SecureString), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(SecureString), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(SecureString), StatusCodes.Status406NotAcceptable)]
+        [ProducesResponseType(typeof(SecureString), StatusCodes.Status429TooManyRequests)]
+        public async Task<IActionResult> BallotCount([FromBody] CountBallotModel countBallot)
         {
             _log.LogDebug("HTTP trigger - BallotCount:Begin");
 
@@ -144,7 +145,7 @@ namespace TrueVote.Api.Services
 
             _log.LogDebug("HTTP trigger - BallotCount:End");
 
-            return new HttpResponseMessage { StatusCode = HttpStatusCode.OK, Content = new ObjectContent<CountBallotModelResponse>(ballotCountModelResponse, new JsonMediaTypeFormatter()) };
+            return Ok(ballotCountModelResponse);
         }
 
         [HttpGet]

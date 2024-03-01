@@ -101,7 +101,6 @@ namespace TrueVote.Api.Models
 
         [Required]
         [Description("DateCreated")]
-        [MaxLength(2048)]
         [DataType(DataType.Date)]
         [JsonPropertyName("DateCreated")]
         public DateTime DateCreated { get; set; } = UtcNowProviderFactory.GetProvider().UtcNow;
