@@ -5,7 +5,7 @@ on:
     - AD-105
 env:
   AZURE_WEBAPP_NAME: TrueVoteApiAppService
-  AZURE_WEBAPP_PACKAGE_PATH: TrueVote.Api2\publish
+  AZURE_WEBAPP_PACKAGE_PATH: TrueVote.Api\publish
   AZURE_APIM_RESOURCE_PATH: /
   AZURE_APIM_RESOURCEGROUP: TrueVoteApi
   AZURE_APIM_SERVICENAME: TrueVoteApiManagement
@@ -13,12 +13,12 @@ env:
   AZURE_APIM_APPSERVICEURL: https://truevoteapiappservice.azurewebsites.net
   SWASHBUCLE_ASPNET_CORE_CLI_PACKAGE_VERSION: 6.5.0
   SWASHBUCKLE_DOTNET_CORE_VERSION: 3.1.x
-  API_IMPORT_SPECIFICATION_PATH: TrueVote.Api2\publish\swagger.json
-  API_IMPORT_DLL: TrueVote.Api2\publish\TrueVote.Api2.dll
+  API_IMPORT_SPECIFICATION_PATH: TrueVote.Api\publish\swagger.json
+  API_IMPORT_DLL: TrueVote.Api\publish\TrueVote.Api.dll
   API_IMPORT_VERSION: v1
   CONFIGURATION: Releases
   DOTNET_CORE_VERSION: 8.0.x
-  WORKING_DIRECTORY: TrueVote.Api2
+  WORKING_DIRECTORY: TrueVote.Api
 jobs:
   build:
     runs-on: windows-latest
