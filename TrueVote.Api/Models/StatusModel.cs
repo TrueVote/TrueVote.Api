@@ -2,6 +2,7 @@ using Newtonsoft.Json;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 
 namespace TrueVote.Api.Models
 {
@@ -11,25 +12,25 @@ namespace TrueVote.Api.Models
         [Description("Git branch of instance")]
         [RegularExpression(Constants.GenericStringRegex)]
         [MaxLength(2048)]
-        [JsonProperty(PropertyName = "Branch")]
+        [JsonPropertyName("Branch")]
         public string Branch { get; set; } = string.Empty;
 
         [Description("Timestamp build was created")]
         [RegularExpression(Constants.GenericStringRegex)]
         [MaxLength(2048)]
-        [JsonProperty(PropertyName = "BuildTime")]
+        [JsonPropertyName("BuildTime")]
         public string BuildTime { get; set; } = string.Empty;
 
         [Description("Git tag of instance")]
         [RegularExpression(Constants.GenericStringRegex)]
         [MaxLength(2048)]
-        [JsonProperty(PropertyName = "LastTag")]
+        [JsonPropertyName("LastTag")]
         public string LastTag { get; set; } = string.Empty;
 
         [Description("Git commit hash of instance")]
         [RegularExpression(Constants.GenericStringRegex)]
         [MaxLength(2048)]
-        [JsonProperty(PropertyName = "Commit")]
+        [JsonPropertyName("Commit")]
         public string Commit { get; set; } = string.Empty;
     }
 
@@ -39,38 +40,38 @@ namespace TrueVote.Api.Models
         [Description("Current Time")]
         [RegularExpression(Constants.GenericStringRegex)]
         [MaxLength(2048)]
-        [JsonProperty(PropertyName = "CurrentTime")]
+        [JsonPropertyName("CurrentTime")]
         public string CurrentTime { get; set; }
 
         [Description("Stopwatch time to run this method")]
         [Range(0, long.MaxValue)]
-        [JsonProperty(PropertyName = "ExecutionTime")]
+        [JsonPropertyName("ExecutionTime")]
         public long ExecutionTime { get; set; }
 
         [Description("Stopwatch time to run this method (message)")]
         [RegularExpression(Constants.GenericStringRegex)]
         [MaxLength(2048)]
-        [JsonProperty(PropertyName = "ExecutionTimeMsg")]
+        [JsonPropertyName("ExecutionTimeMsg")]
         public string ExecutionTimeMsg { get; set; }
 
         [Description("True if method responds. Likely never false")]
-        [JsonProperty(PropertyName = "Responds")]
+        [JsonPropertyName("Responds")]
         public bool Responds { get; set; }
 
         [Description("True if method responds. Likely never false (message)")]
         [RegularExpression(Constants.GenericStringRegex)]
         [MaxLength(2048)]
-        [JsonProperty(PropertyName = "RespondsMsg")]
+        [JsonPropertyName("RespondsMsg")]
         public string RespondsMsg { get; set; }
 
         [Description("Build information model")]
-        [JsonProperty(PropertyName = "BuildInfo")]
+        [JsonPropertyName("BuildInfo")]
         public BuildInfo BuildInfo { get; set; }
 
         [Description("Timestamp this Build information data model was populated")]
         [RegularExpression(Constants.GenericStringRegex)]
         [MaxLength(2048)]
-        [JsonProperty(PropertyName = "BuildInfoReadTime")]
+        [JsonPropertyName("BuildInfoReadTime")]
         public string BuildInfoReadTime { get; set; } = string.Empty;
     }
 }

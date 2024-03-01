@@ -2,6 +2,7 @@ using Newtonsoft.Json;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 
 namespace TrueVote.Api.Models
 {
@@ -13,7 +14,7 @@ namespace TrueVote.Api.Models
         [MaxLength(2048)]
         [DataType(DataType.Text)]
         [RegularExpression(Constants.GenericStringRegex)]
-        [JsonProperty(PropertyName = "Value")]
+        [JsonPropertyName("Value")]
         public string Value { get; set; } = string.Empty;
     }
 }

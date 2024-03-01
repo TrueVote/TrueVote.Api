@@ -16,7 +16,7 @@ namespace TrueVote.Api.Tests.ServiceTests
 {
     public class GraphQLRoot
     {
-        [JsonProperty(PropertyName = "Data")]
+        [JsonPropertyName("Data")]
         public dynamic Data { get; set; }
     }
 

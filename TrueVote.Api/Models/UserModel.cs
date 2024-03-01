@@ -4,13 +4,14 @@ using System.Diagnostics.CodeAnalysis;
 using TrueVote.Api.Helpers;
 using Nostr.Client.Messages;
 using System.ComponentModel;
+using System.Text.Json.Serialization;
 
 namespace TrueVote.Api.Models
 {
     [ExcludeFromCodeCoverage]
     public class UserObj
     {
-        [JsonProperty(PropertyName = "User")]
+        [JsonPropertyName("User")]
         public List<UserModel> user;
     }
 
@@ -20,7 +21,7 @@ namespace TrueVote.Api.Models
         [Required]
         [MaxLength(2048)]
         [Description("List of Users")]
-        [JsonProperty(PropertyName = "Users")]
+        [JsonPropertyName("Users")]
         public List<UserModel> Users { get; set; }
     }
 
@@ -32,7 +33,7 @@ namespace TrueVote.Api.Models
         [MaxLength(2048)]
         [DataType(DataType.Text)]
         [RegularExpression(Constants.GenericStringRegex)]
-        [JsonProperty(PropertyName = "FirstName")]
+        [JsonPropertyName("FirstName")]
         public string FirstName { get; set; } = string.Empty;
 
         [Required]
@@ -41,7 +42,7 @@ namespace TrueVote.Api.Models
         [DataType(DataType.EmailAddress)]
         [EmailAddress]
         [RegularExpression(Constants.EMailRegex)]
-        [JsonProperty(PropertyName = "Email")]
+        [JsonPropertyName("Email")]
         public string Email { get; set; }
     }
 
@@ -53,7 +54,7 @@ namespace TrueVote.Api.Models
         [MaxLength(2048)]
         [DataType(DataType.Text)]
         [RegularExpression(Constants.GenericStringRegex)]
-        [JsonProperty(PropertyName = "FirstName", Required = Required.Always)]
+        [JsonPropertyName("FirstName")]
         public string FirstName { get; set; } = string.Empty;
 
         [Required(AllowEmptyStrings = false)]
@@ -62,7 +63,7 @@ namespace TrueVote.Api.Models
         [DataType(DataType.EmailAddress)]
         [EmailAddress]
         [RegularExpression(Constants.EMailRegex)]
-        [JsonProperty(PropertyName = "Email", Required = Required.Always)]
+        [JsonPropertyName("Email")]
         public string Email { get; set; }
     }
 
@@ -74,7 +75,7 @@ namespace TrueVote.Api.Models
         [MaxLength(2048)]
         [DataType(DataType.Text)]
         [RegularExpression(Constants.GenericStringRegex)]
-        [JsonProperty(PropertyName = "UserId")]
+        [JsonPropertyName("UserId")]
         [Key]
         public string UserId { get; set; } = Guid.NewGuid().ToString();
 
@@ -83,7 +84,7 @@ namespace TrueVote.Api.Models
         [MaxLength(2048)]
         [DataType(DataType.Text)]
         [RegularExpression(Constants.GenericStringRegex)]
-        [JsonProperty(PropertyName = "NostrPubKey")]
+        [JsonPropertyName("NostrPubKey")]
         public string NostrPubKey { get; set; } = string.Empty;
 
         [Required]
@@ -91,7 +92,7 @@ namespace TrueVote.Api.Models
         [MaxLength(2048)]
         [DataType(DataType.Text)]
         [RegularExpression(Constants.GenericStringRegex)]
-        [JsonProperty(PropertyName = "FirstName", Required = Required.Always)]
+        [JsonPropertyName("FirstName")]
         public string FirstName { get; set; } = string.Empty;
 
         [Required(AllowEmptyStrings = false)]
@@ -100,14 +101,14 @@ namespace TrueVote.Api.Models
         [DataType(DataType.EmailAddress)]
         [EmailAddress]
         [RegularExpression(Constants.EMailRegex)]
-        [JsonProperty(PropertyName = "Email", Required = Required.Always)]
+        [JsonPropertyName("Email")]
         public string Email { get; set; }
 
         [Required]
         [Description("DateCreated")]
         [MaxLength(2048)]
         [DataType(DataType.Date)]
-        [JsonProperty(PropertyName = "DateCreated")]
+        [JsonPropertyName("DateCreated")]
         public DateTime DateCreated { get; set; } = UtcNowProviderFactory.GetProvider().UtcNow;
     }
 
@@ -117,35 +118,35 @@ namespace TrueVote.Api.Models
         [Required]
         [Description("Kind")]
         [EnumDataType(typeof(NostrKind))]
-        [JsonProperty(PropertyName = "Kind", Required = Required.Always)]
+        [JsonPropertyName("Kind")]
         public NostrKind Kind { get; set; }
 
         [Required]
         [Description("PubKey")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
-        [JsonProperty(PropertyName = "PubKey", Required = Required.Always)]
+        [JsonPropertyName("PubKey")]
         public string PubKey { get; set; }
 
         [Required]
         [Description("CreatedAt")]
         [MaxLength(2048)]
         [DataType(DataType.Date)]
-        [JsonProperty(PropertyName = "CreatedAt", Required = Required.Always)]
+        [JsonPropertyName("CreatedAt")]
         public DateTime CreatedAt { get; set; }
 
         [Required]
         [Description("Signature")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
-        [JsonProperty(PropertyName = "Signature", Required = Required.Always)]
+        [JsonPropertyName("Signature")]
         public string Signature { get; set; }
 
         [Required]
         [Description("Content")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
-        [JsonProperty(PropertyName = "Content", Required = Required.Always)]
+        [JsonPropertyName("Content")]
         public string Content { get; set; }
     }
 }

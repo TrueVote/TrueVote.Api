@@ -2,6 +2,7 @@ using Newtonsoft.Json;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 using TrueVote.Api.Helpers;
 
 namespace TrueVote.Api.Models
@@ -14,26 +15,26 @@ namespace TrueVote.Api.Models
         [MaxLength(2048)]
         [DataType(DataType.Text)]
         [RegularExpression(Constants.GenericStringRegex)]
-        [JsonProperty(PropertyName = "TimestampId")]
+        [JsonPropertyName("TimestampId")]
         [Key]
         public string TimestampId { get; set; } = Guid.NewGuid().ToString();
 
         [Required]
         [Description("MerkleRoot")]
         [DataType(DataType.Custom)]
-        [JsonProperty(PropertyName = "MerkleRoot")]
+        [JsonPropertyName("MerkleRoot")]
         public byte[] MerkleRoot { get; set; }
 
         [Required]
         [Description("MerkleRootHash")]
         [DataType(DataType.Custom)]
-        [JsonProperty(PropertyName = "MerkleRootHash")]
+        [JsonPropertyName("MerkleRootHash")]
         public byte[] MerkleRootHash { get; set; }
 
         [Required]
         [Description("TimestampHash")]
         [DataType(DataType.Custom)]
-        [JsonProperty(PropertyName = "TimestampHash")]
+        [JsonPropertyName("TimestampHash")]
         public byte[] TimestampHash { get; set; }
 
         [Required]
@@ -41,7 +42,7 @@ namespace TrueVote.Api.Models
         [MaxLength(2048)]
         [DataType(DataType.Text)]
         [RegularExpression(Constants.GenericStringRegex)]
-        [JsonProperty(PropertyName = "TimestampHashS")]
+        [JsonPropertyName("TimestampHashS")]
         public string TimestampHashS { get; set; }
 
         public DateTime TimestampAt { get; set; }
@@ -51,14 +52,14 @@ namespace TrueVote.Api.Models
         [MaxLength(2048)]
         [DataType(DataType.Url)]
         [RegularExpression(Constants.GenericStringRegex)]
-        [JsonProperty(PropertyName = "CalendarServerUrl", Required = Required.Always)]
+        [JsonPropertyName("CalendarServerUrl")]
         public string CalendarServerUrl { get; set; }
 
         [Required]
         [Description("DateCreated")]
         [MaxLength(2048)]
         [DataType(DataType.Date)]
-        [JsonProperty(PropertyName = "DateCreated")]
+        [JsonPropertyName("DateCreated")]
         public DateTime DateCreated { get; set; } = UtcNowProviderFactory.GetProvider().UtcNow;
     }
 
@@ -68,14 +69,14 @@ namespace TrueVote.Api.Models
         [Description("DateCreatedStart")]
         [MaxLength(2048)]
         [DataType(DataType.Date)]
-        [JsonProperty(PropertyName = "DateCreatedStart", Required = Required.Always)]
+        [JsonPropertyName("DateCreatedStart")]
         public DateTime DateCreatedStart { get; set; }
 
         [Required]
         [Description("DateCreatedEnd")]
         [MaxLength(2048)]
         [DataType(DataType.Date)]
-        [JsonProperty(PropertyName = "DateCreatedEnd", Required = Required.Always)]
+        [JsonPropertyName("DateCreatedEnd")]
         public DateTime DateCreatedEnd { get; set; }
     }
 }
