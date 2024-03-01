@@ -12,6 +12,7 @@ using TrueVote.Api.Models;
 namespace TrueVote.Api.Services
 {
     [ApiController]
+    [Produces("application/json")]
     public class User : ControllerBase
     {
         private readonly ILogger _log;

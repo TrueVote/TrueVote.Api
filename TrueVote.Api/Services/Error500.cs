@@ -5,6 +5,7 @@ using System.Net;
 namespace TrueVote.Api.Services
 {
     [ApiController]
+    [Produces("application/json")]
     public class Error500 : ControllerBase
     {
         private readonly ILogger _log;
