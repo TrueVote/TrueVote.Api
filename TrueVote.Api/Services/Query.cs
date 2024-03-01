@@ -1,15 +1,10 @@
-using HotChocolate;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Threading.Tasks;
-using TrueVote.Api.Helpers;
-using TrueVote.Api.Interfaces;
-using TrueVote.Api.Models;
+using TrueVote.Api2.Helpers;
+using TrueVote.Api2.Interfaces;
+using TrueVote.Api2.Models;
 
-namespace TrueVote.Api.Services
+namespace TrueVote.Api2.Services
 {
     // TODO Add parameter support (filtering) to GraphQL queries so you can do operations such as:
     // { candidate(partyAffiliation: "Republican") { candidateId, name, partyAffiliation }

@@ -11,7 +11,7 @@ namespace TrueVote.Api2
         {
             return Host.CreateDefaultBuilder(args).ConfigureWebHostDefaults(o =>
                 {
-                    _ = o.UseStartup<Startup>();
+                    o.UseStartup<Startup>();
                 });
         }
     }

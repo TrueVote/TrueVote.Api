@@ -1,5 +1,8 @@
 {
   "dependencies": {
+    "apis1": {
+      "type": "apis"
+    },
     "appInsights1": {
       "type": "appInsights"
     },

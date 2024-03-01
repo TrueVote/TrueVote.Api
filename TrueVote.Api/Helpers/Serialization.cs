@@ -1,9 +1,8 @@
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
-using System;
 using System.Diagnostics.CodeAnalysis;
 
-namespace TrueVote.Api.Helpers
+namespace TrueVote.Api2.Helpers
 {
     [ExcludeFromCodeCoverage]
     public class ByteConverter : JsonConverter

@@ -1,7 +1,6 @@
-using System;
 using System.Diagnostics.CodeAnalysis;
 
-namespace TrueVote.Api.Helpers
+namespace TrueVote.Api2.Helpers
 {
     public interface IUtcNowProvider
     {

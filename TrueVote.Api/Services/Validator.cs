@@ -1,14 +1,10 @@
-using Microsoft.Extensions.Logging;
-using System;
-using TrueVote.Api.Helpers;
-using System.Linq;
-using TrueVote.Api.Interfaces;
-using System.Threading.Tasks;
+using TrueVote.Api2.Helpers;
+using TrueVote.Api2.Interfaces;
 using Newtonsoft.Json;
-using TrueVote.Api.Models;
+using TrueVote.Api2.Models;
 using Newtonsoft.Json.Linq;
 
-namespace TrueVote.Api.Services
+namespace TrueVote.Api2.Services
 {
     public interface IValidator
     {

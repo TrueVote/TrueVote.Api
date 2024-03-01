@@ -1,218 +1,204 @@
-#pragma warning disable IDE0058 // Expression value is never used
-using HotChocolate.Types.Descriptors;
-using HotChocolate.Types;
-using Microsoft.Azure.Functions.Extensions.DependencyInjection;
-using Microsoft.Azure.Functions.Worker;
-using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Abstractions;
-using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Configurations;
-using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Enums;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Logging;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.IO.Abstractions;
-using System.Linq;
-using System.Reflection;
+using TrueVote.Api2.Services;
+using TrueVote.Api2.Interfaces;
+using TrueVote.Api2.Models;
 using System.Text.Json;
-using System.Threading.Tasks;
-using TrueVote.Api.Interfaces;
-using TrueVote.Api.Models;
-using TrueVote.Api.Services;
-using TrueVote.Api.Helpers;
+using HotChocolate.Types.Descriptors;
+using System.IO.Abstractions;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using TrueVote.Api2.Helpers;
+using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
+using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 
-namespace TrueVote.Api
+namespace TrueVote.Api2
 {
-    // Modeled from here: https://github.com/Azure/azure-functions-openapi-extension/blob/main/docs/openapi-core.md#openapi-metadata-configuration
-    // Overrides default OpenApi description and more
-    // TODO Once this feature gets implemented and released: https://github.com/Azure/azure-functions-openapi-extension/issues/400
-    // Add custom filter for enums exactly like this: https://github.com/domaindrivendev/Swashbuckle.AspNetCore/issues/1387#issuecomment-582316007
-    // Jira: https://truevote.atlassian.net/browse/AD-32
-    [ExcludeFromCodeCoverage]
-    public class OpenApiConfigurationOptions : IOpenApiConfigurationOptions
-    {
-        public OpenApiInfo Info { get; set; } = new OpenApiInfo()
-        {
-            Version = "1.0.0",
-            Title = "TrueVote.Api",
-            Description = "TrueVote APIs that run as serverless functions using OpenAPI specification.",
-            TermsOfService = new Uri("https://truevote.org/terms"),
-            Contact = new OpenApiContact()
-            {
-                Name = "TrueVote IT",
-                Email = "info@truevote.org",
-                Url = new Uri("https://github.com/TrueVote/TrueVote.Api/issues")
-            },
-            License = new OpenApiLicense()
-            {
-                Name = "MIT License",
-                Url = new Uri("https://raw.githubusercontent.com/TrueVote/TrueVote.Api/master/LICENSE")
-            }
-        };
-
-        public List<OpenApiServer> Servers { get; set; } = new List<OpenApiServer>();
-        public OpenApiVersionType OpenApiVersion { get; set; } = OpenApiVersionType.V3;
-        public bool IncludeRequestingHostName { get; set; } = true;
-        public bool ForceHttp { get; set; } = false;
-        public bool ForceHttps { get; set; } = false;
-        public List<IDocumentFilter> DocumentFilters { get; set; } = new List<IDocumentFilter>();
-        public bool ExcludeRequestingHost { get; set; } = false;
-        public IOpenApiHttpTriggerAuthorization Security { get; set; } = new OpenApiHttpTriggerAuthorization(req =>
-        {
-            var result = default(OpenApiAuthorizationResult);
-            return Task.FromResult(result);
-        });
-    }
-
-    [ExcludeFromCodeCoverage]
-    public class OpenApiCustomUIOptions : DefaultOpenApiCustomUIOptions
-    {
-        public OpenApiCustomUIOptions(Assembly assembly) : base(assembly)
-        {
-        }
-
-        public override string CustomStylesheetPath { get; set; } = "dist.truevote-api.css";
-        public override string CustomJavaScriptPath { get; set; } = "dist.truevote-api.js";
-
-        public override async Task<string> GetStylesheetAsync()
-        {
-            return await base.GetStylesheetAsync();
-        }
-
-        public override async Task<string> GetJavaScriptAsync()
-        {
-            return await base.GetJavaScriptAsync();
-        }
-    }
-
-    [ExcludeFromCodeCoverage]
-    public class TrueVoteDbContext : DbContext, ITrueVoteDbContext
-    {
-        public virtual DbSet<UserModel> Users { get; set; }
-        public virtual DbSet<ElectionModel> Elections { get; set; }
-        public virtual DbSet<RaceModel> Races { get; set; }
-        public virtual DbSet<CandidateModel> Candidates { get; set; }
-        public virtual DbSet<BallotModel> Ballots { get; set; }
-        public virtual DbSet<TimestampModel> Timestamps { get; set; }
-        public virtual DbSet<BallotHashModel> BallotHashes { get; set; }
-
-        public virtual async Task<bool> EnsureCreatedAsync()
-        {
-            return await Database.EnsureCreatedAsync();
-        }
-
-        public virtual async Task<int> SaveChangesAsync()
-        {
-            return await base.SaveChangesAsync();
-        }
-
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            optionsBuilder.UseCosmos(Environment.GetEnvironmentVariable("CosmosDbConnectionString"), "true-vote");
-        }
-
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            base.OnModelCreating(modelBuilder);
-
-            modelBuilder.HasDefaultContainer("Users");
-            modelBuilder.Entity<UserModel>().ToContainer("Users");
-            modelBuilder.Entity<UserModel>().HasNoDiscriminator();
-
-            modelBuilder.HasDefaultContainer("Ballots");
-            modelBuilder.Entity<BallotModel>().ToContainer("Ballots");
-            modelBuilder.Entity<BallotModel>().HasNoDiscriminator();
-            modelBuilder.Entity<BallotModel>().Property(p => p.Election)
-                .HasConversion(
-                    v => JsonSerializer.Serialize(v, (JsonSerializerOptions) null),
-                    v => JsonSerializer.Deserialize<ElectionModel>(v, (JsonSerializerOptions) null));
-
-            modelBuilder.HasDefaultContainer("Elections");
-            modelBuilder.Entity<ElectionModel>().ToContainer("Elections");
-            modelBuilder.Entity<ElectionModel>().HasNoDiscriminator();
-            modelBuilder.Entity<ElectionModel>().Property(p => p.Races)
-                .HasConversion(
-                    v => JsonSerializer.Serialize(v, (JsonSerializerOptions) null),
-                    v => JsonSerializer.Deserialize<List<RaceModel>>(v, (JsonSerializerOptions) null),
-                    new ValueComparer<ICollection<RaceModel>>(
-                        (c1, c2) => c1.SequenceEqual(c2),
-                        c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
-                        c => c.ToList()));
-
-            modelBuilder.HasDefaultContainer("Races");
-            modelBuilder.Entity<RaceModel>().ToContainer("Races");
-            modelBuilder.Entity<RaceModel>().HasNoDiscriminator();
-            modelBuilder.Entity<RaceModel>().Property(p => p.Candidates)
-                .HasConversion(
-                    v => JsonSerializer.Serialize(v, (JsonSerializerOptions) null),
-                    v => JsonSerializer.Deserialize<List<CandidateModel>>(v, (JsonSerializerOptions) null),
-                    new ValueComparer<ICollection<CandidateModel>>(
-                        (c1, c2) => c1.SequenceEqual(c2),
-                        c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
-                        c => c.ToList()));
-
-            modelBuilder.HasDefaultContainer("Candidates");
-            modelBuilder.Entity<CandidateModel>().ToContainer("Candidates");
-            modelBuilder.Entity<CandidateModel>().HasNoDiscriminator();
-
-            modelBuilder.HasDefaultContainer("Timestamps");
-            modelBuilder.Entity<TimestampModel>().ToContainer("Timestamps");
-            modelBuilder.Entity<TimestampModel>().HasNoDiscriminator();
-
-            modelBuilder.HasDefaultContainer("BallotHashes");
-            modelBuilder.Entity<BallotHashModel>().ToContainer("BallotHashes");
-            modelBuilder.Entity<BallotHashModel>().HasNoDiscriminator();
-        }
-    }
-
-    [ExcludeFromCodeCoverage]
     public class Startup
     {
-        public static void Main()
+        public string CustomStylesheetPath { get; set; } = "dist.truevote-api.css";
+        public string CustomJavaScriptPath { get; set; } = "dist.truevote-api.js";
+
+        public void ConfigureServices(IServiceCollection services)
         {
-            var hostBuilder = new HostBuilder();
-            var hostBuilderDefaults = hostBuilder.ConfigureFunctionsWorkerDefaults();
-            var hostBuilderServices = hostBuilderDefaults.ConfigureServices(s =>
+            services.AddControllers().AddNewtonsoftJson(o =>
             {
-                s.AddApplicationInsightsTelemetryWorkerService();
-                s.ConfigureFunctionsApplicationInsights();
-                s.AddDbContext<ITrueVoteDbContext, TrueVoteDbContext>();
-                s.TryAddScoped<IFileSystem, FileSystem>();
-                s.TryAddSingleton<ILoggerFactory, LoggerFactory>();
-                s.TryAddScoped<Query, Query>();
-                s.TryAddScoped<IServiceBus, ServiceBus>();
-                s.TryAddScoped<IJwtHandler, JwtHandler>();
-
-                s.TryAddSingleton<INamingConventions, TrueVoteNamingConventions>();
-                s.AddGraphQLFunction().AddQueryType<Query>();
-
-                // Additional classes for dependency injection
-                s.TryAddSingleton(new Uri("https://a.pool.opentimestamps.org")); // TODO Need to pull the Timestamp URL from Config. Also, TrueVote needs to stand up its own Timestamp servers.
-                s.AddHttpClient<IOpenTimestampsClient, OpenTimestampsClient>().ConfigureHttpClient((provider, client) =>
-                {
-                    var uri = provider.GetRequiredService<Uri>();
-                    client.BaseAddress = uri;
-                });
-                s.TryAddScoped<IValidator, Validator>();
-
-                ConfigureServices(s).BuildServiceProvider(true);
+                o.SerializerSettings.Converters.Add(new Newtonsoft.Json.Converters.IsoDateTimeConverter());
+                o.SerializerSettings.DateTimeZoneHandling = DateTimeZoneHandling.Utc;
+                o.SerializerSettings.DateFormatHandling = DateFormatHandling.IsoDateFormat;
             });
-            var host = hostBuilderServices.Build();
+            services.AddEndpointsApiExplorer();
+            services.AddSwaggerGen(o =>
+            {
+                o.EnableAnnotations();
+                o.SwaggerDoc("v1", new OpenApiInfo()
+                {
+                    Version = "1.0.0",
+                    Title = "TrueVote.Api",
+                    Description = "TrueVote APIs that run as serverless functions using OpenAPI specification.",
+                    TermsOfService = new Uri("https://truevote.org/terms"),
+                    Contact = new OpenApiContact()
+                    {
+                        Name = "TrueVote IT",
+                        Email = "info@truevote.org",
+                        Url = new Uri("https://github.com/TrueVote/TrueVote.Api/issues")
+                    },
+                    License = new OpenApiLicense()
+                    {
+                        Name = "MIT License",
+                        Url = new Uri("https://raw.githubusercontent.com/TrueVote/TrueVote.Api/master/LICENSE")
+                    }
+                });
+            });
 
-            host.Run();
-        }
+            services.AddApplicationInsightsTelemetry();
+            services.AddDbContext<ITrueVoteDbContext, TrueVoteDbContext>();
+            services.TryAddScoped<IFileSystem, FileSystem>();
+            services.TryAddSingleton<ILoggerFactory, LoggerFactory>();
+            services.TryAddScoped<Query, Query>();
+            services.TryAddScoped<IServiceBus, ServiceBus>();
+            services.TryAddScoped<IJwtHandler, JwtHandler>();
 
-        private static IServiceCollection ConfigureServices(IServiceCollection services)
-        {
+            services.TryAddSingleton<INamingConventions, TrueVoteNamingConventions>();
+
+            // Additional classes for dependency injection
+            services.TryAddSingleton(new Uri("https://a.pool.opentimestamps.org")); // TODO Need to pull the Timestamp URL from Config. Also, TrueVote needs to stand up its own Timestamp servers.
+            services.AddHttpClient<IOpenTimestampsClient, OpenTimestampsClient>().ConfigureHttpClient((provider, client) =>
+            {
+                var uri = provider.GetRequiredService<Uri>();
+                client.BaseAddress = uri;
+            });
+            services.TryAddScoped<IValidator, Validator>();
+
             services.AddLogging();
             services.AddSingleton(typeof(ILogger), typeof(Logger<Startup>));
 
-            return services;
+            services.AddGraphQLServer().AddQueryType<Query>();
+        }
+
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        {
+            if (env.IsDevelopment())
+            {
+                Console.WriteLine("Running Locally");
+            }
+            else
+            {
+                Console.WriteLine("Running Deployed");
+            }
+
+            app.UsePathBase("/api");
+            app.UseOpenApi();
+            app.UseSwagger();
+            app.UseSwaggerUI(c =>
+            {
+                c.InjectJavascript(CustomJavaScriptPath);
+                c.InjectStylesheet(CustomStylesheetPath);
+            });
+
+            app.UseHttpsRedirection();
+
+            app.UseRouting();
+
+            app.UseAuthorization();
+
+            app.UseEndpoints(e =>
+            {
+                e.MapControllers();
+                e.MapGraphQL();
+            });
+
+            Console.WriteLine("HostingEnvironmentName: '{0}'", env.EnvironmentName);
+        }
+
+        public class TrueVoteDbContext : DbContext, ITrueVoteDbContext
+        {
+            public virtual DbSet<UserModel> Users { get; set; }
+            public virtual DbSet<ElectionModel> Elections { get; set; }
+            public virtual DbSet<RaceModel> Races { get; set; }
+            public virtual DbSet<CandidateModel> Candidates { get; set; }
+            public virtual DbSet<BallotModel> Ballots { get; set; }
+            public virtual DbSet<TimestampModel> Timestamps { get; set; }
+            public virtual DbSet<BallotHashModel> BallotHashes { get; set; }
+            private readonly IConfiguration _configuration;
+            private readonly string _connectionString;
+
+            public TrueVoteDbContext(IConfiguration configuration)
+            {
+                _configuration = configuration;
+                _connectionString = _configuration["CosmosDbConnectionString"];
+            }
+
+            public virtual async Task<bool> EnsureCreatedAsync()
+            {
+                return await Database.EnsureCreatedAsync();
+            }
+
+            public virtual async Task<int> SaveChangesAsync()
+            {
+                return await base.SaveChangesAsync();
+            }
+
+            protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+            {
+                optionsBuilder.UseCosmos(_connectionString, "true-vote");
+            }
+
+            protected override void OnModelCreating(ModelBuilder modelBuilder)
+            {
+                base.OnModelCreating(modelBuilder);
+
+                modelBuilder.HasDefaultContainer("Users");
+                modelBuilder.Entity<UserModel>().ToContainer("Users");
+                modelBuilder.Entity<UserModel>().HasNoDiscriminator();
+
+                modelBuilder.HasDefaultContainer("Ballots");
+                modelBuilder.Entity<BallotModel>().ToContainer("Ballots");
+                modelBuilder.Entity<BallotModel>().HasNoDiscriminator();
+                modelBuilder.Entity<BallotModel>().Property(p => p.Election)
+                    .HasConversion(
+                        v => JsonSerializer.Serialize(v, (JsonSerializerOptions) null),
+                        v => JsonSerializer.Deserialize<ElectionModel>(v, (JsonSerializerOptions) null));
+
+                modelBuilder.HasDefaultContainer("Elections");
+                modelBuilder.Entity<ElectionModel>().ToContainer("Elections");
+                modelBuilder.Entity<ElectionModel>().HasNoDiscriminator();
+                modelBuilder.Entity<ElectionModel>().Property(p => p.Races)
+                    .HasConversion(
+                        v => JsonSerializer.Serialize(v, (JsonSerializerOptions) null),
+                        v => JsonSerializer.Deserialize<List<RaceModel>>(v, (JsonSerializerOptions) null),
+                        new ValueComparer<ICollection<RaceModel>>(
+                            (c1, c2) => c1.SequenceEqual(c2),
+                            c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
+                            c => c.ToList()));
+
+                modelBuilder.HasDefaultContainer("Races");
+                modelBuilder.Entity<RaceModel>().ToContainer("Races");
+                modelBuilder.Entity<RaceModel>().HasNoDiscriminator();
+                modelBuilder.Entity<RaceModel>().Property(p => p.Candidates)
+                    .HasConversion(
+                        v => JsonSerializer.Serialize(v, (JsonSerializerOptions) null),
+                        v => JsonSerializer.Deserialize<List<CandidateModel>>(v, (JsonSerializerOptions) null),
+                        new ValueComparer<ICollection<CandidateModel>>(
+                            (c1, c2) => c1.SequenceEqual(c2),
+                            c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
+                            c => c.ToList()));
+
+                modelBuilder.HasDefaultContainer("Candidates");
+                modelBuilder.Entity<CandidateModel>().ToContainer("Candidates");
+                modelBuilder.Entity<CandidateModel>().HasNoDiscriminator();
+
+                modelBuilder.HasDefaultContainer("Timestamps");
+                modelBuilder.Entity<TimestampModel>().ToContainer("Timestamps");
+                modelBuilder.Entity<TimestampModel>().HasNoDiscriminator();
+
+                modelBuilder.HasDefaultContainer("BallotHashes");
+                modelBuilder.Entity<BallotHashModel>().ToContainer("BallotHashes");
+                modelBuilder.Entity<BallotHashModel>().HasNoDiscriminator();
+            }
         }
     }
 
@@ -229,4 +215,3 @@ namespace TrueVote.Api
         }
     }
 }
-#pragma warning restore IDE0058 // Expression value is never used

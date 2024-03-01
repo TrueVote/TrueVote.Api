@@ -1,4 +1,3 @@
-﻿using System;
 using System.Diagnostics.CodeAnalysis;
 
 [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = false)]

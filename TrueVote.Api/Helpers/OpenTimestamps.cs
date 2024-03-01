@@ -1,8 +1,4 @@
-using System;
-using System.Net.Http;
-using System.Threading.Tasks;
-
-namespace TrueVote.Api.Helpers
+namespace TrueVote.Api2.Helpers
 {
     public interface IOpenTimestampsClient
     {

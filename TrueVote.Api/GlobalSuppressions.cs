@@ -1,0 +1,25 @@
+﻿// This file is used by Code Analysis to maintain SuppressMessage
+// attributes that are applied to this project.
+// Project-level suppressions either have no target or are given
+// a specific target and scoped to a namespace, type, member, etc.
+
+using System.Diagnostics.CodeAnalysis;
+
+[assembly: SuppressMessage("Style", "IDE0058:Expression value is never used", Justification = "<Pending>", Scope = "member", Target = "~M:TrueVote.Api2.Helpers.LoggerHelper.LogError(System.String)")]
+[assembly: SuppressMessage("Style", "IDE0058:Expression value is never used", Justification = "<Pending>", Scope = "member", Target = "~M:TrueVote.Api2.Helpers.OpenTimestampsClient.Stamp(System.Byte[])~System.Threading.Tasks.Task{System.Byte[]}")]
+[assembly: SuppressMessage("Style", "IDE0058:Expression value is never used", Justification = "<Pending>", Scope = "member", Target = "~M:TrueVote.Api2.Program.CreateHostBuilder(System.String[])~Microsoft.Extensions.Hosting.IHostBuilder")]
+[assembly: SuppressMessage("Style", "IDE0058:Expression value is never used", Justification = "<Pending>", Scope = "member", Target = "~M:TrueVote.Api2.Services.Ballot.SubmitBallot(TrueVote.Api2.Models.SubmitBallotModel)~System.Threading.Tasks.Task{System.Net.Http.HttpResponseMessage}")]
+[assembly: SuppressMessage("Style", "IDE0058:Expression value is never used", Justification = "<Pending>", Scope = "member", Target = "~M:TrueVote.Api2.Services.Candidate.CreateCandidate(TrueVote.Api2.Models.BaseCandidateModel)~System.Threading.Tasks.Task{System.Net.Http.HttpResponseMessage}")]
+[assembly: SuppressMessage("Style", "IDE0058:Expression value is never used", Justification = "<Pending>", Scope = "member", Target = "~M:TrueVote.Api2.Services.Election.AddRaces(TrueVote.Api2.Models.AddRacesModel)~System.Threading.Tasks.Task{System.Net.Http.HttpResponseMessage}")]
+[assembly: SuppressMessage("Style", "IDE0058:Expression value is never used", Justification = "<Pending>", Scope = "member", Target = "~M:TrueVote.Api2.Services.Election.CreateElection(TrueVote.Api2.Models.BaseElectionModel)~System.Threading.Tasks.Task{System.Net.Http.HttpResponseMessage}")]
+[assembly: SuppressMessage("Style", "IDE0058:Expression value is never used", Justification = "<Pending>", Scope = "member", Target = "~M:TrueVote.Api2.Services.Race.AddCandidates(TrueVote.Api2.Models.AddCandidatesModel)~System.Threading.Tasks.Task{System.Net.Http.HttpResponseMessage}")]
+[assembly: SuppressMessage("Style", "IDE0058:Expression value is never used", Justification = "<Pending>", Scope = "member", Target = "~M:TrueVote.Api2.Services.Race.CreateRace(TrueVote.Api2.Models.BaseRaceModel)~System.Threading.Tasks.Task{System.Net.Http.HttpResponseMessage}")]
+[assembly: SuppressMessage("Style", "IDE0058:Expression value is never used", Justification = "<Pending>", Scope = "member", Target = "~M:TrueVote.Api2.Services.User.CreateUser(TrueVote.Api2.Models.BaseUserModel)~System.Threading.Tasks.Task{System.Net.Http.HttpResponseMessage}")]
+[assembly: SuppressMessage("Style", "IDE0058:Expression value is never used", Justification = "<Pending>", Scope = "member", Target = "~M:TrueVote.Api2.Services.Validator.HashBallotAsync(TrueVote.Api2.Models.BallotModel)~System.Threading.Tasks.Task{TrueVote.Api2.Models.BallotHashModel}")]
+[assembly: SuppressMessage("Style", "IDE0058:Expression value is never used", Justification = "<Pending>", Scope = "member", Target = "~M:TrueVote.Api2.Services.Validator.HashBallotsAsync~System.Threading.Tasks.Task{TrueVote.Api2.Models.TimestampModel}")]
+[assembly: SuppressMessage("Style", "IDE0058:Expression value is never used", Justification = "<Pending>", Scope = "member", Target = "~M:TrueVote.Api2.Services.Validator.StoreBallotHashAsync(TrueVote.Api2.Models.BallotHashModel)~System.Threading.Tasks.Task")]
+[assembly: SuppressMessage("Style", "IDE0058:Expression value is never used", Justification = "<Pending>", Scope = "member", Target = "~M:TrueVote.Api2.Services.Validator.StoreTimestampAsync(TrueVote.Api2.Models.TimestampModel)~System.Threading.Tasks.Task")]
+[assembly: SuppressMessage("Style", "IDE0058:Expression value is never used", Justification = "<Pending>", Scope = "member", Target = "~M:TrueVote.Api2.Startup.Configure(Microsoft.AspNetCore.Builder.IApplicationBuilder,Microsoft.AspNetCore.Hosting.IWebHostEnvironment)")]
+[assembly: SuppressMessage("Style", "IDE0058:Expression value is never used", Justification = "<Pending>", Scope = "member", Target = "~M:TrueVote.Api2.Startup.ConfigureServices(Microsoft.Extensions.DependencyInjection.IServiceCollection)")]
+[assembly: SuppressMessage("Style", "IDE0058:Expression value is never used", Justification = "<Pending>", Scope = "member", Target = "~M:TrueVote.Api2.Startup.TrueVoteDbContext.OnConfiguring(Microsoft.EntityFrameworkCore.DbContextOptionsBuilder)")]
+[assembly: SuppressMessage("Style", "IDE0058:Expression value is never used", Justification = "<Pending>", Scope = "member", Target = "~M:TrueVote.Api2.Startup.TrueVoteDbContext.OnModelCreating(Microsoft.EntityFrameworkCore.ModelBuilder)")]

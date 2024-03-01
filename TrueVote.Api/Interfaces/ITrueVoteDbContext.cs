@@ -1,8 +1,7 @@
 using Microsoft.EntityFrameworkCore;
-using System.Threading.Tasks;
-using TrueVote.Api.Models;
+using TrueVote.Api2.Models;
 
-namespace TrueVote.Api.Interfaces
+namespace TrueVote.Api2.Interfaces
 {
     public interface ITrueVoteDbContext
     {

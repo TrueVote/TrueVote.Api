@@ -1,13 +1,10 @@
-using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
-using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Enums;
 using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
-using TrueVote.Api.Helpers;
+using TrueVote.Api2.Helpers;
 
-namespace TrueVote.Api.Models
+namespace TrueVote.Api2.Models
 {
     [ExcludeFromCodeCoverage]
     public class ElectionObj
@@ -19,9 +16,9 @@ namespace TrueVote.Api.Models
     [ExcludeFromCodeCoverage]
     public class ElectionModelList
     {
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
+        [Required]
         [MaxLength(2048)]
-        [OpenApiProperty(Description = "List of Elections")]
+        [Description("List of Elections")]
         [JsonProperty(PropertyName = "Elections")]
         public List<ElectionModel> Elections { get; set; }
     }
@@ -29,8 +26,8 @@ namespace TrueVote.Api.Models
     [ExcludeFromCodeCoverage]
     public class FindElectionModel
     {
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "Name")]
+        [Required]
+        [Description("Name")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
         [RegularExpression(Constants.GenericStringRegex)]
@@ -41,44 +38,44 @@ namespace TrueVote.Api.Models
     [ExcludeFromCodeCoverage]
     public class BaseElectionModel
     {
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "Name")]
+        [Required]
+        [Description("Name")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
         [RegularExpression(Constants.GenericStringRegex)]
         [JsonProperty(PropertyName = "Name", Required = Required.Always)]
         public string Name { get; set; } = string.Empty;
 
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "Description")]
+        [Required]
+        [Description("Description")]
         [MaxLength(32768)]
         [DataType(DataType.Text)]
         [JsonProperty(PropertyName = "Description", Required = Required.Default)]
         public string Description { get; set; } = string.Empty;
 
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "HeaderImageUrl")]
+        [Required]
+        [Description("HeaderImageUrl")]
         [MaxLength(1024)]
         [DataType(DataType.Text)]
         [JsonProperty(PropertyName = "HeaderImageUrl", Required = Required.Default)]
         public string HeaderImageUrl { get; set; } = string.Empty;
 
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "StartDate")]
+        [Required]
+        [Description("StartDate")]
         [MaxLength(2048)]
         [DataType(DataType.Date)]
         [JsonProperty(PropertyName = "StartDate", Required = Required.Always)]
         public DateTime? StartDate { get; set; }
 
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "EndDate")]
+        [Required]
+        [Description("EndDate")]
         [MaxLength(2048)]
         [DataType(DataType.Date)]
         [JsonProperty(PropertyName = "EndDate", Required = Required.Always)]
         public DateTime? EndDate { get; set; }
 
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "List of Races")]
+        [Required]
+        [Description("List of Races")]
         [DataType("ICollection<RaceModel>")]
         [JsonProperty(PropertyName = "Races", Required = Required.AllowNull)]
         public ICollection<RaceModel> Races { get; set; } = new List<RaceModel>();
@@ -87,8 +84,8 @@ namespace TrueVote.Api.Models
     [ExcludeFromCodeCoverage]
     public class ElectionModel
     {
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "Election Id")]
+        [Required]
+        [Description("Election Id")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
         [RegularExpression(Constants.GenericStringRegex)]
@@ -96,59 +93,59 @@ namespace TrueVote.Api.Models
         [Key]
         public string ElectionId { get; set; } = Guid.NewGuid().ToString();
 
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "Parent Election Id")]
+        [Required]
+        [Description("Parent Election Id")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
         [RegularExpression(Constants.GenericStringRegex)]
         [JsonProperty(PropertyName = "ParentElectionId")]
         public string ParentElectionId { get; set; }
 
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "Name")]
+        [Required]
+        [Description("Name")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
         [RegularExpression(Constants.GenericStringRegex)]
         [JsonProperty(PropertyName = "Name", Required = Required.Always)]
         public string Name { get; set; } = string.Empty;
 
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "Description")]
+        [Required]
+        [Description("Description")]
         [MaxLength(32768)]
         [DataType(DataType.Text)]
         [JsonProperty(PropertyName = "Description", Required = Required.Default)]
         public string Description { get; set; } = string.Empty;
 
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "HeaderImageUrl")]
+        [Required]
+        [Description("HeaderImageUrl")]
         [MaxLength(32768)]
         [DataType(DataType.Text)]
         [JsonProperty(PropertyName = "HeaderImageUrl", Required = Required.Default)]
         public string HeaderImageUrl { get; set; } = string.Empty;
 
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "StartDate")]
+        [Required]
+        [Description("StartDate")]
         [MaxLength(2048)]
         [DataType(DataType.Date)]
         [JsonProperty(PropertyName = "StartDate", Required = Required.Always)]
         public DateTime? StartDate { get; set; }
 
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "EndDate")]
+        [Required]
+        [Description("EndDate")]
         [MaxLength(2048)]
         [DataType(DataType.Date)]
         [JsonProperty(PropertyName = "EndDate", Required = Required.Always)]
         public DateTime? EndDate { get; set; }
 
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "DateCreated")]
+        [Required]
+        [Description("DateCreated")]
         [MaxLength(2048)]
         [DataType(DataType.Date)]
         [JsonProperty(PropertyName = "DateCreated")]
         public DateTime DateCreated { get; set; } = UtcNowProviderFactory.GetProvider().UtcNow;
 
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "List of Races")]
+        [Required]
+        [Description("List of Races")]
         [DataType("ICollection<RaceModel>")]
         [JsonProperty(PropertyName = "Races", Required = Required.AllowNull)]
         public ICollection<RaceModel> Races { get; set; } = new List<RaceModel>();
@@ -158,8 +155,8 @@ namespace TrueVote.Api.Models
     [ExcludeFromCodeCoverage]
     public class ElectionModelResponse
     {
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "Election Id")]
+        [Required]
+        [Description("Election Id")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
         [RegularExpression(Constants.GenericStringRegex)]
@@ -167,52 +164,52 @@ namespace TrueVote.Api.Models
         [Key]
         public string ElectionId { get; set; } = Guid.NewGuid().ToString();
 
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "Parent Election Id")]
+        [Required]
+        [Description("Parent Election Id")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
         [RegularExpression(Constants.GenericStringRegex)]
         [JsonProperty(PropertyName = "ParentElectionId")]
         public string ParentElectionId { get; set; }
 
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "Name")]
+        [Required]
+        [Description("Name")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
         [RegularExpression(Constants.GenericStringRegex)]
         [JsonProperty(PropertyName = "Name")]
         public string Name { get; set; } = string.Empty;
 
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "Description")]
+        [Required]
+        [Description("Description")]
         [MaxLength(32768)]
         [DataType(DataType.Text)]
         [JsonProperty(PropertyName = "Description")]
         public string Description { get; set; } = string.Empty;
 
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "StartDate")]
+        [Required]
+        [Description("StartDate")]
         [MaxLength(2048)]
         [DataType(DataType.Date)]
         [JsonProperty(PropertyName = "StartDate")]
         public DateTime? StartDate { get; set; }
 
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "EndDate")]
+        [Required]
+        [Description("EndDate")]
         [MaxLength(2048)]
         [DataType(DataType.Date)]
         [JsonProperty(PropertyName = "EndDate")]
         public DateTime? EndDate { get; set; }
 
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "DateCreated")]
+        [Required]
+        [Description("DateCreated")]
         [MaxLength(2048)]
         [DataType(DataType.Date)]
         [JsonProperty(PropertyName = "DateCreated")]
         public DateTime DateCreated { get; set; } = UtcNowProviderFactory.GetProvider().UtcNow;
 
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "List of Races")]
+        [Required]
+        [Description("List of Races")]
         [DataType("ICollection<RaceModel>")]
         [JsonProperty(PropertyName = "Races")]
         public ICollection<RaceModel> Races { get; set; } = new List<RaceModel>();
@@ -221,8 +218,8 @@ namespace TrueVote.Api.Models
     [ExcludeFromCodeCoverage]
     public class AddRacesModel
     {
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "Election Id")]
+        [Required]
+        [Description("Election Id")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
         [RegularExpression(Constants.GenericStringRegex)]
@@ -230,8 +227,8 @@ namespace TrueVote.Api.Models
         [Key]
         public string ElectionId { get; set; }
 
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "Race Ids")]
+        [Required]
+        [Description("Race Ids")]
         [RegularExpression(Constants.GenericStringRegex)]
         [JsonProperty(PropertyName = "RaceIds", Required = Required.Always)]
         public List<string> RaceIds { get; set; }

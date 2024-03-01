@@ -269,3 +269,4 @@ coverage-html
 version.json
 Version.cs
 swagger.json
+TrueVote.Api/appsettings.json

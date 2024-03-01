@@ -1,67 +1,44 @@
-using System;
-using System.IO;
-using System.Linq;
-using System.Net;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.Functions.Worker;
-using Microsoft.Azure.Functions.Worker.Http;
-using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
-using Microsoft.OpenApi.Models;
-using Newtonsoft.Json;
-using TrueVote.Api.Helpers;
-using TrueVote.Api.Interfaces;
-using TrueVote.Api.Models;
-
-namespace TrueVote.Api.Services
+using System.ComponentModel;
+using System.Net.Http.Formatting;
+using System.Net;
+using TrueVote.Api2.Helpers;
+using TrueVote.Api2.Interfaces;
+using TrueVote.Api2.Models;
+namespace TrueVote.Api2.Services
 {
-    public class Election : LoggerHelper
+    [ApiController]
+    public class Election : ControllerBase
     {
+        private readonly ILogger _log;
         private readonly ITrueVoteDbContext _trueVoteDbContext;
         private readonly IServiceBus _serviceBus;
 
-        public Election(ILogger log, ITrueVoteDbContext trueVoteDbContext, IServiceBus serviceBus) : base(log, serviceBus)
+        public Election(ILogger log, ITrueVoteDbContext trueVoteDbContext, IServiceBus serviceBus)
         {
+            _log = log;
             _trueVoteDbContext = trueVoteDbContext;
             _serviceBus = serviceBus;
         }
 
-        [Function(nameof(CreateElection))]
+        [HttpPost]
+        [Route("election")]
+        [Produces(typeof(ElectionModel))]
+        [Description("Returns the added Election")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [OpenApiOperation(operationId: "CreateElection", tags: new[] { "Election" })]
-        [OpenApiSecurity("oidc_auth", SecuritySchemeType.OpenIdConnect, OpenIdConnectUrl = "https://login.microsoftonline.com/{tenant_id}/v2.0/.well-known/openid-configuration", OpenIdConnectScopes = "openid,profile")]
-        [OpenApiRequestBody(contentType: "application/json", bodyType: typeof(BaseElectionModel), Description = "Partially filled Election Model", Example = typeof(BaseElectionModel))]
-        [OpenApiResponseWithBody(statusCode: HttpStatusCode.Created, contentType: "application/json", bodyType: typeof(ElectionModel), Description = "Returns the added Election")]
-        [OpenApiResponseWithBody(statusCode: HttpStatusCode.Forbidden, contentType: "application/json", bodyType: typeof(SecureString), Description = "Forbidden")]
-        [OpenApiResponseWithBody(statusCode: HttpStatusCode.Unauthorized, contentType: "application/json", bodyType: typeof(SecureString), Description = "Unauthorized")]
-        [OpenApiResponseWithBody(statusCode: HttpStatusCode.NotFound, contentType: "application/json", bodyType: typeof(SecureString), Description = "Not Found")]
-        [OpenApiResponseWithBody(statusCode: HttpStatusCode.NotAcceptable, contentType: "application/json", bodyType: typeof(SecureString), Description = "Not Acceptable")]
-        [OpenApiResponseWithBody(statusCode: HttpStatusCode.TooManyRequests, contentType: "application/json", bodyType: typeof(SecureString), Description = "Too Many Requests")]
-        [OpenApiResponseWithBody(statusCode: HttpStatusCode.UnsupportedMediaType, contentType: "application/json", bodyType: typeof(SecureString), Description = "Unsupported Media Type")]
-        public async Task<HttpResponseData> CreateElection(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "election")] HttpRequestData req)
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
+        [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
+        [ProducesResponseType(StatusCodes.Status415UnsupportedMediaType)]
+        public async Task<HttpResponseMessage> CreateElection([FromBody] BaseElectionModel baseElection)
         {
-            LogDebug("HTTP trigger - CreateElection:Begin");
+            _log.LogDebug("HTTP trigger - CreateElection:Begin");
 
-            BaseElectionModel baseElection;
-            try
-            {
-                var requestBody = await new StreamReader(req.Body).ReadToEndAsync();
-                baseElection = JsonConvert.DeserializeObject<BaseElectionModel>(requestBody);
-            }
-            catch (Exception e)
-            {
-                LogError("baseElection: invalid format");
-                LogDebug("HTTP trigger - CreateElection:End");
-
-                return await req.CreateBadRequestResponseAsync(new SecureString { Value = e.Message });
-            }
-
-            LogInformation($"Request Data: {baseElection}");
+            _log.LogInformation($"Request Data: {baseElection}");
 
             var election = new ElectionModel { Name = baseElection.Name, Description = baseElection.Description, HeaderImageUrl = baseElection.HeaderImageUrl, StartDate = baseElection.StartDate, EndDate = baseElection.EndDate, Races = baseElection.Races };
 
@@ -72,93 +49,63 @@ namespace TrueVote.Api.Services
 
             await _serviceBus.SendAsync($"New TrueVote Election created: {baseElection.Name}");
 
-            LogDebug("HTTP trigger - CreateElection:End");
+            _log.LogDebug("HTTP trigger - CreateElection:End");
 
-            return await req.CreateCreatedResponseAsync(election);
+            return new HttpResponseMessage { StatusCode = HttpStatusCode.Created, Content = new ObjectContent<ElectionModel>(election, new JsonMediaTypeFormatter()) };
         }
 
-        [Function(nameof(ElectionFind))]
+        [HttpGet]
+        [Route("election/find")]
+        [Produces(typeof(ElectionModelList))]
+        [Description("Returns collection of Elections")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [OpenApiOperation(operationId: "ElectionFind", tags: new[] { "Election" })]
-        [OpenApiSecurity("oidc_auth", SecuritySchemeType.OpenIdConnect, OpenIdConnectUrl = "https://login.microsoftonline.com/{tenant_id}/v2.0/.well-known/openid-configuration", OpenIdConnectScopes = "openid,profile")]
-        [OpenApiRequestBody(contentType: "application/json", bodyType: typeof(FindElectionModel), Description = "Fields to search for Elections", Example = typeof(FindElectionModel))]
-        [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(ElectionModelList), Description = "Returns collection of Elections")]
-        [OpenApiResponseWithBody(statusCode: HttpStatusCode.Forbidden, contentType: "application/json", bodyType: typeof(SecureString), Description = "Forbidden")]
-        [OpenApiResponseWithBody(statusCode: HttpStatusCode.Unauthorized, contentType: "application/json", bodyType: typeof(SecureString), Description = "Unauthorized")]
-        [OpenApiResponseWithBody(statusCode: HttpStatusCode.NotFound, contentType: "application/json", bodyType: typeof(SecureString), Description = "Not Found")]
-        [OpenApiResponseWithBody(statusCode: HttpStatusCode.NotAcceptable, contentType: "application/json", bodyType: typeof(SecureString), Description = "Not Acceptable")]
-        [OpenApiResponseWithBody(statusCode: HttpStatusCode.TooManyRequests, contentType: "application/json", bodyType: typeof(SecureString), Description = "Too Many Requests")]
-        public async Task<HttpResponseData> ElectionFind(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "election/find")] HttpRequestData req)
+        [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
+        [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
+        public async Task<HttpResponseMessage> ElectionFind([FromBody] FindElectionModel findElection)
         {
-            LogDebug("HTTP trigger - ElectionFind:Begin");
+            _log.LogDebug("HTTP trigger - ElectionFind:Begin");
 
-            FindElectionModel findElection;
-            try
+            _log.LogInformation($"Request Data: {findElection}");
+
+            var items = new ElectionModelList
             {
-                var requestBody = await new StreamReader(req.Body).ReadToEndAsync();
-                findElection = JsonConvert.DeserializeObject<FindElectionModel>(requestBody);
-            }
-            catch (Exception e)
-            {
-                LogError("findElection: invalid format");
-                LogDebug("HTTP trigger - ElectionFind:End");
-
-                return await req.CreateBadRequestResponseAsync(new SecureString { Value = e.Message });
-            }
-
-            LogInformation($"Request Data: {findElection}");
-
-            var items = await _trueVoteDbContext.Elections
+                Elections = await _trueVoteDbContext.Elections
                 .Where(e =>
                     findElection.Name == null || (e.Name ?? string.Empty).ToLower().Contains(findElection.Name.ToLower()))
-                .OrderByDescending(e => e.DateCreated).ToListAsync();
+                .OrderByDescending(e => e.DateCreated).ToListAsync()
+            };
 
-            LogDebug("HTTP trigger - ElectionFind:End");
+            _log.LogDebug("HTTP trigger - ElectionFind:End");
 
-            return items.Count == 0 ? req.CreateNotFoundResponse() : await req.CreateOkResponseAsync(items);
+            return items.Elections.Count == 0 ? new HttpResponseMessage { StatusCode = HttpStatusCode.NotFound } : new HttpResponseMessage { StatusCode = HttpStatusCode.OK, Content = new ObjectContent<ElectionModelList>(items, new JsonMediaTypeFormatter()) };
         }
 
-        [Function(nameof(AddRaces))]
+        [HttpPost]
+        [Route("election/addraces")]
+        [Produces(typeof(ElectionModel))]
+        [Description("Adds Races to an Election and returns the updated Election")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [OpenApiOperation(operationId: "AddRaces", tags: new[] { "Election" })]
-        [OpenApiSecurity("oidc_auth", SecuritySchemeType.OpenIdConnect, OpenIdConnectUrl = "https://login.microsoftonline.com/{tenant_id}/v2.0/.well-known/openid-configuration", OpenIdConnectScopes = "openid,profile")]
-        [OpenApiRequestBody(contentType: "application/json", bodyType: typeof(AddRacesModel), Description = "ElectionId and collection of Race Ids", Example = typeof(AddRacesModel))]
-        [OpenApiResponseWithBody(statusCode: HttpStatusCode.Created, contentType: "application/json", bodyType: typeof(ElectionModel), Description = "Returns the Election")]
-        [OpenApiResponseWithBody(statusCode: HttpStatusCode.Forbidden, contentType: "application/json", bodyType: typeof(SecureString), Description = "Forbidden")]
-        [OpenApiResponseWithBody(statusCode: HttpStatusCode.Unauthorized, contentType: "application/json", bodyType: typeof(SecureString), Description = "Unauthorized")]
-        [OpenApiResponseWithBody(statusCode: HttpStatusCode.NotFound, contentType: "application/json", bodyType: typeof(SecureString), Description = "Not Found")]
-        [OpenApiResponseWithBody(statusCode: HttpStatusCode.NotAcceptable, contentType: "application/json", bodyType: typeof(SecureString), Description = "Not Acceptable")]
-        [OpenApiResponseWithBody(statusCode: HttpStatusCode.TooManyRequests, contentType: "application/json", bodyType: typeof(SecureString), Description = "Too Many Requests")]
-        [OpenApiResponseWithBody(statusCode: HttpStatusCode.UnsupportedMediaType, contentType: "application/json", bodyType: typeof(SecureString), Description = "Unsupported Media Type")]
-        public async Task<HttpResponseData> AddRaces(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "election/addraces")] HttpRequestData req)
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
+        [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
+        [ProducesResponseType(StatusCodes.Status415UnsupportedMediaType)]
+        public async Task<HttpResponseMessage> AddRaces([FromBody] AddRacesModel bindRaceElectionModel)
         {
-            LogDebug("HTTP trigger - AddRaces:Begin");
+            _log.LogDebug("HTTP trigger - AddRaces:Begin");
 
-            AddRacesModel bindRaceElectionModel;
-            try
-            {
-                var requestBody = await new StreamReader(req.Body).ReadToEndAsync();
-                bindRaceElectionModel = JsonConvert.DeserializeObject<AddRacesModel>(requestBody);
-            }
-            catch (Exception e)
-            {
-                LogError("bindRaceElectionModel: invalid format");
-                LogDebug("HTTP trigger - AddRaces:End");
-
-                return await req.CreateBadRequestResponseAsync(new SecureString { Value = e.Message });
-            }
-
-            LogInformation($"Request Data: {bindRaceElectionModel}");
+            _log.LogInformation($"Request Data: {bindRaceElectionModel}");
 
             // Check if the election exists. If so, return it detached from EF
             var election = await _trueVoteDbContext.Elections.Where(r => r.ElectionId == bindRaceElectionModel.ElectionId).AsNoTracking().OrderByDescending(r => r.DateCreated).FirstOrDefaultAsync();
             if (election == null)
             {
-                return await req.CreateNotFoundResponseAsync(new SecureString { Value = $"Election: '{bindRaceElectionModel.ElectionId}' not found" });
+                return new HttpResponseMessage { StatusCode = HttpStatusCode.NotFound, Content = new ObjectContent<SecureString>(new SecureString { Value = $"Election: '{bindRaceElectionModel.ElectionId}' not found" }, new JsonMediaTypeFormatter()) };
             }
 
             // Check if each Race exists or is already part of the election. If any problems, exit with error
@@ -168,14 +115,14 @@ namespace TrueVote.Api.Services
                 var race = await _trueVoteDbContext.Races.Where(r => r.RaceId == rid).OrderByDescending(c => c.DateCreated).FirstOrDefaultAsync();
                 if (race == null)
                 {
-                    return await req.CreateNotFoundResponseAsync(new SecureString { Value = $"Race: '{rid}' not found" });
+                    return new HttpResponseMessage { StatusCode = HttpStatusCode.NotFound, Content = new ObjectContent<SecureString>(new SecureString { Value = $"Race: '{rid}' not found" }, new JsonMediaTypeFormatter()) };
                 }
 
                 // Check if it's already part of the Election
                 var raceExists = election.Races?.Where(r => r.RaceId == rid).FirstOrDefault();
                 if (raceExists != null)
                 {
-                    return await req.CreateConflictResponseAsync(new SecureString { Value = $"Race: '{rid}' already exists in Election" });
+                    return new HttpResponseMessage { StatusCode = HttpStatusCode.Conflict, Content = new ObjectContent<SecureString>(new SecureString { Value = $"Race: '{rid}' already exists in Election" }, new JsonMediaTypeFormatter()) };
                 }
 
                 // Made it this far, add the Race to the Election. Ok to add here because if another one in the list, it won't get persisted
@@ -191,9 +138,9 @@ namespace TrueVote.Api.Services
             await _trueVoteDbContext.Elections.AddAsync(election);
             await _trueVoteDbContext.SaveChangesAsync();
 
-            LogDebug("HTTP trigger - AddRaces:End");
+            _log.LogDebug("HTTP trigger - AddRaces:End");
 
-            return await req.CreateCreatedResponseAsync(election);
+            return new HttpResponseMessage { StatusCode = HttpStatusCode.Created, Content = new ObjectContent<ElectionModel>(election, new JsonMediaTypeFormatter()) };
         }
     }
 }

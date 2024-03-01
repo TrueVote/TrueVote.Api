@@ -1,11 +1,8 @@
-using System;
 using System.Buffers;
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace TrueVote.Api.Helpers
+namespace TrueVote.Api2.Helpers
 {
     public static class MerkleTree
     {

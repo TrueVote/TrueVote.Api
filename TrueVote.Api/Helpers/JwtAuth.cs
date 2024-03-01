@@ -1,15 +1,9 @@
 using Microsoft.IdentityModel.Tokens;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Claims;
 using System.IdentityModel.Tokens.Jwt;
-using Microsoft.Azure.Functions.Worker.Http;
-using System.Threading.Tasks;
-using TrueVote.Api.Models;
-using Microsoft.Extensions.Logging;
-using TrueVote.Api.Services;
+using TrueVote.Api2.Services;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Extensions.Primitives;
 
 /* 
  * This class shouldn't need to exist. The preferred method is to use the [Authorize] attribute on endpoints to
@@ -18,21 +12,21 @@ using System.Diagnostics.CodeAnalysis;
  * 
  * To protect a function, these lines need to be added to the top:
  *
-    var (httpResponseData, renewedToken) = await _jwtHandler.ProcessTokenValidationAsync(req);
-    if (httpResponseData != null)
-        return httpResponseData;
+    var (HttpResponse, renewedToken) = await _jwtHandler.ProcessTokenValidationAsync(req);
+    if (HttpResponse != null)
+        return HttpResponse;
  *
  * And something like this to the bottom:
  * 
     return await req.CreateOkResponseAsync(status, renewedToken);
  *
  */
-namespace TrueVote.Api.Helpers
+namespace TrueVote.Api2.Helpers
 {
     public interface IJwtHandler
     {
         string GenerateToken(string userId, IEnumerable<string> roles);
-        Task<(HttpResponseData Response, string RenewedToken)> ProcessTokenValidationAsync(HttpRequestData req);
+        // Task<(HttpResponse Response, string RenewedToken)> ProcessTokenValidationAsync(HttpRequest req);
     }
 
     [ExcludeFromCodeCoverage] // TODO Add coverage for this
@@ -45,10 +39,12 @@ namespace TrueVote.Api.Helpers
         private readonly SymmetricSecurityKey SymmetricSecurityKey;
         private readonly SigningCredentials SigningCredentials;
         private readonly TimeSpan ClockSkew;
+        private readonly IConfiguration _configuration;
 
-        public JwtHandler(ILogger log, IServiceBus serviceBus): base(log, serviceBus)
+        public JwtHandler(ILogger log, IServiceBus serviceBus, IConfiguration configuration): base(log, serviceBus)
         {
-            var secret = Environment.GetEnvironmentVariable("JWTSecret");
+            _configuration = configuration;
+            var secret = _configuration["JWTSecret"];
             var secretByte = Convert.FromBase64String(secret);
             SymmetricSecurityKey = new SymmetricSecurityKey(secretByte);
             SigningCredentials = new SigningCredentials(SymmetricSecurityKey, SecurityAlgorithms.HmacSha256);
@@ -125,17 +121,17 @@ namespace TrueVote.Api.Helpers
             }
         }
 
-        public (ClaimsPrincipal, string) ValidateAndRenewToken(HttpRequestData req)
+        public (ClaimsPrincipal, string) ValidateAndRenewToken(HttpRequest req)
         {
             try
             {
                 // Extract token from the request header
-                if (!req.Headers.TryGetValues("Authorization", out var authHeaderEnumerable) || authHeaderEnumerable == null || !authHeaderEnumerable.Any())
+                if (!req.Headers.TryGetValue("Authorization", out var authHeaderEnumerable) || StringValues.IsNullOrEmpty(authHeaderEnumerable))
                 {
                     throw new SecurityTokenException("Token not found.");
                 }
 
-                var authHeader = authHeaderEnumerable.First(); // Assuming you only expect one value
+                var authHeader = authHeaderEnumerable.First() ?? throw new SecurityTokenException("AuthHeader is null.");
                 var token = authHeader.Replace("Bearer ", "");
 
                 // Validate or auto-renew the token
@@ -179,7 +175,8 @@ namespace TrueVote.Api.Helpers
             }
         }
 
-        public async Task<(HttpResponseData Response, string RenewedToken)> ProcessTokenValidationAsync(HttpRequestData req)
+        /*
+        public async Task<(HttpResponse Response, string RenewedToken)> ProcessTokenValidationAsync(HttpRequest req)
         {
             try
             {
@@ -201,5 +198,6 @@ namespace TrueVote.Api.Helpers
                 return (Response: badRequestResponse, RenewedToken: null);
             }
         }
+        */
     }
 }
