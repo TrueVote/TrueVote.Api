@@ -1,21 +1,21 @@
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
-using TrueVote.Api2.Services;
-using TrueVote.Api2.Interfaces;
-using TrueVote.Api2.Models;
+using TrueVote.Api.Services;
+using TrueVote.Api.Interfaces;
+using TrueVote.Api.Models;
 using System.Text.Json;
 using HotChocolate.Types.Descriptors;
 using System.IO.Abstractions;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using TrueVote.Api2.Helpers;
+using TrueVote.Api.Helpers;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
-namespace TrueVote.Api2
+namespace TrueVote.Api
 {
     public class Startup
     {

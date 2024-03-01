@@ -2,9 +2,9 @@ using Newtonsoft.Json;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
-using TrueVote.Api2.Helpers;
+using TrueVote.Api.Helpers;
 
-namespace TrueVote.Api2.Models
+namespace TrueVote.Api.Models
 {
     [ExcludeFromCodeCoverage]
     public class CandidateObj

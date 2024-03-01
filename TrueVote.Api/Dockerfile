@@ -9,17 +9,17 @@ EXPOSE 8081
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["TrueVote.Api2/TrueVote.Api2.csproj", "TrueVote.Api2/"]
-RUN dotnet restore "./TrueVote.Api2/TrueVote.Api2.csproj"
+COPY ["TrueVote.Api/TrueVote.Api.csproj", "TrueVote.Api/"]
+RUN dotnet restore "./TrueVote.Api/TrueVote.Api.csproj"
 COPY . .
-WORKDIR "/src/TrueVote.Api2"
-RUN dotnet build "./TrueVote.Api2.csproj" -c $BUILD_CONFIGURATION -o /app/build
+WORKDIR "/src/TrueVote.Api"
+RUN dotnet build "./TrueVote.Api.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "./TrueVote.Api2.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "./TrueVote.Api.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "TrueVote.Api2.dll"]
+ENTRYPOINT ["dotnet", "TrueVote.Api.dll"]

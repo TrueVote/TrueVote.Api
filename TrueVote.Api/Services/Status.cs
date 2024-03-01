@@ -4,9 +4,9 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Net.Http.Formatting;
 using System.Net;
-using TrueVote.Api2.Models;
+using TrueVote.Api.Models;
 
-namespace TrueVote.Api2.Services
+namespace TrueVote.Api.Services
 {
     [ApiController]
     public class Status : ControllerBase

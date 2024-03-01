@@ -1,7 +1,7 @@
 using Azure.Messaging.ServiceBus;
 using System.Diagnostics.CodeAnalysis;
 
-namespace TrueVote.Api2.Services
+namespace TrueVote.Api.Services
 {
     public interface IServiceBus
     {

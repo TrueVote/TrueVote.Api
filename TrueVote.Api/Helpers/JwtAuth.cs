@@ -1,7 +1,7 @@
 using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
 using System.IdentityModel.Tokens.Jwt;
-using TrueVote.Api2.Services;
+using TrueVote.Api.Services;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Primitives;
 
@@ -21,7 +21,7 @@ using Microsoft.Extensions.Primitives;
     return await req.CreateOkResponseAsync(status, renewedToken);
  *
  */
-namespace TrueVote.Api2.Helpers
+namespace TrueVote.Api.Helpers
 {
     public interface IJwtHandler
     {

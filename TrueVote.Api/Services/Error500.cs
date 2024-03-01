@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel;
 using System.Net;
 
-namespace TrueVote.Api2.Services
+namespace TrueVote.Api.Services
 {
     [ApiController]
     public class Error500 : ControllerBase

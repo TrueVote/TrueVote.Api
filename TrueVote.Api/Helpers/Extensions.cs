@@ -2,7 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text.RegularExpressions;
 
-namespace TrueVote.Api2
+namespace TrueVote.Api
 {
     [ExcludeFromCodeCoverage]
     public static partial class Extensions

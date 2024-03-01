@@ -1,7 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
-using TrueVote.Api2.Services;
+using TrueVote.Api.Services;
 
-namespace TrueVote.Api2.Helpers
+namespace TrueVote.Api.Helpers
 {
     [ExcludeFromCodeCoverage]
     public class LoggerHelper(ILogger log, IServiceBus serviceBus)

@@ -1,10 +1,10 @@
-using TrueVote.Api2.Helpers;
-using TrueVote.Api2.Interfaces;
+using TrueVote.Api.Helpers;
+using TrueVote.Api.Interfaces;
 using Newtonsoft.Json;
-using TrueVote.Api2.Models;
+using TrueVote.Api.Models;
 using Newtonsoft.Json.Linq;
 
-namespace TrueVote.Api2.Services
+namespace TrueVote.Api.Services
 {
     public interface IValidator
     {

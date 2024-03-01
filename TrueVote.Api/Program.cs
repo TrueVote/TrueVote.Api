@@ -1,4 +1,4 @@
-namespace TrueVote.Api2
+namespace TrueVote.Api
 {
     public class Program
     {

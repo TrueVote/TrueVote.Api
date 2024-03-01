@@ -3,7 +3,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 
-namespace TrueVote.Api2.Models
+namespace TrueVote.Api.Models
 {
     [ExcludeFromCodeCoverage]
     public class SecureString

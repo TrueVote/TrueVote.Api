@@ -4,10 +4,10 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
-using TrueVote.Api2.Helpers;
-using ByteConverter = TrueVote.Api2.Helpers.ByteConverter;
+using TrueVote.Api.Helpers;
+using ByteConverter = TrueVote.Api.Helpers.ByteConverter;
 
-namespace TrueVote.Api2.Models
+namespace TrueVote.Api.Models
 {
     [ExcludeFromCodeCoverage]
     public class BallotList

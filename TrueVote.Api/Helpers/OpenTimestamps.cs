@@ -1,4 +1,4 @@
-namespace TrueVote.Api2.Helpers
+namespace TrueVote.Api.Helpers
 {
     public interface IOpenTimestampsClient
     {

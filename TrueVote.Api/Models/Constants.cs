@@ -1,4 +1,4 @@
-namespace TrueVote.Api2.Models
+namespace TrueVote.Api.Models
 {
     public static class Constants
     {

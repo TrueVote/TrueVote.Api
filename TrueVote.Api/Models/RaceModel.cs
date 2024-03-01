@@ -4,9 +4,9 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Serialization;
-using TrueVote.Api2.Helpers;
+using TrueVote.Api.Helpers;
 
-namespace TrueVote.Api2.Models
+namespace TrueVote.Api.Models
 {
     // TODO Need to describe this for SwaggerUI
     // GraphQL spec is reason for ALL_CAPS below (https://github.com/graphql-dotnet/graphql-dotnet/pull/2773)

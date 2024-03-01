@@ -3,10 +3,10 @@ using Microsoft.EntityFrameworkCore;
 using System.ComponentModel;
 using System.Net.Http.Formatting;
 using System.Net;
-using TrueVote.Api2.Helpers;
-using TrueVote.Api2.Interfaces;
-using TrueVote.Api2.Models;
-namespace TrueVote.Api2.Services
+using TrueVote.Api.Helpers;
+using TrueVote.Api.Interfaces;
+using TrueVote.Api.Models;
+namespace TrueVote.Api.Services
 {
     [ApiController]
     public class Election : ControllerBase
