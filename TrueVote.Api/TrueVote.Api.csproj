@@ -61,10 +61,20 @@
     <Exec Condition="$(OS) != 'Windows_NT'" Command="$(ProjectDir)../scripts/build-version.sh $(ProjectDir) $(TargetDir)" />
   </Target>
   <ItemGroup>
-    <EmbeddedResource Include="dist\favicon-16x16.png" />
-    <EmbeddedResource Include="dist\favicon-32x32.png" />
-    <EmbeddedResource Include="dist\favicon.ico" />
-    <EmbeddedResource Include="dist\truevote-api.css" />
-    <EmbeddedResource Include="dist\truevote-api.js" />
+    <Content Include="dist\favicon-16x16.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dist\favicon-32x32.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dist\favicon.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dist\truevote-api.css">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dist\truevote-api.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 </Project>

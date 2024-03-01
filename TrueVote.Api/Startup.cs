@@ -11,16 +11,18 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using TrueVote.Api.Helpers;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
-using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using JsonSerializer = System.Text.Json.JsonSerializer;
+using Microsoft.Extensions.FileProviders;
+using Path = System.IO.Path;
+using System.Runtime.InteropServices;
 
 namespace TrueVote.Api
 {
     public class Startup
     {
-        public string CustomStylesheetPath { get; set; } = "dist.truevote-api.css";
-        public string CustomJavaScriptPath { get; set; } = "dist.truevote-api.js";
+        public string CustomStylesheetPath { get; set; } = "/dist/truevote-api.css";
+        public string CustomJavaScriptPath { get; set; } = "/dist/truevote-api.js";
 
         public void ConfigureServices(IServiceCollection services)
         {
@@ -104,6 +106,12 @@ namespace TrueVote.Api
             app.UseRouting();
 
             app.UseAuthorization();
+
+            app.UseStaticFiles(new StaticFileOptions
+            {
+                FileProvider = new PhysicalFileProvider(GetDistFolderPath()),
+                RequestPath = "/dist"
+            });
 
             app.UseEndpoints(e =>
             {
@@ -199,6 +207,15 @@ namespace TrueVote.Api
                 modelBuilder.Entity<BallotHashModel>().ToContainer("BallotHashes");
                 modelBuilder.Entity<BallotHashModel>().HasNoDiscriminator();
             }
+        }
+
+        private string GetDistFolderPath()
+        {
+            // Get the base directory where the application is running
+            var basePath = AppContext.BaseDirectory;
+
+            // Combine with the 'dist' folder path and the runtime folder name
+            return Path.Combine(basePath, "dist");
         }
     }
 
