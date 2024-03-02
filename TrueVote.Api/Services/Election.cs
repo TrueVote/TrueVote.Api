@@ -11,6 +11,12 @@ namespace TrueVote.Api.Services
     [ApiController]
     [Consumes("application/json")]
     [Produces("application/json")]
+    [ProducesResponseType(typeof(SecureString), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(SecureString), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(SecureString), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(SecureString), StatusCodes.Status406NotAcceptable)]
+    [ProducesResponseType(typeof(SecureString), StatusCodes.Status429TooManyRequests)]
+    [ProducesResponseType(typeof(SecureString), StatusCodes.Status409Conflict)]
     public class Election : ControllerBase
     {
         private readonly ILogger _log;
@@ -28,14 +34,7 @@ namespace TrueVote.Api.Services
         [Route("election")]
         [Produces(typeof(ElectionModel))]
         [Description("Returns the added Election")]
-        [ProducesResponseType(StatusCodes.Status201Created)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
-        [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
-        [ProducesResponseType(StatusCodes.Status415UnsupportedMediaType)]
+        [ProducesResponseType(typeof(ElectionModel), StatusCodes.Status201Created)]
         public async Task<HttpResponseMessage> CreateElection([FromBody] BaseElectionModel baseElection)
         {
             _log.LogDebug("HTTP trigger - CreateElection:Begin");
@@ -60,12 +59,7 @@ namespace TrueVote.Api.Services
         [Route("election/find")]
         [Produces(typeof(ElectionModelList))]
         [Description("Returns collection of Elections")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
-        [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
+        [ProducesResponseType(typeof(ElectionModelList), StatusCodes.Status200OK)]
         public async Task<HttpResponseMessage> ElectionFind([FromBody] FindElectionModel findElection)
         {
             _log.LogDebug("HTTP trigger - ElectionFind:Begin");
@@ -89,14 +83,7 @@ namespace TrueVote.Api.Services
         [Route("election/addraces")]
         [Produces(typeof(ElectionModel))]
         [Description("Adds Races to an Election and returns the updated Election")]
-        [ProducesResponseType(StatusCodes.Status201Created)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
-        [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
-        [ProducesResponseType(StatusCodes.Status415UnsupportedMediaType)]
+        [ProducesResponseType(typeof(ElectionModel), StatusCodes.Status201Created)]
         public async Task<HttpResponseMessage> AddRaces([FromBody] AddRacesModel bindRaceElectionModel)
         {
             _log.LogDebug("HTTP trigger - AddRaces:Begin");

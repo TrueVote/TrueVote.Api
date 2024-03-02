@@ -9,6 +9,12 @@ namespace TrueVote.Api.Services
     [ApiController]
     [Consumes("application/json")]
     [Produces("application/json")]
+    [ProducesResponseType(typeof(SecureString), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(SecureString), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(SecureString), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(SecureString), StatusCodes.Status406NotAcceptable)]
+    [ProducesResponseType(typeof(SecureString), StatusCodes.Status429TooManyRequests)]
+    [ProducesResponseType(typeof(SecureString), StatusCodes.Status409Conflict)]
     public class Status : ControllerBase
     {
         private static BuildInfo _BuildInfo = null;
@@ -26,12 +32,7 @@ namespace TrueVote.Api.Services
         [Route("status")]
         [Produces(typeof(StatusModel))]
         [Description("Returns Status of Api")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
-        [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
+        [ProducesResponseType(typeof(StatusModel), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetStatus()
         {
             _log.LogDebug("HTTP trigger - GetStatus:Begin");

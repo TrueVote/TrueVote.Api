@@ -14,6 +14,12 @@ namespace TrueVote.Api.Services
     [ApiController]
     [Consumes("application/json")]
     [Produces("application/json")]
+    [ProducesResponseType(typeof(SecureString), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(SecureString), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(SecureString), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(SecureString), StatusCodes.Status406NotAcceptable)]
+    [ProducesResponseType(typeof(SecureString), StatusCodes.Status429TooManyRequests)]
+    [ProducesResponseType(typeof(SecureString), StatusCodes.Status409Conflict)]
     public class User : ControllerBase
     {
         private readonly ILogger _log;
@@ -33,14 +39,7 @@ namespace TrueVote.Api.Services
         [Route("user")]
         [Produces(typeof(UserModel))]
         [Description("Creates a new User and returns the added User")]
-        [ProducesResponseType(StatusCodes.Status201Created)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
-        [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
-        [ProducesResponseType(StatusCodes.Status415UnsupportedMediaType)]
+        [ProducesResponseType(typeof(UserModel), StatusCodes.Status201Created)]
         public async Task<HttpResponseMessage> CreateUser([FromBody] BaseUserModel baseUser)
         {
             _log.LogDebug("HTTP trigger - CreateUser:Begin");
@@ -65,12 +64,7 @@ namespace TrueVote.Api.Services
         [Route("user/find")]
         [Produces(typeof(UserModelList))]
         [Description("Returns collection of Users")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
-        [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
+        [ProducesResponseType(typeof(UserModelList), StatusCodes.Status200OK)]
         public async Task<HttpResponseMessage> UserFind([FromBody] FindUserModel findUser)
         {
             _log.LogDebug("HTTP trigger - UserFind:Begin");
@@ -97,12 +91,7 @@ namespace TrueVote.Api.Services
         [Route("user/signin")]
         [Produces(typeof(SecureString))]
         [Description("Signs In a User and returns a Token")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
-        [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
+        [ProducesResponseType(typeof(SecureString), StatusCodes.Status200OK)]
         public async Task<HttpResponseMessage> SignIn([FromBody] SignInEventModel signInEventModel)
         {
             _log.LogDebug("HTTP trigger - SignIn:Begin");

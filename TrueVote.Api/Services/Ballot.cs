@@ -11,6 +11,12 @@ namespace TrueVote.Api.Services
     [ApiController]
     [Consumes("application/json")]
     [Produces("application/json")]
+    [ProducesResponseType(typeof(SecureString), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(SecureString), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(SecureString), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(SecureString), StatusCodes.Status406NotAcceptable)]
+    [ProducesResponseType(typeof(SecureString), StatusCodes.Status429TooManyRequests)]
+    [ProducesResponseType(typeof(SecureString), StatusCodes.Status409Conflict)]
     public class Ballot : ControllerBase
     {
         private readonly ILogger _log;
@@ -30,14 +36,7 @@ namespace TrueVote.Api.Services
         [Route("ballot/submitballot")]
         [Produces(typeof(SubmitBallotModelResponse))]
         [Description("Election Model with vote selections")]
-        [ProducesResponseType(StatusCodes.Status201Created)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
-        [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
-        [ProducesResponseType(StatusCodes.Status415UnsupportedMediaType)]
-        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        [ProducesResponseType(typeof(SubmitBallotModelResponse), StatusCodes.Status201Created)]
         public async Task<HttpResponseMessage> SubmitBallot([FromBody] SubmitBallotModel bindSubmitBallotModel)
         {
             _log.LogDebug("HTTP trigger - SubmitBallot:Begin");
@@ -92,13 +91,7 @@ namespace TrueVote.Api.Services
         [Route("ballot/find")]
         [Produces(typeof(BallotList))]
         [Description("Returns collection of Ballots")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
-        [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
+        [ProducesResponseType(typeof(BallotList), StatusCodes.Status200OK)]
         public async Task<HttpResponseMessage> BallotFind([FromBody] FindBallotModel findBallot)
         {
             _log.LogDebug("HTTP trigger - BallotFind:Begin");
@@ -127,10 +120,6 @@ namespace TrueVote.Api.Services
         [Produces(typeof(CountBallotModelResponse))]
         [Description("Returns count of Ballots")]
         [ProducesResponseType(typeof(CountBallotModelResponse), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(SecureString), StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(typeof(SecureString), StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(typeof(SecureString), StatusCodes.Status406NotAcceptable)]
-        [ProducesResponseType(typeof(SecureString), StatusCodes.Status429TooManyRequests)]
         public async Task<IActionResult> BallotCount([FromBody] CountBallotModel countBallot)
         {
             _log.LogDebug("HTTP trigger - BallotCount:Begin");
@@ -152,12 +141,7 @@ namespace TrueVote.Api.Services
         [Route("ballot/findhash")]
         [Produces(typeof(List<BallotHashModel>))]
         [Description("Returns collection of Ballot Hashes")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
-        [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
+        [ProducesResponseType(typeof(List<BallotHashModel>), StatusCodes.Status200OK)]
         public async Task<HttpResponseMessage> BallotHashFind([FromBody] FindBallotHashModel findBallotHash)
         {
             _log.LogDebug("HTTP trigger - BallotHashFind:Begin");

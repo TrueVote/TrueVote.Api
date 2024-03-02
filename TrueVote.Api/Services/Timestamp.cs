@@ -11,6 +11,12 @@ namespace TrueVote.Api.Services
     [ApiController]
     [Consumes("application/json")]
     [Produces("application/json")]
+    [ProducesResponseType(typeof(SecureString), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(SecureString), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(SecureString), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(SecureString), StatusCodes.Status406NotAcceptable)]
+    [ProducesResponseType(typeof(SecureString), StatusCodes.Status429TooManyRequests)]
+    [ProducesResponseType(typeof(SecureString), StatusCodes.Status409Conflict)]
     public class Timestamp : ControllerBase
     {
         private readonly ILogger _log;
@@ -26,12 +32,7 @@ namespace TrueVote.Api.Services
         [Route("timestamp/find")]
         [Produces(typeof(List<TimestampModel>))]
         [Description("Returns List of Timestamps by Date")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
-        [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
+        [ProducesResponseType(typeof(List<TimestampModel>), StatusCodes.Status200OK)]
         public async Task<HttpResponseMessage> TimestampFind([FromBody] FindTimestampModel findTimestamp)
         {
             _log.LogDebug("HTTP trigger - TimestampFind:Begin");
