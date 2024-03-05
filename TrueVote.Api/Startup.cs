@@ -66,13 +66,9 @@ namespace TrueVote.Api
                 builder.SetMinimumLevel(LogLevel.Debug)
                        .AddProvider(new CustomLoggerProvider(builder));
             });
-
             services.TryAddScoped<Query, Query>();
             services.TryAddScoped<IJwtHandler, JwtHandler>();
-
             services.TryAddSingleton<INamingConventions, TrueVoteNamingConventions>();
-
-            // Additional classes for dependency injection
             services.TryAddSingleton(new Uri("https://a.pool.opentimestamps.org")); // TODO Need to pull the Timestamp URL from Config. Also, TrueVote needs to stand up its own Timestamp servers.
             services.AddHttpClient<IOpenTimestampsClient, OpenTimestampsClient>().ConfigureHttpClient((provider, client) =>
             {
@@ -80,11 +76,11 @@ namespace TrueVote.Api
                 client.BaseAddress = uri;
             });
             services.TryAddScoped<IValidator, Validator>();
-
             services.AddLogging();
             services.AddSingleton(typeof(ILogger), typeof(Logger<Startup>));
-
             services.AddGraphQLServer().AddQueryType<Query>();
+            services.AddExceptionHandler<GlobalExceptionHandler>();
+            services.AddProblemDetails();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -108,6 +104,8 @@ namespace TrueVote.Api
             });
 
             app.UseHttpsRedirection();
+
+            app.UseExceptionHandler();
 
             app.UseRouting();
 
