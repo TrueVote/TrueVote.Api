@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics.CodeAnalysis;
-using TrueVote.Api.Helpers;
 using TrueVote.Api.Interfaces;
 using TrueVote.Api.Models;
 
@@ -10,11 +9,11 @@ namespace TrueVote.Api.Services
     // { candidate(partyAffiliation: "Republican") { candidateId, name, partyAffiliation }
     // TODO Add sorting support to replace the 'OrderBy' directives below
     [ExcludeFromCodeCoverage]
-    public class Query : LoggerHelper
+    public class Query
     {
         private readonly ITrueVoteDbContext _trueVoteDbContext;
 
-        public Query(ILogger log, ITrueVoteDbContext trueVoteDbContext, IServiceBus serviceBus) : base(log, serviceBus)
+        public Query(ITrueVoteDbContext trueVoteDbContext)
         {
             _trueVoteDbContext = trueVoteDbContext;
         }

@@ -30,7 +30,7 @@ namespace TrueVote.Api.Helpers
     }
 
     [ExcludeFromCodeCoverage] // TODO Add coverage for this
-    public class JwtHandler : LoggerHelper, IJwtHandler
+    public class JwtHandler : IJwtHandler
     {
         private const string Issuer = "TrueVoteApi";
         private const string Audience = "https://api.truevote.org/api/";
@@ -41,7 +41,7 @@ namespace TrueVote.Api.Helpers
         private readonly TimeSpan ClockSkew;
         private readonly IConfiguration _configuration;
 
-        public JwtHandler(ILogger log, IServiceBus serviceBus, IConfiguration configuration): base(log, serviceBus)
+        public JwtHandler(IConfiguration configuration)
         {
             _configuration = configuration;
             var secret = _configuration["JWTSecret"];

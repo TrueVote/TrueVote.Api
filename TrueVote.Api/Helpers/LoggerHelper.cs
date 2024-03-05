@@ -4,41 +4,67 @@ using TrueVote.Api.Services;
 namespace TrueVote.Api.Helpers
 {
     [ExcludeFromCodeCoverage]
-    public class LoggerHelper(ILogger log, IServiceBus serviceBus)
+    public class LoggerHelper : ILogger
     {
-        private readonly ILogger _log = log;
-        private readonly IServiceBus _serviceBus = serviceBus;
+        private readonly string _categoryName;
+        private readonly IServiceBus _serviceBus;
+        private readonly ILogger _log;
+        private static readonly object _lock = new object();
 
-        public void LogInformation(string message)
+        public LoggerHelper(string categoryName, IServiceBus serviceBus, ILogger logger)
         {
-            _log.LogInformation(message);
+            _categoryName = categoryName;
+            _serviceBus = serviceBus;
+            _log = logger;
         }
 
-        public void LogWarning(string message)
+        public IDisposable? BeginScope<TState>(TState state) where TState : notnull
         {
-            _log.LogWarning(message);
+            return _log.BeginScope(state);
         }
 
-        public void LogError(string message)
+        public bool IsEnabled(LogLevel logLevel)
         {
-            _serviceBus.SendAsync($"TrueVote API Error: {message}");
-
-            _log.LogError(message);
+            return _log.IsEnabled(logLevel);
         }
 
-        public void LogCritical(string message)
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
         {
-            _log.LogCritical(message);
+            if (!IsEnabled(logLevel))
+                return;
+
+            lock (_lock)
+            {
+                var message = $"{logLevel}: [{eventId}] {formatter(state, exception)}";
+                _log.Log(logLevel, eventId, state, exception, formatter);
+                if (logLevel >= LogLevel.Error)
+                {
+                    _serviceBus.SendAsync(message).Wait();
+                }
+            }
+        }
+    }
+
+    public class CustomLoggerProvider : ILoggerProvider
+    {
+        private readonly IServiceBus _serviceBus;
+        private readonly ILoggerProvider _provider;
+
+        public CustomLoggerProvider(ILoggingBuilder builder)
+        {
+            _serviceBus = builder.Services.BuildServiceProvider().GetRequiredService<IServiceBus>();
+            _provider = builder.Services.BuildServiceProvider().GetRequiredService<ILoggerProvider>();
         }
 
-        public void LogDebug(string message)
+        public ILogger CreateLogger(string categoryName)
         {
-            _log.LogDebug(message);
+            var logger = _provider.CreateLogger(categoryName);
+            return new LoggerHelper(categoryName, _serviceBus, logger);
         }
 
-        public void LogTrace(string message)
+        public void Dispose()
         {
-            _log.LogTrace(message);
+            _provider?.Dispose();
         }
     }
 }

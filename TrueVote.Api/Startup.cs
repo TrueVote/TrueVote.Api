@@ -60,9 +60,14 @@ namespace TrueVote.Api
             services.AddApplicationInsightsTelemetry();
             services.AddDbContext<ITrueVoteDbContext, TrueVoteDbContext>();
             services.TryAddScoped<IFileSystem, FileSystem>();
-            services.TryAddSingleton<ILoggerFactory, LoggerFactory>();
-            services.TryAddScoped<Query, Query>();
             services.TryAddScoped<IServiceBus, ServiceBus>();
+            services.AddLogging(builder =>
+            {
+                builder.SetMinimumLevel(LogLevel.Debug)
+                       .AddProvider(new CustomLoggerProvider(builder));
+            });
+
+            services.TryAddScoped<Query, Query>();
             services.TryAddScoped<IJwtHandler, JwtHandler>();
 
             services.TryAddSingleton<INamingConventions, TrueVoteNamingConventions>();

@@ -14,17 +14,19 @@ namespace TrueVote.Api.Services
         Task StoreBallotHashAsync(BallotHashModel ballotHashModel);
     }
 
-    public class Validator : LoggerHelper, IValidator
+    public class Validator : IValidator
     {
         private readonly ITrueVoteDbContext _trueVoteDbContext;
         private readonly IOpenTimestampsClient _openTimestampsClient;
         private readonly IServiceBus _serviceBus;
+        private readonly ILogger _log;
 
-        public Validator(ILogger log, ITrueVoteDbContext trueVoteDbContext, IOpenTimestampsClient openTimestampsClient, IServiceBus serviceBus) : base(log, serviceBus)
+        public Validator(ILogger log, ITrueVoteDbContext trueVoteDbContext, IOpenTimestampsClient openTimestampsClient, IServiceBus serviceBus)
         {
             _trueVoteDbContext = trueVoteDbContext;
             _openTimestampsClient = openTimestampsClient;
             _serviceBus = serviceBus;
+            _log = log;
         }
 
         public async virtual Task<BallotHashModel> HashBallotAsync(BallotModel ballot)
@@ -36,7 +38,7 @@ namespace TrueVote.Api.Services
                 // TODO Localize msg
                 var msg = $"Ballot: {ballot.BallotId} has already been hashed. Ballot Hash Id: {items.First().BallotHashId}";
 
-                LogError(msg);
+                _log.LogError(msg);
                 throw new Exception(msg);
             }
 
@@ -82,7 +84,7 @@ namespace TrueVote.Api.Services
             }
             catch (Exception ex)
             {
-                LogError($"Exception stamping merkleRoot: {ex.Message}");
+                _log.LogError($"Exception stamping merkleRoot: {ex.Message}");
                 throw;
             }
 
@@ -129,7 +131,7 @@ namespace TrueVote.Api.Services
             }
             catch (Exception ex)
             {
-                LogError($"Exception storing timestamp: {ex.Message}");
+                _log.LogError($"Exception storing timestamp: {ex.Message}");
                 throw;
             }
         }
@@ -143,7 +145,7 @@ namespace TrueVote.Api.Services
             }
             catch (Exception ex)
             {
-                LogError($"Exception storing ballot hash: {ex.Message}");
+                _log.LogError($"Exception storing ballot hash: {ex.Message}");
                 throw;
             }
         }
