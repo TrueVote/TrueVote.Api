@@ -48,13 +48,14 @@ namespace TrueVote.Api.Models
         [Description("DateCreatedStart")]
         [DataType(DataType.Date)]
         [JsonPropertyName("DateCreatedStart")]
+        [JsonProperty("DateCreatedStart", Required = Required.Always)]
         public DateTime DateCreatedStart { get; set; }
 
-        [BindRequired]
         [Required]
         [Description("DateCreatedEnd")]
         [DataType(DataType.Date)]
         [JsonPropertyName("DateCreatedEnd")]
+        [JsonProperty("DateCreatedEnd", Required = Required.Always)]
         public DateTime DateCreatedEnd { get; set; }
     }
 
