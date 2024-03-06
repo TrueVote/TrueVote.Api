@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel;
-using System.Net;
 using TrueVote.Api.Models;
 
 namespace TrueVote.Api.Services
@@ -27,16 +26,17 @@ namespace TrueVote.Api.Services
 
         [HttpGet]
         [Route("error500")]
+        [Produces(typeof(SecureString))]
         [Description("Tests Error Logging of a Server 500")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(SecureString), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(SecureString), StatusCodes.Status500InternalServerError)]
-        public async Task<HttpResponseMessage> ThrowError500([FromBody] dynamic data)
+        public async Task<IActionResult> ThrowError500([FromBody] Error500Flag error500Flag)
         {
             _log.LogDebug("HTTP trigger - ThrowError500:Begin");
 
-            _log.LogInformation($"Request Data: {data}");
+            _log.LogInformation($"Request Data: {error500Flag}");
 
-            if (data?.Error == "true")
+            if (error500Flag.Error)
             {
                 // Throw this random exception for no reason other than the requester wants it
                 _log.LogError($"error500 - throwing a sample exception");
@@ -47,7 +47,7 @@ namespace TrueVote.Api.Services
 
             _log.LogDebug("HTTP trigger - ThrowError500:End");
 
-            return new HttpResponseMessage(HttpStatusCode.OK);
+            return Ok();
         }
     }
 }

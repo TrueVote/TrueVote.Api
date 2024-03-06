@@ -15,6 +15,17 @@ namespace TrueVote.Api.Models
         [DataType(DataType.Text)]
         [RegularExpression(Constants.GenericStringRegex)]
         [JsonPropertyName("Value")]
-        public string Value { get; set; } = string.Empty;
+        [JsonProperty("Value", Required = Required.Always)]
+        public required string Value { get; set; } = string.Empty;
+    }
+
+    [ExcludeFromCodeCoverage]
+    public class Error500Flag
+    {
+        [Required]
+        [Description("Error")]
+        [JsonPropertyName("Error")]
+        [JsonProperty("Error", Required = Required.Always)]
+        public required bool Error { get; set; } = false;
     }
 }

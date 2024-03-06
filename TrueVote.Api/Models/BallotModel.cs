@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Newtonsoft.Json;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
@@ -49,14 +48,14 @@ namespace TrueVote.Api.Models
         [DataType(DataType.Date)]
         [JsonPropertyName("DateCreatedStart")]
         [JsonProperty("DateCreatedStart", Required = Required.Always)]
-        public DateTime DateCreatedStart { get; set; }
+        public required DateTime DateCreatedStart { get; set; }
 
         [Required]
         [Description("DateCreatedEnd")]
         [DataType(DataType.Date)]
         [JsonPropertyName("DateCreatedEnd")]
         [JsonProperty("DateCreatedEnd", Required = Required.Always)]
-        public DateTime DateCreatedEnd { get; set; }
+        public required DateTime DateCreatedEnd { get; set; }
     }
 
     [ExcludeFromCodeCoverage]
