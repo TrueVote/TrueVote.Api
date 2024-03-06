@@ -11,25 +11,23 @@ namespace TrueVote.Api.Services
     [ExcludeFromCodeCoverage]
     public class ServiceBus : IServiceBus
     {
-        private readonly ServiceBusClient _serviceBusClient;
-        private readonly ServiceBusSender _serviceBusSender;
         private readonly IConfiguration _configuration;
 
         public ServiceBus(IConfiguration configuration)
         {
             _configuration = configuration;
-
-            var connectionString = _configuration["ServiceBusConnectionString"];
-            var queueName = _configuration["ServiceBusApiEventQueueName"];
-
-            _serviceBusClient = new ServiceBusClient(connectionString);
-            _serviceBusSender = _serviceBusClient.CreateSender(queueName);
         }
 
         public async Task SendAsync(string message)
         {
+            var connectionString = _configuration.GetConnectionString("ServiceBusConnectionString");
+            var queueName = _configuration["ServiceBusApiEventQueueName"];
+
+            var serviceBusClient = new ServiceBusClient(connectionString);
+            var serviceBusSender = serviceBusClient.CreateSender(queueName);
+
             var serviceBusMessage = new ServiceBusMessage(message);
-            await _serviceBusSender.SendMessageAsync(serviceBusMessage);
+            await serviceBusSender.SendMessageAsync(serviceBusMessage);
         }
     }
 }

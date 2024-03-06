@@ -141,7 +141,7 @@ namespace TrueVote.Api
             public TrueVoteDbContext(IConfiguration configuration)
             {
                 _configuration = configuration;
-                _connectionString = _configuration["CosmosDbConnectionString"];
+                _connectionString = _configuration.GetConnectionString("CosmosDbConnectionString");
             }
 
             public virtual async Task<bool> EnsureCreatedAsync()
