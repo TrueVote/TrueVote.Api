@@ -13,9 +13,8 @@ namespace TrueVote.Api.Models
         [Description("Value")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
-        [RegularExpression(Constants.GenericStringRegex)]
         [JsonPropertyName("Value")]
-        [JsonProperty("Value", Required = Required.Always)]
+        [JsonProperty(nameof(Value), Required = Required.Always)]
         public required string Value { get; set; } = string.Empty;
     }
 
@@ -25,7 +24,7 @@ namespace TrueVote.Api.Models
         [Required]
         [Description("Error")]
         [JsonPropertyName("Error")]
-        [JsonProperty("Error", Required = Required.Always)]
+        [JsonProperty(nameof(Error), Required = Required.Always)]
         public required bool Error { get; set; } = false;
     }
 }

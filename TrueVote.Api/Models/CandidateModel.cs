@@ -11,7 +11,8 @@ namespace TrueVote.Api.Models
     public class CandidateObj
     {
         [JsonPropertyName("Candidate")]
-        public List<CandidateModel> candidate;
+        [JsonProperty("Candidate", Required = Required.Default)]
+        public List<CandidateModel>? candidate;
     }
 
     [ExcludeFromCodeCoverage]
@@ -21,7 +22,8 @@ namespace TrueVote.Api.Models
         [MaxLength(2048)]
         [Description("List of Candidates")]
         [JsonPropertyName("Candidates")]
-        public List<CandidateModel> Candidates { get; set; }
+        [JsonProperty(nameof(Candidates), Required = Required.Always)]
+        public required List<CandidateModel> Candidates { get; set; }
     }
 
     [ExcludeFromCodeCoverage]
@@ -31,17 +33,17 @@ namespace TrueVote.Api.Models
         [Description("Name")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
-        [RegularExpression(Constants.GenericStringRegex)]
         [JsonPropertyName("Name")]
-        public string Name { get; set; } = string.Empty;
+        [JsonProperty(nameof(Name), Required = Required.Always)]
+        public required string Name { get; set; } = string.Empty;
 
         [Required]
         [Description("Party Affiliation")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
-        [RegularExpression(Constants.GenericStringRegex)]
         [JsonPropertyName("PartyAffiliation")]
-        public string PartyAffiliation { get; set; } = string.Empty;
+        [JsonProperty(nameof(PartyAffiliation), Required = Required.Always)]
+        public required string PartyAffiliation { get; set; } = string.Empty;
     }
 
     [ExcludeFromCodeCoverage]
@@ -51,17 +53,17 @@ namespace TrueVote.Api.Models
         [Description("Name")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
-        [RegularExpression(Constants.GenericStringRegex)]
         [JsonPropertyName("Name")]
-        public string Name { get; set; } = string.Empty;
+        [JsonProperty("Candidates", Required = Required.Always)]
+        public required string Name { get; set; } = string.Empty;
 
         [Required]
         [Description("Party Affiliation")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
-        [RegularExpression(Constants.GenericStringRegex)]
         [JsonPropertyName("PartyAffiliation")]
-        public string PartyAffiliation { get; set; } = string.Empty;
+        [JsonProperty(nameof(PartyAffiliation), Required = Required.Always)]
+        public required string PartyAffiliation { get; set; } = string.Empty;
     }
 
     [ExcludeFromCodeCoverage]
@@ -71,51 +73,54 @@ namespace TrueVote.Api.Models
         [Description("Candidate Id")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
-        [RegularExpression(Constants.GenericStringRegex)]
         [JsonPropertyName("CandidateId")]
+        [JsonProperty(nameof(CandidateId), Required = Required.Always)]
         [Key]
-        public string CandidateId { get; set; } = Guid.NewGuid().ToString();
+        public required string CandidateId { get; set; } = Guid.NewGuid().ToString();
 
         [Required]
         [Description("Name")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
-        [RegularExpression(Constants.GenericStringRegex)]
         [JsonPropertyName("Name")]
-        public string Name { get; set; } = string.Empty;
+        [JsonProperty(nameof(Name), Required = Required.Always)]
+        public required string Name { get; set; } = string.Empty;
 
         [Required]
         [Description("Party Affiliation")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
-        [RegularExpression(Constants.GenericStringRegex)]
         [JsonPropertyName("PartyAffiliation")]
-        public string PartyAffiliation { get; set; } = string.Empty;
+        [JsonProperty(nameof(PartyAffiliation), Required = Required.Always)]
+        public required string PartyAffiliation { get; set; } = string.Empty;
 
         [Required]
         [Description("CandidateImageUrl")]
         [MaxLength(1024)]
         [DataType(DataType.Text)]
         [JsonPropertyName("CandidateImageUrl")]
-        public string CandidateImageUrl { get; set; } = string.Empty;
+        [JsonProperty(nameof(CandidateImageUrl), Required = Required.Always)]
+        public required string CandidateImageUrl { get; set; } = string.Empty;
 
         [Required]
         [Description("DateCreated")]
         [DataType(DataType.Date)]
         [JsonPropertyName("DateCreated")]
-        public DateTime DateCreated { get; set; } = UtcNowProviderFactory.GetProvider().UtcNow;
+        [JsonProperty(nameof(DateCreated), Required = Required.Always)]
+        public required DateTime DateCreated { get; set; } = UtcNowProviderFactory.GetProvider().UtcNow;
 
         [Required]
         [Description("Selected")]
         [JsonPropertyName("Selected")]
-        public bool Selected { get; set; } = false;
+        [JsonProperty(nameof(Selected), Required = Required.Always)]
+        public required bool Selected { get; set; } = false;
 
-        [Required]
         [Description("SelectedMetadata")]
         [MaxLength(1024)]
         [DataType(DataType.Text)]
         [JsonPropertyName("SelectedMetadata")]
-        public string SelectedMetadata { get; set; } = string.Empty;
+        [JsonProperty(nameof(SelectedMetadata), Required = Required.Always)]
+        public required string SelectedMetadata { get; set; } = string.Empty;
 
     }
 }

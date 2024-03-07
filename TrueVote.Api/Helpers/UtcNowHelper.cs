@@ -16,7 +16,7 @@ namespace TrueVote.Api.Helpers
     [ExcludeFromCodeCoverage]
     public static class UtcNowProviderFactory
     {
-        private static IUtcNowProvider _UtcNowProvider;
+        private static IUtcNowProvider? _UtcNowProvider;
 
         public static IUtcNowProvider GetProvider()
         {

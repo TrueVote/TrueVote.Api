@@ -51,7 +51,10 @@ namespace TrueVote.Api.Services
             {
                 ServerBallotHash = serverBallotHash,
                 ServerBallotHashS = serverBallotHashS,
-                BallotId = ballot.BallotId
+                BallotId = ballot.BallotId,
+                DateCreated = UtcNowProviderFactory.GetProvider().UtcNow,
+                DateUpdated = UtcNowProviderFactory.GetProvider().UtcNow,
+                BallotHashId = Guid.NewGuid().ToString()
             };
 
             // Store the BallotHash in Database
@@ -93,9 +96,12 @@ namespace TrueVote.Api.Services
             {
                 MerkleRoot = merkleRoot,
                 MerkleRootHash = merkleRootHash,
+                TimestampId = Guid.NewGuid().ToString(),
                 TimestampHash = result,
                 TimestampHashS = (string) JToken.Parse(Utf8Json.JsonSerializer.ToJsonString(result)),
-                TimestampAt = UtcNowProviderFactory.GetProvider().UtcNow
+                TimestampAt = UtcNowProviderFactory.GetProvider().UtcNow,
+                DateCreated = UtcNowProviderFactory.GetProvider().UtcNow,
+                CalendarServerUrl = string.Empty
             };
             timestamp.CalendarServerUrl = timestamp.TimestampHashS.ExtractUrl();
 

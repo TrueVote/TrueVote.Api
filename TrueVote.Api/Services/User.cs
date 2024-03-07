@@ -46,7 +46,7 @@ namespace TrueVote.Api.Services
 
             _log.LogInformation($"Request Data: {baseUser}");
 
-            var user = new UserModel { FirstName = baseUser.FirstName, Email = baseUser.Email };
+            var user = new UserModel { FirstName = baseUser.FirstName, Email = baseUser.Email, UserId = Guid.NewGuid().ToString(), NostrPubKey = string.Empty, DateCreated = UtcNowProviderFactory.GetProvider().UtcNow };
 
             await _trueVoteDbContext.EnsureCreatedAsync();
 

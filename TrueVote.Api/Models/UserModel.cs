@@ -12,7 +12,8 @@ namespace TrueVote.Api.Models
     public class UserObj
     {
         [JsonPropertyName("User")]
-        public List<UserModel> user;
+        [JsonProperty("User", Required = Required.Default)]
+        public List<UserModel>? user;
     }
 
     [ExcludeFromCodeCoverage]
@@ -22,7 +23,8 @@ namespace TrueVote.Api.Models
         [MaxLength(2048)]
         [Description("List of Users")]
         [JsonPropertyName("Users")]
-        public List<UserModel> Users { get; set; }
+        [JsonProperty(nameof(Users), Required = Required.Always)]
+        public required List<UserModel> Users { get; set; }
     }
 
     [ExcludeFromCodeCoverage]
@@ -32,9 +34,9 @@ namespace TrueVote.Api.Models
         [Description("First Name")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
-        [RegularExpression(Constants.GenericStringRegex)]
         [JsonPropertyName("FirstName")]
-        public string FirstName { get; set; } = string.Empty;
+        [JsonProperty(nameof(FirstName), Required = Required.Always)]
+        public required string FirstName { get; set; } = string.Empty;
 
         [Required]
         [Description("Email Address")]
@@ -43,7 +45,8 @@ namespace TrueVote.Api.Models
         [EmailAddress]
         [RegularExpression(Constants.EMailRegex)]
         [JsonPropertyName("Email")]
-        public string Email { get; set; }
+        [JsonProperty(nameof(Email), Required = Required.Always)]
+        public required string Email { get; set; }
     }
 
     [ExcludeFromCodeCoverage]
@@ -53,9 +56,9 @@ namespace TrueVote.Api.Models
         [Description("First Name")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
-        [RegularExpression(Constants.GenericStringRegex)]
         [JsonPropertyName("FirstName")]
-        public string FirstName { get; set; } = string.Empty;
+        [JsonProperty(nameof(FirstName), Required = Required.Always)]
+        public required string FirstName { get; set; } = string.Empty;
 
         [Required(AllowEmptyStrings = false)]
         [Description("Email Address")]
@@ -64,7 +67,8 @@ namespace TrueVote.Api.Models
         [EmailAddress]
         [RegularExpression(Constants.EMailRegex)]
         [JsonPropertyName("Email")]
-        public string Email { get; set; }
+        [JsonProperty(nameof(Email), Required = Required.Always)]
+        public required string Email { get; set; }
     }
 
     [ExcludeFromCodeCoverage]
@@ -74,26 +78,26 @@ namespace TrueVote.Api.Models
         [Description("User Id")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
-        [RegularExpression(Constants.GenericStringRegex)]
         [JsonPropertyName("UserId")]
+        [JsonProperty(nameof(UserId), Required = Required.Always)]
         [Key]
-        public string UserId { get; set; } = Guid.NewGuid().ToString();
+        public required string UserId { get; set; }
 
         [Required]
         [Description("Nostr PubKey")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
-        [RegularExpression(Constants.GenericStringRegex)]
         [JsonPropertyName("NostrPubKey")]
-        public string NostrPubKey { get; set; } = string.Empty;
+        [JsonProperty(nameof(NostrPubKey), Required = Required.Always)]
+        public required string NostrPubKey { get; set; }
 
         [Required]
         [Description("First Name")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
-        [RegularExpression(Constants.GenericStringRegex)]
         [JsonPropertyName("FirstName")]
-        public string FirstName { get; set; } = string.Empty;
+        [JsonProperty(nameof(FirstName), Required = Required.Always)]
+        public required string FirstName { get; set; } = string.Empty;
 
         [Required(AllowEmptyStrings = false)]
         [Description("Email Address")]
@@ -102,13 +106,15 @@ namespace TrueVote.Api.Models
         [EmailAddress]
         [RegularExpression(Constants.EMailRegex)]
         [JsonPropertyName("Email")]
-        public string Email { get; set; }
+        [JsonProperty(nameof(Email), Required = Required.Always)]
+        public required string Email { get; set; }
 
         [Required]
         [Description("DateCreated")]
         [DataType(DataType.Date)]
         [JsonPropertyName("DateCreated")]
-        public DateTime DateCreated { get; set; } = UtcNowProviderFactory.GetProvider().UtcNow;
+        [JsonProperty(nameof(DateCreated), Required = Required.Always)]
+        public required DateTime DateCreated { get; set; }
     }
 
     [ExcludeFromCodeCoverage]
@@ -118,33 +124,38 @@ namespace TrueVote.Api.Models
         [Description("Kind")]
         [EnumDataType(typeof(NostrKind))]
         [JsonPropertyName("Kind")]
-        public NostrKind Kind { get; set; }
+        [JsonProperty(nameof(Kind), Required = Required.Always)]
+        public required NostrKind Kind { get; set; }
 
         [Required]
         [Description("PubKey")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
         [JsonPropertyName("PubKey")]
-        public string PubKey { get; set; }
+        [JsonProperty(nameof(PubKey), Required = Required.Always)]
+        public required string PubKey { get; set; }
 
         [Required]
         [Description("CreatedAt")]
         [DataType(DataType.Date)]
         [JsonPropertyName("CreatedAt")]
-        public DateTime CreatedAt { get; set; }
+        [JsonProperty(nameof(CreatedAt), Required = Required.Always)]
+        public required DateTime CreatedAt { get; set; }
 
         [Required]
         [Description("Signature")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
         [JsonPropertyName("Signature")]
-        public string Signature { get; set; }
+        [JsonProperty(nameof(Signature), Required = Required.Always)]
+        public required string Signature { get; set; }
 
         [Required]
         [Description("Content")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
         [JsonPropertyName("Content")]
-        public string Content { get; set; }
+        [JsonProperty(nameof(Content), Required = Required.Always)]
+        public required string Content { get; set; }
     }
 }

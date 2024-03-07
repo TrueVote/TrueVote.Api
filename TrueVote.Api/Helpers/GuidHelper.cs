@@ -16,7 +16,7 @@ namespace TrueVote.Api.Helpers
     [ExcludeFromCodeCoverage]
     public static class GuidProviderFactory
     {
-        private static IGuidProvider _GuidProvider;
+        private static IGuidProvider? _GuidProvider;
 
         public static IGuidProvider GetProvider()
         {

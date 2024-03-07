@@ -4,7 +4,6 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
-using TrueVote.Api.Helpers;
 using ByteConverter = TrueVote.Api.Helpers.ByteConverter;
 using JsonConverter = System.Text.Json.Serialization.JsonConverter;
 using JsonConverterAttribute = System.Text.Json.Serialization.JsonConverterAttribute;
@@ -18,13 +17,15 @@ namespace TrueVote.Api.Models
         [MaxLength(2048)]
         [Description("List of Ballots")]
         [JsonPropertyName("Ballots")]
-        public List<BallotModel> Ballots { get; set; }
+        [JsonProperty(nameof(Ballots), Required = Required.Always)]
+        public required List<BallotModel> Ballots { get; set; }
 
         [Required]
         [MaxLength(2048)]
         [Description("List of Ballot Hashes")]
         [JsonPropertyName("BallotHashes")]
-        public List<BallotHashModel> BallotHashes { get; set; }
+        [JsonProperty(nameof(BallotHashes), Required = Required.Always)]
+        public required List<BallotHashModel> BallotHashes { get; set; }
     }
 
     [ExcludeFromCodeCoverage]
@@ -34,10 +35,10 @@ namespace TrueVote.Api.Models
         [Description("Ballot Id")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
-        [RegularExpression(Constants.GenericStringRegex)]
         [JsonPropertyName("BallotId")]
+        [JsonProperty(nameof(BallotId), Required = Required.Always)]
         [Key]
-        public string BallotId { get; set; } = Guid.NewGuid().ToString();
+        public required string BallotId { get; set; }
     }
 
     [ExcludeFromCodeCoverage]
@@ -47,14 +48,14 @@ namespace TrueVote.Api.Models
         [Description("DateCreatedStart")]
         [DataType(DataType.Date)]
         [JsonPropertyName("DateCreatedStart")]
-        [JsonProperty("DateCreatedStart", Required = Required.Always)]
+        [JsonProperty(nameof(DateCreatedStart), Required = Required.Always)]
         public required DateTime DateCreatedStart { get; set; }
 
         [Required]
         [Description("DateCreatedEnd")]
         [DataType(DataType.Date)]
         [JsonPropertyName("DateCreatedEnd")]
-        [JsonProperty("DateCreatedEnd", Required = Required.Always)]
+        [JsonProperty(nameof(DateCreatedEnd), Required = Required.Always)]
         public required DateTime DateCreatedEnd { get; set; }
     }
 
@@ -65,7 +66,8 @@ namespace TrueVote.Api.Models
         [Description("Number of Ballots")]
         [Range(0, long.MaxValue)]
         [JsonPropertyName("BallotCount")]
-        public long BallotCount { get; set; }
+        [JsonProperty(nameof(BallotCount), Required = Required.Always)]
+        public required long BallotCount { get; set; }
     }
 
     [ExcludeFromCodeCoverage]
@@ -75,23 +77,24 @@ namespace TrueVote.Api.Models
         [Description("Ballot Id")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
-        [RegularExpression(Constants.GenericStringRegex)]
         [JsonPropertyName("BallotId")]
+        [JsonProperty(nameof(BallotId), Required = Required.Always)]
         [Key]
-        public string BallotId { get; set; } = Guid.NewGuid().ToString();
+        public required string BallotId { get; set; }
 
         [Required]
         [MaxLength(2048)]
         [Description("Election for the Ballot")]
         [JsonPropertyName("Election")]
-        public ElectionModel Election { get; set; }
+        [JsonProperty(nameof(Election), Required = Required.Always)]
+        public required ElectionModel Election { get; set; }
 
         [Required]
         [Description("DateCreated")]
         [DataType(DataType.Date)]
         [JsonPropertyName("DateCreated")]
-        public DateTime DateCreated { get; set; } = UtcNowProviderFactory.GetProvider().UtcNow;
-
+        [JsonProperty(nameof(DateCreated), Required = Required.Always)]
+        public required DateTime DateCreated { get; set; }
     }
 
     [ExcludeFromCodeCoverage]
@@ -100,7 +103,8 @@ namespace TrueVote.Api.Models
         [Description("Election")]
         [DataType("ElectionModel")]
         [JsonPropertyName("Election")]
-        public ElectionModel Election { get; set; }
+        [JsonProperty(nameof(Election), Required = Required.Always)]
+        public required ElectionModel Election { get; set; }
 
         // TODO Add Bindings of User / Ballot connection
         // Requires encryption for binding stored at client and server for match
@@ -114,26 +118,26 @@ namespace TrueVote.Api.Models
         [Description("Ballot Id")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
-        [RegularExpression(Constants.GenericStringRegex)]
         [JsonPropertyName("BallotId")]
+        [JsonProperty(nameof(BallotId), Required = Required.Always)]
         [Key]
-        public string BallotId { get; set; }
+        public required string BallotId { get; set; }
 
         [Required]
         [Description("Election Id")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
-        [RegularExpression(Constants.GenericStringRegex)]
         [JsonPropertyName("ElectionId")]
-        public string ElectionId { get; set; }
+        [JsonProperty(nameof(ElectionId), Required = Required.Always)]
+        public required string ElectionId { get; set; }
 
         [Required]
         [Description("Message")]
         [MaxLength(32768)]
         [DataType(DataType.Text)]
-        [RegularExpression(Constants.GenericStringRegex)]
         [JsonPropertyName("Message")]
-        public string Message { get; set; }
+        [JsonProperty(nameof(Message), Required = Required.Always)]
+        public required string Message { get; set; }
     }
 
     [ExcludeFromCodeCoverage]
@@ -143,55 +147,57 @@ namespace TrueVote.Api.Models
         [Description("Ballot Hash Id")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
-        [RegularExpression(Constants.GenericStringRegex)]
         [JsonPropertyName("BallotHashId")]
+        [JsonProperty(nameof(BallotHashId), Required = Required.Always)]
         [Key]
-        public string BallotHashId { get; set; } = Guid.NewGuid().ToString();
+        public required string BallotHashId { get; set; }
 
         [Required]
         [Description("Ballot Id")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
-        [RegularExpression(Constants.GenericStringRegex)]
         [JsonPropertyName("BallotId")]
+        [JsonProperty(nameof(BallotId), Required = Required.Always)]
         [ForeignKey("BallotId")]
-        public string BallotId { get; set; }
+        public required string BallotId { get; set; }
 
         [Required]
         [Description("Server Ballot Hash")]
         [DataType(DataType.Custom)]
         [JsonConverter(typeof(ByteConverter))]
         [JsonPropertyName("ServerBallotHash")]
-        public byte[] ServerBallotHash { get; set; }
+        [JsonProperty(nameof(ServerBallotHash), Required = Required.Always)]
+        public required byte[] ServerBallotHash { get; set; }
 
         [Required]
         [Description("Server Ballot Hash String")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
-        [RegularExpression(Constants.GenericStringRegex)]
         [JsonPropertyName("ServerBallotHashS")]
-        public string ServerBallotHashS { get; set; }
+        [JsonProperty(nameof(ServerBallotHashS), Required = Required.Always)]
+        public required string ServerBallotHashS { get; set; }
 
         [Required]
         [Description("DateCreated")]
         [DataType(DataType.Date)]
         [JsonPropertyName("DateCreated")]
-        public DateTime DateCreated { get; set; } = UtcNowProviderFactory.GetProvider().UtcNow;
+        [JsonProperty(nameof(DateCreated), Required = Required.Always)]
+        public required DateTime DateCreated { get; set; }
 
         [Required]
         [Description("DateUpdated")]
         [DataType(DataType.Date)]
         [JsonPropertyName("DateUpdated")]
-        public DateTime DateUpdated { get; set; } = UtcNowProviderFactory.GetProvider().UtcNow;
+        [JsonProperty(nameof(DateUpdated), Required = Required.Always)]
+        public required DateTime DateUpdated { get; set; }
 
-        [Required]
         [Description("Timestamp Id")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
-        [RegularExpression(Constants.GenericStringRegex)]
         [JsonPropertyName("TimestampId")]
+        [JsonProperty(nameof(TimestampId), Required = Required.Default)]
         [ForeignKey("TimestampId")]
-        public string TimestampId { get; set; }
+        public string? TimestampId { get; set; }
     }
 
     [ExcludeFromCodeCoverage]
@@ -201,9 +207,9 @@ namespace TrueVote.Api.Models
         [Description("Ballot Id")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
-        [RegularExpression(Constants.GenericStringRegex)]
         [JsonPropertyName("BallotId")]
+        [JsonProperty(nameof(BallotId), Required = Required.Always)]
         [Key]
-        public string BallotId { get; set; } = Guid.NewGuid().ToString();
+        public required string BallotId { get; set; }
     }
 }

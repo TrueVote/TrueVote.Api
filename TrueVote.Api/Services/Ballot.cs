@@ -1,8 +1,7 @@
 using System.ComponentModel;
-using System.Net;
-using System.Net.Http.Formatting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using TrueVote.Api.Helpers;
 using TrueVote.Api.Interfaces;
 using TrueVote.Api.Models;
 
@@ -37,7 +36,7 @@ namespace TrueVote.Api.Services
         [Produces(typeof(SubmitBallotModelResponse))]
         [Description("Election Model with vote selections")]
         [ProducesResponseType(typeof(SubmitBallotModelResponse), StatusCodes.Status201Created)]
-        public async Task<HttpResponseMessage> SubmitBallot([FromBody] SubmitBallotModel bindSubmitBallotModel)
+        public async Task<IActionResult> SubmitBallot([FromBody] SubmitBallotModel bindSubmitBallotModel)
         {
             _log.LogDebug("HTTP trigger - SubmitBallot:Begin");
 
@@ -49,7 +48,7 @@ namespace TrueVote.Api.Services
             // 3. Confirm the election data for this ballot has not been altered.
             // ADD CODE FOR ABOVE ITEMS HERE
 
-            var ballot = new BallotModel { Election = bindSubmitBallotModel.Election };
+            var ballot = new BallotModel { Election = bindSubmitBallotModel.Election, BallotId = Guid.NewGuid().ToString(), DateCreated = UtcNowProviderFactory.GetProvider().UtcNow };
             await _trueVoteDbContext.EnsureCreatedAsync();
 
             await _trueVoteDbContext.Ballots.AddAsync(ballot);
@@ -78,13 +77,13 @@ namespace TrueVote.Api.Services
 
                 var msg = submitBallotResponse.Message += " - Failure Hashing: " + e.Message;
 
-                return new HttpResponseMessage { StatusCode = HttpStatusCode.Conflict, Content = new ObjectContent<SecureString>(new SecureString { Value = msg }, new JsonMediaTypeFormatter()) };
+                return Conflict(new SecureString { Value = msg });
             }
 
             _log.LogDebug("HTTP trigger - SubmitBallot:End");
 
             // TODO Return a Ballot Submitted model response with critical key data to bind ballot / user
-            return new HttpResponseMessage { StatusCode = HttpStatusCode.OK, Content = new ObjectContent<SubmitBallotModelResponse>(submitBallotResponse, new JsonMediaTypeFormatter()) };
+            return Ok(submitBallotResponse);
         }
 
         [HttpGet]
@@ -92,7 +91,7 @@ namespace TrueVote.Api.Services
         [Produces(typeof(BallotList))]
         [Description("Returns collection of Ballots")]
         [ProducesResponseType(typeof(BallotList), StatusCodes.Status200OK)]
-        public async Task<HttpResponseMessage> BallotFind([FromBody] FindBallotModel findBallot)
+        public async Task<IActionResult> BallotFind([FromBody] FindBallotModel findBallot)
         {
             _log.LogDebug("HTTP trigger - BallotFind:Begin");
 
@@ -112,7 +111,7 @@ namespace TrueVote.Api.Services
 
             _log.LogDebug("HTTP trigger - BallotFind:End");
 
-            return items.Ballots.Count == 0 ? new HttpResponseMessage { StatusCode = HttpStatusCode.NotFound } : new HttpResponseMessage { StatusCode = HttpStatusCode.OK, Content = new ObjectContent<BallotList>(items, new JsonMediaTypeFormatter()) };
+            return items.Ballots.Count == 0 ? NotFound() : Ok(items);
         }
 
         [HttpGet]
@@ -142,7 +141,7 @@ namespace TrueVote.Api.Services
         [Produces(typeof(List<BallotHashModel>))]
         [Description("Returns collection of Ballot Hashes")]
         [ProducesResponseType(typeof(List<BallotHashModel>), StatusCodes.Status200OK)]
-        public async Task<HttpResponseMessage> BallotHashFind([FromBody] FindBallotHashModel findBallotHash)
+        public async Task<IActionResult> BallotHashFind([FromBody] FindBallotHashModel findBallotHash)
         {
             _log.LogDebug("HTTP trigger - BallotHashFind:Begin");
 
@@ -155,7 +154,7 @@ namespace TrueVote.Api.Services
 
             _log.LogDebug("HTTP trigger - BallotHashFind:End");
 
-            return items.Count == 0 ? new HttpResponseMessage { StatusCode = HttpStatusCode.NotFound } : new HttpResponseMessage { StatusCode = HttpStatusCode.OK, Content = new ObjectContent<List<BallotHashModel>>(items, new JsonMediaTypeFormatter()) };
+            return items.Count == 0 ? NotFound() : Ok(items);
         }
     }
 }

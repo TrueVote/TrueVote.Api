@@ -11,7 +11,8 @@ namespace TrueVote.Api.Models
     public class ElectionObj
     {
         [JsonPropertyName("Election")]
-        public List<ElectionModelResponse> election;
+        [JsonProperty("Election", Required = Required.Default)]
+        public List<ElectionModelResponse>? election;
     }
 
     [ExcludeFromCodeCoverage]
@@ -21,7 +22,8 @@ namespace TrueVote.Api.Models
         [MaxLength(2048)]
         [Description("List of Elections")]
         [JsonPropertyName("Elections")]
-        public List<ElectionModel> Elections { get; set; }
+        [JsonProperty(nameof(Elections), Required = Required.Always)]
+        public required List<ElectionModel> Elections { get; set; }
     }
 
     [ExcludeFromCodeCoverage]
@@ -31,9 +33,9 @@ namespace TrueVote.Api.Models
         [Description("Name")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
-        [RegularExpression(Constants.GenericStringRegex)]
         [JsonPropertyName("Name")]
-        public string Name { get; set; } = string.Empty;
+        [JsonProperty(nameof(Name), Required = Required.Always)]
+        public required string Name { get; set; } = string.Empty;
     }
 
     [ExcludeFromCodeCoverage]
@@ -43,41 +45,46 @@ namespace TrueVote.Api.Models
         [Description("Name")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
-        [RegularExpression(Constants.GenericStringRegex)]
         [JsonPropertyName("Name")]
-        public string Name { get; set; } = string.Empty;
+        [JsonProperty(nameof(Name), Required = Required.Always)]
+        public required string Name { get; set; } = string.Empty;
 
         [Required]
         [Description("Description")]
         [MaxLength(32768)]
         [DataType(DataType.Text)]
         [JsonPropertyName("Description")]
-        public string Description { get; set; } = string.Empty;
+        [JsonProperty(nameof(Description), Required = Required.Always)]
+        public required string Description { get; set; } = string.Empty;
 
         [Required]
         [Description("HeaderImageUrl")]
         [MaxLength(1024)]
         [DataType(DataType.Text)]
         [JsonPropertyName("HeaderImageUrl")]
-        public string HeaderImageUrl { get; set; } = string.Empty;
+        [JsonProperty(nameof(HeaderImageUrl), Required = Required.Always)]
+        public required string HeaderImageUrl { get; set; } = string.Empty;
 
         [Required]
         [Description("StartDate")]
         [DataType(DataType.Date)]
         [JsonPropertyName("StartDate")]
-        public DateTime? StartDate { get; set; }
+        [JsonProperty(nameof(StartDate), Required = Required.Always)]
+        public required DateTime StartDate { get; set; }
 
         [Required]
         [Description("EndDate")]
         [DataType(DataType.Date)]
         [JsonPropertyName("EndDate")]
-        public DateTime? EndDate { get; set; }
+        [JsonProperty(nameof(EndDate), Required = Required.Always)]
+        public required DateTime EndDate { get; set; }
 
         [Required]
         [Description("List of Races")]
         [DataType("ICollection<RaceModel>")]
         [JsonPropertyName("Races")]
-        public ICollection<RaceModel> Races { get; set; } = new List<RaceModel>();
+        [JsonProperty(nameof(Races), Required = Required.Always)]
+        public required ICollection<RaceModel> Races { get; set; } = new List<RaceModel>();
     }
 
     [ExcludeFromCodeCoverage]
@@ -87,64 +94,69 @@ namespace TrueVote.Api.Models
         [Description("Election Id")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
-        [RegularExpression(Constants.GenericStringRegex)]
         [JsonPropertyName("ElectionId")]
+        [JsonProperty(nameof(ElectionId), Required = Required.Always)]
         [Key]
-        public string ElectionId { get; set; } = Guid.NewGuid().ToString();
+        public required string ElectionId { get; set; } = Guid.NewGuid().ToString();
 
-        [Required]
         [Description("Parent Election Id")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
-        [RegularExpression(Constants.GenericStringRegex)]
         [JsonPropertyName("ParentElectionId")]
-        public string ParentElectionId { get; set; }
+        [JsonProperty(nameof(ParentElectionId), Required = Required.Default)]
+        public string? ParentElectionId { get; set; }
 
         [Required]
         [Description("Name")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
-        [RegularExpression(Constants.GenericStringRegex)]
         [JsonPropertyName("Name")]
-        public string Name { get; set; } = string.Empty;
+        [JsonProperty(nameof(Name), Required = Required.Always)]
+        public required string Name { get; set; } = string.Empty;
 
         [Required]
         [Description("Description")]
         [MaxLength(32768)]
         [DataType(DataType.Text)]
         [JsonPropertyName("Description")]
-        public string Description { get; set; } = string.Empty;
+        [JsonProperty(nameof(Description), Required = Required.Always)]
+        public required string Description { get; set; } = string.Empty;
 
         [Required]
         [Description("HeaderImageUrl")]
         [MaxLength(32768)]
         [DataType(DataType.Text)]
         [JsonPropertyName("HeaderImageUrl")]
-        public string HeaderImageUrl { get; set; } = string.Empty;
+        [JsonProperty(nameof(HeaderImageUrl), Required = Required.Always)]
+        public required string HeaderImageUrl { get; set; } = string.Empty;
 
         [Required]
         [Description("StartDate")]
         [DataType(DataType.Date)]
         [JsonPropertyName("StartDate")]
-        public DateTime? StartDate { get; set; }
+        [JsonProperty(nameof(StartDate), Required = Required.Always)]
+        public required DateTime StartDate { get; set; }
 
         [Required]
         [Description("EndDate")]
         [DataType(DataType.Date)]
         [JsonPropertyName("EndDate")]
-        public DateTime? EndDate { get; set; }
+        [JsonProperty(nameof(EndDate), Required = Required.Always)]
+        public required DateTime EndDate { get; set; }
 
         [Required]
         [Description("DateCreated")]
         [DataType(DataType.Date)]
         [JsonPropertyName("DateCreated")]
-        public DateTime DateCreated { get; set; } = UtcNowProviderFactory.GetProvider().UtcNow;
+        [JsonProperty(nameof(DateCreated), Required = Required.Always)]
+        public required DateTime DateCreated { get; set; } = UtcNowProviderFactory.GetProvider().UtcNow;
 
         [Required]
         [Description("List of Races")]
         [DataType("ICollection<RaceModel>")]
         [JsonPropertyName("Races")]
-        public ICollection<RaceModel> Races { get; set; } = new List<RaceModel>();
+        [JsonProperty(nameof(Races), Required = Required.Always)]
+        public required ICollection<RaceModel> Races { get; set; } = new List<RaceModel>();
     }
 
     // Same as above model but without required properties
@@ -155,57 +167,61 @@ namespace TrueVote.Api.Models
         [Description("Election Id")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
-        [RegularExpression(Constants.GenericStringRegex)]
         [JsonPropertyName("ElectionId")]
+        [JsonProperty(nameof(ElectionId), Required = Required.Always)]
         [Key]
-        public string ElectionId { get; set; } = Guid.NewGuid().ToString();
+        public required string ElectionId { get; set; } = Guid.NewGuid().ToString();
 
-        [Required]
         [Description("Parent Election Id")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
-        [RegularExpression(Constants.GenericStringRegex)]
         [JsonPropertyName("ParentElectionId")]
-        public string ParentElectionId { get; set; }
+        [JsonProperty(nameof(ParentElectionId), Required = Required.Default)]
+        public string? ParentElectionId { get; set; }
 
         [Required]
         [Description("Name")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
-        [RegularExpression(Constants.GenericStringRegex)]
         [JsonPropertyName("Name")]
-        public string Name { get; set; } = string.Empty;
+        [JsonProperty(nameof(Name), Required = Required.Always)]
+        public required string Name { get; set; } = string.Empty;
 
         [Required]
         [Description("Description")]
         [MaxLength(32768)]
         [DataType(DataType.Text)]
         [JsonPropertyName("Description")]
-        public string Description { get; set; } = string.Empty;
+        [JsonProperty(nameof(Description), Required = Required.Always)]
+        public required string Description { get; set; } = string.Empty;
 
         [Required]
         [Description("StartDate")]
         [DataType(DataType.Date)]
         [JsonPropertyName("StartDate")]
-        public DateTime? StartDate { get; set; }
+        [JsonProperty(nameof(StartDate), Required = Required.Always)]
+        public required DateTime StartDate { get; set; }
 
         [Required]
         [Description("EndDate")]
         [DataType(DataType.Date)]
         [JsonPropertyName("EndDate")]
-        public DateTime? EndDate { get; set; }
+        [JsonProperty(nameof(EndDate), Required = Required.Always)]
+        public required DateTime EndDate { get; set; }
 
         [Required]
         [Description("DateCreated")]
         [DataType(DataType.Date)]
         [JsonPropertyName("DateCreated")]
-        public DateTime DateCreated { get; set; } = UtcNowProviderFactory.GetProvider().UtcNow;
+        [JsonProperty(nameof(DateCreated), Required = Required.Always)]
+        public required DateTime DateCreated { get; set; } = UtcNowProviderFactory.GetProvider().UtcNow;
 
         [Required]
         [Description("List of Races")]
         [DataType("ICollection<RaceModel>")]
         [JsonPropertyName("Races")]
-        public ICollection<RaceModel> Races { get; set; } = new List<RaceModel>();
+        [JsonProperty(nameof(Races), Required = Required.Always)]
+        public required ICollection<RaceModel> Races { get; set; } = new List<RaceModel>();
     }
 
     [ExcludeFromCodeCoverage]
@@ -215,15 +231,15 @@ namespace TrueVote.Api.Models
         [Description("Election Id")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
-        [RegularExpression(Constants.GenericStringRegex)]
         [JsonPropertyName("ElectionId")]
+        [JsonProperty(nameof(ElectionId), Required = Required.Always)]
         [Key]
-        public string ElectionId { get; set; }
+        public required string ElectionId { get; set; }
 
         [Required]
         [Description("Race Ids")]
-        [RegularExpression(Constants.GenericStringRegex)]
         [JsonPropertyName("RaceIds")]
-        public List<string> RaceIds { get; set; }
+        [JsonProperty(nameof(RaceIds), Required = Required.Always)]
+        public required List<string> RaceIds { get; set; }
     }
 }
