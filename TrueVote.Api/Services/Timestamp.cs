@@ -1,8 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel;
-using System.Net.Http.Formatting;
-using System.Net;
 using TrueVote.Api.Interfaces;
 using TrueVote.Api.Models;
 
@@ -33,7 +31,7 @@ namespace TrueVote.Api.Services
         [Produces(typeof(List<TimestampModel>))]
         [Description("Returns List of Timestamps by Date")]
         [ProducesResponseType(typeof(List<TimestampModel>), StatusCodes.Status200OK)]
-        public async Task<HttpResponseMessage> TimestampFind([FromBody] FindTimestampModel findTimestamp)
+        public async Task<IActionResult> TimestampFind([FromBody] FindTimestampModel findTimestamp)
         {
             _log.LogDebug("HTTP trigger - TimestampFind:Begin");
 
@@ -45,7 +43,7 @@ namespace TrueVote.Api.Services
 
             _log.LogDebug("HTTP trigger - TimestampFind:End");
 
-            return items.Count == 0 ? new HttpResponseMessage { StatusCode = HttpStatusCode.NotFound } : new HttpResponseMessage { StatusCode = HttpStatusCode.OK, Content = new ObjectContent<List<TimestampModel>>(items, new JsonMediaTypeFormatter()) };
+            return items.Count == 0 ? NotFound() : Ok(items);
         }
     }
 }

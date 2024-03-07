@@ -3,8 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using Nostr.Client.Keys;
 using Nostr.Client.Messages;
 using System.ComponentModel;
-using System.Net.Http.Formatting;
-using System.Net;
 using TrueVote.Api.Helpers;
 using TrueVote.Api.Interfaces;
 using TrueVote.Api.Models;
@@ -40,7 +38,7 @@ namespace TrueVote.Api.Services
         [Produces(typeof(UserModel))]
         [Description("Creates a new User and returns the added User")]
         [ProducesResponseType(typeof(UserModel), StatusCodes.Status201Created)]
-        public async Task<HttpResponseMessage> CreateUser([FromBody] BaseUserModel baseUser)
+        public async Task<IActionResult> CreateUser([FromBody] BaseUserModel baseUser)
         {
             _log.LogDebug("HTTP trigger - CreateUser:Begin");
 
@@ -57,7 +55,7 @@ namespace TrueVote.Api.Services
 
             _log.LogDebug("HTTP trigger - CreateUser:End");
 
-            return new HttpResponseMessage { StatusCode = HttpStatusCode.Created, Content = new ObjectContent<UserModel>(user, new JsonMediaTypeFormatter()) };
+            return CreatedAtAction(null, null, user);
         }
 
         [HttpGet]
@@ -65,7 +63,7 @@ namespace TrueVote.Api.Services
         [Produces(typeof(UserModelList))]
         [Description("Returns collection of Users")]
         [ProducesResponseType(typeof(UserModelList), StatusCodes.Status200OK)]
-        public async Task<HttpResponseMessage> UserFind([FromBody] FindUserModel findUser)
+        public async Task<IActionResult> UserFind([FromBody] FindUserModel findUser)
         {
             _log.LogDebug("HTTP trigger - UserFind:Begin");
 
@@ -84,7 +82,7 @@ namespace TrueVote.Api.Services
 
             _log.LogDebug("HTTP trigger - UserFind:End");
 
-            return items.Users.Count == 0 ? new HttpResponseMessage { StatusCode = HttpStatusCode.NotFound } : new HttpResponseMessage { StatusCode = HttpStatusCode.OK, Content = new ObjectContent<UserModelList>(items, new JsonMediaTypeFormatter()) };
+            return items.Users.Count == 0 ? NotFound() : Ok(items);
         }
 
         [HttpPost]
@@ -92,7 +90,9 @@ namespace TrueVote.Api.Services
         [Produces(typeof(SecureString))]
         [Description("Signs In a User and returns a Token")]
         [ProducesResponseType(typeof(SecureString), StatusCodes.Status200OK)]
-        public async Task<HttpResponseMessage> SignIn([FromBody] SignInEventModel signInEventModel)
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+        public async Task<IActionResult> SignIn([FromBody] SignInEventModel signInEventModel)
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
             _log.LogDebug("HTTP trigger - SignIn:Begin");
 
@@ -108,7 +108,7 @@ namespace TrueVote.Api.Services
                 _log.LogError($"SignIn: publicKey resolver failure: {e.Message}");
                 _log.LogDebug("HTTP trigger - SignIn:End");
 
-                return new HttpResponseMessage { StatusCode = HttpStatusCode.BadRequest, Content = new ObjectContent<SecureString>(new SecureString { Value = e.Message }, new JsonMediaTypeFormatter()) };
+                return BadRequest(new SecureString { Value = e.Message });
             }
 
             bool isValid;
@@ -131,7 +131,7 @@ namespace TrueVote.Api.Services
                 _log.LogError($"SignIn: Verification exception: {e.Message}");
                 _log.LogDebug("HTTP trigger - SignIn:End");
 
-                return new HttpResponseMessage { StatusCode = HttpStatusCode.BadRequest, Content = new ObjectContent<SecureString>(new SecureString { Value = e.Message }, new JsonMediaTypeFormatter()) };
+                return BadRequest(new SecureString { Value = e.Message });
             }
 
             if (!isValid)
@@ -139,7 +139,7 @@ namespace TrueVote.Api.Services
                 _log.LogError("SignIn: invalid signature");
                 _log.LogDebug("HTTP trigger - SignIn:End");
 
-                return new HttpResponseMessage { StatusCode = HttpStatusCode.BadRequest, Content = new ObjectContent<SecureString>(new SecureString { Value = "Signature did not verify" }, new JsonMediaTypeFormatter()) };
+                return BadRequest(new SecureString { Value = "Signature did not verify" });
             }
 
             // TODO - Find the user by PubKey
@@ -150,7 +150,7 @@ namespace TrueVote.Api.Services
 
             _log.LogDebug("HTTP trigger - SignIn:End");
 
-            return new HttpResponseMessage { StatusCode = HttpStatusCode.OK, Content = new ObjectContent<SecureString>(new SecureString { Value = token }, new JsonMediaTypeFormatter()) };
+            return Ok(new SecureString { Value = token });
         }
     }
 }

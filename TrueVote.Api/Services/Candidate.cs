@@ -1,10 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel;
-using System.Net.Http.Formatting;
-using System.Net;
 using TrueVote.Api.Interfaces;
 using TrueVote.Api.Models;
+using TrueVote.Api.Helpers;
 
 namespace TrueVote.Api.Services
 {
@@ -35,13 +34,13 @@ namespace TrueVote.Api.Services
         [Produces(typeof(CandidateModel))]
         [Description("Returns the added Candidate")]
         [ProducesResponseType(typeof(CandidateModel), StatusCodes.Status201Created)]
-        public async Task<HttpResponseMessage> CreateCandidate([FromBody] BaseCandidateModel baseCandidate)
+        public async Task<IActionResult> CreateCandidate([FromBody] BaseCandidateModel baseCandidate)
         {
             _log.LogDebug("HTTP trigger - CreateCandidate:Begin");
 
             _log.LogInformation($"Request Data: {baseCandidate}");
 
-            var candidate = new CandidateModel { Name = baseCandidate.Name, PartyAffiliation = baseCandidate.PartyAffiliation };
+            var candidate = new CandidateModel { CandidateId = Guid.NewGuid().ToString(), Name = baseCandidate.Name, PartyAffiliation = baseCandidate.PartyAffiliation, DateCreated = UtcNowProviderFactory.GetProvider().UtcNow };
 
             await _trueVoteDbContext.EnsureCreatedAsync();
 
@@ -52,7 +51,7 @@ namespace TrueVote.Api.Services
 
             _log.LogDebug("HTTP trigger - CreateCandidate:End");
 
-            return new HttpResponseMessage { StatusCode = HttpStatusCode.Created, Content = new ObjectContent<CandidateModel>(candidate, new JsonMediaTypeFormatter()) };
+            return CreatedAtAction(null, null, candidate);
         }
 
         [HttpGet]
@@ -60,7 +59,7 @@ namespace TrueVote.Api.Services
         [Produces(typeof(CandidateModelList))]
         [Description("Returns collection of Candidates")]
         [ProducesResponseType(typeof(CandidateModelList), StatusCodes.Status200OK)]
-        public async Task<HttpResponseMessage> CandidateFind([FromBody] FindCandidateModel findCandidate)
+        public async Task<IActionResult> CandidateFind([FromBody] FindCandidateModel findCandidate)
         {
             _log.LogDebug("HTTP trigger - CandidateFind:Begin");
 
@@ -77,7 +76,7 @@ namespace TrueVote.Api.Services
 
             _log.LogDebug("HTTP trigger - CandidateFind:End");
 
-            return items.Candidates.Count == 0 ? new HttpResponseMessage { StatusCode = HttpStatusCode.NotFound } : new HttpResponseMessage { StatusCode = HttpStatusCode.OK, Content = new ObjectContent<CandidateModelList>(items, new JsonMediaTypeFormatter()) };
+            return items.Candidates.Count == 0 ? NotFound() : Ok(items);
         }
     }
 }

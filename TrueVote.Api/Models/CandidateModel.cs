@@ -76,7 +76,7 @@ namespace TrueVote.Api.Models
         [JsonPropertyName("CandidateId")]
         [JsonProperty(nameof(CandidateId), Required = Required.Always)]
         [Key]
-        public required string CandidateId { get; set; } = Guid.NewGuid().ToString();
+        public required string CandidateId { get; set; }
 
         [Required]
         [Description("Name")]
@@ -94,33 +94,31 @@ namespace TrueVote.Api.Models
         [JsonProperty(nameof(PartyAffiliation), Required = Required.Always)]
         public required string PartyAffiliation { get; set; } = string.Empty;
 
-        [Required]
         [Description("CandidateImageUrl")]
         [MaxLength(1024)]
         [DataType(DataType.Text)]
         [JsonPropertyName("CandidateImageUrl")]
-        [JsonProperty(nameof(CandidateImageUrl), Required = Required.Always)]
-        public required string CandidateImageUrl { get; set; } = string.Empty;
+        [JsonProperty(nameof(CandidateImageUrl), Required = Required.Default)]
+        public string CandidateImageUrl { get; set; } = string.Empty;
 
         [Required]
         [Description("DateCreated")]
         [DataType(DataType.Date)]
         [JsonPropertyName("DateCreated")]
         [JsonProperty(nameof(DateCreated), Required = Required.Always)]
-        public required DateTime DateCreated { get; set; } = UtcNowProviderFactory.GetProvider().UtcNow;
+        public required DateTime DateCreated { get; set; }
 
-        [Required]
         [Description("Selected")]
         [JsonPropertyName("Selected")]
-        [JsonProperty(nameof(Selected), Required = Required.Always)]
-        public required bool Selected { get; set; } = false;
+        [JsonProperty(nameof(Selected), Required = Required.Default)]
+        public bool Selected { get; set; } = false;
 
         [Description("SelectedMetadata")]
         [MaxLength(1024)]
         [DataType(DataType.Text)]
         [JsonPropertyName("SelectedMetadata")]
-        [JsonProperty(nameof(SelectedMetadata), Required = Required.Always)]
-        public required string SelectedMetadata { get; set; } = string.Empty;
+        [JsonProperty(nameof(SelectedMetadata), Required = Required.Default)]
+        public string SelectedMetadata { get; set; } = string.Empty;
 
     }
 }

@@ -136,7 +136,7 @@ namespace TrueVote.Api
             public virtual DbSet<TimestampModel> Timestamps { get; set; }
             public virtual DbSet<BallotHashModel> BallotHashes { get; set; }
             private readonly IConfiguration _configuration;
-            private readonly string _connectionString;
+            private readonly string? _connectionString;
 
             public TrueVoteDbContext(IConfiguration configuration)
             {

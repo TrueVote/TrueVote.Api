@@ -10,7 +10,7 @@ namespace TrueVote.Api.Helpers
         private static readonly ArrayPool<byte> s_bytePool = ArrayPool<byte>.Shared;
 
         // Calculates the Merkle root hash from string (e.g. json)
-        public static byte[] CalculateMerkleRoot(string data)
+        public static byte[]? CalculateMerkleRoot(string data)
         {
             if (string.IsNullOrEmpty(data))
             {
@@ -25,7 +25,7 @@ namespace TrueVote.Api.Helpers
         }
 
         // Calculates the Merkle root hash from a list of data
-        public static byte[] CalculateMerkleRoot<T>(List<T> data)
+        public static byte[]? CalculateMerkleRoot<T>(List<T> data)
         {
             if (data == null || data.Count == 0)
             {

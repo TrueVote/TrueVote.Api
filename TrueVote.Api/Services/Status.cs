@@ -17,8 +17,8 @@ namespace TrueVote.Api.Services
     [ProducesResponseType(typeof(SecureString), StatusCodes.Status409Conflict)]
     public class Status : ControllerBase
     {
-        private static BuildInfo _BuildInfo = null;
-        private static string _BuildInfoReadTime = null;
+        private static BuildInfo? _BuildInfo = null;
+        private static string? _BuildInfoReadTime = null;
         private readonly ILogger _log;
         private readonly IServiceBus _serviceBus;
 

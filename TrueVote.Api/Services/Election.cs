@@ -1,8 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel;
-using System.Net.Http.Formatting;
-using System.Net;
 using TrueVote.Api.Helpers;
 using TrueVote.Api.Interfaces;
 using TrueVote.Api.Models;
@@ -35,13 +33,13 @@ namespace TrueVote.Api.Services
         [Produces(typeof(ElectionModel))]
         [Description("Returns the added Election")]
         [ProducesResponseType(typeof(ElectionModel), StatusCodes.Status201Created)]
-        public async Task<HttpResponseMessage> CreateElection([FromBody] BaseElectionModel baseElection)
+        public async Task<IActionResult> CreateElection([FromBody] BaseElectionModel baseElection)
         {
             _log.LogDebug("HTTP trigger - CreateElection:Begin");
 
             _log.LogInformation($"Request Data: {baseElection}");
 
-            var election = new ElectionModel { Name = baseElection.Name, Description = baseElection.Description, HeaderImageUrl = baseElection.HeaderImageUrl, StartDate = baseElection.StartDate, EndDate = baseElection.EndDate, Races = baseElection.Races };
+            var election = new ElectionModel { ElectionId = Guid.NewGuid().ToString(), Name = baseElection.Name, Description = baseElection.Description, HeaderImageUrl = baseElection.HeaderImageUrl, StartDate = baseElection.StartDate, EndDate = baseElection.EndDate, Races = baseElection.Races, DateCreated = UtcNowProviderFactory.GetProvider().UtcNow };
 
             await _trueVoteDbContext.EnsureCreatedAsync();
 
@@ -52,7 +50,7 @@ namespace TrueVote.Api.Services
 
             _log.LogDebug("HTTP trigger - CreateElection:End");
 
-            return new HttpResponseMessage { StatusCode = HttpStatusCode.Created, Content = new ObjectContent<ElectionModel>(election, new JsonMediaTypeFormatter()) };
+            return CreatedAtAction(null, null, election);
         }
 
         [HttpGet]
@@ -60,7 +58,7 @@ namespace TrueVote.Api.Services
         [Produces(typeof(ElectionModelList))]
         [Description("Returns collection of Elections")]
         [ProducesResponseType(typeof(ElectionModelList), StatusCodes.Status200OK)]
-        public async Task<HttpResponseMessage> ElectionFind([FromBody] FindElectionModel findElection)
+        public async Task<IActionResult> ElectionFind([FromBody] FindElectionModel findElection)
         {
             _log.LogDebug("HTTP trigger - ElectionFind:Begin");
 
@@ -76,7 +74,7 @@ namespace TrueVote.Api.Services
 
             _log.LogDebug("HTTP trigger - ElectionFind:End");
 
-            return items.Elections.Count == 0 ? new HttpResponseMessage { StatusCode = HttpStatusCode.NotFound } : new HttpResponseMessage { StatusCode = HttpStatusCode.OK, Content = new ObjectContent<ElectionModelList>(items, new JsonMediaTypeFormatter()) };
+            return items.Elections.Count == 0 ? NotFound() : Ok(items);
         }
 
         [HttpPost]
@@ -84,7 +82,7 @@ namespace TrueVote.Api.Services
         [Produces(typeof(ElectionModel))]
         [Description("Adds Races to an Election and returns the updated Election")]
         [ProducesResponseType(typeof(ElectionModel), StatusCodes.Status201Created)]
-        public async Task<HttpResponseMessage> AddRaces([FromBody] AddRacesModel bindRaceElectionModel)
+        public async Task<IActionResult> AddRaces([FromBody] AddRacesModel bindRaceElectionModel)
         {
             _log.LogDebug("HTTP trigger - AddRaces:Begin");
 
@@ -94,7 +92,7 @@ namespace TrueVote.Api.Services
             var election = await _trueVoteDbContext.Elections.Where(r => r.ElectionId == bindRaceElectionModel.ElectionId).AsNoTracking().OrderByDescending(r => r.DateCreated).FirstOrDefaultAsync();
             if (election == null)
             {
-                return new HttpResponseMessage { StatusCode = HttpStatusCode.NotFound, Content = new ObjectContent<SecureString>(new SecureString { Value = $"Election: '{bindRaceElectionModel.ElectionId}' not found" }, new JsonMediaTypeFormatter()) };
+                return NotFound(new SecureString { Value = $"Election: '{bindRaceElectionModel.ElectionId}' not found" });
             }
 
             // Check if each Race exists or is already part of the election. If any problems, exit with error
@@ -104,14 +102,14 @@ namespace TrueVote.Api.Services
                 var race = await _trueVoteDbContext.Races.Where(r => r.RaceId == rid).OrderByDescending(c => c.DateCreated).FirstOrDefaultAsync();
                 if (race == null)
                 {
-                    return new HttpResponseMessage { StatusCode = HttpStatusCode.NotFound, Content = new ObjectContent<SecureString>(new SecureString { Value = $"Race: '{rid}' not found" }, new JsonMediaTypeFormatter()) };
+                    return NotFound(new SecureString { Value = $"Race: '{rid}' not found" });
                 }
 
                 // Check if it's already part of the Election
                 var raceExists = election.Races?.Where(r => r.RaceId == rid).FirstOrDefault();
                 if (raceExists != null)
                 {
-                    return new HttpResponseMessage { StatusCode = HttpStatusCode.Conflict, Content = new ObjectContent<SecureString>(new SecureString { Value = $"Race: '{rid}' already exists in Election" }, new JsonMediaTypeFormatter()) };
+                    return Conflict(new SecureString { Value = $"Race: '{rid}' already exists in Election" });
                 }
 
                 // Made it this far, add the Race to the Election. Ok to add here because if another one in the list, it won't get persisted
@@ -129,7 +127,7 @@ namespace TrueVote.Api.Services
 
             _log.LogDebug("HTTP trigger - AddRaces:End");
 
-            return new HttpResponseMessage { StatusCode = HttpStatusCode.Created, Content = new ObjectContent<ElectionModel>(election, new JsonMediaTypeFormatter()) };
+            return CreatedAtAction(null, null, election);
         }
     }
 }

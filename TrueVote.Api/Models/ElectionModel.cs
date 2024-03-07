@@ -97,7 +97,7 @@ namespace TrueVote.Api.Models
         [JsonPropertyName("ElectionId")]
         [JsonProperty(nameof(ElectionId), Required = Required.Always)]
         [Key]
-        public required string ElectionId { get; set; } = Guid.NewGuid().ToString();
+        public required string ElectionId { get; set; }
 
         [Description("Parent Election Id")]
         [MaxLength(2048)]
@@ -149,7 +149,7 @@ namespace TrueVote.Api.Models
         [DataType(DataType.Date)]
         [JsonPropertyName("DateCreated")]
         [JsonProperty(nameof(DateCreated), Required = Required.Always)]
-        public required DateTime DateCreated { get; set; } = UtcNowProviderFactory.GetProvider().UtcNow;
+        public required DateTime DateCreated { get; set; }
 
         [Required]
         [Description("List of Races")]
