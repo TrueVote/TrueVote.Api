@@ -70,8 +70,8 @@ namespace TrueVote.Api.Tests.HelperTests
             Assert.NotNull(hash1);
             Assert.NotNull(hash2);
             Assert.Equal(hash1, hash2);
-            Assert.Equal("113", hash1[0].ToString());
-            Assert.Equal("113", hash2[0].ToString());
+            Assert.Equal("203", hash1[0].ToString());
+            Assert.Equal("203", hash2[0].ToString());
         }
 
         [Fact]

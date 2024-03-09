@@ -3,7 +3,6 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
-using TrueVote.Api.Helpers;
 
 namespace TrueVote.Api.Models
 {
@@ -54,7 +53,7 @@ namespace TrueVote.Api.Models
         [MaxLength(2048)]
         [DataType(DataType.Text)]
         [JsonPropertyName("Name")]
-        [JsonProperty("Candidates", Required = Required.Always)]
+        [JsonProperty(nameof(Name), Required = Required.Always)]
         public required string Name { get; set; } = string.Empty;
 
         [Required]

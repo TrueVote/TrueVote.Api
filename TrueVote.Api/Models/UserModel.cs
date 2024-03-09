@@ -1,7 +1,6 @@
 using Newtonsoft.Json;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
-using TrueVote.Api.Helpers;
 using Nostr.Client.Messages;
 using System.ComponentModel;
 using System.Text.Json.Serialization;

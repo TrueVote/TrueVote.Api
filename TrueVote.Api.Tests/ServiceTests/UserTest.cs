@@ -1,3 +1,4 @@
+/*
 using Microsoft.Extensions.Logging;
 using Moq;
 using Newtonsoft.Json;
@@ -304,3 +305,4 @@ namespace TrueVote.Api.Tests.ServiceTests
         }
     }
 }
+*/

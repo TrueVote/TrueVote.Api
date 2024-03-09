@@ -1,3 +1,4 @@
+/*
 using Microsoft.Extensions.Logging;
 using Moq;
 using System.IO;
@@ -11,6 +12,7 @@ using Newtonsoft.Json;
 using TrueVote.Api.Models;
 using System.Collections.Generic;
 using GraphQL;
+using System.Text.Json.Serialization;
 
 namespace TrueVote.Api.Tests.ServiceTests
 {
@@ -20,273 +22,272 @@ namespace TrueVote.Api.Tests.ServiceTests
         public dynamic Data { get; set; }
     }
 
-    /*
-        public class GraphQLTest : TestHelper
+    public class GraphQLTest : TestHelper
+    {
+        public GraphQLTest(ITestOutputHelper output) : base(output)
         {
-            public GraphQLTest(ITestOutputHelper output) : base(output)
-            {
-                _httpContext.Request.Path = "/api/graphql";
-                _httpContext.Request.Method = "POST";
-                // _httpContext.Response.ContentType = "application/graphql";
-            }
-
-            // Takes a GraphQL query packages it, sends it, and checks for valid response
-            private async Task<dynamic> GraphQLQuerySetup(string graphQLQuery)
-            {
-                var byteArray = Encoding.ASCII.GetBytes(graphQLQuery);
-                _httpContext.Request.Body = new MemoryStream(byteArray);
-                _httpContext.Request.ContentLength = _httpContext.Request.Body.Length;
-
-                var ret = await _graphQLApi.Run(_httpContext.Request, requestExecutor);
-                Assert.NotNull(ret);
-
-                var responseStream = _httpContext.Response.Body as MemoryStream;
-                var responseBody = Encoding.ASCII.GetString(responseStream.ToArray());
-                var graphQLResponseRootHeader = "{\"data\":";
-                Assert.StartsWith(graphQLResponseRootHeader, responseBody);
-
-                var graphQLRoot = JsonConvert.DeserializeObject<GraphQLRoot>(responseBody).Data;
-
-                return graphQLRoot;
-            }
-
-            [Fact]
-            public async Task RunsCandidateQuery()
-            {
-                var graphQLRequest = new GraphQLRequest
-                {
-                    Query = @"
-                        query {
-                            GetCandidate {
-                                CandidateId, Name, PartyAffiliation
-                            }
-                        }"
-                };
-
-                var graphQLRequestJson = JsonConvert.SerializeObject(graphQLRequest);
-                var graphQLRoot = await GraphQLQuerySetup(graphQLRequestJson);
-
-                var candidates = JsonConvert.DeserializeObject<List<CandidateModel>>(JsonConvert.SerializeObject(graphQLRoot.GetCandidate));
-                Assert.Equal("Jane Doe", candidates[0].Name);
-                Assert.Equal("John Smith", candidates[1].Name);
-                Assert.True(candidates.Count == 2);
-
-                Assert.Equal((int) HttpStatusCode.OK, _httpContext.Response.StatusCode);
-                _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
-            }
-
-            [Fact]
-            public async Task RunsCandidateByPartyAffiliationQuery()
-            {
-                var partyAffiliation = "Republican";
-
-                var graphQLRequest = new GraphQLRequest
-                {
-                    Query = @"
-                        query ($PartyAffiliation: String!) {
-                            GetCandidateByPartyAffiliation(PartyAffiliation: $PartyAffiliation) {
-                            CandidateId, Name, PartyAffiliation
-                            }
-                        }",
-                    Variables = new
-                    {
-                        PartyAffiliation = partyAffiliation
-                    }
-                };
-
-                var graphQLRequestJson = JsonConvert.SerializeObject(graphQLRequest);
-                var graphQLRoot = await GraphQLQuerySetup(graphQLRequestJson);
-
-                var candidates = JsonConvert.DeserializeObject<List<CandidateModel>>(JsonConvert.SerializeObject(graphQLRoot.GetCandidateByPartyAffiliation));
-                Assert.Equal("John Smith", candidates[0].Name);
-                Assert.True(candidates.Count == 1);
-
-                Assert.Equal((int) HttpStatusCode.OK, _httpContext.Response.StatusCode);
-                _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
-            }
-
-            [Fact]
-            public async Task RunsElectionQuery()
-            {
-                var graphQLRequest = new GraphQLRequest
-                {
-                    Query = @"
-                        query {
-                            GetElection {
-                                ElectionId, Name, DateCreated
-                            }
-                        }"
-                };
-
-                var graphQLRequestJson = JsonConvert.SerializeObject(graphQLRequest);
-                var graphQLRoot = await GraphQLQuerySetup(graphQLRequestJson);
-
-                var elections = JsonConvert.DeserializeObject<List<ElectionModelResponse>>(JsonConvert.SerializeObject(graphQLRoot.GetElection));
-                Assert.Equal("Federal", elections[0].Name);
-                Assert.Equal("Los Angeles County", elections[1].Name);
-                Assert.True(elections.Count == 3);
-
-                Assert.Equal((int) HttpStatusCode.OK, _httpContext.Response.StatusCode);
-                _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
-            }
-
-            [Fact]
-            public async Task RunsElectionByIdQuery()
-            {
-                var electionId = "electionid3";
-
-                var graphQLRequest = new GraphQLRequest
-                {
-                    Query = @"
-                        query ($ElectionId: String!) {
-                            GetElectionById(ElectionId: $ElectionId) {
-                                ElectionId, Name, DateCreated
-                            }
-                        }",
-                    Variables = new
-                    {
-                        ElectionId = electionId
-                    }
-                };
-
-                var graphQLRequestJson = JsonConvert.SerializeObject(graphQLRequest);
-                var graphQLRoot = await GraphQLQuerySetup(graphQLRequestJson);
-
-                var elections = JsonConvert.DeserializeObject<List<ElectionModelResponse>>(JsonConvert.SerializeObject(graphQLRoot.GetElectionById));
-                Assert.NotNull(elections);
-                Assert.Equal("Federal", elections[0].Name);
-                Assert.Equal("electionid3", elections[0].ElectionId);
-                Assert.True(elections.Count == 1);
-
-                Assert.Equal((int) HttpStatusCode.OK, _httpContext.Response.StatusCode);
-                _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
-            }
-
-            [Fact]
-            public async Task RunsRaceQuery()
-            {
-                var graphQLRequest = new GraphQLRequest
-                {
-                    Query = @"
-                        query {
-                            GetRace {
-                                DateCreated, Name, RaceId, RaceType, RaceTypeName, Candidates {
-                                    CandidateId, Name, PartyAffiliation, DateCreated
-                                }
-                            }
-                        }"
-                };
-
-                var graphQLRequestJson = JsonConvert.SerializeObject(graphQLRequest);
-                var graphQLRoot = await GraphQLQuerySetup(graphQLRequestJson);
-
-                var race = JsonConvert.DeserializeObject<List<RaceModelResponse>>(JsonConvert.SerializeObject(graphQLRoot.GetRace));
-                Assert.Equal("Governor", race[0].Name);
-                Assert.Equal(RaceTypes.ChooseOne, race[0].RaceType);
-                Assert.Equal("ChooseOne", race[0].RaceTypeName);
-                Assert.Equal("Judge", race[1].Name);
-                Assert.Equal(RaceTypes.ChooseMany, race[1].RaceType);
-                Assert.Equal("ChooseMany", race[1].RaceTypeName);
-                Assert.True(race.Count == 3);
-
-                Assert.Equal((int) HttpStatusCode.OK, _httpContext.Response.StatusCode);
-                _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
-            }
-
-            [Fact]
-            public async Task RunsUserQuery()
-            {
-                var graphQLRequest = new GraphQLRequest
-                {
-                    Query = @"
-                        query {
-                            GetUser {
-                                DateCreated, Email, FirstName, UserId
-                            }
-                        }"
-                };
-
-                var graphQLRequestJson = JsonConvert.SerializeObject(graphQLRequest);
-                var graphQLRoot = await GraphQLQuerySetup(graphQLRequestJson);
-
-                var race = JsonConvert.DeserializeObject<List<UserModel>>(JsonConvert.SerializeObject(graphQLRoot.GetUser));
-                Assert.Equal("Boo", race[0].FirstName);
-                Assert.Equal("Foo2", race[1].FirstName);
-                Assert.True(race.Count == 3);
-
-                Assert.Equal((int) HttpStatusCode.OK, _httpContext.Response.StatusCode);
-                _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
-            }
-
-            [Fact]
-            public async Task RunsBallotQuery()
-            {
-                var graphQLRequest = new GraphQLRequest
-                {
-                    Query = @"
-                        query {
-                            GetBallot {
-                                Ballots {
-                                    BallotId, DateCreated, Election {
-                                        Name, StartDate, EndDate, ElectionId, Races {
-                                            RaceId
-                                        }
-                                    }
-                                }
-                            }
-                        }"
-                };
-
-                var graphQLRequestJson = JsonConvert.SerializeObject(graphQLRequest);
-                var graphQLRoot = await GraphQLQuerySetup(graphQLRequestJson);
-
-                var items = JsonConvert.DeserializeObject<BallotList>(JsonConvert.SerializeObject(graphQLRoot.GetBallot));
-                Assert.NotNull(items);
-                Assert.Equal("electionid1", items.Ballots[0].Election.ElectionId);
-                Assert.Equal("ballotid3", items.Ballots[0].BallotId);
-                Assert.True(items.Ballots.Count == 3);
-
-                Assert.Equal((int) HttpStatusCode.OK, _httpContext.Response.StatusCode);
-                _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
-            }
-
-            [Fact]
-            public async Task RunsBallotByIdQuery()
-            {
-                var ballotId = "ballotid3";
-
-                var graphQLRequest = new GraphQLRequest
-                {
-                    Query = @"
-                        query ($BallotId: String!) {
-                            GetBallotById(BallotId: $BallotId) {
-                                Ballots {
-                                    BallotId, DateCreated, Election {
-                                        Name, StartDate, EndDate, ElectionId, Races {
-                                            RaceId
-                                        }
-                                    }
-                                }
-                            }
-                        }",
-                    Variables = new
-                    {
-                        BallotId = ballotId
-                    }
-                };
-
-                var graphQLRequestJson = JsonConvert.SerializeObject(graphQLRequest);
-                var graphQLRoot = await GraphQLQuerySetup(graphQLRequestJson);
-
-                var items = JsonConvert.DeserializeObject<BallotList>(JsonConvert.SerializeObject(graphQLRoot.GetBallotById));
-                Assert.NotNull(items);
-                Assert.Equal("electionid1", items.Ballots[0].Election.ElectionId);
-                Assert.Equal("ballotid3", items.Ballots[0].BallotId);
-                Assert.True(items.Ballots.Count == 1);
-
-                Assert.Equal((int) HttpStatusCode.OK, _httpContext.Response.StatusCode);
-                _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
-            }
+            _httpContext.Request.Path = "/api/graphql";
+            _httpContext.Request.Method = "POST";
+            // _httpContext.Response.ContentType = "application/graphql";
         }
-    */
+
+        // Takes a GraphQL query packages it, sends it, and checks for valid response
+        private async Task<dynamic> GraphQLQuerySetup(string graphQLQuery)
+        {
+            var byteArray = Encoding.ASCII.GetBytes(graphQLQuery);
+            _httpContext.Request.Body = new MemoryStream(byteArray);
+            _httpContext.Request.ContentLength = _httpContext.Request.Body.Length;
+
+            var ret = await _graphQLApi.Run(_httpContext.Request, requestExecutor);
+            Assert.NotNull(ret);
+
+            var responseStream = _httpContext.Response.Body as MemoryStream;
+            var responseBody = Encoding.ASCII.GetString(responseStream.ToArray());
+            var graphQLResponseRootHeader = "{\"data\":";
+            Assert.StartsWith(graphQLResponseRootHeader, responseBody);
+
+            var graphQLRoot = JsonConvert.DeserializeObject<GraphQLRoot>(responseBody).Data;
+
+            return graphQLRoot;
+        }
+
+        [Fact]
+        public async Task RunsCandidateQuery()
+        {
+            var graphQLRequest = new GraphQLRequest
+            {
+                Query = @"
+                    query {
+                        GetCandidate {
+                            CandidateId, Name, PartyAffiliation
+                        }
+                    }"
+            };
+
+            var graphQLRequestJson = JsonConvert.SerializeObject(graphQLRequest);
+            var graphQLRoot = await GraphQLQuerySetup(graphQLRequestJson);
+
+            var candidates = JsonConvert.DeserializeObject<List<CandidateModel>>(JsonConvert.SerializeObject(graphQLRoot.GetCandidate));
+            Assert.Equal("Jane Doe", candidates[0].Name);
+            Assert.Equal("John Smith", candidates[1].Name);
+            Assert.True(candidates.Count == 2);
+
+            Assert.Equal((int) HttpStatusCode.OK, _httpContext.Response.StatusCode);
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+        }
+
+        [Fact]
+        public async Task RunsCandidateByPartyAffiliationQuery()
+        {
+            var partyAffiliation = "Republican";
+
+            var graphQLRequest = new GraphQLRequest
+            {
+                Query = @"
+                    query ($PartyAffiliation: String!) {
+                        GetCandidateByPartyAffiliation(PartyAffiliation: $PartyAffiliation) {
+                        CandidateId, Name, PartyAffiliation
+                        }
+                    }",
+                Variables = new
+                {
+                    PartyAffiliation = partyAffiliation
+                }
+            };
+
+            var graphQLRequestJson = JsonConvert.SerializeObject(graphQLRequest);
+            var graphQLRoot = await GraphQLQuerySetup(graphQLRequestJson);
+
+            var candidates = JsonConvert.DeserializeObject<List<CandidateModel>>(JsonConvert.SerializeObject(graphQLRoot.GetCandidateByPartyAffiliation));
+            Assert.Equal("John Smith", candidates[0].Name);
+            Assert.True(candidates.Count == 1);
+
+            Assert.Equal((int) HttpStatusCode.OK, _httpContext.Response.StatusCode);
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+        }
+
+        [Fact]
+        public async Task RunsElectionQuery()
+        {
+            var graphQLRequest = new GraphQLRequest
+            {
+                Query = @"
+                    query {
+                        GetElection {
+                            ElectionId, Name, DateCreated
+                        }
+                    }"
+            };
+
+            var graphQLRequestJson = JsonConvert.SerializeObject(graphQLRequest);
+            var graphQLRoot = await GraphQLQuerySetup(graphQLRequestJson);
+
+            var elections = JsonConvert.DeserializeObject<List<ElectionModelResponse>>(JsonConvert.SerializeObject(graphQLRoot.GetElection));
+            Assert.Equal("Federal", elections[0].Name);
+            Assert.Equal("Los Angeles County", elections[1].Name);
+            Assert.True(elections.Count == 3);
+
+            Assert.Equal((int) HttpStatusCode.OK, _httpContext.Response.StatusCode);
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+        }
+
+        [Fact]
+        public async Task RunsElectionByIdQuery()
+        {
+            var electionId = "electionid3";
+
+            var graphQLRequest = new GraphQLRequest
+            {
+                Query = @"
+                    query ($ElectionId: String!) {
+                        GetElectionById(ElectionId: $ElectionId) {
+                            ElectionId, Name, DateCreated
+                        }
+                    }",
+                Variables = new
+                {
+                    ElectionId = electionId
+                }
+            };
+
+            var graphQLRequestJson = JsonConvert.SerializeObject(graphQLRequest);
+            var graphQLRoot = await GraphQLQuerySetup(graphQLRequestJson);
+
+            var elections = JsonConvert.DeserializeObject<List<ElectionModelResponse>>(JsonConvert.SerializeObject(graphQLRoot.GetElectionById));
+            Assert.NotNull(elections);
+            Assert.Equal("Federal", elections[0].Name);
+            Assert.Equal("electionid3", elections[0].ElectionId);
+            Assert.True(elections.Count == 1);
+
+            Assert.Equal((int) HttpStatusCode.OK, _httpContext.Response.StatusCode);
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+        }
+
+        [Fact]
+        public async Task RunsRaceQuery()
+        {
+            var graphQLRequest = new GraphQLRequest
+            {
+                Query = @"
+                    query {
+                        GetRace {
+                            DateCreated, Name, RaceId, RaceType, RaceTypeName, Candidates {
+                                CandidateId, Name, PartyAffiliation, DateCreated
+                            }
+                        }
+                    }"
+            };
+
+            var graphQLRequestJson = JsonConvert.SerializeObject(graphQLRequest);
+            var graphQLRoot = await GraphQLQuerySetup(graphQLRequestJson);
+
+            var race = JsonConvert.DeserializeObject<List<RaceModelResponse>>(JsonConvert.SerializeObject(graphQLRoot.GetRace));
+            Assert.Equal("Governor", race[0].Name);
+            Assert.Equal(RaceTypes.ChooseOne, race[0].RaceType);
+            Assert.Equal("ChooseOne", race[0].RaceTypeName);
+            Assert.Equal("Judge", race[1].Name);
+            Assert.Equal(RaceTypes.ChooseMany, race[1].RaceType);
+            Assert.Equal("ChooseMany", race[1].RaceTypeName);
+            Assert.True(race.Count == 3);
+
+            Assert.Equal((int) HttpStatusCode.OK, _httpContext.Response.StatusCode);
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+        }
+
+        [Fact]
+        public async Task RunsUserQuery()
+        {
+            var graphQLRequest = new GraphQLRequest
+            {
+                Query = @"
+                    query {
+                        GetUser {
+                            DateCreated, Email, FirstName, UserId
+                        }
+                    }"
+            };
+
+            var graphQLRequestJson = JsonConvert.SerializeObject(graphQLRequest);
+            var graphQLRoot = await GraphQLQuerySetup(graphQLRequestJson);
+
+            var race = JsonConvert.DeserializeObject<List<UserModel>>(JsonConvert.SerializeObject(graphQLRoot.GetUser));
+            Assert.Equal("Boo", race[0].FirstName);
+            Assert.Equal("Foo2", race[1].FirstName);
+            Assert.True(race.Count == 3);
+
+            Assert.Equal((int) HttpStatusCode.OK, _httpContext.Response.StatusCode);
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+        }
+
+        [Fact]
+        public async Task RunsBallotQuery()
+        {
+            var graphQLRequest = new GraphQLRequest
+            {
+                Query = @"
+                    query {
+                        GetBallot {
+                            Ballots {
+                                BallotId, DateCreated, Election {
+                                    Name, StartDate, EndDate, ElectionId, Races {
+                                        RaceId
+                                    }
+                                }
+                            }
+                        }
+                    }"
+            };
+
+            var graphQLRequestJson = JsonConvert.SerializeObject(graphQLRequest);
+            var graphQLRoot = await GraphQLQuerySetup(graphQLRequestJson);
+
+            var items = JsonConvert.DeserializeObject<BallotList>(JsonConvert.SerializeObject(graphQLRoot.GetBallot));
+            Assert.NotNull(items);
+            Assert.Equal("electionid1", items.Ballots[0].Election.ElectionId);
+            Assert.Equal("ballotid3", items.Ballots[0].BallotId);
+            Assert.True(items.Ballots.Count == 3);
+
+            Assert.Equal((int) HttpStatusCode.OK, _httpContext.Response.StatusCode);
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+        }
+
+        [Fact]
+        public async Task RunsBallotByIdQuery()
+        {
+            var ballotId = "ballotid3";
+
+            var graphQLRequest = new GraphQLRequest
+            {
+                Query = @"
+                    query ($BallotId: String!) {
+                        GetBallotById(BallotId: $BallotId) {
+                            Ballots {
+                                BallotId, DateCreated, Election {
+                                    Name, StartDate, EndDate, ElectionId, Races {
+                                        RaceId
+                                    }
+                                }
+                            }
+                        }
+                    }",
+                Variables = new
+                {
+                    BallotId = ballotId
+                }
+            };
+
+            var graphQLRequestJson = JsonConvert.SerializeObject(graphQLRequest);
+            var graphQLRoot = await GraphQLQuerySetup(graphQLRequestJson);
+
+            var items = JsonConvert.DeserializeObject<BallotList>(JsonConvert.SerializeObject(graphQLRoot.GetBallotById));
+            Assert.NotNull(items);
+            Assert.Equal("electionid1", items.Ballots[0].Election.ElectionId);
+            Assert.Equal("ballotid3", items.Ballots[0].BallotId);
+            Assert.True(items.Ballots.Count == 1);
+
+            Assert.Equal((int) HttpStatusCode.OK, _httpContext.Response.StatusCode);
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+        }
+    }
 }
+*/

@@ -1,4 +1,6 @@
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.Logging;
 using MockQueryable.Moq;
 using Moq;
@@ -13,6 +15,7 @@ using TrueVote.Api.Services;
 using TrueVote.Api.Tests.Helpers;
 using Xunit;
 using Xunit.Abstractions;
+using static TrueVote.Api.Startup;
 
 namespace TrueVote.Api.Tests.ServiceTests
 {
@@ -32,10 +35,9 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public async Task LogsMessages()
         {
-            var baseElectionObj = new BaseElectionModel { Name = "California State", StartDate = DateTime.Now, EndDate = DateTime.Now.AddDays(30) };
-            var requestData = new MockHttpRequestData(JsonConvert.SerializeObject(baseElectionObj));
+            var baseElectionObj = new BaseElectionModel { Name = "California State", StartDate = DateTime.Now, EndDate = DateTime.Now.AddDays(30), Description = "desc", HeaderImageUrl = "url", Races = [] };
 
-            _ = await _electionApi.CreateElection(requestData);
+            _ = await _electionApi.CreateElection(baseElectionObj);
 
             _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
@@ -44,14 +46,13 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public async Task AddsElection()
         {
-            var baseElectionObj = new BaseElectionModel { Name = "California State", StartDate = DateTime.Now, EndDate = DateTime.Now.AddDays(30) };
-            var requestData = new MockHttpRequestData(JsonConvert.SerializeObject(baseElectionObj));
+            var baseElectionObj = new BaseElectionModel { Name = "California State", StartDate = DateTime.Now, EndDate = DateTime.Now.AddDays(30), Description = "desc", HeaderImageUrl = "url", Races = [] };
 
-            var ret = await _electionApi.CreateElection(requestData);
+            var ret = await _electionApi.CreateElection(baseElectionObj);
             Assert.NotNull(ret);
-            Assert.Equal(HttpStatusCode.Created, ret.StatusCode);
+            Assert.Equal(StatusCodes.Status201Created, ((IStatusCodeActionResult) ret).StatusCode);
 
-            var val = await ret.ReadAsJsonAsync<ElectionModel>();
+            var val = (ElectionModel) (ret as CreatedAtActionResult).Value;
             Assert.NotNull(val);
 
             _output.WriteLine($"Item: {val}");
@@ -74,13 +75,16 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task HandlesInvalidElectionCreate()
         {
             // This object is missing required property (StartDate)
-            var fakeBaseElectionObj = new FakeBaseElectionModel { Name = "California State" };
-            var requestData = new MockHttpRequestData(JsonConvert.SerializeObject(fakeBaseElectionObj));
+            var modelType = typeof(BaseElectionModel);
+            var instance = Activator.CreateInstance(modelType);
+            var nameProperty = modelType.GetProperty("Name");
+            nameProperty.SetValue(instance, "California State");
+            var fakeBaseElectionObj = (BaseElectionModel) instance;
 
-            var ret = await _electionApi.CreateElection(requestData);
+            var ret = await _electionApi.CreateElection(fakeBaseElectionObj);
             Assert.NotNull(ret);
-            Assert.Equal(HttpStatusCode.BadRequest, ret.StatusCode);
-            var val = await ret.ReadAsJsonAsync<SecureString>();
+            Assert.Equal(StatusCodes.Status400BadRequest, ((IStatusCodeActionResult) ret).StatusCode);
+            var val = (SecureString) (ret as BadRequestObjectResult).Value;
             Assert.Contains("Required", val.Value.ToString());
 
             _logHelper.Verify(LogLevel.Error, Times.Exactly(1));
@@ -91,18 +95,17 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task FindsElection()
         {
             var findElectionObj = new FindElectionModel { Name = "County" };
-            var requestData = new MockHttpRequestData(JsonConvert.SerializeObject(findElectionObj));
 
             var electionApi = new Election(_logHelper.Object, _moqDataAccessor.mockElectionContext.Object, _mockServiceBus.Object);
 
-            var ret = await electionApi.ElectionFind(requestData);
+            var ret = await electionApi.ElectionFind(findElectionObj);
             Assert.NotNull(ret);
-            Assert.Equal(HttpStatusCode.OK, ret.StatusCode);
+            Assert.Equal(StatusCodes.Status200OK, ((IStatusCodeActionResult) ret).StatusCode);
 
-            var val = await ret.ReadAsJsonAsync<List<ElectionModel>>();
-            Assert.NotEmpty(val);
-            Assert.Single(val);
-            Assert.Equal("Los Angeles County", val[0].Name);
+            var val = (ElectionModelList) (ret as OkObjectResult).Value;
+            Assert.NotEmpty(val.Elections);
+            Assert.Single(val.Elections);
+            Assert.Equal("Los Angeles County", val.Elections[0].Name);
 
             _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
@@ -112,27 +115,27 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task HandlesUnfoundElection()
         {
             var findElectionObj = new FindElectionModel { Name = "not going to find anything" };
-            var requestData = new MockHttpRequestData(JsonConvert.SerializeObject(findElectionObj));
 
             var electionApi = new Election(_logHelper.Object, _moqDataAccessor.mockElectionContext.Object, _mockServiceBus.Object);
 
-            var ret = await electionApi.ElectionFind(requestData);
+            var ret = await electionApi.ElectionFind(findElectionObj);
             Assert.NotNull(ret);
-            Assert.Equal(HttpStatusCode.NotFound, ret.StatusCode);
+            Assert.Equal(StatusCodes.Status404NotFound, ((IStatusCodeActionResult) ret).StatusCode);
 
             _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
         }
 
         [Fact]
-        public async Task HandlesFindElectionError()
+        public async Task HandlesInvalidElectionFind()
         {
-            var findElectionObj = "blah";
-            var requestData = new MockHttpRequestData(findElectionObj);
+            var modelType = typeof(FindElectionModel);
+            var instance = Activator.CreateInstance(modelType);
+            var fakeFindElectionObj = (FindElectionModel) instance;
 
-            var ret = await _electionApi.ElectionFind(requestData);
+            var ret = await _electionApi.ElectionFind(fakeFindElectionObj);
             Assert.NotNull(ret);
-            Assert.Equal(HttpStatusCode.BadRequest, ret.StatusCode);
+            Assert.Equal(StatusCodes.Status400BadRequest, ((IStatusCodeActionResult) ret).StatusCode);
 
             _logHelper.Verify(LogLevel.Error, Times.Exactly(1));
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
@@ -157,16 +160,15 @@ namespace TrueVote.Api.Tests.ServiceTests
             mockElectionContext.Setup(m => m.Races).Returns(mockRacesSet.Object);
 
             var addRacesObj = new AddRacesModel { ElectionId = "1", RaceIds = new List<string> { MoqData.MockRaceData[0].RaceId, MoqData.MockRaceData[1].RaceId, MoqData.MockRaceData[2].RaceId } };
-            var requestData = new MockHttpRequestData(JsonConvert.SerializeObject(addRacesObj));
 
             var electionApi = new Election(_logHelper.Object, mockElectionContext.Object, _mockServiceBus.Object);
 
-            var ret = await electionApi.AddRaces(requestData);
+            var ret = await electionApi.AddRaces(addRacesObj);
 
             Assert.NotNull(ret);
-            Assert.Equal(HttpStatusCode.Created, ret.StatusCode);
+            Assert.Equal(StatusCodes.Status201Created, ((IStatusCodeActionResult) ret).StatusCode);
 
-            var val = await ret.ReadAsJsonAsync<ElectionModel>();
+            var val = (ElectionModel) (ret as OkObjectResult).Value;
             Assert.NotNull(val);
             Assert.Equal("California State", val.Name);
             Assert.Equal("President", val.Races.ToList()[0].Name);
@@ -178,14 +180,15 @@ namespace TrueVote.Api.Tests.ServiceTests
         }
 
         [Fact]
-        public async Task HandlesAddRacesError()
+        public async Task HandlesInvalidAddRaces()
         {
-            var addRacesObj = "blah";
-            var requestData = new MockHttpRequestData(addRacesObj);
+            var modelType = typeof(AddRacesModel);
+            var instance = Activator.CreateInstance(modelType);
+            var fakeAddRacesObj = (AddRacesModel) instance;
 
-            var ret = await _electionApi.AddRaces(requestData);
+            var ret = await _electionApi.AddRaces(fakeAddRacesObj);
             Assert.NotNull(ret);
-            Assert.Equal(HttpStatusCode.BadRequest, ret.StatusCode);
+            Assert.Equal(StatusCodes.Status400BadRequest, ((IStatusCodeActionResult) ret).StatusCode);
 
             _logHelper.Verify(LogLevel.Error, Times.Exactly(1));
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
@@ -205,14 +208,14 @@ namespace TrueVote.Api.Tests.ServiceTests
             mockElectionContext.Setup(m => m.Elections).Returns(mockElectionSet.Object);
 
             var addRacesObj = new AddRacesModel { ElectionId = "blah", RaceIds = new List<string>() { } };
-            var requestData = new MockHttpRequestData(JsonConvert.SerializeObject(addRacesObj));
 
             var electionApi = new Election(_logHelper.Object, mockElectionContext.Object, _mockServiceBus.Object);
 
-            var ret = await electionApi.AddRaces(requestData);
+            var ret = await electionApi.AddRaces(addRacesObj);
             Assert.NotNull(ret);
-            Assert.Equal(HttpStatusCode.NotFound, ret.StatusCode);
-            var val = await ret.ReadAsJsonAsync<SecureString>();
+            Assert.Equal(StatusCodes.Status404NotFound, ((IStatusCodeActionResult) ret).StatusCode);
+
+            var val = (SecureString) (ret as NotFoundObjectResult).Value;
             Assert.Contains("Election", val.Value.ToString());
             Assert.Contains("not found", val.Value.ToString());
 
@@ -236,15 +239,15 @@ namespace TrueVote.Api.Tests.ServiceTests
             mockElectionContext.Setup(m => m.Races).Returns(mockRacesSet.Object);
 
             var addRacesObj = new AddRacesModel { ElectionId = "1", RaceIds = new List<string> { "68", "69", "70" } };
-            var requestData = new MockHttpRequestData(JsonConvert.SerializeObject(addRacesObj));
 
             var electionApi = new Election(_logHelper.Object, mockElectionContext.Object, _mockServiceBus.Object);
 
-            var ret = await electionApi.AddRaces(requestData);
+            var ret = await electionApi.AddRaces(addRacesObj);
 
             Assert.NotNull(ret);
-            Assert.Equal(HttpStatusCode.NotFound, ret.StatusCode);
-            var val = await ret.ReadAsJsonAsync<SecureString>();
+            Assert.Equal(StatusCodes.Status404NotFound, ((IStatusCodeActionResult) ret).StatusCode);
+
+            var val = (SecureString) (ret as NotFoundObjectResult).Value;
             Assert.Contains("Race", val.Value.ToString());
             Assert.Contains("not found", val.Value.ToString());
 
@@ -269,14 +272,14 @@ namespace TrueVote.Api.Tests.ServiceTests
             mockElectionContext.Setup(m => m.Races).Returns(mockRacesSet.Object);
 
             var addRacesObj = new AddRacesModel { ElectionId = "electionid1", RaceIds = new List<string> { "raceid1", "raceid2", "raceid3" } };
-            var requestData = new MockHttpRequestData(JsonConvert.SerializeObject(addRacesObj));
 
             var electionApi = new Election(_logHelper.Object, mockElectionContext.Object, _mockServiceBus.Object);
 
-            var ret = await electionApi.AddRaces(requestData);
+            var ret = await electionApi.AddRaces(addRacesObj);
             Assert.NotNull(ret);
-            Assert.Equal(HttpStatusCode.Conflict, ret.StatusCode);
-            var val = await ret.ReadAsJsonAsync<SecureString>();
+            Assert.Equal(StatusCodes.Status409Conflict, ((IStatusCodeActionResult) ret).StatusCode);
+
+            var val = (SecureString) (ret as NotFoundObjectResult).Value;
             Assert.Contains("Race", val.Value.ToString());
             Assert.Contains("already exists", val.Value.ToString());
 
