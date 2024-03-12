@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using System.Diagnostics.CodeAnalysis;
 
 // .NET 8 Exception handler: https://www.milanjovanovic.tech/blog/global-error-handling-in-aspnetcore-8
 namespace TrueVote.Api.Helpers
 {
+    [ExcludeFromCodeCoverage]
     internal sealed class GlobalExceptionHandler : IExceptionHandler
     {
         private readonly ILogger<LoggerHelper> _logger;

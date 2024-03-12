@@ -37,15 +37,14 @@ namespace TrueVote.Api.Models
         [JsonProperty(nameof(FirstName), Required = Required.Always)]
         public required string FirstName { get; set; } = string.Empty;
 
-        [Required]
         [Description("Email Address")]
         [MaxLength(2048)]
         [DataType(DataType.EmailAddress)]
         [EmailAddress]
         [RegularExpression(Constants.EMailRegex)]
         [JsonPropertyName("Email")]
-        [JsonProperty(nameof(Email), Required = Required.Always)]
-        public required string Email { get; set; }
+        [JsonProperty(nameof(Email), Required = Required.Default)]
+        public string Email { get; set; } = string.Empty;
     }
 
     [ExcludeFromCodeCoverage]

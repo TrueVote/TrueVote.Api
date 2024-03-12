@@ -83,7 +83,7 @@ namespace TrueVote.Api.Services
                 }
 
                 // Check if it's already part of the Race
-                var candidateExists = race.Candidates?.Where(c => c.CandidateId == cid).FirstOrDefault();
+                var candidateExists = race.Candidates.FirstOrDefault(c => c.CandidateId == cid);
                 if (candidateExists != null)
                 {
                     return Conflict(new SecureString { Value = $"Candidate: '{cid}' already exists in Race" });

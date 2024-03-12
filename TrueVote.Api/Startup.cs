@@ -19,6 +19,7 @@ using Newtonsoft.Json.Serialization;
 
 namespace TrueVote.Api
 {
+    [ExcludeFromCodeCoverage]
     public class Startup
     {
         public string CustomStylesheetPath { get; set; } = "/dist/truevote-api.css";
@@ -135,13 +136,17 @@ namespace TrueVote.Api
             public virtual DbSet<BallotModel> Ballots { get; set; }
             public virtual DbSet<TimestampModel> Timestamps { get; set; }
             public virtual DbSet<BallotHashModel> BallotHashes { get; set; }
-            private readonly IConfiguration _configuration;
+            private readonly IConfiguration? _configuration;
             private readonly string? _connectionString;
 
             public TrueVoteDbContext(IConfiguration configuration)
             {
                 _configuration = configuration;
                 _connectionString = _configuration.GetConnectionString("CosmosDbConnectionString");
+            }
+
+            public TrueVoteDbContext()
+            {
             }
 
             public virtual async Task<bool> EnsureCreatedAsync()

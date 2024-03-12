@@ -1,9 +1,8 @@
-/*
 using Microsoft.Extensions.Logging;
 using Moq;
-using Newtonsoft.Json;
 using System;
 using System.Threading.Tasks;
+using TrueVote.Api.Models;
 using TrueVote.Api.Services;
 using TrueVote.Api.Tests.Helpers;
 using Xunit;
@@ -21,8 +20,10 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task LogsMessages()
         {
             var error500 = new Error500(_logHelper.Object, _mockServiceBus.Object);
-            var requestData = new MockHttpRequestData("");
-            _ = await error500.ThrowError500(requestData);
+
+            var error500Flag = new Error500Flag { Error = false };
+
+            await error500.ThrowError500(error500Flag);
 
             _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
@@ -33,16 +34,11 @@ namespace TrueVote.Api.Tests.ServiceTests
         {
             var error500 = new Error500(_logHelper.Object, _mockServiceBus.Object);
 
-            var errorObj = new
-            {
-                Error = true
-            };
+            var error500Flag = new Error500Flag { Error = true };
 
-            var requestData = new MockHttpRequestData(JsonConvert.SerializeObject(errorObj));
-            
             try
             {
-                _ = await error500.ThrowError500(requestData);
+                _ = await error500.ThrowError500(error500Flag);
                 Assert.True(false);
             }
             catch (Exception ex)
@@ -54,4 +50,3 @@ namespace TrueVote.Api.Tests.ServiceTests
         }
     }
 }
-*/

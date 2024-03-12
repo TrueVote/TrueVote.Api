@@ -83,7 +83,7 @@ namespace TrueVote.Api.Services
             _log.LogDebug("HTTP trigger - SubmitBallot:End");
 
             // TODO Return a Ballot Submitted model response with critical key data to bind ballot / user
-            return Ok(submitBallotResponse);
+            return CreatedAtAction(null, null, submitBallotResponse);
         }
 
         [HttpGet]

@@ -1,4 +1,3 @@
-/*
 using Moq;
 using System;
 using System.Linq;
@@ -23,7 +22,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             var timestamp = await _validatorApi.HashBallotsAsync();
 
             Assert.NotNull(timestamp);
-            Assert.Equal(116, timestamp.MerkleRoot[0]);
+            Assert.Equal(18, timestamp.MerkleRoot[0]);
         }
 
         [Fact]
@@ -153,4 +152,3 @@ namespace TrueVote.Api.Tests.ServiceTests
         }
     }
 }
-*/

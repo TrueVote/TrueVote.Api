@@ -45,6 +45,7 @@ namespace TrueVote.Api.Helpers
         }
     }
 
+    [ExcludeFromCodeCoverage]
     public class CustomLoggerProvider : ILoggerProvider
     {
         private readonly IServiceBus _serviceBus;

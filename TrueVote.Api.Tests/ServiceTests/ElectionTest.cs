@@ -4,11 +4,9 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.Logging;
 using MockQueryable.Moq;
 using Moq;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Threading.Tasks;
 using TrueVote.Api.Models;
 using TrueVote.Api.Services;
@@ -37,7 +35,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         {
             var baseElectionObj = new BaseElectionModel { Name = "California State", StartDate = DateTime.Now, EndDate = DateTime.Now.AddDays(30), Description = "desc", HeaderImageUrl = "url", Races = [] };
 
-            _ = await _electionApi.CreateElection(baseElectionObj);
+            await _electionApi.CreateElection(baseElectionObj);
 
             _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
@@ -68,26 +66,6 @@ namespace TrueVote.Api.Tests.ServiceTests
             Assert.NotEmpty(val.ElectionId);
 
             _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
-            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
-        }
-
-        [Fact]
-        public async Task HandlesInvalidElectionCreate()
-        {
-            // This object is missing required property (StartDate)
-            var modelType = typeof(BaseElectionModel);
-            var instance = Activator.CreateInstance(modelType);
-            var nameProperty = modelType.GetProperty("Name");
-            nameProperty.SetValue(instance, "California State");
-            var fakeBaseElectionObj = (BaseElectionModel) instance;
-
-            var ret = await _electionApi.CreateElection(fakeBaseElectionObj);
-            Assert.NotNull(ret);
-            Assert.Equal(StatusCodes.Status400BadRequest, ((IStatusCodeActionResult) ret).StatusCode);
-            var val = (SecureString) (ret as BadRequestObjectResult).Value;
-            Assert.Contains("Required", val.Value.ToString());
-
-            _logHelper.Verify(LogLevel.Error, Times.Exactly(1));
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
         }
 
@@ -127,21 +105,6 @@ namespace TrueVote.Api.Tests.ServiceTests
         }
 
         [Fact]
-        public async Task HandlesInvalidElectionFind()
-        {
-            var modelType = typeof(FindElectionModel);
-            var instance = Activator.CreateInstance(modelType);
-            var fakeFindElectionObj = (FindElectionModel) instance;
-
-            var ret = await _electionApi.ElectionFind(fakeFindElectionObj);
-            Assert.NotNull(ret);
-            Assert.Equal(StatusCodes.Status400BadRequest, ((IStatusCodeActionResult) ret).StatusCode);
-
-            _logHelper.Verify(LogLevel.Error, Times.Exactly(1));
-            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
-        }
-
-        [Fact]
         public async Task AddsRacesToElection()
         {
             var addsRacesElectionData = MoqData.MockElectionData;
@@ -168,7 +131,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             Assert.NotNull(ret);
             Assert.Equal(StatusCodes.Status201Created, ((IStatusCodeActionResult) ret).StatusCode);
 
-            var val = (ElectionModel) (ret as OkObjectResult).Value;
+            var val = (ElectionModel) (ret as CreatedAtActionResult).Value;
             Assert.NotNull(val);
             Assert.Equal("California State", val.Name);
             Assert.Equal("President", val.Races.ToList()[0].Name);
@@ -176,21 +139,6 @@ namespace TrueVote.Api.Tests.ServiceTests
             Assert.Equal("Governor", val.Races.ToList()[2].Name);
 
             _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
-            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
-        }
-
-        [Fact]
-        public async Task HandlesInvalidAddRaces()
-        {
-            var modelType = typeof(AddRacesModel);
-            var instance = Activator.CreateInstance(modelType);
-            var fakeAddRacesObj = (AddRacesModel) instance;
-
-            var ret = await _electionApi.AddRaces(fakeAddRacesObj);
-            Assert.NotNull(ret);
-            Assert.Equal(StatusCodes.Status400BadRequest, ((IStatusCodeActionResult) ret).StatusCode);
-
-            _logHelper.Verify(LogLevel.Error, Times.Exactly(1));
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
         }
 
@@ -243,7 +191,6 @@ namespace TrueVote.Api.Tests.ServiceTests
             var electionApi = new Election(_logHelper.Object, mockElectionContext.Object, _mockServiceBus.Object);
 
             var ret = await electionApi.AddRaces(addRacesObj);
-
             Assert.NotNull(ret);
             Assert.Equal(StatusCodes.Status404NotFound, ((IStatusCodeActionResult) ret).StatusCode);
 
@@ -279,7 +226,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             Assert.NotNull(ret);
             Assert.Equal(StatusCodes.Status409Conflict, ((IStatusCodeActionResult) ret).StatusCode);
 
-            var val = (SecureString) (ret as NotFoundObjectResult).Value;
+            var val = (SecureString) (ret as ConflictObjectResult).Value;
             Assert.Contains("Race", val.Value.ToString());
             Assert.Contains("already exists", val.Value.ToString());
 

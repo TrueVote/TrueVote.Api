@@ -65,6 +65,7 @@ namespace TrueVote.Api.Models
         public required DateTime DateCreated { get; set; }
     }
 
+    [ExcludeFromCodeCoverage]
     public class FindTimestampModel
     {
         [Required]

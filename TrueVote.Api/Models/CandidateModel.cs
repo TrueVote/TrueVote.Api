@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
+using TrueVote.Api.Helpers;
 
 namespace TrueVote.Api.Models
 {
@@ -36,13 +37,12 @@ namespace TrueVote.Api.Models
         [JsonProperty(nameof(Name), Required = Required.Always)]
         public required string Name { get; set; } = string.Empty;
 
-        [Required]
         [Description("Party Affiliation")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
         [JsonPropertyName("PartyAffiliation")]
-        [JsonProperty(nameof(PartyAffiliation), Required = Required.Always)]
-        public required string PartyAffiliation { get; set; } = string.Empty;
+        [JsonProperty(nameof(PartyAffiliation), Required = Required.Default)]
+        public string PartyAffiliation { get; set; } = string.Empty;
     }
 
     [ExcludeFromCodeCoverage]
@@ -61,7 +61,7 @@ namespace TrueVote.Api.Models
         [MaxLength(2048)]
         [DataType(DataType.Text)]
         [JsonPropertyName("PartyAffiliation")]
-        [JsonProperty(nameof(PartyAffiliation), Required = Required.Always)]
+        [JsonProperty(nameof(PartyAffiliation), Required = Required.Default)]
         public required string PartyAffiliation { get; set; } = string.Empty;
     }
 
@@ -73,9 +73,9 @@ namespace TrueVote.Api.Models
         [MaxLength(2048)]
         [DataType(DataType.Text)]
         [JsonPropertyName("CandidateId")]
-        [JsonProperty(nameof(CandidateId), Required = Required.Always)]
+        [JsonProperty(nameof(CandidateId), Required = Required.Default)]
         [Key]
-        public required string CandidateId { get; set; }
+        public required string CandidateId { get; set; } = Guid.NewGuid().ToString();
 
         [Required]
         [Description("Name")]
@@ -85,13 +85,12 @@ namespace TrueVote.Api.Models
         [JsonProperty(nameof(Name), Required = Required.Always)]
         public required string Name { get; set; } = string.Empty;
 
-        [Required]
         [Description("Party Affiliation")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
         [JsonPropertyName("PartyAffiliation")]
-        [JsonProperty(nameof(PartyAffiliation), Required = Required.Always)]
-        public required string PartyAffiliation { get; set; } = string.Empty;
+        [JsonProperty(nameof(PartyAffiliation), Required = Required.Default)]
+        public string PartyAffiliation { get; set; } = string.Empty;
 
         [Description("CandidateImageUrl")]
         [MaxLength(1024)]
@@ -104,8 +103,8 @@ namespace TrueVote.Api.Models
         [Description("DateCreated")]
         [DataType(DataType.Date)]
         [JsonPropertyName("DateCreated")]
-        [JsonProperty(nameof(DateCreated), Required = Required.Always)]
-        public required DateTime DateCreated { get; set; }
+        [JsonProperty(nameof(DateCreated), Required = Required.Default)]
+        public required DateTime DateCreated { get; set; } = UtcNowProviderFactory.GetProvider().UtcNow;
 
         [Description("Selected")]
         [JsonPropertyName("Selected")]

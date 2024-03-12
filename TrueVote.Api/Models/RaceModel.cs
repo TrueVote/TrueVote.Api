@@ -77,9 +77,9 @@ namespace TrueVote.Api.Models
         [MaxLength(2048)]
         [DataType(DataType.Text)]
         [JsonPropertyName("RaceId")]
-        [JsonProperty(nameof(RaceId), Required = Required.Always)]
+        [JsonProperty(nameof(RaceId), Required = Required.Default)]
         [Key]
-        public required string RaceId { get; set; }
+        public required string RaceId { get; set; } = Guid.NewGuid().ToString();
 
         [Required]
         [Description("Name")]
@@ -102,7 +102,7 @@ namespace TrueVote.Api.Models
         [DataType(DataType.Text)]
         [NotMapped]
         [JsonPropertyName("RaceTypeName")]
-        [JsonProperty(nameof(RaceTypeName), Required = Required.Always)]
+        [JsonProperty(nameof(RaceTypeName), Required = Required.Default)]
         public string RaceTypeName => RaceType.ToString();
 
         [Description("Race Type Metadata")]
@@ -116,8 +116,8 @@ namespace TrueVote.Api.Models
         [Description("DateCreated")]
         [DataType(DataType.Date)]
         [JsonPropertyName("DateCreated")]
-        [JsonProperty(nameof(DateCreated), Required = Required.Always)]
-        public required DateTime DateCreated { get; set; }
+        [JsonProperty(nameof(DateCreated), Required = Required.Default)]
+        public required DateTime DateCreated { get; set; } = UtcNowProviderFactory.GetProvider().UtcNow;
 
         [Description("List of Candidates")]
         [DataType("ICollection<CandidateModel>")]

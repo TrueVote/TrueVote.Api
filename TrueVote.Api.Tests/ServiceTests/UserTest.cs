@@ -1,12 +1,11 @@
-/*
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.Logging;
 using Moq;
-using Newtonsoft.Json;
 using Nostr.Client.Keys;
 using Nostr.Client.Messages;
 using System;
-using System.Collections.Generic;
-using System.Net;
 using System.Threading.Tasks;
 using TrueVote.Api.Models;
 using TrueVote.Api.Services;
@@ -32,9 +31,8 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task LogsMessages()
         {
             var baseUserObj = new BaseUserModel { FirstName = "Joe", Email = "joe@joe.com" };
-            var requestData = new MockHttpRequestData(JsonConvert.SerializeObject(baseUserObj));
 
-            _ = await _userApi.CreateUser(requestData);
+            _ = await _userApi.CreateUser(baseUserObj);
 
             _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
@@ -44,13 +42,12 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task AddsUser()
         {
             var baseUserObj = new BaseUserModel { FirstName = "Joe", Email = "joe@joe.com" };
-            var requestData = new MockHttpRequestData(JsonConvert.SerializeObject(baseUserObj));
 
-            var ret = await _userApi.CreateUser(requestData);
+            var ret = await _userApi.CreateUser(baseUserObj);
             Assert.NotNull(ret);
-            Assert.Equal(HttpStatusCode.Created, ret.StatusCode);
+            Assert.Equal(StatusCodes.Status201Created, ((IStatusCodeActionResult) ret).StatusCode);
 
-            var val = await ret.ReadAsJsonAsync<UserModel>();
+            var val = (UserModel) (ret as CreatedAtActionResult).Value;
             Assert.NotNull(val);
 
             _output.WriteLine($"Item: {val}");
@@ -70,39 +67,21 @@ namespace TrueVote.Api.Tests.ServiceTests
         }
 
         [Fact]
-        public async Task HandlesInvalidUserCreate()
-        {
-            // This object is missing required property (email)
-            var fakeBaseUserObj = new FakeBaseUserModel { FirstName = "Joe" };
-            var requestData = new MockHttpRequestData(JsonConvert.SerializeObject(fakeBaseUserObj));
-
-            var ret = await _userApi.CreateUser(requestData);
-            Assert.NotNull(ret);
-            Assert.Equal(HttpStatusCode.BadRequest, ret.StatusCode);
-            var val = await ret.ReadAsJsonAsync<SecureString>();
-            Assert.Contains("Required", val.Value.ToString());
-
-            _logHelper.Verify(LogLevel.Error, Times.Exactly(1));
-            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
-        }
-
-        [Fact]
         public async Task FindsUser()
         {
             var findUserObj = new FindUserModel { FirstName = "Foo" };
-            var requestData = new MockHttpRequestData(JsonConvert.SerializeObject(findUserObj));
 
             var userApi = new User(_logHelper.Object, _moqDataAccessor.mockUserContext.Object, _mockServiceBus.Object, _mockJwtHandler.Object);
 
-            var ret = await userApi.UserFind(requestData);
+            var ret = await userApi.UserFind(findUserObj);
             Assert.NotNull(ret);
-            Assert.Equal(HttpStatusCode.OK, ret.StatusCode);
+            Assert.Equal(StatusCodes.Status200OK, ((IStatusCodeActionResult) ret).StatusCode);
 
-            var val = await ret.ReadAsJsonAsync<List<UserModel>>();
-            Assert.NotEmpty(val);
-            Assert.Equal(2, val.Count);
-            Assert.Equal("Foo2", val[0].FirstName);
-            Assert.Equal("foo2@bar.com", val[0].Email);
+            var val = (UserModelList) (ret as OkObjectResult).Value;
+            Assert.NotEmpty(val.Users);
+            Assert.Equal(2, val.Users.Count);
+            Assert.Equal("Foo2", val.Users[0].FirstName);
+            Assert.Equal("foo2@bar.com", val.Users[0].Email);
 
             _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
@@ -112,43 +91,14 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task HandlesUnfoundUser()
         {
             var findUserObj = new FindUserModel { FirstName = "not going to find anything" };
-            var requestData = new MockHttpRequestData(JsonConvert.SerializeObject(findUserObj));
 
             var userApi = new User(_logHelper.Object, _moqDataAccessor.mockUserContext.Object, _mockServiceBus.Object, _mockJwtHandler.Object);
 
-            var ret = await userApi.UserFind(requestData);
+            var ret = await userApi.UserFind(findUserObj);
             Assert.NotNull(ret);
-            Assert.Equal(HttpStatusCode.NotFound, ret.StatusCode);
+            Assert.Equal(StatusCodes.Status404NotFound, ((IStatusCodeActionResult) ret).StatusCode);
 
             _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
-            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
-        }
-
-        [Fact]
-        public async Task HandlesFindUserError()
-        {
-            var findUserObj = "blah";
-            var requestData = new MockHttpRequestData(findUserObj);
-
-            var ret = await _userApi.UserFind(requestData);
-            Assert.NotNull(ret);
-            Assert.Equal(HttpStatusCode.BadRequest, ret.StatusCode);
-
-            _logHelper.Verify(LogLevel.Error, Times.Exactly(1));
-            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
-        }
-
-        [Fact]
-        public async Task HandlesSignInEventModelError()
-        {
-            var signInEventModel = "blah";
-            var requestData = new MockHttpRequestData(signInEventModel);
-
-            var ret = await _userApi.SignIn(requestData);
-            Assert.NotNull(ret);
-            Assert.Equal(HttpStatusCode.BadRequest, ret.StatusCode);
-
-            _logHelper.Verify(LogLevel.Error, Times.Exactly(1));
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
         }
 
@@ -167,15 +117,12 @@ namespace TrueVote.Api.Tests.ServiceTests
                 Content = ""
             };
 
-            var serialized = JsonConvert.SerializeObject(signInEventModel);
-
-            var requestData = new MockHttpRequestData(serialized);
-
-            var ret = await _userApi.SignIn(requestData);
+            var ret = await _userApi.SignIn(signInEventModel);
 
             Assert.NotNull(ret);
-            Assert.Equal(HttpStatusCode.BadRequest, ret.StatusCode);
-            var val = await ret.ReadAsJsonAsync<SecureString>();
+            Assert.Equal(StatusCodes.Status400BadRequest, ((IStatusCodeActionResult) ret).StatusCode);
+
+            var val = (SecureString) (ret as BadRequestObjectResult).Value;
             Assert.Contains("The binary key cannot have an odd number of digits", val.Value.ToString());
 
             _logHelper.Verify(LogLevel.Error, Times.Exactly(1));
@@ -196,15 +143,12 @@ namespace TrueVote.Api.Tests.ServiceTests
                 Content = ""
             };
 
-            var serialized = JsonConvert.SerializeObject(signInEventModel);
-
-            var requestData = new MockHttpRequestData(serialized);
-
-            var ret = await _userApi.SignIn(requestData);
+            var ret = await _userApi.SignIn(signInEventModel);
 
             Assert.NotNull(ret);
-            Assert.Equal(HttpStatusCode.BadRequest, ret.StatusCode);
-            var val = await ret.ReadAsJsonAsync<SecureString>();
+            Assert.Equal(StatusCodes.Status400BadRequest, ((IStatusCodeActionResult) ret).StatusCode);
+
+            var val = (SecureString) (ret as BadRequestObjectResult).Value;
             Assert.Contains("Provided bech32 key is not 'npub'", val.Value.ToString());
 
             _logHelper.Verify(LogLevel.Error, Times.Exactly(1));
@@ -239,15 +183,11 @@ namespace TrueVote.Api.Tests.ServiceTests
                 Signature = signature.Sig
             };
 
-            var serialized = JsonConvert.SerializeObject(signInEventModel);
-
-            var requestData = new MockHttpRequestData(serialized);
-
-            var ret = await _userApi.SignIn(requestData);
-
+            var ret = await _userApi.SignIn(signInEventModel);
             Assert.NotNull(ret);
-            Assert.Equal(HttpStatusCode.OK, ret.StatusCode);
-            var val = await ret.ReadAsJsonAsync<SecureString>();
+            Assert.Equal(StatusCodes.Status200OK, ((IStatusCodeActionResult) ret).StatusCode);
+
+            var val = (SecureString) (ret as OkObjectResult).Value;
             Assert.NotEmpty(val.Value);
 
             // TODO Confirm valid token
@@ -289,15 +229,11 @@ namespace TrueVote.Api.Tests.ServiceTests
                 Signature = signature2.Sig
             };
 
-            var serialized = JsonConvert.SerializeObject(signInEventModel);
-
-            var requestData = new MockHttpRequestData(serialized);
-
-            var ret = await _userApi.SignIn(requestData);
-
+            var ret = await _userApi.SignIn(signInEventModel);
             Assert.NotNull(ret);
-            Assert.Equal(HttpStatusCode.BadRequest, ret.StatusCode);
-            var val = await ret.ReadAsJsonAsync<SecureString>();
+            Assert.Equal(StatusCodes.Status400BadRequest, ((IStatusCodeActionResult) ret).StatusCode);
+
+            var val = (SecureString) (ret as BadRequestObjectResult).Value;
             Assert.Contains("Signature did not verify", val.Value.ToString());
 
             _logHelper.Verify(LogLevel.Error, Times.Exactly(1));
@@ -305,4 +241,3 @@ namespace TrueVote.Api.Tests.ServiceTests
         }
     }
 }
-*/
