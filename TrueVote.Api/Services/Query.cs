@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using System.Diagnostics.CodeAnalysis;
 using TrueVote.Api.Interfaces;
 using TrueVote.Api.Models;
 
@@ -8,7 +7,6 @@ namespace TrueVote.Api.Services
     // TODO Add parameter support (filtering) to GraphQL queries so you can do operations such as:
     // { candidate(partyAffiliation: "Republican") { candidateId, name, partyAffiliation }
     // TODO Add sorting support to replace the 'OrderBy' directives below
-    [ExcludeFromCodeCoverage]
     public class Query
     {
         private readonly ITrueVoteDbContext _trueVoteDbContext;

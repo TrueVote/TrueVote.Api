@@ -25,6 +25,7 @@ namespace TrueVote.Api.Tests.Helpers
         protected readonly Candidate _candidateApi;
         protected readonly Validator _validatorApi;
         protected readonly Timestamp _timestampApi;
+        protected readonly Query _queryService;
         protected readonly MoqDataAccessor _moqDataAccessor;
         protected readonly Mock<IOpenTimestampsClient> _mockOpenTimestampsClient;
         protected readonly Mock<IServiceBus> _mockServiceBus;
@@ -76,6 +77,7 @@ namespace TrueVote.Api.Tests.Helpers
             _raceApi = new Race(_logHelper.Object, _moqDataAccessor.mockRaceContext.Object, _mockServiceBus.Object);
             _candidateApi = new Candidate(_logHelper.Object, _moqDataAccessor.mockCandidateContext.Object, _mockServiceBus.Object);
             _timestampApi = new Timestamp(_logHelper.Object, _moqDataAccessor.mockTimestampContext.Object);
+            _queryService = new Query((MoqTrueVoteDbContext) serviceProvider.GetService(typeof(MoqTrueVoteDbContext)));
         }
     }
 }
