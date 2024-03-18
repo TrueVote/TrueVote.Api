@@ -1,8 +1,14 @@
-name: Build and deploy .NET Core application to Web App TrueVoteApiAppService with API Management Service TrueVoteApiManagement-TrueVoteApiManagment
+name: Build, Test, Cover, Deploy
 on:
-  push:
-    branches:
-    - AD-105
+  workflow_dispatch:
+
+  workflow_call:
+
+  workflow_run:
+    workflows: ["Workflow Controller"]
+    types: [completed]
+    branches-ignore: [master]
+
 env:
   AZURE_WEBAPP_NAME: TrueVoteApiAppService
   AZURE_WEBAPP_PACKAGE_PATH: TrueVote.Api\publish
@@ -19,9 +25,11 @@ env:
   CONFIGURATION: Releases
   DOTNET_CORE_VERSION: 8.0.x
   WORKING_DIRECTORY: TrueVote.Api
+
 jobs:
   build:
     runs-on: windows-latest
+
     steps:
     - uses: actions/checkout@v4
 
@@ -36,13 +44,36 @@ jobs:
         dotnet-version: ${{ env.SWASHBUCKLE_DOTNET_CORE_VERSION }}
 
     - name: Restore
-      run: dotnet restore ${{ env.WORKING_DIRECTORY }}
+      run: |
+        dotnet restore ${{ env.WORKING_DIRECTORY }}
+        dotnet tool restore
+
+    - name: Fixups
+      run: |
+        git update-index --chmod=+x ./scripts/*
+        chmod +x ./scripts/*
+        # ./scripts/update-git.sh
+
+    - name: Versions
+      run: |
+        dotnet --version
+        git --version
+        az --version
 
     - name: Build
       run: dotnet build ${{ env.WORKING_DIRECTORY }} --configuration ${{ env.CONFIGURATION }} --no-restore
 
     - name: Test
-      run: dotnet test ${{ env.WORKING_DIRECTORY }} --no-build
+      shell: pwsh  
+      run: |
+        ./scripts/RunTests.ps1 -ci true
+
+    - name: Publish Coverage to Coveralls
+      if: github.ref == 'refs/heads/master'
+      uses: coverallsapp/github-action@master
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        path-to-lcov: TrueVote.Api.Tests/TestResults/coverage.info
 
     - name: Publish
       run: dotnet publish ${{ env.WORKING_DIRECTORY }} --configuration ${{ env.CONFIGURATION }} --no-build --output ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
@@ -59,6 +90,7 @@ jobs:
       with:
         name: webapp
         path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+
   deploy:
     runs-on: windows-latest
     needs: build
