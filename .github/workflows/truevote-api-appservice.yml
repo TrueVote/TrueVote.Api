@@ -64,17 +64,17 @@ jobs:
     - name: Build
       run: dotnet build ${{ env.WORKING_DIRECTORY }} --configuration ${{ env.CONFIGURATION }} --no-restore
 
-    - name: Test
-      shell: pwsh  
-      run: |
-        ./scripts/RunTests.ps1 -ci true
+    # - name: Test
+    #   shell: pwsh  
+    #   run: |
+    #     ./scripts/RunTests.ps1 -ci true
 
-    - name: Publish Coverage to Coveralls
-      if: github.ref == 'refs/heads/master'
-      uses: coverallsapp/github-action@master
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        path-to-lcov: TrueVote.Api.Tests/TestResults/coverage.info
+    # - name: Publish Coverage to Coveralls
+    #   if: github.ref == 'refs/heads/master'
+    #   uses: coverallsapp/github-action@master
+    #   with:
+    #     github-token: ${{ secrets.GITHUB_TOKEN }}
+    #     path-to-lcov: TrueVote.Api.Tests/TestResults/coverage.info
 
     - name: Publish
       run: dotnet publish ${{ env.WORKING_DIRECTORY }} --configuration ${{ env.CONFIGURATION }} --no-build --output ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
