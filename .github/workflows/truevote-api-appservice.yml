@@ -1,0 +1,122 @@
+name: Build, Test, Cover, Deploy
+
+on:
+  workflow_dispatch:
+
+  workflow_call:
+
+  workflow_run:
+    workflows: ["Workflow Controller"]
+    types: [completed]
+    branches-ignore: [master]
+
+env:
+  AZURE_WEBAPP_NAME: TrueVoteApiAppService
+  AZURE_WEBAPP_PACKAGE_PATH: TrueVote.Api\publish
+  AZURE_APIM_RESOURCE_PATH: /
+  AZURE_APIM_RESOURCEGROUP: TrueVoteApi
+  AZURE_APIM_SERVICENAME: TrueVoteApiManagement
+  AZURE_APIM_API_ID: TrueVoteApiManagment
+  AZURE_APIM_APPSERVICEURL: https://truevoteapiappservice.azurewebsites.net
+  SWASHBUCLE_ASPNET_CORE_CLI_PACKAGE_VERSION: 6.5.0
+  SWASHBUCKLE_DOTNET_CORE_VERSION: 3.1.x
+  API_IMPORT_SPECIFICATION_PATH: TrueVote.Api\publish\swagger.json
+  API_IMPORT_DLL: TrueVote.Api\publish\TrueVote.Api.dll
+  API_IMPORT_VERSION: v1
+  CONFIGURATION: Releases
+  DOTNET_CORE_VERSION: 8.0.x
+  WORKING_DIRECTORY: TrueVote.Api
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_CORE_VERSION }}
+
+    - name: Setup SwashBuckle .NET Core
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.SWASHBUCKLE_DOTNET_CORE_VERSION }}
+
+    - name: Restore
+      run: |
+        dotnet restore ${{ env.WORKING_DIRECTORY }}
+        dotnet tool restore
+
+    - name: Fixups
+      run: |
+        git update-index --chmod=+x ./scripts/*
+        chmod +x ./scripts/*
+        # ./scripts/update-git.sh
+
+    - name: Versions
+      run: |
+        dotnet --version
+        git --version
+        az --version
+
+    - name: Build
+      run: dotnet build ${{ env.WORKING_DIRECTORY }} --configuration ${{ env.CONFIGURATION }} --no-restore
+
+    - name: Test
+      shell: pwsh  
+      run: |
+        ./scripts/RunTests.ps1 -ci true
+
+    - name: Publish Coverage to Coveralls
+      if: github.ref == 'refs/heads/master'
+      uses: coverallsapp/github-action@master
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        path-to-lcov: TrueVote.Api.Tests/TestResults/coverage.info
+
+    - name: Publish
+      run: dotnet publish ${{ env.WORKING_DIRECTORY }} --configuration ${{ env.CONFIGURATION }} --no-build --output ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+
+    - name: Install Swashbuckle CLI .NET Global Tool
+      run: dotnet tool install --global Swashbuckle.AspNetCore.Cli --version ${{ env.SWASHBUCLE_ASPNET_CORE_CLI_PACKAGE_VERSION }}
+      working-directory: ${{ env.WORKING_DIRECTORY }}
+
+    - name: Generate Open API Specification Document
+      run: swagger tofile --output "${{ env.API_IMPORT_SPECIFICATION_PATH }}" "${{ env.API_IMPORT_DLL }}" "${{ env.API_IMPORT_VERSION }}"
+
+    - name: Publish Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: webapp
+        path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+
+  deploy:
+    runs-on: windows-latest
+    needs: build
+    steps:
+    - name: Download artifact from build job
+      uses: actions/download-artifact@v4
+      with:
+        name: webapp
+        path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+
+    - name: Deploy to Azure WebApp
+      uses: azure/webapps-deploy@v3
+      with:
+        app-name: ${{ env.AZURE_WEBAPP_NAME }}
+        package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+        publish-profile: ${{ secrets.TrueVoteApiAppService_D74C }}
+
+    - name: Azure SPN Login
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.TrueVoteApiManagement_SPN }}
+
+    - name: Import API into Azure API Management
+      run: az apim api import --path "${{ env.AZURE_APIM_RESOURCE_PATH }}" --resource-group "${{ env.AZURE_APIM_RESOURCEGROUP }}" --service-name "${{ env.AZURE_APIM_SERVICENAME }}" --api-id "${{ env.AZURE_APIM_API_ID }}" --service-url "${{ env.AZURE_APIM_APPSERVICEURL }}" --specification-path "${{ env.API_IMPORT_SPECIFICATION_PATH }}" --specification-format OpenApi --subscription-required false
+
+    - name: Azure SPN Logout
+      run: >
+        az logout

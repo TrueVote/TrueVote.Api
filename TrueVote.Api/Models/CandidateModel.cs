@@ -1,10 +1,8 @@
-using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
-using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Enums;
 using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 using TrueVote.Api.Helpers;
 
 namespace TrueVote.Api.Models
@@ -12,112 +10,112 @@ namespace TrueVote.Api.Models
     [ExcludeFromCodeCoverage]
     public class CandidateObj
     {
-        [JsonProperty(PropertyName = "Candidate")]
-        public List<CandidateModel> candidate;
+        [JsonPropertyName("Candidate")]
+        [JsonProperty("Candidate", Required = Required.Default)]
+        public List<CandidateModel>? candidate;
     }
 
     [ExcludeFromCodeCoverage]
     public class CandidateModelList
     {
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
+        [Required]
         [MaxLength(2048)]
-        [OpenApiProperty(Description = "List of Candidates")]
-        [JsonProperty(PropertyName = "Candidates")]
-        public List<CandidateModel> Candidates { get; set; }
+        [Description("List of Candidates")]
+        [JsonPropertyName("Candidates")]
+        [JsonProperty(nameof(Candidates), Required = Required.Always)]
+        public required List<CandidateModel> Candidates { get; set; }
     }
 
     [ExcludeFromCodeCoverage]
     public class FindCandidateModel
     {
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "Name")]
+        [Required]
+        [Description("Name")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
-        [RegularExpression(Constants.GenericStringRegex)]
-        [JsonProperty(PropertyName = "Name")]
-        public string Name { get; set; } = string.Empty;
+        [JsonPropertyName("Name")]
+        [JsonProperty(nameof(Name), Required = Required.Always)]
+        public required string Name { get; set; } = string.Empty;
 
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "Party Affiliation")]
+        [Description("Party Affiliation")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
-        [RegularExpression(Constants.GenericStringRegex)]
-        [JsonProperty(PropertyName = "PartyAffiliation")]
+        [JsonPropertyName("PartyAffiliation")]
+        [JsonProperty(nameof(PartyAffiliation), Required = Required.Default)]
         public string PartyAffiliation { get; set; } = string.Empty;
     }
 
     [ExcludeFromCodeCoverage]
     public class BaseCandidateModel
     {
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "Name")]
+        [Required]
+        [Description("Name")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
-        [RegularExpression(Constants.GenericStringRegex)]
-        [JsonProperty(PropertyName = "Name", Required = Required.Always)]
-        public string Name { get; set; } = string.Empty;
+        [JsonPropertyName("Name")]
+        [JsonProperty(nameof(Name), Required = Required.Always)]
+        public required string Name { get; set; } = string.Empty;
 
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "Party Affiliation")]
+        [Required]
+        [Description("Party Affiliation")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
-        [RegularExpression(Constants.GenericStringRegex)]
-        [JsonProperty(PropertyName = "PartyAffiliation")]
-        public string PartyAffiliation { get; set; } = string.Empty;
+        [JsonPropertyName("PartyAffiliation")]
+        [JsonProperty(nameof(PartyAffiliation), Required = Required.Default)]
+        public required string PartyAffiliation { get; set; } = string.Empty;
     }
 
     [ExcludeFromCodeCoverage]
     public class CandidateModel
     {
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "Candidate Id")]
+        [Required]
+        [Description("Candidate Id")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
-        [RegularExpression(Constants.GenericStringRegex)]
-        [JsonProperty(PropertyName = "CandidateId")]
+        [JsonPropertyName("CandidateId")]
+        [JsonProperty(nameof(CandidateId), Required = Required.Default)]
         [Key]
-        public string CandidateId { get; set; } = Guid.NewGuid().ToString();
+        public required string CandidateId { get; set; } = Guid.NewGuid().ToString();
 
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "Name")]
+        [Required]
+        [Description("Name")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
-        [RegularExpression(Constants.GenericStringRegex)]
-        [JsonProperty(PropertyName = "Name", Required = Required.Always)]
-        public string Name { get; set; } = string.Empty;
+        [JsonPropertyName("Name")]
+        [JsonProperty(nameof(Name), Required = Required.Always)]
+        public required string Name { get; set; } = string.Empty;
 
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "Party Affiliation")]
+        [Description("Party Affiliation")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
-        [RegularExpression(Constants.GenericStringRegex)]
-        [JsonProperty(PropertyName = "PartyAffiliation")]
+        [JsonPropertyName("PartyAffiliation")]
+        [JsonProperty(nameof(PartyAffiliation), Required = Required.Default)]
         public string PartyAffiliation { get; set; } = string.Empty;
 
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "CandidateImageUrl")]
+        [Description("CandidateImageUrl")]
         [MaxLength(1024)]
         [DataType(DataType.Text)]
-        [JsonProperty(PropertyName = "CandidateImageUrl", Required = Required.Default)]
+        [JsonPropertyName("CandidateImageUrl")]
+        [JsonProperty(nameof(CandidateImageUrl), Required = Required.Default)]
         public string CandidateImageUrl { get; set; } = string.Empty;
 
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "DateCreated")]
-        [MaxLength(2048)]
+        [Required]
+        [Description("DateCreated")]
         [DataType(DataType.Date)]
-        [JsonProperty(PropertyName = "DateCreated")]
-        public DateTime DateCreated { get; set; } = UtcNowProviderFactory.GetProvider().UtcNow;
+        [JsonPropertyName("DateCreated")]
+        [JsonProperty(nameof(DateCreated), Required = Required.Default)]
+        public required DateTime DateCreated { get; set; } = UtcNowProviderFactory.GetProvider().UtcNow;
 
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "Selected")]
-        [JsonProperty(PropertyName = "Selected")]
+        [Description("Selected")]
+        [JsonPropertyName("Selected")]
+        [JsonProperty(nameof(Selected), Required = Required.Default)]
         public bool Selected { get; set; } = false;
 
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "SelectedMetadata")]
+        [Description("SelectedMetadata")]
         [MaxLength(1024)]
         [DataType(DataType.Text)]
-        [JsonProperty(PropertyName = "SelectedMetadata", Required = Required.Default)]
+        [JsonPropertyName("SelectedMetadata")]
+        [JsonProperty(nameof(SelectedMetadata), Required = Required.Default)]
         public string SelectedMetadata { get; set; } = string.Empty;
 
     }

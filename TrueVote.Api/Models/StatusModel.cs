@@ -1,77 +1,80 @@
-using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
 using Newtonsoft.Json;
-using System;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 
 namespace TrueVote.Api.Models
 {
     [ExcludeFromCodeCoverage]
     public class BuildInfo
     {
-        [OpenApiProperty(Description = "Git branch of instance")]
-        [RegularExpression(Constants.GenericStringRegex)]
+        [Description("Git branch of instance")]
         [MaxLength(2048)]
-        [JsonProperty(PropertyName = "Branch")]
+        [JsonPropertyName("Branch")]
+        [JsonProperty(nameof(Branch), Required = Required.Default)]
         public string Branch { get; set; } = string.Empty;
 
-        [OpenApiProperty(Description = "Timestamp build was created")]
-        [RegularExpression(Constants.GenericStringRegex)]
+        [Description("Timestamp build was created")]
         [MaxLength(2048)]
-        [JsonProperty(PropertyName = "BuildTime")]
+        [JsonPropertyName("BuildTime")]
+        [JsonProperty(nameof(BuildTime), Required = Required.Default)]
         public string BuildTime { get; set; } = string.Empty;
 
-        [OpenApiProperty(Description = "Git tag of instance")]
-        [RegularExpression(Constants.GenericStringRegex)]
+        [Description("Git tag of instance")]
         [MaxLength(2048)]
-        [JsonProperty(PropertyName = "LastTag")]
+        [JsonPropertyName("LastTag")]
+        [JsonProperty(nameof(LastTag), Required = Required.Default)]
         public string LastTag { get; set; } = string.Empty;
 
-        [OpenApiProperty(Description = "Git commit hash of instance")]
-        [RegularExpression(Constants.GenericStringRegex)]
+        [Description("Git commit hash of instance")]
         [MaxLength(2048)]
-        [JsonProperty(PropertyName = "Commit")]
+        [JsonPropertyName("Commit")]
+        [JsonProperty(nameof(Commit), Required = Required.Default)]
         public string Commit { get; set; } = string.Empty;
     }
 
     [ExcludeFromCodeCoverage]
     public class StatusModel
     {
-        [OpenApiProperty(Description = "Current Time")]
-        [RegularExpression(Constants.GenericStringRegex)]
+        [Description("Current Time")]
         [MaxLength(2048)]
-        [JsonProperty(PropertyName = "CurrentTime")]
-        public string CurrentTime { get; set; }
+        [JsonPropertyName("CurrentTime")]
+        [JsonProperty(nameof(CurrentTime), Required = Required.Default)]
+        public string? CurrentTime { get; set; }
 
-        [OpenApiProperty(Description = "Stopwatch time to run this method")]
+        [Description("Stopwatch time to run this method")]
         [Range(0, long.MaxValue)]
-        [JsonProperty(PropertyName = "ExecutionTime")]
+        [JsonPropertyName("ExecutionTime")]
+        [JsonProperty(nameof(ExecutionTime), Required = Required.Default)]
         public long ExecutionTime { get; set; }
 
-        [OpenApiProperty(Description = "Stopwatch time to run this method (message)")]
-        [RegularExpression(Constants.GenericStringRegex)]
+        [Description("Stopwatch time to run this method (message)")]
         [MaxLength(2048)]
-        [JsonProperty(PropertyName = "ExecutionTimeMsg")]
-        public string ExecutionTimeMsg { get; set; }
+        [JsonPropertyName("ExecutionTimeMsg")]
+        [JsonProperty(nameof(ExecutionTimeMsg), Required = Required.Default)]
+        public string? ExecutionTimeMsg { get; set; }
 
-        [OpenApiProperty(Description = "True if method responds. Likely never false")]
-        [JsonProperty(PropertyName = "Responds")]
+        [Description("True if method responds. Likely never false")]
+        [JsonPropertyName("Responds")]
+        [JsonProperty(nameof(Responds), Required = Required.Default)]
         public bool Responds { get; set; }
 
-        [OpenApiProperty(Description = "True if method responds. Likely never false (message)")]
-        [RegularExpression(Constants.GenericStringRegex)]
+        [Description("True if method responds. Likely never false (message)")]
         [MaxLength(2048)]
-        [JsonProperty(PropertyName = "RespondsMsg")]
-        public string RespondsMsg { get; set; }
+        [JsonPropertyName("RespondsMsg")]
+        [JsonProperty(nameof(RespondsMsg), Required = Required.Default)]
+        public string? RespondsMsg { get; set; }
 
-        [OpenApiProperty(Description = "Build information model")]
-        [JsonProperty(PropertyName = "BuildInfo")]
-        public BuildInfo BuildInfo { get; set; }
+        [Description("Build information model")]
+        [JsonPropertyName("BuildInfo")]
+        [JsonProperty(nameof(BuildInfo), Required = Required.Default)]
+        public BuildInfo? BuildInfo { get; set; }
 
-        [OpenApiProperty(Description = "Timestamp this Build information data model was populated")]
-        [RegularExpression(Constants.GenericStringRegex)]
+        [Description("Timestamp this Build information data model was populated")]
         [MaxLength(2048)]
-        [JsonProperty(PropertyName = "BuildInfoReadTime")]
+        [JsonPropertyName("BuildInfoReadTime")]
+        [JsonProperty(nameof(BuildInfoReadTime), Required = Required.Default)]
         public string BuildInfoReadTime { get; set; } = string.Empty;
     }
 }

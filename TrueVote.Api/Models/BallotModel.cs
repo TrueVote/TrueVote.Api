@@ -1,106 +1,110 @@
-using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
-using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Enums;
 using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
-using TrueVote.Api.Helpers;
+using System.Text.Json.Serialization;
+using ByteConverter = TrueVote.Api.Helpers.ByteConverter;
+using JsonConverter = System.Text.Json.Serialization.JsonConverter;
+using JsonConverterAttribute = System.Text.Json.Serialization.JsonConverterAttribute;
 
 namespace TrueVote.Api.Models
 {
     [ExcludeFromCodeCoverage]
     public class BallotList
     {
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
+        [Required]
         [MaxLength(2048)]
-        [OpenApiProperty(Description = "List of Ballots")]
-        [JsonProperty(PropertyName = "Ballots")]
-        public List<BallotModel> Ballots { get; set; }
+        [Description("List of Ballots")]
+        [JsonPropertyName("Ballots")]
+        [JsonProperty(nameof(Ballots), Required = Required.Always)]
+        public required List<BallotModel> Ballots { get; set; }
 
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
+        [Required]
         [MaxLength(2048)]
-        [OpenApiProperty(Description = "List of Ballot Hashes")]
-        [JsonProperty(PropertyName = "BallotHashes")]
-        public List<BallotHashModel> BallotHashes { get; set; }
+        [Description("List of Ballot Hashes")]
+        [JsonPropertyName("BallotHashes")]
+        [JsonProperty(nameof(BallotHashes), Required = Required.Always)]
+        public required List<BallotHashModel> BallotHashes { get; set; }
     }
 
     [ExcludeFromCodeCoverage]
     public class FindBallotModel
     {
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "Ballot Id")]
+        [Required]
+        [Description("Ballot Id")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
-        [RegularExpression(Constants.GenericStringRegex)]
-        [JsonProperty(PropertyName = "BallotId")]
+        [JsonPropertyName("BallotId")]
+        [JsonProperty(nameof(BallotId), Required = Required.Always)]
         [Key]
-        public string BallotId { get; set; } = Guid.NewGuid().ToString();
+        public required string BallotId { get; set; }
     }
 
     [ExcludeFromCodeCoverage]
     public class CountBallotModel
     {
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "DateCreatedStart")]
-        [MaxLength(2048)]
+        [Required]
+        [Description("DateCreatedStart")]
         [DataType(DataType.Date)]
-        [JsonProperty(PropertyName = "DateCreatedStart", Required = Required.Always)]
-        public DateTime DateCreatedStart { get; set; }
+        [JsonPropertyName("DateCreatedStart")]
+        [JsonProperty(nameof(DateCreatedStart), Required = Required.Always)]
+        public required DateTime DateCreatedStart { get; set; }
 
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "DateCreatedEnd")]
-        [MaxLength(2048)]
+        [Required]
+        [Description("DateCreatedEnd")]
         [DataType(DataType.Date)]
-        [JsonProperty(PropertyName = "DateCreatedEnd", Required = Required.Always)]
-        public DateTime DateCreatedEnd { get; set; }
+        [JsonPropertyName("DateCreatedEnd")]
+        [JsonProperty(nameof(DateCreatedEnd), Required = Required.Always)]
+        public required DateTime DateCreatedEnd { get; set; }
     }
 
     [ExcludeFromCodeCoverage]
     public class CountBallotModelResponse
     {
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "Number of Ballots")]
+        [Required]
+        [Description("Number of Ballots")]
         [Range(0, long.MaxValue)]
-        [JsonProperty(PropertyName = "BallotCount")]
-        public long BallotCount { get; set; }
+        [JsonPropertyName("BallotCount")]
+        [JsonProperty(nameof(BallotCount), Required = Required.Always)]
+        public required long BallotCount { get; set; }
     }
 
     [ExcludeFromCodeCoverage]
     public class BallotModel
     {
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "Ballot Id")]
+        [Required]
+        [Description("Ballot Id")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
-        [RegularExpression(Constants.GenericStringRegex)]
-        [JsonProperty(PropertyName = "BallotId", Required = Required.Always)]
+        [JsonPropertyName("BallotId")]
+        [JsonProperty(nameof(BallotId), Required = Required.Always)]
         [Key]
-        public string BallotId { get; set; } = Guid.NewGuid().ToString();
+        public required string BallotId { get; set; }
 
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
+        [Required]
         [MaxLength(2048)]
-        [OpenApiProperty(Description = "Election for the Ballot")]
-        [JsonProperty(PropertyName = "Election")]
-        public ElectionModel Election { get; set; }
+        [Description("Election for the Ballot")]
+        [JsonPropertyName("Election")]
+        [JsonProperty(nameof(Election), Required = Required.Always)]
+        public required ElectionModel Election { get; set; }
 
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "DateCreated")]
-        [MaxLength(2048)]
+        [Required]
+        [Description("DateCreated")]
         [DataType(DataType.Date)]
-        [JsonProperty(PropertyName = "DateCreated")]
-        public DateTime DateCreated { get; set; } = UtcNowProviderFactory.GetProvider().UtcNow;
-
+        [JsonPropertyName("DateCreated")]
+        [JsonProperty(nameof(DateCreated), Required = Required.Always)]
+        public required DateTime DateCreated { get; set; }
     }
 
     [ExcludeFromCodeCoverage]
     public class SubmitBallotModel {
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "Election")]
+        [Required]
+        [Description("Election")]
         [DataType("ElectionModel")]
-        [JsonProperty(PropertyName = "Election", Required = Required.Always)]
-        public ElectionModel Election { get; set; }
+        [JsonPropertyName("Election")]
+        [JsonProperty(nameof(Election), Required = Required.Always)]
+        public required ElectionModel Election { get; set; }
 
         // TODO Add Bindings of User / Ballot connection
         // Requires encryption for binding stored at client and server for match
@@ -110,102 +114,102 @@ namespace TrueVote.Api.Models
 
     [ExcludeFromCodeCoverage]
     public class SubmitBallotModelResponse {
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "Ballot Id")]
+        [Required]
+        [Description("Ballot Id")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
-        [RegularExpression(Constants.GenericStringRegex)]
-        [JsonProperty(PropertyName = "BallotId")]
+        [JsonPropertyName("BallotId")]
+        [JsonProperty(nameof(BallotId), Required = Required.Always)]
         [Key]
-        public string BallotId { get; set; }
+        public required string BallotId { get; set; }
 
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "Election Id")]
+        [Required]
+        [Description("Election Id")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
-        [RegularExpression(Constants.GenericStringRegex)]
-        [JsonProperty(PropertyName = "ElectionId")]
-        public string ElectionId { get; set; }
+        [JsonPropertyName("ElectionId")]
+        [JsonProperty(nameof(ElectionId), Required = Required.Always)]
+        public required string ElectionId { get; set; }
 
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "Message")]
+        [Required]
+        [Description("Message")]
         [MaxLength(32768)]
         [DataType(DataType.Text)]
-        [RegularExpression(Constants.GenericStringRegex)]
-        [JsonProperty(PropertyName = "Message")]
-        public string Message { get; set; }
+        [JsonPropertyName("Message")]
+        [JsonProperty(nameof(Message), Required = Required.Always)]
+        public required string Message { get; set; }
     }
 
     [ExcludeFromCodeCoverage]
     public class BallotHashModel
     {
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "Ballot Hash Id")]
+        [Required]
+        [Description("Ballot Hash Id")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
-        [RegularExpression(Constants.GenericStringRegex)]
-        [JsonProperty(PropertyName = "BallotHashId")]
+        [JsonPropertyName("BallotHashId")]
+        [JsonProperty(nameof(BallotHashId), Required = Required.Always)]
         [Key]
-        public string BallotHashId { get; set; } = Guid.NewGuid().ToString();
+        public required string BallotHashId { get; set; }
 
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "Ballot Id")]
+        [Required]
+        [Description("Ballot Id")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
-        [RegularExpression(Constants.GenericStringRegex)]
-        [JsonProperty(PropertyName = "BallotId")]
+        [JsonPropertyName("BallotId")]
+        [JsonProperty(nameof(BallotId), Required = Required.Always)]
         [ForeignKey("BallotId")]
-        public string BallotId { get; set; }
+        public required string BallotId { get; set; }
 
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "Server Ballot Hash")]
+        [Required]
+        [Description("Server Ballot Hash")]
         [DataType(DataType.Custom)]
         [JsonConverter(typeof(ByteConverter))]
-        [JsonProperty(PropertyName = "ServerBallotHash")]
-        public byte[] ServerBallotHash { get; set; }
+        [JsonPropertyName("ServerBallotHash")]
+        [JsonProperty(nameof(ServerBallotHash), Required = Required.Always)]
+        public required byte[] ServerBallotHash { get; set; }
 
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "Server Ballot Hash String")]
+        [Required]
+        [Description("Server Ballot Hash String")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
-        [RegularExpression(Constants.GenericStringRegex)]
-        [JsonProperty(PropertyName = "ServerBallotHashS")]
-        public string ServerBallotHashS { get; set; }
+        [JsonPropertyName("ServerBallotHashS")]
+        [JsonProperty(nameof(ServerBallotHashS), Required = Required.Always)]
+        public required string ServerBallotHashS { get; set; }
 
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "DateCreated")]
-        [MaxLength(2048)]
+        [Required]
+        [Description("DateCreated")]
         [DataType(DataType.Date)]
-        [JsonProperty(PropertyName = "DateCreated")]
-        public DateTime DateCreated { get; set; } = UtcNowProviderFactory.GetProvider().UtcNow;
+        [JsonPropertyName("DateCreated")]
+        [JsonProperty(nameof(DateCreated), Required = Required.Always)]
+        public required DateTime DateCreated { get; set; }
 
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "DateUpdated")]
-        [MaxLength(2048)]
+        [Required]
+        [Description("DateUpdated")]
         [DataType(DataType.Date)]
-        [JsonProperty(PropertyName = "DateUpdated")]
-        public DateTime DateUpdated { get; set; } = UtcNowProviderFactory.GetProvider().UtcNow;
+        [JsonPropertyName("DateUpdated")]
+        [JsonProperty(nameof(DateUpdated), Required = Required.Always)]
+        public required DateTime DateUpdated { get; set; }
 
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "Timestamp Id")]
+        [Description("Timestamp Id")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
-        [RegularExpression(Constants.GenericStringRegex)]
-        [JsonProperty(PropertyName = "TimestampId", Required = Required.AllowNull)]
+        [JsonPropertyName("TimestampId")]
+        [JsonProperty(nameof(TimestampId), Required = Required.Default)]
         [ForeignKey("TimestampId")]
-        public string TimestampId { get; set; }
+        public string? TimestampId { get; set; }
     }
 
     [ExcludeFromCodeCoverage]
     public class FindBallotHashModel
     {
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "Ballot Id")]
+        [Required]
+        [Description("Ballot Id")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
-        [RegularExpression(Constants.GenericStringRegex)]
-        [JsonProperty(PropertyName = "BallotId")]
+        [JsonPropertyName("BallotId")]
+        [JsonProperty(nameof(BallotId), Required = Required.Always)]
         [Key]
-        public string BallotId { get; set; } = Guid.NewGuid().ToString();
+        public required string BallotId { get; set; }
     }
 }

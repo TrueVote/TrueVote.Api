@@ -1,69 +1,46 @@
-using System;
-using System.IO;
-using System.Linq;
-using System.Net;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.Functions.Worker;
-using Microsoft.Azure.Functions.Worker.Http;
-using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
-using Microsoft.OpenApi.Models;
-using Newtonsoft.Json;
-using TrueVote.Api.Helpers;
+using System.ComponentModel;
 using TrueVote.Api.Interfaces;
 using TrueVote.Api.Models;
+using TrueVote.Api.Helpers;
 
 namespace TrueVote.Api.Services
 {
-    public class Candidate : LoggerHelper
+    [ApiController]
+    [Consumes("application/json")]
+    [Produces("application/json")]
+    [ProducesResponseType(typeof(SecureString), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(SecureString), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(SecureString), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(SecureString), StatusCodes.Status406NotAcceptable)]
+    [ProducesResponseType(typeof(SecureString), StatusCodes.Status429TooManyRequests)]
+    [ProducesResponseType(typeof(SecureString), StatusCodes.Status409Conflict)]
+    public class Candidate : ControllerBase
     {
+        private readonly ILogger _log;
         private readonly ITrueVoteDbContext _trueVoteDbContext;
         private readonly IServiceBus _serviceBus;
 
-        public Candidate(ILogger log, ITrueVoteDbContext trueVoteDbContext, IServiceBus serviceBus) : base(log, serviceBus)
+        public Candidate(ILogger log, ITrueVoteDbContext trueVoteDbContext, IServiceBus serviceBus)
         {
+            _log = log;
             _trueVoteDbContext = trueVoteDbContext;
             _serviceBus = serviceBus;
         }
 
-        [Function(nameof(CreateCandidate))]
-        [ProducesResponseType(StatusCodes.Status201Created)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [OpenApiOperation(operationId: "CreateCandidate", tags: new[] { "Candidate" })]
-        [OpenApiSecurity("oidc_auth", SecuritySchemeType.OpenIdConnect, OpenIdConnectUrl = "https://login.microsoftonline.com/{tenant_id}/v2.0/.well-known/openid-configuration", OpenIdConnectScopes = "openid,profile")]
-        [OpenApiRequestBody(contentType: "application/json", bodyType: typeof(BaseCandidateModel), Description = "Partially filled Candidate Model", Example = typeof(BaseCandidateModel))]
-        [OpenApiResponseWithBody(statusCode: HttpStatusCode.Created, contentType: "application/json", bodyType: typeof(CandidateModel), Description = "Returns the added Candidate")]
-        [OpenApiResponseWithBody(statusCode: HttpStatusCode.Forbidden, contentType: "application/json", bodyType: typeof(SecureString), Description = "Forbidden")]
-        [OpenApiResponseWithBody(statusCode: HttpStatusCode.Unauthorized, contentType: "application/json", bodyType: typeof(SecureString), Description = "Unauthorized")]
-        [OpenApiResponseWithBody(statusCode: HttpStatusCode.NotFound, contentType: "application/json", bodyType: typeof(SecureString), Description = "Not Found")]
-        [OpenApiResponseWithBody(statusCode: HttpStatusCode.NotAcceptable, contentType: "application/json", bodyType: typeof(SecureString), Description = "Not Acceptable")]
-        [OpenApiResponseWithBody(statusCode: HttpStatusCode.TooManyRequests, contentType: "application/json", bodyType: typeof(SecureString), Description = "Too Many Requests")]
-        [OpenApiResponseWithBody(statusCode: HttpStatusCode.UnsupportedMediaType, contentType: "application/json", bodyType: typeof(SecureString), Description = "Unsupported Media Type")]
-        public async Task<HttpResponseData> CreateCandidate(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "candidate")] HttpRequestData req)
+        [HttpPost]
+        [Route("candidate")]
+        [Produces(typeof(CandidateModel))]
+        [Description("Returns the added Candidate")]
+        [ProducesResponseType(typeof(CandidateModel), StatusCodes.Status201Created)]
+        public async Task<IActionResult> CreateCandidate([FromBody] BaseCandidateModel baseCandidate)
         {
-            LogDebug("HTTP trigger - CreateCandidate:Begin");
+            _log.LogDebug("HTTP trigger - CreateCandidate:Begin");
 
-            BaseCandidateModel baseCandidate;
-            try
-            {
-                var requestBody = await new StreamReader(req.Body).ReadToEndAsync();
-                baseCandidate = JsonConvert.DeserializeObject<BaseCandidateModel>(requestBody);
-            }
-            catch (Exception e)
-            {
-                LogError("baseCandidate: invalid format");
-                LogDebug("HTTP trigger - CreateCandidate:End");
+            _log.LogInformation($"Request Data: {baseCandidate}");
 
-                return await req.CreateBadRequestResponseAsync(new SecureString { Value = e.Message });
-            }
-
-            LogInformation($"Request Data: {baseCandidate}");
-
-            var candidate = new CandidateModel { Name = baseCandidate.Name, PartyAffiliation = baseCandidate.PartyAffiliation };
+            var candidate = new CandidateModel { CandidateId = Guid.NewGuid().ToString(), Name = baseCandidate.Name, PartyAffiliation = baseCandidate.PartyAffiliation, DateCreated = UtcNowProviderFactory.GetProvider().UtcNow };
 
             await _trueVoteDbContext.EnsureCreatedAsync();
 
@@ -72,53 +49,34 @@ namespace TrueVote.Api.Services
 
             await _serviceBus.SendAsync($"New TrueVote Candidate created: {baseCandidate.Name}");
 
-            LogDebug("HTTP trigger - CreateCandidate:End");
+            _log.LogDebug("HTTP trigger - CreateCandidate:End");
 
-            return await req.CreateCreatedResponseAsync(candidate);
+            return CreatedAtAction(null, null, candidate);
         }
 
-        [Function(nameof(CandidateFind))]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [OpenApiOperation(operationId: "CandidateFind", tags: new[] { "Candidate" })]
-        [OpenApiSecurity("oidc_auth", SecuritySchemeType.OpenIdConnect, OpenIdConnectUrl = "https://login.microsoftonline.com/{tenant_id}/v2.0/.well-known/openid-configuration", OpenIdConnectScopes = "openid,profile")]
-        [OpenApiRequestBody(contentType: "application/json", bodyType: typeof(FindCandidateModel), Description = "Fields to search for Candidates", Example = typeof(FindCandidateModel))]
-        [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(CandidateModelList), Description = "Returns collection of Candidates")]
-        [OpenApiResponseWithBody(statusCode: HttpStatusCode.Forbidden, contentType: "application/json", bodyType: typeof(SecureString), Description = "Forbidden")]
-        [OpenApiResponseWithBody(statusCode: HttpStatusCode.Unauthorized, contentType: "application/json", bodyType: typeof(SecureString), Description = "Unauthorized")]
-        [OpenApiResponseWithBody(statusCode: HttpStatusCode.NotFound, contentType: "application/json", bodyType: typeof(SecureString), Description = "Not Found")]
-        [OpenApiResponseWithBody(statusCode: HttpStatusCode.NotAcceptable, contentType: "application/json", bodyType: typeof(SecureString), Description = "Not Acceptable")]
-        [OpenApiResponseWithBody(statusCode: HttpStatusCode.TooManyRequests, contentType: "application/json", bodyType: typeof(SecureString), Description = "Too Many Requests")]
-        public async Task<HttpResponseData> CandidateFind(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "candidate/find")] HttpRequestData req)
+        [HttpGet]
+        [Route("candidate/find")]
+        [Produces(typeof(CandidateModelList))]
+        [Description("Returns collection of Candidates")]
+        [ProducesResponseType(typeof(CandidateModelList), StatusCodes.Status200OK)]
+        public async Task<IActionResult> CandidateFind([FromBody] FindCandidateModel findCandidate)
         {
-            LogDebug("HTTP trigger - CandidateFind:Begin");
+            _log.LogDebug("HTTP trigger - CandidateFind:Begin");
 
-            FindCandidateModel findCandidate;
-            try
+            _log.LogInformation($"Request Data: {findCandidate}");
+
+            var items = new CandidateModelList
             {
-                var requestBody = await new StreamReader(req.Body).ReadToEndAsync();
-                findCandidate = JsonConvert.DeserializeObject<FindCandidateModel>(requestBody);
-            }
-            catch (Exception e)
-            {
-                LogError("findCandidate: invalid format");
-                LogDebug("HTTP trigger - CandidateFind:End");
-
-                return await req.CreateBadRequestResponseAsync(new SecureString { Value = e.Message });
-            }
-
-            LogInformation($"Request Data: {findCandidate}");
-
-            var items = await _trueVoteDbContext.Candidates
+                Candidates = await _trueVoteDbContext.Candidates
                 .Where(c =>
                     (findCandidate.Name == null || (c.Name ?? string.Empty).ToLower().Contains(findCandidate.Name.ToLower())) &&
                     (findCandidate.PartyAffiliation == null || (c.PartyAffiliation ?? string.Empty).ToLower().Contains(findCandidate.PartyAffiliation.ToLower())))
-                .OrderByDescending(c => c.DateCreated).ToListAsync();
+                .OrderByDescending(c => c.DateCreated).ToListAsync()
+            };
 
-            LogDebug("HTTP trigger - CandidateFind:End");
+            _log.LogDebug("HTTP trigger - CandidateFind:End");
 
-            return items.Count == 0 ? req.CreateNotFoundResponse() : await req.CreateOkResponseAsync(items);
+            return items.Candidates.Count == 0 ? NotFound() : Ok(items);
         }
     }
 }

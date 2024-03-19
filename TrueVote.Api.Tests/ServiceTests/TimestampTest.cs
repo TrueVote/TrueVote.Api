@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
-using System.Net;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.Logging;
 using Moq;
-using Newtonsoft.Json;
 using TrueVote.Api.Models;
 using TrueVote.Api.Tests.Helpers;
 using Xunit;
@@ -23,14 +23,14 @@ namespace TrueVote.Api.Tests.Services
         public async Task FindsTimestamp()
         {
             var findTimestampObj = new FindTimestampModel { DateCreatedStart = new DateTime(2022, 01, 01), DateCreatedEnd = new DateTime(2024, 01, 01) };
-            var requestData = new MockHttpRequestData(JsonConvert.SerializeObject(findTimestampObj));
 
-            var ret = await _timestampApi.TimestampFind(requestData);
+            var ret = await _timestampApi.TimestampFind(findTimestampObj);
             Assert.NotNull(ret);
-            Assert.Equal(HttpStatusCode.OK, ret.StatusCode);
+            Assert.Equal(StatusCodes.Status200OK, ((IStatusCodeActionResult) ret).StatusCode);
 
-            var val = await ret.ReadAsJsonAsync<List<TimestampModel>>();
+            var val = (List<TimestampModel>) (ret as OkObjectResult).Value;
             Assert.NotEmpty(val);
+
             Assert.Equal(2, val.Count);
             Assert.Equal("2", val[0].TimestampId);
             Assert.Equal("SampleHash2", val[0].TimestampHashS);
@@ -40,28 +40,13 @@ namespace TrueVote.Api.Tests.Services
         }
 
         [Fact]
-        public async Task HandlesFindTimestampError()
-        {
-            var findTimestampObj = "blah";
-            var requestData = new MockHttpRequestData(findTimestampObj);
-
-            var ret = await _timestampApi.TimestampFind(requestData);
-            Assert.NotNull(ret);
-            Assert.Equal(HttpStatusCode.BadRequest, ret.StatusCode);
-
-            _logHelper.Verify(LogLevel.Error, Times.Exactly(1));
-            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
-        }
-
-        [Fact]
         public async Task HandlesUnfoundTimestamp()
         {
             var findTimestampObj = new FindTimestampModel { DateCreatedStart = new DateTime(2021, 01, 01), DateCreatedEnd = new DateTime(2022, 01, 01) };
-            var requestData = new MockHttpRequestData(JsonConvert.SerializeObject(findTimestampObj));
 
-            var ret = await _timestampApi.TimestampFind(requestData);
+            var ret = await _timestampApi.TimestampFind(findTimestampObj);
             Assert.NotNull(ret);
-            Assert.Equal(HttpStatusCode.NotFound, ret.StatusCode);
+            Assert.Equal(StatusCodes.Status404NotFound, ((IStatusCodeActionResult) ret).StatusCode);
 
             _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));

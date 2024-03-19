@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using System.Threading.Tasks;
 using TrueVote.Api.Models;
 
 namespace TrueVote.Api.Interfaces

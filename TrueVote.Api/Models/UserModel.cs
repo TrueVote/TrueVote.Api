@@ -1,156 +1,159 @@
-using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
-using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Enums;
 using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
-using TrueVote.Api.Helpers;
 using Nostr.Client.Messages;
+using System.ComponentModel;
+using System.Text.Json.Serialization;
 
 namespace TrueVote.Api.Models
 {
     [ExcludeFromCodeCoverage]
     public class UserObj
     {
-        [JsonProperty(PropertyName = "User")]
-        public List<UserModel> user;
+        [JsonPropertyName("User")]
+        [JsonProperty("User", Required = Required.Default)]
+        public List<UserModel>? user;
     }
 
     [ExcludeFromCodeCoverage]
     public class UserModelList
     {
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
+        [Required]
         [MaxLength(2048)]
-        [OpenApiProperty(Description = "List of Users")]
-        [JsonProperty(PropertyName = "Users")]
-        public List<UserModel> Users { get; set; }
+        [Description("List of Users")]
+        [JsonPropertyName("Users")]
+        [JsonProperty(nameof(Users), Required = Required.Always)]
+        public required List<UserModel> Users { get; set; }
     }
 
     [ExcludeFromCodeCoverage]
     public class FindUserModel
     {
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "First Name")]
+        [Required]
+        [Description("First Name")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
-        [RegularExpression(Constants.GenericStringRegex)]
-        [JsonProperty(PropertyName = "FirstName")]
-        public string FirstName { get; set; } = string.Empty;
+        [JsonPropertyName("FirstName")]
+        [JsonProperty(nameof(FirstName), Required = Required.Always)]
+        public required string FirstName { get; set; } = string.Empty;
 
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "Email Address")]
+        [Description("Email Address")]
         [MaxLength(2048)]
         [DataType(DataType.EmailAddress)]
         [EmailAddress]
         [RegularExpression(Constants.EMailRegex)]
-        [JsonProperty(PropertyName = "Email")]
-        public string Email { get; set; }
+        [JsonPropertyName("Email")]
+        [JsonProperty(nameof(Email), Required = Required.Default)]
+        public string Email { get; set; } = string.Empty;
     }
 
     [ExcludeFromCodeCoverage]
     public class BaseUserModel
     {
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "First Name")]
+        [Required]
+        [Description("First Name")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
-        [RegularExpression(Constants.GenericStringRegex)]
-        [JsonProperty(PropertyName = "FirstName", Required = Required.Always)]
-        public string FirstName { get; set; } = string.Empty;
+        [JsonPropertyName("FirstName")]
+        [JsonProperty(nameof(FirstName), Required = Required.Always)]
+        public required string FirstName { get; set; } = string.Empty;
 
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "Email Address")]
-        [MaxLength(2048)]
         [Required(AllowEmptyStrings = false)]
+        [Description("Email Address")]
+        [MaxLength(2048)]
         [DataType(DataType.EmailAddress)]
         [EmailAddress]
         [RegularExpression(Constants.EMailRegex)]
-        [JsonProperty(PropertyName = "Email", Required = Required.Always)]
-        public string Email { get; set; }
+        [JsonPropertyName("Email")]
+        [JsonProperty(nameof(Email), Required = Required.Always)]
+        public required string Email { get; set; }
     }
 
     [ExcludeFromCodeCoverage]
     public class UserModel
     {
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "User Id")]
+        [Required]
+        [Description("User Id")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
-        [RegularExpression(Constants.GenericStringRegex)]
-        [JsonProperty(PropertyName = "UserId")]
+        [JsonPropertyName("UserId")]
+        [JsonProperty(nameof(UserId), Required = Required.Always)]
         [Key]
-        public string UserId { get; set; } = Guid.NewGuid().ToString();
+        public required string UserId { get; set; }
 
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "Nostr PubKey")]
+        [Required]
+        [Description("Nostr PubKey")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
-        [RegularExpression(Constants.GenericStringRegex)]
-        [JsonProperty(PropertyName = "NostrPubKey")]
-        public string NostrPubKey { get; set; } = string.Empty;
+        [JsonPropertyName("NostrPubKey")]
+        [JsonProperty(nameof(NostrPubKey), Required = Required.Always)]
+        public required string NostrPubKey { get; set; }
 
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "First Name")]
+        [Required]
+        [Description("First Name")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
-        [RegularExpression(Constants.GenericStringRegex)]
-        [JsonProperty(PropertyName = "FirstName", Required = Required.Always)]
-        public string FirstName { get; set; } = string.Empty;
+        [JsonPropertyName("FirstName")]
+        [JsonProperty(nameof(FirstName), Required = Required.Always)]
+        public required string FirstName { get; set; } = string.Empty;
 
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "Email Address")]
-        [MaxLength(2048)]
         [Required(AllowEmptyStrings = false)]
+        [Description("Email Address")]
+        [MaxLength(2048)]
         [DataType(DataType.EmailAddress)]
         [EmailAddress]
         [RegularExpression(Constants.EMailRegex)]
-        [JsonProperty(PropertyName = "Email", Required = Required.Always)]
-        public string Email { get; set; }
+        [JsonPropertyName("Email")]
+        [JsonProperty(nameof(Email), Required = Required.Always)]
+        public required string Email { get; set; }
 
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "DateCreated")]
-        [MaxLength(2048)]
+        [Required]
+        [Description("DateCreated")]
         [DataType(DataType.Date)]
-        [JsonProperty(PropertyName = "DateCreated")]
-        public DateTime DateCreated { get; set; } = UtcNowProviderFactory.GetProvider().UtcNow;
+        [JsonPropertyName("DateCreated")]
+        [JsonProperty(nameof(DateCreated), Required = Required.Always)]
+        public required DateTime DateCreated { get; set; }
     }
 
     [ExcludeFromCodeCoverage]
     public class SignInEventModel
     {
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "Kind")]
+        [Required]
+        [Description("Kind")]
         [EnumDataType(typeof(NostrKind))]
-        [JsonProperty(PropertyName = "Kind", Required = Required.Always)]
-        public NostrKind Kind { get; set; }
+        [JsonPropertyName("Kind")]
+        [JsonProperty(nameof(Kind), Required = Required.Always)]
+        public required NostrKind Kind { get; set; }
 
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "PubKey")]
+        [Required]
+        [Description("PubKey")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
-        [JsonProperty(PropertyName = "PubKey", Required = Required.Always)]
-        public string PubKey { get; set; }
+        [JsonPropertyName("PubKey")]
+        [JsonProperty(nameof(PubKey), Required = Required.Always)]
+        public required string PubKey { get; set; }
 
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "CreatedAt")]
-        [MaxLength(2048)]
+        [Required]
+        [Description("CreatedAt")]
         [DataType(DataType.Date)]
-        [JsonProperty(PropertyName = "CreatedAt", Required = Required.Always)]
-        public DateTime CreatedAt { get; set; }
+        [JsonPropertyName("CreatedAt")]
+        [JsonProperty(nameof(CreatedAt), Required = Required.Always)]
+        public required DateTime CreatedAt { get; set; }
 
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "Signature")]
+        [Required]
+        [Description("Signature")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
-        [JsonProperty(PropertyName = "Signature", Required = Required.Always)]
-        public string Signature { get; set; }
+        [JsonPropertyName("Signature")]
+        [JsonProperty(nameof(Signature), Required = Required.Always)]
+        public required string Signature { get; set; }
 
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "Content")]
+        [Required]
+        [Description("Content")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
-        [JsonProperty(PropertyName = "Content", Required = Required.Always)]
-        public string Content { get; set; }
+        [JsonPropertyName("Content")]
+        [JsonProperty(nameof(Content), Required = Required.Always)]
+        public required string Content { get; set; }
     }
 }

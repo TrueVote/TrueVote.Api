@@ -2,14 +2,14 @@ name: Workflow Controller
 
 on:
   push:
-    branches: [ master ]
+    branches: [master]
     paths-ignore:
       - CONTRIBUTING.md
       - README.md
       - .gitignore
 
   pull_request:
-    branches: [ master ]
+    branches: [master]
 
 jobs:
   call-version-workflow:
@@ -25,7 +25,7 @@ jobs:
     - name: Invoke Build Workflow
       uses: benc-uk/workflow-dispatch@v1
       with:
-        workflow: Build, Test, Deploy
+        workflow: Build, Test, Cover, Deploy
         token: ${{ secrets.ACTIONS_PERSONAL_ACCESS_TOKEN }}
 
   call-build-workflow-pr:
@@ -36,6 +36,6 @@ jobs:
     - name: Invoke Build Workflow
       uses: benc-uk/workflow-dispatch@v1
       with:
-        workflow: Build, Test, Deploy
+        workflow: Build, Test, Cover, Deploy
         token: ${{ secrets.ACTIONS_PERSONAL_ACCESS_TOKEN }}
         ref: ${{ github.event.pull_request.head.ref }}

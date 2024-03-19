@@ -1,6 +1,5 @@
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
-using System;
 using System.Diagnostics.CodeAnalysis;
 
 namespace TrueVote.Api.Helpers

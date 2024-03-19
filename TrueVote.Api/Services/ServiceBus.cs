@@ -1,7 +1,5 @@
 using Azure.Messaging.ServiceBus;
-using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Threading.Tasks;
 
 namespace TrueVote.Api.Services
 {
@@ -13,22 +11,23 @@ namespace TrueVote.Api.Services
     [ExcludeFromCodeCoverage]
     public class ServiceBus : IServiceBus
     {
-        private readonly ServiceBusClient _serviceBusClient;
-        private readonly ServiceBusSender _serviceBusSender;
+        private readonly IConfiguration _configuration;
 
-        public ServiceBus()
+        public ServiceBus(IConfiguration configuration)
         {
-            var connectionString = Environment.GetEnvironmentVariable("ServiceBusConnectionString");
-            var queueName = Environment.GetEnvironmentVariable("ServiceBusApiEventQueueName");
-
-            _serviceBusClient = new ServiceBusClient(connectionString);
-            _serviceBusSender = _serviceBusClient.CreateSender(queueName);
+            _configuration = configuration;
         }
 
         public async Task SendAsync(string message)
         {
+            var connectionString = _configuration.GetConnectionString("ServiceBusConnectionString");
+            var queueName = _configuration["ServiceBusApiEventQueueName"];
+
+            var serviceBusClient = new ServiceBusClient(connectionString);
+            var serviceBusSender = serviceBusClient.CreateSender(queueName);
+
             var serviceBusMessage = new ServiceBusMessage(message);
-            await _serviceBusSender.SendMessageAsync(serviceBusMessage);
+            await serviceBusSender.SendMessageAsync(serviceBusMessage);
         }
     }
 }

@@ -1,53 +1,44 @@
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.Functions.Worker;
-using Microsoft.Azure.Functions.Worker.Http;
-using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
-using Microsoft.Extensions.Logging;
-using Microsoft.OpenApi.Models;
 using Newtonsoft.Json;
-using System;
+using System.ComponentModel;
 using System.Diagnostics;
-using System.IO;
-using System.Net;
-using System.Threading.Tasks;
-using TrueVote.Api.Helpers;
 using TrueVote.Api.Models;
 
 namespace TrueVote.Api.Services
 {
-    public class Status : LoggerHelper
+    [ApiController]
+    [Consumes("application/json")]
+    [Produces("application/json")]
+    [ProducesResponseType(typeof(SecureString), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(SecureString), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(SecureString), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(SecureString), StatusCodes.Status406NotAcceptable)]
+    [ProducesResponseType(typeof(SecureString), StatusCodes.Status429TooManyRequests)]
+    [ProducesResponseType(typeof(SecureString), StatusCodes.Status409Conflict)]
+    public class Status : ControllerBase
     {
-        private static BuildInfo _BuildInfo = null;
-        private static string _BuildInfoReadTime = null;
+        private static BuildInfo? _BuildInfo = null;
+        private static string? _BuildInfoReadTime = null;
+        private readonly ILogger _log;
         private readonly IServiceBus _serviceBus;
 
-        public Status(ILogger log, IServiceBus serviceBus) : base(log, serviceBus)
+        public Status(ILogger log, IServiceBus serviceBus)
         {
+            _log = log;
             _serviceBus = serviceBus;
         }
 
-        [Function(nameof(GetStatus))]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [OpenApiOperation(operationId: "GetStatus", tags: new[] { "Status" })]
-        [OpenApiSecurity("oidc_auth", SecuritySchemeType.OpenIdConnect, OpenIdConnectUrl = "https://login.microsoftonline.com/{tenant_id}/v2.0/.well-known/openid-configuration", OpenIdConnectScopes = "openid,profile")]
-        [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(StatusModel), Description = "Returns Status of Api")]
-        [OpenApiResponseWithBody(statusCode: HttpStatusCode.Forbidden, contentType: "application/json", bodyType: typeof(SecureString), Description = "Forbidden")]
-        [OpenApiResponseWithBody(statusCode: HttpStatusCode.Unauthorized, contentType: "application/json", bodyType: typeof(SecureString), Description = "Unauthorized")]
-        [OpenApiResponseWithBody(statusCode: HttpStatusCode.NotFound, contentType: "application/json", bodyType: typeof(SecureString), Description = "Not Found")]
-        [OpenApiResponseWithBody(statusCode: HttpStatusCode.NotAcceptable, contentType: "application/json", bodyType: typeof(SecureString), Description = "Not Acceptable")]
-        [OpenApiResponseWithBody(statusCode: HttpStatusCode.TooManyRequests, contentType: "application/json", bodyType: typeof(SecureString), Description = "Too Many Requests")]
-        public async Task<HttpResponseData> GetStatus(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "status")] HttpRequestData req)
+        [HttpGet]
+        [Route("status")]
+        [Produces(typeof(StatusModel))]
+        [Description("Returns Status of Api")]
+        [ProducesResponseType(typeof(StatusModel), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetStatus()
         {
-            LogDebug("HTTP trigger - GetStatus:Begin");
+            _log.LogDebug("HTTP trigger - GetStatus:Begin");
 
             // For timing the running of this function
             var watch = Stopwatch.StartNew();
-
-            var requestBody = await new StreamReader(req.Body).ReadToEndAsync();
-            dynamic data = JsonConvert.DeserializeObject(requestBody);
-            LogInformation($"Request Data: {data}");
 
             var status = new StatusModel();
 
@@ -84,9 +75,9 @@ namespace TrueVote.Api.Services
 
             await _serviceBus.SendAsync($"Status Check");
 
-            LogDebug("HTTP trigger - GetStatus:End");
+            _log.LogDebug("HTTP trigger - GetStatus:End");
 
-            return await req.CreateOkResponseAsync(status);
+            return Ok(status);
         }
     }
 }

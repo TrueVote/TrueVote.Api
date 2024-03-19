@@ -1,10 +1,9 @@
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.Logging;
 using Moq;
-using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
-using System.Net;
 using System.Threading.Tasks;
 using TrueVote.Api.Models;
 using TrueVote.Api.Services;
@@ -30,9 +29,8 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task LogsMessages()
         {
             var baseCandidateObj = new BaseCandidateModel { Name = "John Smith", PartyAffiliation = "Republican" };
-            var requestData = new MockHttpRequestData(JsonConvert.SerializeObject(baseCandidateObj));
 
-            _ = await _candidateApi.CreateCandidate(requestData);
+            await _candidateApi.CreateCandidate(baseCandidateObj);
 
             _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
@@ -42,13 +40,12 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task AddsCandidate()
         {
             var baseCandidateObj = new BaseCandidateModel { Name = "John Smith", PartyAffiliation = "Republican" };
-            var requestData = new MockHttpRequestData(JsonConvert.SerializeObject(baseCandidateObj));
 
-            var ret = await _candidateApi.CreateCandidate(requestData);
+            var ret = await _candidateApi.CreateCandidate(baseCandidateObj);
             Assert.NotNull(ret);
-            Assert.Equal(HttpStatusCode.Created, ret.StatusCode);
+            Assert.Equal(StatusCodes.Status201Created, ((IStatusCodeActionResult) ret).StatusCode);
 
-            var val = await ret.ReadAsJsonAsync<CandidateModel>();
+            var val = (CandidateModel) (ret as CreatedAtActionResult).Value;
             Assert.NotNull(val);
 
             _output.WriteLine($"Item: {val}");
@@ -68,39 +65,21 @@ namespace TrueVote.Api.Tests.ServiceTests
         }
 
         [Fact]
-        public async Task HandlesInvalidCandidateCreate()
-        {
-            // This object is missing required property (Name)
-            var fakeBaseCandidateObj = new FakeBaseCandidateModel { PartyAffiliation = "Republican" };
-            var requestData = new MockHttpRequestData(JsonConvert.SerializeObject(fakeBaseCandidateObj));
-
-            var ret = await _candidateApi.CreateCandidate(requestData);
-            Assert.NotNull(ret);
-            Assert.Equal(HttpStatusCode.BadRequest, ret.StatusCode);
-            var val = await ret.ReadAsJsonAsync<SecureString>();
-            Assert.Contains("Required", val.Value.ToString());
-
-            _logHelper.Verify(LogLevel.Error, Times.Exactly(1));
-            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
-        }
-
-        [Fact]
         public async Task FindsCandidate()
         {
             var findCandidateObj = new FindCandidateModel { Name = "J" };
-            var requestData = new MockHttpRequestData(JsonConvert.SerializeObject(findCandidateObj));
 
             var candidateApi = new Candidate(_logHelper.Object, _moqDataAccessor.mockCandidateContext.Object, _mockServiceBus.Object);
 
-            var ret = await candidateApi.CandidateFind(requestData);
+            var ret = await candidateApi.CandidateFind(findCandidateObj);
             Assert.NotNull(ret);
-            Assert.Equal(HttpStatusCode.OK, ret.StatusCode);
+            Assert.Equal(StatusCodes.Status200OK, ((IStatusCodeActionResult) ret).StatusCode);
 
-            var val = await ret.ReadAsJsonAsync<List<CandidateModel>>();
-            Assert.NotEmpty(val);
-            Assert.Equal(2, val.Count);
-            Assert.Equal("John Smith", val[1].Name);
-            Assert.Equal("Democrat", val[0].PartyAffiliation);
+            var val = (CandidateModelList) (ret as OkObjectResult).Value;
+            Assert.NotEmpty(val.Candidates);
+            Assert.Equal(2, val.Candidates.Count);
+            Assert.Equal("John Smith", val.Candidates[1].Name);
+            Assert.Equal("Democrat", val.Candidates[0].PartyAffiliation);
 
             _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
@@ -110,29 +89,14 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task HandlesUnfoundCandidate()
         {
             var findCandidateObj = new FindCandidateModel { Name = "not going to find anything" };
-            var requestData = new MockHttpRequestData(JsonConvert.SerializeObject(findCandidateObj));
 
             var candidateApi = new Candidate(_logHelper.Object, _moqDataAccessor.mockCandidateContext.Object, _mockServiceBus.Object);
 
-            var ret = await candidateApi.CandidateFind(requestData);
+            var ret = await candidateApi.CandidateFind(findCandidateObj);
             Assert.NotNull(ret);
-            Assert.Equal(HttpStatusCode.NotFound, ret.StatusCode);
+            Assert.Equal(StatusCodes.Status404NotFound, ((IStatusCodeActionResult) ret).StatusCode);
 
             _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
-            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
-        }
-
-        [Fact]
-        public async Task HandlesFindCandidateError()
-        {
-            var findCandidateObj = "blah";
-            var requestData = new MockHttpRequestData(findCandidateObj);
-
-            var ret = await _candidateApi.CandidateFind(requestData);
-            Assert.NotNull(ret);
-            Assert.Equal(HttpStatusCode.BadRequest, ret.StatusCode);
-
-            _logHelper.Verify(LogLevel.Error, Times.Exactly(1));
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
         }
     }

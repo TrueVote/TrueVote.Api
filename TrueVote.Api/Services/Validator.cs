@@ -1,9 +1,5 @@
-using Microsoft.Extensions.Logging;
-using System;
 using TrueVote.Api.Helpers;
-using System.Linq;
 using TrueVote.Api.Interfaces;
-using System.Threading.Tasks;
 using Newtonsoft.Json;
 using TrueVote.Api.Models;
 using Newtonsoft.Json.Linq;
@@ -18,17 +14,19 @@ namespace TrueVote.Api.Services
         Task StoreBallotHashAsync(BallotHashModel ballotHashModel);
     }
 
-    public class Validator : LoggerHelper, IValidator
+    public class Validator : IValidator
     {
         private readonly ITrueVoteDbContext _trueVoteDbContext;
         private readonly IOpenTimestampsClient _openTimestampsClient;
         private readonly IServiceBus _serviceBus;
+        private readonly ILogger _log;
 
-        public Validator(ILogger log, ITrueVoteDbContext trueVoteDbContext, IOpenTimestampsClient openTimestampsClient, IServiceBus serviceBus) : base(log, serviceBus)
+        public Validator(ILogger log, ITrueVoteDbContext trueVoteDbContext, IOpenTimestampsClient openTimestampsClient, IServiceBus serviceBus)
         {
             _trueVoteDbContext = trueVoteDbContext;
             _openTimestampsClient = openTimestampsClient;
             _serviceBus = serviceBus;
+            _log = log;
         }
 
         public async virtual Task<BallotHashModel> HashBallotAsync(BallotModel ballot)
@@ -40,7 +38,7 @@ namespace TrueVote.Api.Services
                 // TODO Localize msg
                 var msg = $"Ballot: {ballot.BallotId} has already been hashed. Ballot Hash Id: {items.First().BallotHashId}";
 
-                LogError(msg);
+                _log.LogError(msg);
                 throw new Exception(msg);
             }
 
@@ -53,7 +51,10 @@ namespace TrueVote.Api.Services
             {
                 ServerBallotHash = serverBallotHash,
                 ServerBallotHashS = serverBallotHashS,
-                BallotId = ballot.BallotId
+                BallotId = ballot.BallotId,
+                DateCreated = UtcNowProviderFactory.GetProvider().UtcNow,
+                DateUpdated = UtcNowProviderFactory.GetProvider().UtcNow,
+                BallotHashId = Guid.NewGuid().ToString()
             };
 
             // Store the BallotHash in Database
@@ -86,7 +87,7 @@ namespace TrueVote.Api.Services
             }
             catch (Exception ex)
             {
-                LogError($"Exception stamping merkleRoot: {ex.Message}");
+                _log.LogError($"Exception stamping merkleRoot: {ex.Message}");
                 throw;
             }
 
@@ -95,9 +96,12 @@ namespace TrueVote.Api.Services
             {
                 MerkleRoot = merkleRoot,
                 MerkleRootHash = merkleRootHash,
+                TimestampId = Guid.NewGuid().ToString(),
                 TimestampHash = result,
                 TimestampHashS = (string) JToken.Parse(Utf8Json.JsonSerializer.ToJsonString(result)),
-                TimestampAt = UtcNowProviderFactory.GetProvider().UtcNow
+                TimestampAt = UtcNowProviderFactory.GetProvider().UtcNow,
+                DateCreated = UtcNowProviderFactory.GetProvider().UtcNow,
+                CalendarServerUrl = string.Empty
             };
             timestamp.CalendarServerUrl = timestamp.TimestampHashS.ExtractUrl();
 
@@ -133,7 +137,7 @@ namespace TrueVote.Api.Services
             }
             catch (Exception ex)
             {
-                LogError($"Exception storing timestamp: {ex.Message}");
+                _log.LogError($"Exception storing timestamp: {ex.Message}");
                 throw;
             }
         }
@@ -147,7 +151,7 @@ namespace TrueVote.Api.Services
             }
             catch (Exception ex)
             {
-                LogError($"Exception storing ballot hash: {ex.Message}");
+                _log.LogError($"Exception storing ballot hash: {ex.Message}");
                 throw;
             }
         }

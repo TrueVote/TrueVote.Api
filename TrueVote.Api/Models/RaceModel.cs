@@ -1,12 +1,10 @@
-using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
-using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Enums;
 using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Serialization;
+using System.Text.Json.Serialization;
 using TrueVote.Api.Helpers;
 
 namespace TrueVote.Api.Models
@@ -26,103 +24,105 @@ namespace TrueVote.Api.Models
     [ExcludeFromCodeCoverage]
     public class RaceObj
     {
-        [JsonProperty(PropertyName = "Race")]
-        public List<RaceModelResponse> race;
+        [JsonPropertyName("Race")]
+        public List<RaceModelResponse>? race;
     }
 
     [ExcludeFromCodeCoverage]
     public class RaceModelList
     {
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
+        [Required]
         [MaxLength(2048)]
-        [OpenApiProperty(Description = "List of Races")]
-        [JsonProperty(PropertyName = "Races")]
-        public List<RaceModel> Races { get; set; }
+        [Description("List of Races")]
+        [JsonPropertyName("Races")]
+        public required List<RaceModel> Races { get; set; }
     }
 
     [ExcludeFromCodeCoverage]
     public class FindRaceModel
     {
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "Name")]
+        [Required]
+        [Description("Name")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
-        [RegularExpression(Constants.GenericStringRegex)]
-        [JsonProperty(PropertyName = "Name")]
-        public string Name { get; set; } = string.Empty;
+        [JsonPropertyName("Name")]
+        [JsonProperty(nameof(Name), Required = Required.Always)]
+        public required string Name { get; set; } = string.Empty;
     }
 
     [ExcludeFromCodeCoverage]
     public class BaseRaceModel
     {
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "Name")]
+        [Required]
+        [Description("Name")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
-        [RegularExpression(Constants.GenericStringRegex)]
-        [JsonProperty(PropertyName = "Name", Required = Required.Always)]
-        public string Name { get; set; } = string.Empty;
+        [JsonPropertyName("Name")]
+        [JsonProperty(nameof(Name), Required = Required.Always)]
+        public required string Name { get; set; } = string.Empty;
 
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "Race Type")]
+        [Required]
+        [Description("Race Type")]
         [EnumDataType(typeof(RaceTypes))]
-        [JsonProperty(PropertyName = "RaceType", Required = Required.Always)]
-        public RaceTypes RaceType { get; set; }
+        [JsonPropertyName("RaceType")]
+        [JsonProperty(nameof(RaceType), Required = Required.Always)]
+        public required RaceTypes RaceType { get; set; }
     }
 
     [ExcludeFromCodeCoverage]
     public class RaceModel
     {
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "Race Id")]
+        [Required]
+        [Description("Race Id")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
-        [RegularExpression(Constants.GenericStringRegex)]
-        [JsonProperty(PropertyName = "RaceId")]
+        [JsonPropertyName("RaceId")]
+        [JsonProperty(nameof(RaceId), Required = Required.Default)]
         [Key]
-        public string RaceId { get; set; } = Guid.NewGuid().ToString();
+        public required string RaceId { get; set; } = Guid.NewGuid().ToString();
 
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "Name")]
+        [Required]
+        [Description("Name")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
-        [RegularExpression(Constants.GenericStringRegex)]
-        [JsonProperty(PropertyName = "Name", Required = Required.Always)]
-        public string Name { get; set; } = string.Empty;
+        [JsonPropertyName("Name")]
+        [JsonProperty(nameof(Name), Required = Required.Always)]
+        public required string Name { get; set; } = string.Empty;
 
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "Race Type")]
+        [Required]
+        [Description("Race Type")]
         [EnumDataType(typeof(RaceTypes))]
-        [JsonProperty(PropertyName = "RaceType", Required = Required.Always)]
-        public RaceTypes RaceType { get; set; }
+        [JsonPropertyName("RaceType")]
+        [JsonProperty(nameof(RaceType), Required = Required.Always)]
+        public required RaceTypes RaceType { get; set; }
 
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "Race Type Name")]
+        [Required]
+        [Description("Race Type Name")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
         [NotMapped]
-        [JsonProperty(PropertyName = "RaceTypeName")]
+        [JsonPropertyName("RaceTypeName")]
+        [JsonProperty(nameof(RaceTypeName), Required = Required.Default)]
         public string RaceTypeName => RaceType.ToString();
 
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "Race Type Metadata")]
+        [Description("Race Type Metadata")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
-        [RegularExpression(Constants.GenericStringRegex)]
-        [JsonProperty(PropertyName = "RaceTypeMetadata")]
-        public string RaceTypeMetadata { get; set; }
+        [JsonPropertyName("RaceTypeMetadata")]
+        [JsonProperty(nameof(RaceTypeMetadata), Required = Required.Default)]
+        public string? RaceTypeMetadata { get; set; }
 
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "DateCreated")]
-        [MaxLength(2048)]
+        [Required]
+        [Description("DateCreated")]
         [DataType(DataType.Date)]
-        [JsonProperty(PropertyName = "DateCreated")]
-        public DateTime DateCreated { get; set; } = UtcNowProviderFactory.GetProvider().UtcNow;
+        [JsonPropertyName("DateCreated")]
+        [JsonProperty(nameof(DateCreated), Required = Required.Default)]
+        public required DateTime DateCreated { get; set; } = UtcNowProviderFactory.GetProvider().UtcNow;
 
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "List of Candidates")]
+        [Description("List of Candidates")]
         [DataType("ICollection<CandidateModel>")]
-        [JsonProperty(PropertyName = "Candidates", Required = Required.AllowNull)]
+        [JsonPropertyName("Candidates")]
+        [JsonProperty(nameof(Candidates), Required = Required.Default)]
         public ICollection<CandidateModel> Candidates { get; set; } = new List<CandidateModel>();
     }
 
@@ -130,66 +130,69 @@ namespace TrueVote.Api.Models
     [ExcludeFromCodeCoverage]
     public class RaceModelResponse
     {
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "Race Id")]
+        [Required]
+        [Description("Race Id")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
-        [RegularExpression(Constants.GenericStringRegex)]
-        [JsonProperty(PropertyName = "RaceId")]
+        [JsonPropertyName("RaceId")]
+        [JsonProperty(nameof(RaceId), Required = Required.Always)]
         [Key]
-        public string RaceId { get; set; } = Guid.NewGuid().ToString();
+        public required string RaceId { get; set; } = Guid.NewGuid().ToString();
 
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "Name")]
+        [Required]
+        [Description("Name")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
-        [RegularExpression(Constants.GenericStringRegex)]
-        [JsonProperty(PropertyName = "Name")]
-        public string Name { get; set; } = string.Empty;
+        [JsonPropertyName("Name")]
+        [JsonProperty(nameof(Name), Required = Required.Always)]
+        public required string Name { get; set; } = string.Empty;
 
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "Race Type")]
+        [Required]
+        [Description("Race Type")]
         [EnumDataType(typeof(RaceTypes))]
-        [JsonProperty(PropertyName = "RaceType")]
-        public RaceTypes RaceType { get; set; }
+        [JsonPropertyName("RaceType")]
+        [JsonProperty(nameof(RaceType), Required = Required.Always)]
+        public required RaceTypes RaceType { get; set; }
 
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "Race Type Name")]
+        [Required]
+        [Description("Race Type Name")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
         [NotMapped]
-        [JsonProperty(PropertyName = "RaceTypeName")]
+        [JsonPropertyName("RaceTypeName")]
+        [JsonProperty(nameof(RaceTypeName), Required = Required.Always)]
         public string RaceTypeName => RaceType.ToString();
 
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "DateCreated")]
-        [MaxLength(2048)]
+        [Required]
+        [Description("DateCreated")]
         [DataType(DataType.Date)]
-        [JsonProperty(PropertyName = "DateCreated")]
-        public DateTime DateCreated { get; set; } = UtcNowProviderFactory.GetProvider().UtcNow;
+        [JsonPropertyName("DateCreated")]
+        [JsonProperty(nameof(DateCreated), Required = Required.Always)]
+        public required DateTime DateCreated { get; set; } = UtcNowProviderFactory.GetProvider().UtcNow;
 
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "List of Candidates")]
+        [Required]
+        [Description("List of Candidates")]
         [DataType("ICollection<CandidateModel>")]
-        [JsonProperty(PropertyName = "Candidates")]
-        public ICollection<CandidateModel> Candidates { get; set; } = new List<CandidateModel>();
+        [JsonPropertyName("Candidates")]
+        [JsonProperty(nameof(Candidates), Required = Required.Always)]
+        public required ICollection<CandidateModel> Candidates { get; set; } = new List<CandidateModel>();
     }
 
     [ExcludeFromCodeCoverage]
     public class AddCandidatesModel
     {
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "Race Id")]
+        [Required]
+        [Description("Race Id")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
-        [RegularExpression(Constants.GenericStringRegex)]
-        [JsonProperty(PropertyName = "RaceId", Required = Required.Always)]
-        public string RaceId { get; set; }
+        [JsonPropertyName("RaceId")]
+        [JsonProperty(nameof(RaceId), Required = Required.Always)]
+        public required string RaceId { get; set; }
 
-        [OpenApiSchemaVisibility(OpenApiVisibilityType.Important)]
-        [OpenApiProperty(Description = "Candidate Ids")]
-        [RegularExpression(Constants.GenericStringRegex)]
-        [JsonProperty(PropertyName = "CandidateIds", Required = Required.Always)]
-        public List<string> CandidateIds { get; set; }
+        [Required]
+        [Description("Candidate Ids")]
+        [JsonPropertyName("CandidateIds")]
+        [JsonProperty(nameof(CandidateIds), Required = Required.Always)]
+        public required List<string> CandidateIds { get; set; }
     }
 }
