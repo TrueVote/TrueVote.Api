@@ -42,7 +42,7 @@ namespace TrueVote.Api
                 {
                     Version = "1.0.0",
                     Title = "TrueVote.Api",
-                    Description = "TrueVote APIs that run as serverless functions using OpenAPI specification.",
+                    Description = "TrueVote APIs using strict OpenAPI specification.",
                     TermsOfService = new Uri("https://truevote.org/terms"),
                     Contact = new OpenApiContact()
                     {
