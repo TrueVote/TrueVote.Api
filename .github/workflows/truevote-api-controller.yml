@@ -2,7 +2,7 @@ name: Workflow Controller
 
 on:
   push:
-    branches: [master, AD-105]
+    branches: [master]
     paths-ignore:
       - CONTRIBUTING.md
       - README.md
