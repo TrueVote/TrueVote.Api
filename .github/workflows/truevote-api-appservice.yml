@@ -48,6 +48,7 @@ jobs:
     - name: Restore
       run: |
         dotnet restore ${{ env.WORKING_DIRECTORY }}
+        dotnet restore ${{ env.TEST_DIRECTORY }}
         dotnet tool restore
 
     - name: Fixups
