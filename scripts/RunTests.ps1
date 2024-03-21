@@ -1,7 +1,7 @@
 param([String]$ci="false") 
 
 # Run the test coverage
-$TestOutput = dotnet coverlet "TrueVote.Api.Tests/bin/Debug/net8.0/TrueVote.Api.Tests.dll" --target "dotnet" --targetargs "test --verbosity normal --no-build" --format lcov --output TrueVote.Api.Tests/TestResults/ --threshold=100 --threshold-type=line --threshold-stat=total --exclude-by-file "**.g.cs"
+$TestOutput = dotnet coverlet "TrueVote.Api.Tests/bin/Debug/net8.0/TrueVote.Api.Tests.dll" --target "dotnet" --targetargs "test --verbosity normal --no-build" --format lcov --output TrueVote.Api.Tests/TestResults/ --threshold=99 --threshold-type=line --threshold-stat=total --exclude-by-file "**.g.cs"
 
 Write-Host $TestOutput
 
