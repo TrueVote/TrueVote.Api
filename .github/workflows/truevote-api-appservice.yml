@@ -43,9 +43,6 @@ jobs:
       with:
         dotnet-version: ${{ env.SWASHBUCKLE_DOTNET_CORE_VERSION }}
 
-    - name: Install Git for Windows with Git Bash
-      run: choco install git.install -y
-
     - name: Restore
       run: |
         dotnet restore
