@@ -43,6 +43,10 @@ jobs:
       with:
         dotnet-version: ${{ env.SWASHBUCKLE_DOTNET_CORE_VERSION }}
 
+    - name: Add additional packages
+      run: |
+        wsl --install -d Ubuntu
+
     - name: Restore
       run: |
         dotnet restore
@@ -59,6 +63,8 @@ jobs:
         dotnet --version
         git --version
         az --version
+        wsl --list
+        bash --version
 
     - name: Build
       run: dotnet build --no-restore
