@@ -43,10 +43,6 @@ jobs:
       with:
         dotnet-version: ${{ env.SWASHBUCKLE_DOTNET_CORE_VERSION }}
 
-    - name: Check common paths for Bash
-      run: |
-        dir C:\Program Files\Git\bin\bash.exe /s /b
-
     - name: Restore
       run: |
         dotnet restore
