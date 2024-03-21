@@ -45,7 +45,7 @@ jobs:
 
     - name: Add additional packages
       run: |
-        wsl --install -d Ubuntu
+        wsl --install
 
     - name: Restore
       run: |
