@@ -23,11 +23,8 @@ env:
   API_IMPORT_SPECIFICATION_PATH: TrueVote.Api\publish\swagger.json
   API_IMPORT_DLL: TrueVote.Api\publish\TrueVote.Api.dll
   API_IMPORT_VERSION: v1
-  CONFIGURATION: Releases
-  TEST_CONFIGURATION: Debug
   DOTNET_CORE_VERSION: 8.0.x
   WORKING_DIRECTORY: TrueVote.Api
-  TEST_DIRECTORY: TrueVote.Api.Tests
 
 jobs:
   build:
@@ -48,8 +45,7 @@ jobs:
 
     - name: Restore
       run: |
-        dotnet restore ${{ env.WORKING_DIRECTORY }}
-        dotnet restore ${{ env.TEST_DIRECTORY }}
+        dotnet restore
         dotnet tool restore
 
     - name: Fixups
@@ -65,23 +61,27 @@ jobs:
         az --version
 
     - name: Build
-      run: dotnet build ${{ env.WORKING_DIRECTORY }} --configuration ${{ env.CONFIGURATION }} --no-restore
+      run: dotnet build --no-restore
 
     - name: Test
       shell: pwsh
       run: |
-        dotnet build ${{ env.TEST_DIRECTORY }} --configuration ${{ env.TEST_CONFIGURATION }} --no-restore
         ./scripts/RunTests.ps1 -ci true
 
-    # - name: Publish Coverage to Coveralls
-    #   if: github.ref == 'refs/heads/master'
-    #   uses: coverallsapp/github-action@master
-    #   with:
-    #     github-token: ${{ secrets.GITHUB_TOKEN }}
-    #     path-to-lcov: TrueVote.Api.Tests/TestResults/coverage.info
+    - name: Publish Coverage to Coveralls
+      if: github.ref == 'refs/heads/master'
+      uses: coverallsapp/github-action@master
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        path-to-lcov: TrueVote.Api.Tests/TestResults/coverage.info
+
+    - name: Build Release Version
+      shell: pwsh
+      run: |
+        dotnet build --no-restore --configuration Release --output $${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
 
     - name: Publish
-      run: dotnet publish ${{ env.WORKING_DIRECTORY }} --configuration ${{ env.CONFIGURATION }} --no-build --output ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+      run: dotnet publish ${{ env.WORKING_DIRECTORY }} --configuration Release --no-build --output ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
 
     - name: Install Swashbuckle CLI .NET Global Tool
       run: dotnet tool install --global Swashbuckle.AspNetCore.Cli --version ${{ env.SWASHBUCLE_ASPNET_CORE_CLI_PACKAGE_VERSION }}
