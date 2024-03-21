@@ -24,6 +24,7 @@ env:
   API_IMPORT_DLL: TrueVote.Api\publish\TrueVote.Api.dll
   API_IMPORT_VERSION: v1
   CONFIGURATION: Releases
+  TEST_CONFIGURATION: Debug
   DOTNET_CORE_VERSION: 8.0.x
   WORKING_DIRECTORY: TrueVote.Api
   TEST_DIRECTORY: TrueVote.Api.Tests
@@ -69,7 +70,7 @@ jobs:
     - name: Test
       shell: pwsh
       run: |
-        dotnet build ${{ env.TEST_DIRECTORY }} --configuration ${{ env.CONFIGURATION }} --no-restore
+        dotnet build ${{ env.TEST_DIRECTORY }} --configuration ${{ env.TEST_CONFIGURATION }} --no-restore
         ./scripts/RunTests.ps1 -ci true
 
     # - name: Publish Coverage to Coveralls
