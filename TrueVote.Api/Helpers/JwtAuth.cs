@@ -1,8 +1,8 @@
-using Microsoft.IdentityModel.Tokens;
-using System.Security.Claims;
-using System.IdentityModel.Tokens.Jwt;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Primitives;
+using Microsoft.IdentityModel.Tokens;
+using System.Diagnostics.CodeAnalysis;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 /* 
  * This class shouldn't need to exist. The preferred method is to use the [Authorize] attribute on endpoints to
