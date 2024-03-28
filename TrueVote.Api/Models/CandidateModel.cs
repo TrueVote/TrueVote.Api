@@ -1,70 +1,12 @@
-using Newtonsoft.Json;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 using TrueVote.Api.Helpers;
 
 namespace TrueVote.Api.Models
 {
-    [ExcludeFromCodeCoverage]
-    public class CandidateObj
-    {
-        [JsonPropertyName("Candidate")]
-        [JsonProperty("Candidate", Required = Required.Default)]
-        public List<CandidateModel>? candidate;
-    }
-
-    [ExcludeFromCodeCoverage]
-    public class CandidateModelList
-    {
-        [Required]
-        [MaxLength(2048)]
-        [Description("List of Candidates")]
-        [JsonPropertyName("Candidates")]
-        [JsonProperty(nameof(Candidates), Required = Required.Always)]
-        public required List<CandidateModel> Candidates { get; set; }
-    }
-
-    [ExcludeFromCodeCoverage]
-    public class FindCandidateModel
-    {
-        [Required]
-        [Description("Name")]
-        [MaxLength(2048)]
-        [DataType(DataType.Text)]
-        [JsonPropertyName("Name")]
-        [JsonProperty(nameof(Name), Required = Required.Always)]
-        public required string Name { get; set; } = string.Empty;
-
-        [Description("Party Affiliation")]
-        [MaxLength(2048)]
-        [DataType(DataType.Text)]
-        [JsonPropertyName("PartyAffiliation")]
-        [JsonProperty(nameof(PartyAffiliation), Required = Required.Default)]
-        public string PartyAffiliation { get; set; } = string.Empty;
-    }
-
-    [ExcludeFromCodeCoverage]
-    public class BaseCandidateModel
-    {
-        [Required]
-        [Description("Name")]
-        [MaxLength(2048)]
-        [DataType(DataType.Text)]
-        [JsonPropertyName("Name")]
-        [JsonProperty(nameof(Name), Required = Required.Always)]
-        public required string Name { get; set; } = string.Empty;
-
-        [Required]
-        [Description("Party Affiliation")]
-        [MaxLength(2048)]
-        [DataType(DataType.Text)]
-        [JsonPropertyName("PartyAffiliation")]
-        [JsonProperty(nameof(PartyAffiliation), Required = Required.Default)]
-        public required string PartyAffiliation { get; set; } = string.Empty;
-    }
-
     [ExcludeFromCodeCoverage]
     public class CandidateModel
     {
@@ -75,7 +17,7 @@ namespace TrueVote.Api.Models
         [JsonPropertyName("CandidateId")]
         [JsonProperty(nameof(CandidateId), Required = Required.Default)]
         [Key]
-        public required string CandidateId { get; set; } = Guid.NewGuid().ToString();
+        required public string CandidateId { get; set; } = Guid.NewGuid().ToString();
 
         [Required]
         [Description("Name")]
@@ -83,7 +25,7 @@ namespace TrueVote.Api.Models
         [DataType(DataType.Text)]
         [JsonPropertyName("Name")]
         [JsonProperty(nameof(Name), Required = Required.Always)]
-        public required string Name { get; set; } = string.Empty;
+        required public string Name { get; set; } = string.Empty;
 
         [Description("Party Affiliation")]
         [MaxLength(2048)]
@@ -104,7 +46,7 @@ namespace TrueVote.Api.Models
         [DataType(DataType.Date)]
         [JsonPropertyName("DateCreated")]
         [JsonProperty(nameof(DateCreated), Required = Required.Default)]
-        public required DateTime DateCreated { get; set; } = UtcNowProviderFactory.GetProvider().UtcNow;
+        required public DateTime DateCreated { get; set; } = UtcNowProviderFactory.GetProvider().UtcNow;
 
         [Description("Selected")]
         [JsonPropertyName("Selected")]
@@ -117,6 +59,63 @@ namespace TrueVote.Api.Models
         [JsonPropertyName("SelectedMetadata")]
         [JsonProperty(nameof(SelectedMetadata), Required = Required.Default)]
         public string SelectedMetadata { get; set; } = string.Empty;
+    }
 
+    [ExcludeFromCodeCoverage]
+    public class CandidateObj
+    {
+        [JsonPropertyName("Candidate")]
+        [JsonProperty("Candidate", Required = Required.Default)]
+        private List<CandidateModel>? candidate;
+    }
+
+    [ExcludeFromCodeCoverage]
+    public class CandidateModelList
+    {
+        [Required]
+        [MaxLength(2048)]
+        [Description("List of Candidates")]
+        [JsonPropertyName("Candidates")]
+        [JsonProperty(nameof(Candidates), Required = Required.Always)]
+        required public List<CandidateModel> Candidates { get; set; }
+    }
+
+    [ExcludeFromCodeCoverage]
+    public class FindCandidateModel
+    {
+        [Required]
+        [Description("Name")]
+        [MaxLength(2048)]
+        [DataType(DataType.Text)]
+        [JsonPropertyName("Name")]
+        [JsonProperty(nameof(Name), Required = Required.Always)]
+        required public string Name { get; set; } = string.Empty;
+
+        [Description("Party Affiliation")]
+        [MaxLength(2048)]
+        [DataType(DataType.Text)]
+        [JsonPropertyName("PartyAffiliation")]
+        [JsonProperty(nameof(PartyAffiliation), Required = Required.Default)]
+        public string PartyAffiliation { get; set; } = string.Empty;
+    }
+
+    [ExcludeFromCodeCoverage]
+    public class BaseCandidateModel
+    {
+        [Required]
+        [Description("Name")]
+        [MaxLength(2048)]
+        [DataType(DataType.Text)]
+        [JsonPropertyName("Name")]
+        [JsonProperty(nameof(Name), Required = Required.Always)]
+        required public string Name { get; set; } = string.Empty;
+
+        [Required]
+        [Description("Party Affiliation")]
+        [MaxLength(2048)]
+        [DataType(DataType.Text)]
+        [JsonPropertyName("PartyAffiliation")]
+        [JsonProperty(nameof(PartyAffiliation), Required = Required.Default)]
+        required public string PartyAffiliation { get; set; } = string.Empty;
     }
 }

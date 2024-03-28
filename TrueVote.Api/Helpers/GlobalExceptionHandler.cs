@@ -1,23 +1,16 @@
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
-using System.Diagnostics.CodeAnalysis;
 
 // .NET 8 Exception handler: https://www.milanjovanovic.tech/blog/global-error-handling-in-aspnetcore-8
 namespace TrueVote.Api.Helpers
 {
     [ExcludeFromCodeCoverage]
-    internal sealed class GlobalExceptionHandler : IExceptionHandler
+    internal sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IExceptionHandler
     {
-        private readonly ILogger<LoggerHelper> _logger;
-
-        public GlobalExceptionHandler(ILogger<LoggerHelper> logger)
-        {
-            _logger = logger;
-        }
-
         public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
         {
-            _logger.LogError(exception, "Exception occurred: {Message}", exception.Message);
+            logger.LogError(exception, "Exception occurred: {Message}", exception.Message);
 
             var problemDetails = new ProblemDetails
             {

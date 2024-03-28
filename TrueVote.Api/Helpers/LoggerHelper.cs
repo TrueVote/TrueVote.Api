@@ -6,10 +6,10 @@ namespace TrueVote.Api.Helpers
     [ExcludeFromCodeCoverage]
     public class LoggerHelper : ILogger
     {
+        private static readonly object _lock = new object();
         private readonly string _categoryName;
         private readonly IServiceBus _serviceBus;
         private readonly ILogger _log;
-        private static readonly object _lock = new object();
 
         public LoggerHelper(string categoryName, IServiceBus serviceBus, ILogger logger)
         {
@@ -18,7 +18,8 @@ namespace TrueVote.Api.Helpers
             _log = logger;
         }
 
-        public IDisposable? BeginScope<TState>(TState state) where TState : notnull
+        public IDisposable? BeginScope<TState>(TState state) 
+            where TState : notnull
         {
             return _log.BeginScope(state);
         }
@@ -31,7 +32,9 @@ namespace TrueVote.Api.Helpers
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
         {
             if (!IsEnabled(logLevel))
+            {
                 return;
+            }
 
             lock (_lock)
             {

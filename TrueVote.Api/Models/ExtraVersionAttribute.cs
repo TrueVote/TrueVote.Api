@@ -1,10 +1,16 @@
 using System.Diagnostics.CodeAnalysis;
 
-[AttributeUsage(AttributeTargets.Assembly, AllowMultiple = false)]
-[ExcludeFromCodeCoverage]
-public sealed class ExtraVersionAttribute : Attribute
+namespace TrueVote.Api.Models
 {
-    public string ExtraVersion { get; }
+    [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = false)]
+    [ExcludeFromCodeCoverage]
+    public sealed class ExtraVersionAttribute : Attribute
+    {
+        public string ExtraVersion { get; }
 
-    public ExtraVersionAttribute(string extraVersion) { ExtraVersion = extraVersion; }
+        public ExtraVersionAttribute(string extraVersion)
+        {
+            ExtraVersion = extraVersion;
+        }
+    }
 }
