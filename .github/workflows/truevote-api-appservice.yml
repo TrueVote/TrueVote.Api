@@ -61,6 +61,7 @@ jobs:
         az --version
         bash --version
 
+    # This step is necessary because during the build step, the bash -c invoke of build-version.vbs fails.
     - name: Run Build Version Script
       run: bash -c ./scripts/build-version.sh
       shell: bash
@@ -80,13 +81,10 @@ jobs:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         path-to-lcov: TrueVote.Api.Tests/TestResults/coverage.info
 
-    - name: Build Release Version
-      shell: pwsh
+    - name: Build and Publish Release Version
       run: |
-        dotnet build --no-restore --configuration Release --output $${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
-
-    - name: Publish
-      run: dotnet publish ${{ env.WORKING_DIRECTORY }} --configuration Release --no-build --output ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+        dotnet clean TrueVote.Api
+        dotnet publish ${{ env.WORKING_DIRECTORY }} --configuration Release --output ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
 
     - name: Install Swashbuckle CLI .NET Global Tool
       run: dotnet tool install --global Swashbuckle.AspNetCore.Cli --version ${{ env.SWASHBUCLE_ASPNET_CORE_CLI_PACKAGE_VERSION }}
