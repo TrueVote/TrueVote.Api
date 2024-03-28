@@ -83,7 +83,6 @@ jobs:
 
     - name: Build and Publish Release Version
       run: |
-        dotnet clean TrueVote.Api
         dotnet publish ${{ env.WORKING_DIRECTORY }} --configuration Release --output ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
 
     - name: Install Swashbuckle CLI .NET Global Tool
