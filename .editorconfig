@@ -104,6 +104,36 @@ dotnet_diagnostic.CS8603.severity = suggestion
 # CS8765: Nullability of type of parameter doesn't match overridden member (possibly because of nullability attributes).
 dotnet_diagnostic.CS8765.severity = suggestion
 
+# SA1200: Using directives should be placed correctly
+dotnet_diagnostic.SA1200.severity = none
+
+# SA1633: File should have header
+dotnet_diagnostic.SA1633.severity = silent
+
+# SA1413: Use trailing comma in multi-line initializers
+dotnet_diagnostic.SA1413.severity = suggestion
+
+# SA1003: Symbols should be spaced correctly
+dotnet_diagnostic.SA1003.severity = suggestion
+
+# SA1009: Closing parenthesis should be spaced correctly
+dotnet_diagnostic.SA1009.severity = suggestion
+
+# SA1601: Partial elements should be documented
+dotnet_diagnostic.SA1601.severity = suggestion
+
+# SA1600: Elements should be documented
+dotnet_diagnostic.SA1600.severity = suggestion
+
+# SA1309: Field names should not begin with underscore
+dotnet_diagnostic.SA1309.severity = none
+
+# SA1101: Prefix local calls with this
+dotnet_diagnostic.SA1101.severity = silent
+
+# SA1402: File may only contain a single type
+dotnet_diagnostic.SA1402.severity = suggestion
+
 [*.{cs,vb}]
 #### Naming styles ####
 

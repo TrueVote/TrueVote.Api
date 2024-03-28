@@ -40,7 +40,7 @@ namespace TrueVote.Api.Services
         {
             _log.LogDebug("HTTP trigger - SubmitBallot:Begin");
 
-            _log.LogInformation($"Request Data: {bindSubmitBallotModel}");
+            _log.LogInformation("Request Data: {Model}", bindSubmitBallotModel);
 
             // TODO Validate the ballot
             // 1. Must have a UserId and not have already submitted a ballot for this election
@@ -55,7 +55,8 @@ namespace TrueVote.Api.Services
             await _trueVoteDbContext.SaveChangesAsync();
 
             // TODO Localize .Message
-            var submitBallotResponse = new SubmitBallotModelResponse {
+            var submitBallotResponse = new SubmitBallotModelResponse
+            {
                 ElectionId = bindSubmitBallotModel.Election.ElectionId,
                 BallotId = ballot.BallotId,
                 Message = $"Ballot successfully submitted. Election ID: {bindSubmitBallotModel.Election.ElectionId}, Ballot ID: {ballot.BallotId}"

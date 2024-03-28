@@ -1,10 +1,10 @@
-using Newtonsoft.Json;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 using TrueVote.Api.Helpers;
 
 namespace TrueVote.Api.Models
@@ -35,7 +35,7 @@ namespace TrueVote.Api.Models
         [MaxLength(2048)]
         [Description("List of Races")]
         [JsonPropertyName("Races")]
-        public required List<RaceModel> Races { get; set; }
+        required public List<RaceModel> Races { get; set; }
     }
 
     [ExcludeFromCodeCoverage]
@@ -47,7 +47,7 @@ namespace TrueVote.Api.Models
         [DataType(DataType.Text)]
         [JsonPropertyName("Name")]
         [JsonProperty(nameof(Name), Required = Required.Always)]
-        public required string Name { get; set; } = string.Empty;
+        required public string Name { get; set; } = string.Empty;
     }
 
     [ExcludeFromCodeCoverage]
@@ -59,14 +59,14 @@ namespace TrueVote.Api.Models
         [DataType(DataType.Text)]
         [JsonPropertyName("Name")]
         [JsonProperty(nameof(Name), Required = Required.Always)]
-        public required string Name { get; set; } = string.Empty;
+        required public string Name { get; set; } = string.Empty;
 
         [Required]
         [Description("Race Type")]
         [EnumDataType(typeof(RaceTypes))]
         [JsonPropertyName("RaceType")]
         [JsonProperty(nameof(RaceType), Required = Required.Always)]
-        public required RaceTypes RaceType { get; set; }
+        required public RaceTypes RaceType { get; set; }
     }
 
     [ExcludeFromCodeCoverage]
@@ -79,7 +79,7 @@ namespace TrueVote.Api.Models
         [JsonPropertyName("RaceId")]
         [JsonProperty(nameof(RaceId), Required = Required.Default)]
         [Key]
-        public required string RaceId { get; set; } = Guid.NewGuid().ToString();
+        required public string RaceId { get; set; } = Guid.NewGuid().ToString();
 
         [Required]
         [Description("Name")]
@@ -87,14 +87,14 @@ namespace TrueVote.Api.Models
         [DataType(DataType.Text)]
         [JsonPropertyName("Name")]
         [JsonProperty(nameof(Name), Required = Required.Always)]
-        public required string Name { get; set; } = string.Empty;
+        required public string Name { get; set; } = string.Empty;
 
         [Required]
         [Description("Race Type")]
         [EnumDataType(typeof(RaceTypes))]
         [JsonPropertyName("RaceType")]
         [JsonProperty(nameof(RaceType), Required = Required.Always)]
-        public required RaceTypes RaceType { get; set; }
+        required public RaceTypes RaceType { get; set; }
 
         [Required]
         [Description("Race Type Name")]
@@ -117,7 +117,7 @@ namespace TrueVote.Api.Models
         [DataType(DataType.Date)]
         [JsonPropertyName("DateCreated")]
         [JsonProperty(nameof(DateCreated), Required = Required.Default)]
-        public required DateTime DateCreated { get; set; } = UtcNowProviderFactory.GetProvider().UtcNow;
+        required public DateTime DateCreated { get; set; } = UtcNowProviderFactory.GetProvider().UtcNow;
 
         [Description("List of Candidates")]
         [DataType("ICollection<CandidateModel>")]
@@ -137,7 +137,7 @@ namespace TrueVote.Api.Models
         [JsonPropertyName("RaceId")]
         [JsonProperty(nameof(RaceId), Required = Required.Always)]
         [Key]
-        public required string RaceId { get; set; } = Guid.NewGuid().ToString();
+        required public string RaceId { get; set; } = Guid.NewGuid().ToString();
 
         [Required]
         [Description("Name")]
@@ -145,14 +145,14 @@ namespace TrueVote.Api.Models
         [DataType(DataType.Text)]
         [JsonPropertyName("Name")]
         [JsonProperty(nameof(Name), Required = Required.Always)]
-        public required string Name { get; set; } = string.Empty;
+        required public string Name { get; set; } = string.Empty;
 
         [Required]
         [Description("Race Type")]
         [EnumDataType(typeof(RaceTypes))]
         [JsonPropertyName("RaceType")]
         [JsonProperty(nameof(RaceType), Required = Required.Always)]
-        public required RaceTypes RaceType { get; set; }
+        required public RaceTypes RaceType { get; set; }
 
         [Required]
         [Description("Race Type Name")]
@@ -168,14 +168,14 @@ namespace TrueVote.Api.Models
         [DataType(DataType.Date)]
         [JsonPropertyName("DateCreated")]
         [JsonProperty(nameof(DateCreated), Required = Required.Always)]
-        public required DateTime DateCreated { get; set; } = UtcNowProviderFactory.GetProvider().UtcNow;
+        required public DateTime DateCreated { get; set; } = UtcNowProviderFactory.GetProvider().UtcNow;
 
         [Required]
         [Description("List of Candidates")]
         [DataType("ICollection<CandidateModel>")]
         [JsonPropertyName("Candidates")]
         [JsonProperty(nameof(Candidates), Required = Required.Always)]
-        public required ICollection<CandidateModel> Candidates { get; set; } = new List<CandidateModel>();
+        required public ICollection<CandidateModel> Candidates { get; set; } = new List<CandidateModel>();
     }
 
     [ExcludeFromCodeCoverage]
@@ -187,12 +187,12 @@ namespace TrueVote.Api.Models
         [DataType(DataType.Text)]
         [JsonPropertyName("RaceId")]
         [JsonProperty(nameof(RaceId), Required = Required.Always)]
-        public required string RaceId { get; set; }
+        required public string RaceId { get; set; }
 
         [Required]
         [Description("Candidate Ids")]
         [JsonPropertyName("CandidateIds")]
         [JsonProperty(nameof(CandidateIds), Required = Required.Always)]
-        public required List<string> CandidateIds { get; set; }
+        required public List<string> CandidateIds { get; set; }
     }
 }
