@@ -14,6 +14,7 @@
     <ApplicationIcon>dist\favicon.ico</ApplicationIcon>
     <RepositoryUrl>https://github.com/TrueVote/TrueVote.Api</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
+    <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
   </PropertyGroup>
   <ItemGroup>
     <Content Remove="local.settings.json" />
