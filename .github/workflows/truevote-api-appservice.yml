@@ -43,6 +43,15 @@ jobs:
       with:
         dotnet-version: ${{ env.SWASHBUCKLE_DOTNET_CORE_VERSION }}
 
+    - name: Enable WSL
+      uses: msys2/setup-msys2@v2
+      with:
+        update: true
+        install: >-
+          bash
+          git
+          tar
+
     - name: Restore
       run: |
         dotnet restore
