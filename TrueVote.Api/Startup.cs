@@ -109,13 +109,13 @@ namespace TrueVote.Api
                 c.InjectStylesheet(CustomStylesheetPath);
             });
 
-            app.UseHttpsRedirection();
+            // app.UseHttpsRedirection();
 
             app.UseExceptionHandler();
 
             app.UseRouting();
 
-            app.UseAuthorization();
+            // app.UseAuthorization();
 
             app.UseStaticFiles(new StaticFileOptions
             {
