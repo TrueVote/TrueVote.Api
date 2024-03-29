@@ -37,6 +37,11 @@ namespace TrueVote.Api
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen(o =>
             {
+                var baseUrl = "/api";
+                o.AddServer(new OpenApiServer
+                {
+                    Url = baseUrl
+                });
                 o.EnableAnnotations();
                 o.SwaggerDoc("v1", new OpenApiInfo()
                 {
@@ -122,6 +127,7 @@ namespace TrueVote.Api
             {
                 e.MapControllers();
                 e.MapGraphQL();
+                e.MapSwagger();
             });
 
             Console.WriteLine("HostingEnvironmentName: '{0}'", env.EnvironmentName);
