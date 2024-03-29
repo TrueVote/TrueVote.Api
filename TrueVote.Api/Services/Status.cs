@@ -7,8 +7,8 @@ using TrueVote.Api.Models;
 namespace TrueVote.Api.Services
 {
     [ApiController]
-    [Consumes("application/json")]
-    [Produces("application/json")]
+    // [Consumes("application/json")]
+    // [Produces("application/json")]
     [ProducesResponseType(typeof(SecureString), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(SecureString), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(SecureString), StatusCodes.Status404NotFound)]
