@@ -7,8 +7,8 @@ using TrueVote.Api.Models;
 namespace TrueVote.Api.Services
 {
     [ApiController]
-    // [Consumes("application/json")]
-    // [Produces("application/json")]
+    [Consumes("application/json")]
+    [Produces("application/json")]
     [ProducesResponseType(typeof(SecureString), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(SecureString), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(SecureString), StatusCodes.Status404NotFound)]
@@ -78,6 +78,20 @@ namespace TrueVote.Api.Services
             _log.LogDebug("HTTP trigger - GetStatus:End");
 
             return Ok(status);
+        }
+
+        [HttpGet]
+        [Route("ping")]
+        [Produces(typeof(SecureString))]
+        [Description("Returns simple Response from Api")]
+        [ProducesResponseType(typeof(StatusModel), StatusCodes.Status200OK)]
+        public IActionResult GetPing()
+        {
+            _log.LogDebug("HTTP trigger - GetPing:Begin");
+
+            _log.LogDebug("HTTP trigger - GetPing:End");
+
+            return Ok(new SecureString { Value = "Reply" });
         }
     }
 }

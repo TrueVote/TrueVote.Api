@@ -68,5 +68,21 @@ namespace TrueVote.Api.Tests.ServiceTests
             Assert.NotNull(val);
             Assert.True(val.ExecutionTime >= 0);
         }
+
+        [Fact]
+        public void RespondsFromPing()
+        {
+            var status = new Status(_logHelper.Object, _mockServiceBus.Object);
+
+            var ret = status.GetPing();
+            Assert.NotNull(ret);
+            Assert.Equal(StatusCodes.Status200OK, ((IStatusCodeActionResult) ret).StatusCode);
+
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+
+            var val = (SecureString) (ret as OkObjectResult).Value;
+            Assert.NotNull(val);
+            Assert.Equal("Reply", val.Value);
+        }
     }
 }
