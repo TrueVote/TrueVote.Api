@@ -85,11 +85,13 @@ namespace TrueVote.Api.Services
         [Produces(typeof(SecureString))]
         [Description("Returns simple Response from Api")]
         [ProducesResponseType(typeof(StatusModel), StatusCodes.Status200OK)]
-        public IActionResult GetPing()
+        public async Task<IActionResult> GetPing()
         {
             _log.LogDebug("HTTP trigger - GetPing:Begin");
 
             _log.LogDebug("HTTP trigger - GetPing:End");
+
+            await _serviceBus.SendAsync($"Ping Check");
 
             return Ok(new SecureString { Value = "Reply" });
         }

@@ -70,11 +70,11 @@ namespace TrueVote.Api.Tests.ServiceTests
         }
 
         [Fact]
-        public void RespondsFromPing()
+        public async Task RespondsFromPing()
         {
             var status = new Status(_logHelper.Object, _mockServiceBus.Object);
 
-            var ret = status.GetPing();
+            var ret = await status.GetPing();
             Assert.NotNull(ret);
             Assert.Equal(StatusCodes.Status200OK, ((IStatusCodeActionResult) ret).StatusCode);
 
