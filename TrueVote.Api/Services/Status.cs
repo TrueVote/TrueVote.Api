@@ -33,7 +33,7 @@ namespace TrueVote.Api.Services
         [Produces(typeof(StatusModel))]
         [Description("Returns Status of Api")]
         [ProducesResponseType(typeof(StatusModel), StatusCodes.Status200OK)]
-        public IActionResult GetStatus()
+        public async Task<IActionResult> GetStatus()
         {
             _log.LogDebug("HTTP trigger - GetStatus:Begin");
 
@@ -73,7 +73,7 @@ namespace TrueVote.Api.Services
             status.ExecutionTimeMsg = $"Time to run: {watch.ElapsedMilliseconds}ms";
             status.CurrentTime = DateTime.Now.ToUniversalTime().ToString("dddd, MMM dd, yyyy HH:mm:ss");
 
-            _serviceBus.SendAsync($"Status Check");
+            await Task.FromResult(_serviceBus.SendAsync($"Status Check"));
 
             _log.LogDebug("HTTP trigger - GetStatus:End");
 

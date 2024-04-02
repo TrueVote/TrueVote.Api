@@ -58,7 +58,7 @@ namespace TrueVote.Api.Services
         [Produces(typeof(ElectionModelList))]
         [Description("Returns collection of Elections")]
         [ProducesResponseType(typeof(ElectionModelList), StatusCodes.Status200OK)]
-        public IActionResult ElectionFind([FromBody] FindElectionModel findElection)
+        public async Task<IActionResult> ElectionFind([FromBody] FindElectionModel findElection)
         {
             _log.LogDebug("HTTP trigger - ElectionFind:Begin");
 
@@ -66,10 +66,10 @@ namespace TrueVote.Api.Services
 
             var items = new ElectionModelList
             {
-                Elections = _trueVoteDbContext.Elections
+                Elections = await _trueVoteDbContext.Elections
                 .Where(e =>
                     findElection.Name == null || (e.Name ?? string.Empty).ToLower().Contains(findElection.Name.ToLower()))
-                .OrderByDescending(e => e.DateCreated).ToListAsync().Result
+                .OrderByDescending(e => e.DateCreated).ToListAsync()
             };
 
             _log.LogDebug("HTTP trigger - ElectionFind:End");
