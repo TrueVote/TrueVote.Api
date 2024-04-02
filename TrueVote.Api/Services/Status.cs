@@ -91,7 +91,7 @@ namespace TrueVote.Api.Services
 
             _log.LogDebug("HTTP trigger - GetPing:End");
 
-            await _serviceBus.SendAsync($"Ping Check");
+            await Task.FromResult(_serviceBus.SendAsync($"Ping Check"));
 
             return Ok(new SecureString { Value = "Reply" });
         }
