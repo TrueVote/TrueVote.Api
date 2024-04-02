@@ -73,11 +73,11 @@ namespace TrueVote.Api.Services
             status.ExecutionTimeMsg = $"Time to run: {watch.ElapsedMilliseconds}ms";
             status.CurrentTime = DateTime.Now.ToUniversalTime().ToString("dddd, MMM dd, yyyy HH:mm:ss");
 
-            await _serviceBus.SendAsync($"Status Check");
+            await Task.FromResult(_serviceBus.SendAsync($"Status Check"));
 
             _log.LogDebug("HTTP trigger - GetStatus:End");
 
-            return await Task.FromResult(Ok(status));
+            return Ok(status);
         }
 
         [HttpGet]
@@ -91,9 +91,9 @@ namespace TrueVote.Api.Services
 
             _log.LogDebug("HTTP trigger - GetPing:End");
 
-            await _serviceBus.SendAsync($"Ping Check");
+            await Task.FromResult(_serviceBus.SendAsync($"Ping Check"));
 
-            return await Task.FromResult(Ok(new SecureString { Value = "Reply" }));
+            return Ok(new SecureString { Value = "Reply" });
         }
     }
 }
