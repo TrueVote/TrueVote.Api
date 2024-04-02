@@ -19,20 +19,20 @@ namespace TrueVote.Api.Tests.ServiceTests
         }
 
         [Fact]
-        public async Task LogsMessages()
+        public void LogsMessages()
         {
             var status = new Status(_logHelper.Object, _mockServiceBus.Object);
-            _ = await status.GetStatus();
+            status.GetStatus();
 
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
         }
 
         [Fact]
-        public async Task ReturnsValidModel()
+        public void ReturnsValidModel()
         {
             var status = new Status(_logHelper.Object, _mockServiceBus.Object);
 
-            var ret = await status.GetStatus();
+            var ret = status.GetStatus();
             Assert.NotNull(ret);
             Assert.Equal(StatusCodes.Status200OK, ((IStatusCodeActionResult) ret).StatusCode);
 
@@ -42,11 +42,11 @@ namespace TrueVote.Api.Tests.ServiceTests
         }
 
         [Fact]
-        public async Task ReturnsValidBuildInfoModel()
+        public void ReturnsValidBuildInfoModel()
         {
             var status = new Status(_logHelper.Object, _mockServiceBus.Object);
 
-            var ret = await status.GetStatus();
+            var ret = status.GetStatus();
             Assert.NotNull(ret);
             Assert.Equal(StatusCodes.Status200OK, ((IStatusCodeActionResult) ret).StatusCode);
 
@@ -56,11 +56,11 @@ namespace TrueVote.Api.Tests.ServiceTests
         }
 
         [Fact]
-        public async Task RunsStopwatch()
+        public void RunsStopwatch()
         {
             var status = new Status(_logHelper.Object, _mockServiceBus.Object);
 
-            var ret = await status.GetStatus();
+            var ret = status.GetStatus();
             Assert.NotNull(ret);
             Assert.Equal(StatusCodes.Status200OK, ((IStatusCodeActionResult) ret).StatusCode);
 

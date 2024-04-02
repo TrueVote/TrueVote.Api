@@ -70,13 +70,13 @@ namespace TrueVote.Api.Tests.ServiceTests
         }
 
         [Fact]
-        public async Task FindsElection()
+        public void FindsElection()
         {
             var findElectionObj = new FindElectionModel { Name = "County" };
 
             var electionApi = new Election(_logHelper.Object, _moqDataAccessor.mockElectionContext.Object, _mockServiceBus.Object);
 
-            var ret = await electionApi.ElectionFind(findElectionObj);
+            var ret = electionApi.ElectionFind(findElectionObj);
             Assert.NotNull(ret);
             Assert.Equal(StatusCodes.Status200OK, ((IStatusCodeActionResult) ret).StatusCode);
 
@@ -90,13 +90,13 @@ namespace TrueVote.Api.Tests.ServiceTests
         }
 
         [Fact]
-        public async Task HandlesUnfoundElection()
+        public void HandlesUnfoundElection()
         {
             var findElectionObj = new FindElectionModel { Name = "not going to find anything" };
 
             var electionApi = new Election(_logHelper.Object, _moqDataAccessor.mockElectionContext.Object, _mockServiceBus.Object);
 
-            var ret = await electionApi.ElectionFind(findElectionObj);
+            var ret = electionApi.ElectionFind(findElectionObj);
             Assert.NotNull(ret);
             Assert.Equal(StatusCodes.Status404NotFound, ((IStatusCodeActionResult) ret).StatusCode);
 
