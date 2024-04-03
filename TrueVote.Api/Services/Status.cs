@@ -84,16 +84,32 @@ namespace TrueVote.Api.Services
         [Route("ping")]
         [Produces(typeof(SecureString))]
         [Description("Returns simple Response from Api")]
-        [ProducesResponseType(typeof(StatusModel), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(SecureString), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetPing()
         {
             _log.LogDebug("HTTP trigger - GetPing:Begin");
 
+            await _serviceBus.SendAsync($"Ping Check");
+
             _log.LogDebug("HTTP trigger - GetPing:End");
 
-            await _serviceBus.SendAsync($"Ping Check").ConfigureAwait(false);
-
             return Ok(new SecureString { Value = "Reply" });
+        }
+
+        [HttpGet]
+        [Route("add")]
+        [Produces(typeof(SecureString))]
+        [Description("Returns simple addition")]
+        [ProducesResponseType(typeof(SecureString), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetAdd()
+        {
+            _log.LogDebug("HTTP trigger - GetAdd:Begin");
+
+            var val = await Task.Run(() => 2 + 2);
+
+            _log.LogDebug("HTTP trigger - GetAdd:End");
+
+            return Ok(new SecureString { Value = val.ToString() });
         }
     }
 }

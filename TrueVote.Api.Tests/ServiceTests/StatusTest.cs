@@ -84,5 +84,21 @@ namespace TrueVote.Api.Tests.ServiceTests
             Assert.NotNull(val);
             Assert.Equal("Reply", val.Value);
         }
+
+        [Fact]
+        public async Task CalculatesMathExpression()
+        {
+            var status = new Status(_logHelper.Object, _mockServiceBus.Object);
+
+            var ret = await status.GetAdd();
+            Assert.NotNull(ret);
+            Assert.Equal(StatusCodes.Status200OK, ((IStatusCodeActionResult) ret).StatusCode);
+
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+
+            var val = (SecureString) (ret as OkObjectResult).Value;
+            Assert.NotNull(val);
+            Assert.Equal("4", val.Value);
+        }
     }
 }
