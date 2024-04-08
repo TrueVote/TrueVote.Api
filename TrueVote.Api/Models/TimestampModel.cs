@@ -1,8 +1,8 @@
+using Newtonsoft.Json;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
-using Newtonsoft.Json;
 
 namespace TrueVote.Api.Models
 {
@@ -16,28 +16,28 @@ namespace TrueVote.Api.Models
         [JsonPropertyName("TimestampId")]
         [JsonProperty(nameof(TimestampId), Required = Required.Always)]
         [Key]
-        required public string TimestampId { get; set; }
+        public required string TimestampId { get; set; }
 
         [Required]
         [Description("MerkleRoot")]
         [DataType(DataType.Custom)]
         [JsonPropertyName("MerkleRoot")]
         [JsonProperty(nameof(MerkleRoot), Required = Required.Always)]
-        required public byte[] MerkleRoot { get; set; }
+        public required byte[] MerkleRoot { get; set; }
 
         [Required]
         [Description("MerkleRootHash")]
         [DataType(DataType.Custom)]
         [JsonPropertyName("MerkleRootHash")]
         [JsonProperty(nameof(MerkleRootHash), Required = Required.Always)]
-        required public byte[] MerkleRootHash { get; set; }
+        public required byte[] MerkleRootHash { get; set; }
 
         [Required]
         [Description("TimestampHash")]
         [DataType(DataType.Custom)]
         [JsonPropertyName("TimestampHash")]
         [JsonProperty(nameof(TimestampHash), Required = Required.Always)]
-        required public byte[] TimestampHash { get; set; }
+        public required byte[] TimestampHash { get; set; }
 
         [Required]
         [Description("TimestampHash String")]
@@ -45,7 +45,7 @@ namespace TrueVote.Api.Models
         [DataType(DataType.Text)]
         [JsonPropertyName("TimestampHashS")]
         [JsonProperty(nameof(TimestampHashS), Required = Required.Always)]
-        required public string TimestampHashS { get; set; }
+        public required string TimestampHashS { get; set; }
 
         public DateTime TimestampAt { get; set; }
 
@@ -55,14 +55,14 @@ namespace TrueVote.Api.Models
         [DataType(DataType.Url)]
         [JsonPropertyName("CalendarServerUrl")]
         [JsonProperty(nameof(CalendarServerUrl), Required = Required.Always)]
-        required public string CalendarServerUrl { get; set; }
+        public required string CalendarServerUrl { get; set; }
 
         [Required]
         [Description("DateCreated")]
         [DataType(DataType.Date)]
         [JsonPropertyName("DateCreated")]
         [JsonProperty(nameof(DateCreated), Required = Required.Always)]
-        required public DateTime DateCreated { get; set; }
+        public required DateTime DateCreated { get; set; }
     }
 
     [ExcludeFromCodeCoverage]
@@ -73,13 +73,13 @@ namespace TrueVote.Api.Models
         [DataType(DataType.Date)]
         [JsonPropertyName("DateCreatedStart")]
         [JsonProperty(nameof(DateCreatedStart), Required = Required.Always)]
-        required public DateTime DateCreatedStart { get; set; }
+        public required DateTime DateCreatedStart { get; set; }
 
         [Required]
         [Description("DateCreatedEnd")]
         [DataType(DataType.Date)]
         [JsonPropertyName("DateCreatedEnd")]
         [JsonProperty(nameof(DateCreatedEnd), Required = Required.Always)]
-        required public DateTime DateCreatedEnd { get; set; }
+        public required DateTime DateCreatedEnd { get; set; }
     }
 }

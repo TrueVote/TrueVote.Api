@@ -1,9 +1,9 @@
-using System.ComponentModel;
+using Newtonsoft.Json;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
-using System.Text.Json.Serialization;
-using Newtonsoft.Json;
 using Nostr.Client.Messages;
+using System.ComponentModel;
+using System.Text.Json.Serialization;
 
 namespace TrueVote.Api.Models
 {
@@ -23,7 +23,7 @@ namespace TrueVote.Api.Models
         [Description("List of Users")]
         [JsonPropertyName("Users")]
         [JsonProperty(nameof(Users), Required = Required.Always)]
-        required public List<UserModel> Users { get; set; }
+        public required List<UserModel> Users { get; set; }
     }
 
     [ExcludeFromCodeCoverage]
@@ -35,7 +35,7 @@ namespace TrueVote.Api.Models
         [DataType(DataType.Text)]
         [JsonPropertyName("FirstName")]
         [JsonProperty(nameof(FirstName), Required = Required.Always)]
-        required public string FirstName { get; set; } = string.Empty;
+        public required string FirstName { get; set; } = string.Empty;
 
         [Description("Email Address")]
         [MaxLength(2048)]
@@ -56,7 +56,7 @@ namespace TrueVote.Api.Models
         [DataType(DataType.Text)]
         [JsonPropertyName("FirstName")]
         [JsonProperty(nameof(FirstName), Required = Required.Always)]
-        required public string FirstName { get; set; } = string.Empty;
+        public required string FirstName { get; set; } = string.Empty;
 
         [Required(AllowEmptyStrings = false)]
         [Description("Email Address")]
@@ -66,7 +66,7 @@ namespace TrueVote.Api.Models
         [RegularExpression(Constants.EMailRegex)]
         [JsonPropertyName("Email")]
         [JsonProperty(nameof(Email), Required = Required.Always)]
-        required public string Email { get; set; }
+        public required string Email { get; set; }
     }
 
     [ExcludeFromCodeCoverage]
@@ -79,7 +79,7 @@ namespace TrueVote.Api.Models
         [JsonPropertyName("UserId")]
         [JsonProperty(nameof(UserId), Required = Required.Always)]
         [Key]
-        required public string UserId { get; set; }
+        public required string UserId { get; set; }
 
         [Required]
         [Description("Nostr PubKey")]
@@ -87,7 +87,7 @@ namespace TrueVote.Api.Models
         [DataType(DataType.Text)]
         [JsonPropertyName("NostrPubKey")]
         [JsonProperty(nameof(NostrPubKey), Required = Required.Always)]
-        required public string NostrPubKey { get; set; }
+        public required string NostrPubKey { get; set; }
 
         [Required]
         [Description("First Name")]
@@ -95,7 +95,7 @@ namespace TrueVote.Api.Models
         [DataType(DataType.Text)]
         [JsonPropertyName("FirstName")]
         [JsonProperty(nameof(FirstName), Required = Required.Always)]
-        required public string FirstName { get; set; } = string.Empty;
+        public required string FirstName { get; set; } = string.Empty;
 
         [Required(AllowEmptyStrings = false)]
         [Description("Email Address")]
@@ -105,14 +105,14 @@ namespace TrueVote.Api.Models
         [RegularExpression(Constants.EMailRegex)]
         [JsonPropertyName("Email")]
         [JsonProperty(nameof(Email), Required = Required.Always)]
-        required public string Email { get; set; }
+        public required string Email { get; set; }
 
         [Required]
         [Description("DateCreated")]
         [DataType(DataType.Date)]
         [JsonPropertyName("DateCreated")]
         [JsonProperty(nameof(DateCreated), Required = Required.Always)]
-        required public DateTime DateCreated { get; set; }
+        public required DateTime DateCreated { get; set; }
     }
 
     [ExcludeFromCodeCoverage]
@@ -123,7 +123,7 @@ namespace TrueVote.Api.Models
         [EnumDataType(typeof(NostrKind))]
         [JsonPropertyName("Kind")]
         [JsonProperty(nameof(Kind), Required = Required.Always)]
-        required public NostrKind Kind { get; set; }
+        public required NostrKind Kind { get; set; }
 
         [Required]
         [Description("PubKey")]
@@ -131,14 +131,14 @@ namespace TrueVote.Api.Models
         [DataType(DataType.Text)]
         [JsonPropertyName("PubKey")]
         [JsonProperty(nameof(PubKey), Required = Required.Always)]
-        required public string PubKey { get; set; }
+        public required string PubKey { get; set; }
 
         [Required]
         [Description("CreatedAt")]
         [DataType(DataType.Date)]
         [JsonPropertyName("CreatedAt")]
         [JsonProperty(nameof(CreatedAt), Required = Required.Always)]
-        required public DateTime CreatedAt { get; set; }
+        public required DateTime CreatedAt { get; set; }
 
         [Required]
         [Description("Signature")]
@@ -146,7 +146,7 @@ namespace TrueVote.Api.Models
         [DataType(DataType.Text)]
         [JsonPropertyName("Signature")]
         [JsonProperty(nameof(Signature), Required = Required.Always)]
-        required public string Signature { get; set; }
+        public required string Signature { get; set; }
 
         [Required]
         [Description("Content")]
@@ -154,6 +154,6 @@ namespace TrueVote.Api.Models
         [DataType(DataType.Text)]
         [JsonPropertyName("Content")]
         [JsonProperty(nameof(Content), Required = Required.Always)]
-        required public string Content { get; set; }
+        public required string Content { get; set; }
     }
 }

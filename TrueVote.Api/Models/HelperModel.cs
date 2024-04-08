@@ -1,8 +1,8 @@
+using Newtonsoft.Json;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
-using Newtonsoft.Json;
 
 namespace TrueVote.Api.Models
 {
@@ -15,7 +15,7 @@ namespace TrueVote.Api.Models
         [DataType(DataType.Text)]
         [JsonPropertyName("Value")]
         [JsonProperty(nameof(Value), Required = Required.Always)]
-        required public string Value { get; set; } = string.Empty;
+        public required string Value { get; set; } = string.Empty;
     }
 
     [ExcludeFromCodeCoverage]
@@ -25,6 +25,6 @@ namespace TrueVote.Api.Models
         [Description("Error")]
         [JsonPropertyName("Error")]
         [JsonProperty(nameof(Error), Required = Required.Always)]
-        required public bool Error { get; set; } = false;
+        public required bool Error { get; set; } = false;
     }
 }

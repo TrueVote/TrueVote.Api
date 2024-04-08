@@ -1,8 +1,8 @@
+using Microsoft.Extensions.Primitives;
+using Microsoft.IdentityModel.Tokens;
 using System.Diagnostics.CodeAnalysis;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using Microsoft.Extensions.Primitives;
-using Microsoft.IdentityModel.Tokens;
 
 /* 
  * This class shouldn't need to exist. The preferred method is to use the [Authorize] attribute on endpoints to
@@ -25,7 +25,6 @@ namespace TrueVote.Api.Helpers
     public interface IJwtHandler
     {
         string GenerateToken(string userId, IEnumerable<string> roles);
-
         // Task<(HttpResponse Response, string RenewedToken)> ProcessTokenValidationAsync(HttpRequest req);
     }
 
@@ -36,9 +35,9 @@ namespace TrueVote.Api.Helpers
         private const string Audience = "https://api.truevote.org/api/";
         private const double ExpiresValidityPeriod = 0.5;
         private const int TokenExpirationDays = 30;
-        private readonly SymmetricSecurityKey symmetricSecurityKey;
-        private readonly SigningCredentials signingCredentials;
-        private readonly TimeSpan clockSkew;
+        private readonly SymmetricSecurityKey SymmetricSecurityKey;
+        private readonly SigningCredentials SigningCredentials;
+        private readonly TimeSpan ClockSkew;
         private readonly IConfiguration _configuration;
 
         public JwtHandler(IConfiguration configuration)
@@ -46,9 +45,9 @@ namespace TrueVote.Api.Helpers
             _configuration = configuration;
             var secret = _configuration["JWTSecret"];
             var secretByte = Convert.FromBase64String(secret);
-            symmetricSecurityKey = new SymmetricSecurityKey(secretByte);
-            signingCredentials = new SigningCredentials(symmetricSecurityKey, SecurityAlgorithms.HmacSha256);
-            clockSkew = TimeSpan.FromMinutes(1);
+            SymmetricSecurityKey = new SymmetricSecurityKey(secretByte);
+            SigningCredentials = new SigningCredentials(SymmetricSecurityKey, SecurityAlgorithms.HmacSha256);
+            ClockSkew = TimeSpan.FromMinutes(1);
         }
 
         // Generate a JWT token with a Expiration, UserID, and Roles claims
@@ -88,7 +87,7 @@ namespace TrueVote.Api.Helpers
                 // Other token descriptor properties...
                 Subject = new ClaimsIdentity(claims),
                 Expires = expirationTime.UtcDateTime,
-                SigningCredentials = signingCredentials
+                SigningCredentials = SigningCredentials
             };
 
             var tokenHandler = new JwtSecurityTokenHandler();
@@ -106,10 +105,10 @@ namespace TrueVote.Api.Helpers
                     ValidateIssuer = true,
                     ValidateAudience = true,
                     ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = symmetricSecurityKey,
+                    IssuerSigningKey = SymmetricSecurityKey,
                     ValidIssuer = Issuer,
                     ValidAudience = Audience,
-                    ClockSkew = clockSkew
+                    ClockSkew = ClockSkew
                 };
 
                 var tokenHandler = new JwtSecurityTokenHandler();
@@ -131,8 +130,8 @@ namespace TrueVote.Api.Helpers
                     throw new SecurityTokenException("Token not found.");
                 }
 
-                var authHeader = authHeaderEnumerable[0] ?? throw new SecurityTokenException("AuthHeader is null.");
-                var token = authHeader.Replace("Bearer ", string.Empty);
+                var authHeader = authHeaderEnumerable.First() ?? throw new SecurityTokenException("AuthHeader is null.");
+                var token = authHeader.Replace("Bearer ", "");
 
                 // Validate or auto-renew the token
                 var principal = ValidateToken(token);

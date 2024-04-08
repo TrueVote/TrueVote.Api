@@ -1,7 +1,7 @@
-using System.ComponentModel;
-using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using System.ComponentModel;
+using System.Diagnostics;
 using TrueVote.Api.Models;
 
 namespace TrueVote.Api.Services
@@ -17,8 +17,8 @@ namespace TrueVote.Api.Services
     [ProducesResponseType(typeof(SecureString), StatusCodes.Status409Conflict)]
     public class Status : ControllerBase
     {
-        private static BuildInfo? _buildInfo = null;
-        private static string? _buildInfoReadTime = null;
+        private static BuildInfo? _BuildInfo = null;
+        private static string? _BuildInfoReadTime = null;
         private readonly ILogger _log;
         private readonly IServiceBus _serviceBus;
 
@@ -47,24 +47,24 @@ namespace TrueVote.Api.Services
             status.RespondsMsg = "TrueVote.Api is responding";
 
             // Check if the static is already been initialized. If not, fetch the properties from the Version.cs static.
-            if (_buildInfo == null)
+            if (_BuildInfo == null)
             {
                 // Marshall the contents of the Version.cs static into a model
-                _buildInfo = JsonConvert.DeserializeObject<BuildInfo>(VersionInfo.BuildInfo);
+                _BuildInfo = JsonConvert.DeserializeObject<BuildInfo>(VersionInfo.BuildInfo);
 
                 // Convert the time for consistency
-                if (_buildInfo.BuildTime != string.Empty)
+                if (_BuildInfo.BuildTime != string.Empty)
                 {
-                    _buildInfo.BuildTime = $"{DateTime.Parse(_buildInfo.BuildTime)} UTC";
+                    _BuildInfo.BuildTime = $"{DateTime.Parse(_BuildInfo.BuildTime)} UTC";
                 }
 
                 // Set the read time to now. This should never change because it's stored in a static.
-                _buildInfoReadTime = DateTime.Now.ToUniversalTime().ToString("dddd, MMM dd, yyyy HH:mm:ss");
+                _BuildInfoReadTime = DateTime.Now.ToUniversalTime().ToString("dddd, MMM dd, yyyy HH:mm:ss");
             }
 
             // Attach the static to the returned object
-            status.BuildInfo = _buildInfo;
-            status.BuildInfoReadTime = _buildInfoReadTime;
+            status.BuildInfo = _BuildInfo;
+            status.BuildInfoReadTime = _BuildInfoReadTime;
 
             // Stop running
             watch.Stop();

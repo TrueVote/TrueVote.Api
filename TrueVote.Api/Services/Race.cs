@@ -1,6 +1,6 @@
-using System.ComponentModel;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.ComponentModel;
 using TrueVote.Api.Helpers;
 using TrueVote.Api.Interfaces;
 using TrueVote.Api.Models;
@@ -38,7 +38,7 @@ namespace TrueVote.Api.Services
         {
             _log.LogDebug("HTTP trigger - CreateRace:Begin");
 
-            _log.LogInformation("Request Data: {BaseRace}", baseRace);
+            _log.LogInformation($"Request Data: {baseRace}");
 
             var race = new RaceModel { RaceId = Guid.NewGuid().ToString(), Name = baseRace.Name, RaceType = baseRace.RaceType, DateCreated = UtcNowProviderFactory.GetProvider().UtcNow };
 
@@ -63,7 +63,7 @@ namespace TrueVote.Api.Services
         {
             _log.LogDebug("HTTP trigger - AddCandidates:Begin");
 
-            _log.LogInformation("Request Data: {AddCandidatesModel}", addCandidatesModel);
+            _log.LogInformation($"Request Data: {addCandidatesModel}");
 
             // Check if the race exists. If so, return it detached from EF
             var race = await _trueVoteDbContext.Races.Where(r => r.RaceId == addCandidatesModel.RaceId).AsNoTracking().OrderByDescending(r => r.DateCreated).FirstOrDefaultAsync();
@@ -116,7 +116,7 @@ namespace TrueVote.Api.Services
         {
             _log.LogDebug("HTTP trigger - RaceFind:Begin");
 
-            _log.LogInformation("Request Data: {FindRace}", findRace);
+            _log.LogInformation($"Request Data: {findRace}");
 
             // TODO Fix RaceTypeName not resolving properly
             // Get all the races that match the search

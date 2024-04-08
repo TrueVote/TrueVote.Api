@@ -2,7 +2,7 @@ namespace TrueVote.Api
 {
     public static class VersionInfo
     {
-        public static readonly string BuildInfo = @"
+        public static string BuildInfo = @"
         {
           ""Branch"": ""{{branch}}"",
           ""BuildTime"": ""{{buildtime}}"",

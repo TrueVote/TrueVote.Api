@@ -1,5 +1,5 @@
-using System.Diagnostics.CodeAnalysis;
 using Azure.Messaging.ServiceBus;
+using System.Diagnostics.CodeAnalysis;
 
 namespace TrueVote.Api.Services
 {

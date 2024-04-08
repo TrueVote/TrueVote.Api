@@ -1,8 +1,8 @@
-using System.ComponentModel;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Nostr.Client.Keys;
 using Nostr.Client.Messages;
+using System.ComponentModel;
 using TrueVote.Api.Helpers;
 using TrueVote.Api.Interfaces;
 using TrueVote.Api.Models;
@@ -42,7 +42,7 @@ namespace TrueVote.Api.Services
         {
             _log.LogDebug("HTTP trigger - CreateUser:Begin");
 
-            _log.LogInformation("Request Data: {BaseUser}", baseUser);
+            _log.LogInformation($"Request Data: {baseUser}");
 
             var user = new UserModel { FirstName = baseUser.FirstName, Email = baseUser.Email, UserId = Guid.NewGuid().ToString(), NostrPubKey = string.Empty, DateCreated = UtcNowProviderFactory.GetProvider().UtcNow };
 
@@ -96,7 +96,7 @@ namespace TrueVote.Api.Services
         {
             _log.LogDebug("HTTP trigger - SignIn:Begin");
 
-            _log.LogInformation("Request Data: {SignInEventModel}", signInEventModel);
+            _log.LogInformation($"Request Data: {signInEventModel}");
 
             NostrPublicKey publicKey;
             try
@@ -105,7 +105,7 @@ namespace TrueVote.Api.Services
             }
             catch (Exception e)
             {
-                _log.LogError("SignIn: publicKey resolver failure: {Message}", e.Message);
+                _log.LogError($"SignIn: publicKey resolver failure: {e.Message}");
                 _log.LogDebug("HTTP trigger - SignIn:End");
 
                 return BadRequest(new SecureString { Value = e.Message });
@@ -128,7 +128,7 @@ namespace TrueVote.Api.Services
             }
             catch (Exception e)
             {
-                _log.LogError("SignIn: Verification exception: {Message}", e.Message);
+                _log.LogError($"SignIn: Verification exception: {e.Message}");
                 _log.LogDebug("HTTP trigger - SignIn:End");
 
                 return BadRequest(new SecureString { Value = e.Message });

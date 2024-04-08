@@ -16,17 +16,17 @@ namespace TrueVote.Api.Helpers
     [ExcludeFromCodeCoverage]
     public static class UtcNowProviderFactory
     {
-        private static IUtcNowProvider? _utcNowProvider;
+        private static IUtcNowProvider? _UtcNowProvider;
 
         public static IUtcNowProvider GetProvider()
         {
-            return _utcNowProvider ??= new DefaultUtcNowProvider();
+            return _UtcNowProvider ??= new DefaultUtcNowProvider();
         }
 
         // Method for setting a custom DateTimeProvider during testing
-        public static void SetProvider(IUtcNowProvider utcNowProvider)
+        public static void SetProvider(IUtcNowProvider UtcNowProvider)
         {
-            _utcNowProvider = utcNowProvider;
+            _UtcNowProvider = UtcNowProvider;
         }
     }
 }

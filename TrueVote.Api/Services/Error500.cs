@@ -1,5 +1,5 @@
-using System.ComponentModel;
 using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel;
 using TrueVote.Api.Models;
 
 namespace TrueVote.Api.Services
@@ -34,14 +34,14 @@ namespace TrueVote.Api.Services
         {
             _log.LogDebug("HTTP trigger - ThrowError500:Begin");
 
-            _log.LogInformation("Request Data: {Model}", error500Flag);
+            _log.LogInformation($"Request Data: {error500Flag}");
 
             if (error500Flag.Error)
             {
                 // Throw this random exception for no reason other than the requester wants it
-                _log.LogError("error500 - throwing a sample exception");
+                _log.LogError($"error500 - throwing a sample exception");
                 _log.LogDebug("HTTP trigger - ThrowError500:End");
-                await _serviceBus.SendAsync("error500 - throwing a sample exception");
+                await _serviceBus.SendAsync($"error500 - throwing a sample exception");
                 throw new Exception("error500 - throwing a sample exception");
             }
 

@@ -6,8 +6,8 @@ namespace TrueVote.Api.Helpers
 {
     public static class MerkleTree
     {
-        private static readonly SHA256 SSha256 = SHA256.Create();
-        private static readonly ArrayPool<byte> SBytePool = ArrayPool<byte>.Shared;
+        private static readonly SHA256 s_sha256 = SHA256.Create();
+        private static readonly ArrayPool<byte> s_bytePool = ArrayPool<byte>.Shared;
 
         // Calculates the Merkle root hash from string (e.g. json)
         public static byte[]? CalculateMerkleRoot(string data)
@@ -44,30 +44,6 @@ namespace TrueVote.Api.Helpers
             return CalculateMerkleRoot(leafNodes);
         }
 
-        // Computes the hash of an object
-        public static byte[] GetHash<T>(T value)
-        {
-            var serializer = Utf8Json.JsonSerializer.Serialize(value);
-            return SSha256.ComputeHash(serializer);
-        }
-
-        // Computes the hash of the concatenation of two byte arrays
-        public static byte[] GetHash(byte[] left, byte[] right)
-        {
-            var buffer = SBytePool.Rent(left.Length + right.Length);
-            try
-            {
-                left.AsSpan().CopyTo(buffer);
-                right.AsSpan().CopyTo(buffer.AsSpan(left.Length));
-
-                return SSha256.ComputeHash(buffer.AsSpan(0, left.Length + right.Length).ToArray());
-            }
-            finally
-            {
-                SBytePool.Return(buffer);
-            }
-        }
-
         // Calculates the Merkle root hash from a list of leaf nodes
         private static byte[] CalculateMerkleRoot(List<byte[]> leafNodes)
         {
@@ -83,11 +59,34 @@ namespace TrueVote.Api.Helpers
                     var parent = GetHash(left, right);
                     parentNodes.Add(parent);
                 }
-
                 leafNodes = parentNodes;
             }
 
             return leafNodes[0];
+        }
+
+        // Computes the hash of an object
+        public static byte[] GetHash<T>(T value)
+        {
+            var serializer = Utf8Json.JsonSerializer.Serialize(value);
+            return s_sha256.ComputeHash(serializer);
+        }
+
+        // Computes the hash of the concatenation of two byte arrays
+        public static byte[] GetHash(byte[] left, byte[] right)
+        {
+            var buffer = s_bytePool.Rent(left.Length + right.Length);
+            try
+            {
+                left.AsSpan().CopyTo(buffer);
+                right.AsSpan().CopyTo(buffer.AsSpan(left.Length));
+
+                return s_sha256.ComputeHash(buffer.AsSpan(0, left.Length + right.Length).ToArray());
+            }
+            finally
+            {
+                s_bytePool.Return(buffer);
+            }
         }
     }
 }

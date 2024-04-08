@@ -3,7 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace TrueVote.Api
 {
     [ExcludeFromCodeCoverage]
-    public static class Program
+    public class Program
     {
         public static void Main(string[] args)
         {

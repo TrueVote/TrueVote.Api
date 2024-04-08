@@ -1,6 +1,6 @@
-using System.ComponentModel;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.ComponentModel;
 using TrueVote.Api.Interfaces;
 using TrueVote.Api.Models;
 
@@ -35,7 +35,7 @@ namespace TrueVote.Api.Services
         {
             _log.LogDebug("HTTP trigger - TimestampFind:Begin");
 
-            _log.LogInformation("Request Data: {FindTimestamp}", findTimestamp);
+            _log.LogInformation($"Request Data: {findTimestamp}");
 
             var items = await _trueVoteDbContext.Timestamps
                 .Where(c => c.DateCreated >= findTimestamp.DateCreatedStart && c.DateCreated <= findTimestamp.DateCreatedEnd)

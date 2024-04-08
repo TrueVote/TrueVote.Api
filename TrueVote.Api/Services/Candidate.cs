@@ -1,9 +1,9 @@
-using System.ComponentModel;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using TrueVote.Api.Helpers;
+using System.ComponentModel;
 using TrueVote.Api.Interfaces;
 using TrueVote.Api.Models;
+using TrueVote.Api.Helpers;
 
 namespace TrueVote.Api.Services
 {
