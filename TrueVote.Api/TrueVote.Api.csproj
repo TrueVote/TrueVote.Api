@@ -14,10 +14,10 @@
     <ApplicationIcon>dist\favicon.ico</ApplicationIcon>
     <RepositoryUrl>https://github.com/TrueVote/TrueVote.Api</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
   </PropertyGroup>
   <ItemGroup>
+    <Content Remove="local.settings.json" />
     <Content Remove="version.json" />
   </ItemGroup>
   <ItemGroup>
@@ -38,14 +38,6 @@
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.20.1" />
     <PackageReference Include="NSwag.AspNetCore" Version="14.0.7" />
-    <PackageReference Include="SonarAnalyzer.CSharp" Version="9.23.0.88079">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="StyleCop.Analyzers" Version="1.1.118">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
     <PackageReference Include="Microsoft.CodeAnalysis" Version="4.9.2" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.3" />
