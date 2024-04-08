@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System.ComponentModel;
@@ -97,6 +98,7 @@ namespace TrueVote.Api.Services
         }
 
         [HttpGet]
+        [Authorize]
         [Route("add")]
         [Produces(typeof(SecureString))]
         [Description("Returns simple addition")]
