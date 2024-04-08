@@ -68,7 +68,7 @@ namespace TrueVote.Api.Services
             {
                 Elections = await _trueVoteDbContext.Elections
                 .Where(e =>
-                    findElection.Name == null || (e.Name ?? string.Empty).ToLower().Contains(findElection.Name.ToLower()))
+                    findElection.Name == null || findElection.Name == "All" || (e.Name ?? string.Empty).ToLower().Contains(findElection.Name.ToLower()))
                 .OrderByDescending(e => e.DateCreated).ToListAsync()
             };
 
