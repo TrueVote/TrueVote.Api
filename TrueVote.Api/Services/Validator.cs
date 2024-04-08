@@ -1,16 +1,19 @@
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using TrueVote.Api.Helpers;
 using TrueVote.Api.Interfaces;
-using Newtonsoft.Json;
 using TrueVote.Api.Models;
-using Newtonsoft.Json.Linq;
 
 namespace TrueVote.Api.Services
 {
     public interface IValidator
     {
         Task<BallotHashModel> HashBallotAsync(BallotModel ballot);
+
         Task<TimestampModel> HashBallotsAsync();
+
         Task StoreTimestampAsync(TimestampModel timestamp);
+
         Task StoreBallotHashAsync(BallotHashModel ballotHashModel);
     }
 
@@ -36,7 +39,7 @@ namespace TrueVote.Api.Services
             if (items.Any())
             {
                 // TODO Localize msg
-                var msg = $"Ballot: {ballot.BallotId} has already been hashed. Ballot Hash Id: {items.First().BallotHashId}";
+                var msg = $"Ballot: {ballot.BallotId} has already been hashed. Ballot Hash Id: {items[0].BallotHashId}";
 
                 _log.LogError(msg);
                 throw new Exception(msg);
@@ -87,7 +90,7 @@ namespace TrueVote.Api.Services
             }
             catch (Exception ex)
             {
-                _log.LogError($"Exception stamping merkleRoot: {ex.Message}");
+                _log.LogError("Exception stamping merkleRoot: {Message}", ex.Message);
                 throw;
             }
 
@@ -137,7 +140,7 @@ namespace TrueVote.Api.Services
             }
             catch (Exception ex)
             {
-                _log.LogError($"Exception storing timestamp: {ex.Message}");
+                _log.LogError("Exception storing timestamp: {Message}", ex.Message);
                 throw;
             }
         }
@@ -151,7 +154,7 @@ namespace TrueVote.Api.Services
             }
             catch (Exception ex)
             {
-                _log.LogError($"Exception storing ballot hash: {ex.Message}");
+                _log.LogError("Exception storing ballot hash: {Message}", ex.Message);
                 throw;
             }
         }

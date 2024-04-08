@@ -23,9 +23,9 @@ namespace TrueVote.Api.Services
             return items;
         }
 
-        public async Task<IReadOnlyList<CandidateModel>> GetCandidateByPartyAffiliation([GraphQLName("PartyAffiliation")] string PartyAffiliation)
+        public async Task<IReadOnlyList<CandidateModel>> GetCandidateByPartyAffiliation([GraphQLName("partyAffiliation")] string partyAffiliation)
         {
-            var items = await _trueVoteDbContext.Candidates.Where(c => c.PartyAffiliation == PartyAffiliation).OrderByDescending(c => c.DateCreated).ToListAsync();
+            var items = await _trueVoteDbContext.Candidates.Where(c => c.PartyAffiliation == partyAffiliation).OrderByDescending(c => c.DateCreated).ToListAsync();
 
             return items;
         }
@@ -37,9 +37,9 @@ namespace TrueVote.Api.Services
             return items;
         }
 
-        public async Task<IReadOnlyList<ElectionModel>> GetElectionById([GraphQLName("ElectionId")] string ElectionId)
+        public async Task<IReadOnlyList<ElectionModel>> GetElectionById([GraphQLName("electionId")] string electionId)
         {
-            var items = await _trueVoteDbContext.Elections.Where(e => e.ElectionId == ElectionId).OrderByDescending(c => c.DateCreated).ToListAsync();
+            var items = await _trueVoteDbContext.Elections.Where(e => e.ElectionId == electionId).OrderByDescending(c => c.DateCreated).ToListAsync();
 
             return items;
         }
@@ -69,12 +69,12 @@ namespace TrueVote.Api.Services
             return items;
         }
 
-        public async Task<BallotList> GetBallotById([GraphQLName("BallotId")] string BallotId)
+        public async Task<BallotList> GetBallotById([GraphQLName("ballotId")] string ballotId)
         {
             var items = new BallotList
             {
-                Ballots = await _trueVoteDbContext.Ballots.Where(e => e.BallotId == BallotId).OrderByDescending(c => c.DateCreated).ToListAsync(),
-                BallotHashes = await _trueVoteDbContext.BallotHashes.Where(e => e.BallotId == BallotId).OrderByDescending(e => e.DateCreated).ToListAsync()
+                Ballots = await _trueVoteDbContext.Ballots.Where(e => e.BallotId == ballotId).OrderByDescending(c => c.DateCreated).ToListAsync(),
+                BallotHashes = await _trueVoteDbContext.BallotHashes.Where(e => e.BallotId == ballotId).OrderByDescending(e => e.DateCreated).ToListAsync()
             };
 
             return items;

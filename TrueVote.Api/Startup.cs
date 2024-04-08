@@ -1,21 +1,21 @@
-using Microsoft.EntityFrameworkCore.ChangeTracking;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.OpenApi.Models;
-using TrueVote.Api.Services;
-using TrueVote.Api.Interfaces;
-using TrueVote.Api.Models;
+using System.Diagnostics.CodeAnalysis;
+using System.IO.Abstractions;
+using System.Reflection;
 using System.Text.Json;
 using HotChocolate.Types.Descriptors;
-using System.IO.Abstractions;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using TrueVote.Api.Helpers;
-using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
-using Newtonsoft.Json;
-using JsonSerializer = System.Text.Json.JsonSerializer;
 using Microsoft.Extensions.FileProviders;
-using Path = System.IO.Path;
+using Microsoft.OpenApi.Models;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
+using TrueVote.Api.Helpers;
+using TrueVote.Api.Interfaces;
+using TrueVote.Api.Models;
+using TrueVote.Api.Services;
+using JsonSerializer = System.Text.Json.JsonSerializer;
+using Path = System.IO.Path;
 
 namespace TrueVote.Api
 {
@@ -23,6 +23,7 @@ namespace TrueVote.Api
     public class Startup
     {
         public string CustomStylesheetPath { get; set; } = "/dist/truevote-api.css";
+
         public string CustomJavaScriptPath { get; set; } = "/dist/truevote-api.js";
 
         public void ConfigureServices(IServiceCollection services)
@@ -136,12 +137,19 @@ namespace TrueVote.Api
         public class TrueVoteDbContext : DbContext, ITrueVoteDbContext
         {
             public virtual DbSet<UserModel> Users { get; set; }
+
             public virtual DbSet<ElectionModel> Elections { get; set; }
+
             public virtual DbSet<RaceModel> Races { get; set; }
+
             public virtual DbSet<CandidateModel> Candidates { get; set; }
+
             public virtual DbSet<BallotModel> Ballots { get; set; }
+
             public virtual DbSet<TimestampModel> Timestamps { get; set; }
+
             public virtual DbSet<BallotHashModel> BallotHashes { get; set; }
+
             private readonly IConfiguration? _configuration;
             private readonly string? _connectionString;
 
