@@ -3,8 +3,7 @@
 [![Twitter](https://img.shields.io/twitter/follow/TrueVoteOrg?style=social)](https://twitter.com/TrueVoteOrg)
 [![Keybase Chat](https://img.shields.io/badge/chat-on%20keybase-7793d8)](https://keybase.io/team/truevote)
 
-[![TrueVote.Api](https://github.com/TrueVote/TrueVote.Api/actions/workflows/truevote-api-github.yml/badge.svg)](https://github.com/TrueVote/TrueVote.Api/actions/workflows/truevote-api-github.yml)
-[![TrueVote.Api.Preprod.Integration](https://github.com/TrueVote/TrueVote.Api/actions/workflows/truevote-api-preprod-integration.yml/badge.svg)](https://github.com/TrueVote/TrueVote.Api/actions/workflows/truevote-api-preprod-integration.yml)
+[![TrueVote.Api](https://github.com/TrueVote/TrueVote.Api/actions/workflows/truevote-api-appservice.yml/badge.svg)](https://github.com/TrueVote/TrueVote.Api/actions/workflows/truevote-api-appservice.yml)
 [![Coverage Status](https://coveralls.io/repos/github/TrueVote/TrueVote.Api/badge.svg)](https://coveralls.io/github/TrueVote/TrueVote.Api)
 
 # TrueVote.Api
@@ -22,25 +21,48 @@ The main technology stack platform is [.NET Core](https://dotnet.microsoft.com/)
 
 ## ⌨️ Install, Build, and Serve the Site
 
-Create a new file at the root of the TrueVote.Api project named `local.settings.json` and add the following, replacing the account key with the actual account key from the [CosmosDB Emulator start page](https://localhost:8081/_explorer/index.html).
-
-Get the `ServiceBusConnectionString` from Azure portal. Currently Service Bus is not available to run locally.
-
-Create a JWTSecret: `$ openssl rand -base64 32`
+Create a new file at the root of the TrueVote.Api project named `appsettings.json` with the following contents:
 
 ```json
 {
-  "IsEncrypted": false,
-  "Values": {
-    "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning",
+      "Microsoft": "Warning",
+      "Microsoft.Hosting.Lifetime": "Information",
+      "Microsoft.AspNetCore.Mvc.ApiExplorer": "Debug"
+    },
+    "Console": {
+      "IncludeScopes": true,
+      "LogLevel": {
+        "Default": "Debug",
+        "System": "Information",
+        "Microsoft": "Information",
+        "Microsoft.AspNetCore.Mvc.ApiExplorer": "Debug"
+      }
+    }
+  },
+  "AllowedHosts": "*",
+  "WEBSITE_CONTENTAZUREFILESCOMPATIBILITYOVERRIDE": 1,
+  "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+  "ServiceBusApiEventQueueName": "apieventqueue-dev",
+  "JWTSecret": "<JWTBase64Key>",
+  "ConnectionStrings": {
+    "DefaultConnection": "AccountEndpoint=https://localhost:8081/;AccountKey=<AccountKeyFromCosmosDBEmulator>",
     "CosmosDbConnectionString": "AccountEndpoint=https://localhost:8081/;AccountKey=<AccountKeyFromCosmosDBEmulator>",
-    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
-    "ServiceBusConnectionString": "<ServiceBusConnectionString>",
-    "ServiceBusApiEventQueueName": "apieventqueue-dev",
-    "JWTSecret": <JWTBase64Key>
+    "ServiceBusConnectionString": "<ServiceBusConnectionString>"
   }
 }
 ```
+
+Replace the <value> names:
+
+1. `<AccountKeyFromCosmosDBEmulator>` Retrieve the actual account key from the [CosmosDB Emulator start page](https://localhost:8081/_explorer/index.html).
+
+2. Get the `<ServiceBusConnectionString>` from Azure portal. Currently Service Bus is not available to run locally.
+
+3. Create a `<JWTBase64Key>`: `$ openssl rand -base64 32`
 
 ### Install the packages
 
@@ -54,9 +76,9 @@ You'll see output in the console showing the various local URL access points.
 
 ![](static/console-output.png)
 
-REST Api root [`https://localhost:7071/api/swagger/ui`](https://localhost:7071/api/swagger/ui)
+Swagger root [`https://localhost:7253/swagger/index.html`](https://localhost:7253/swagger/index.html)
 
-GraphQL root [`https://localhost:7071/api/graphql`](https://localhost:7071/api/graphql)
+GraphQL root [`https://localhost:7253/api/graphql`](https://localhost:7253/api/graphql)
 
 ## 🧪 Unit Testing
 
@@ -67,22 +89,6 @@ $ powershell ./scripts/RunTests.ps1
 ```
 
 This generates a coverage report in `TrueVote.Api.Tests/coverage-html`. Open `index.html` to view the report.
-
-<a name="proxying-truevoteapi-locally"></a>
-## 🎛️ Proxying TrueVote.Api Locally
-
-In order to use TrueVote.Api locally with the [React Frontend](https://github.com/TrueVote/TrueVote.App), you must proxy it to simulate production and bypass [CORS](https://en.wikipedia.org/wiki/Cross-origin_resource_sharing) issues.
-
-[Stunnel](https://www.stunnel.org/) works well. Simply install and open the `stunnel.conf` file and add this section to the bottom.
-
-```
-[TrueVote.Api]
-client = yes
-accept = localhost:8080
-connect = localhost:7071
-```
-
-This will enable traffic to port :8080 as a proxy from the default port of TrueVote.Api (typically :7071). The React frontend expects TrueVote.Api to be listening on :8080.
 
 ## 📮 Making requests via Postman
 

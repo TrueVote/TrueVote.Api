@@ -13,11 +13,6 @@ on:
 env:
   AZURE_WEBAPP_NAME: TrueVoteApiAppService
   AZURE_WEBAPP_PACKAGE_PATH: TrueVote.Api\publish
-  AZURE_APIM_RESOURCE_PATH: /
-  AZURE_APIM_RESOURCEGROUP: TrueVoteApi
-  AZURE_APIM_SERVICENAME: TrueVoteApiManagement
-  AZURE_APIM_API_ID: TrueVoteApiManagment
-  AZURE_APIM_APPSERVICEURL: https://truevoteapiappservice.azurewebsites.net
   SWASHBUCLE_ASPNET_CORE_CLI_PACKAGE_VERSION: 6.5.0
   SWASHBUCKLE_DOTNET_CORE_VERSION: 3.1.x
   API_IMPORT_SPECIFICATION_PATH: TrueVote.Api\publish\swagger.json
@@ -122,15 +117,3 @@ jobs:
         app-name: ${{ env.AZURE_WEBAPP_NAME }}
         package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
         publish-profile: ${{ secrets.TrueVoteApiAppService_D74C }}
-
-    - name: Azure SPN Login
-      uses: azure/login@v1
-      with:
-        creds: ${{ secrets.TrueVoteApiManagement_SPN }}
-
-    - name: Import API into Azure API Management
-      run: az apim api import --path "${{ env.AZURE_APIM_RESOURCE_PATH }}" --resource-group "${{ env.AZURE_APIM_RESOURCEGROUP }}" --service-name "${{ env.AZURE_APIM_SERVICENAME }}" --api-id "${{ env.AZURE_APIM_API_ID }}" --service-url "${{ env.AZURE_APIM_APPSERVICEURL }}" --specification-path "${{ env.API_IMPORT_SPECIFICATION_PATH }}" --specification-format OpenApi --subscription-required false
-
-    - name: Azure SPN Logout
-      run: >
-        az logout
