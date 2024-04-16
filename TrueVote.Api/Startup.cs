@@ -16,14 +16,24 @@ using JsonSerializer = System.Text.Json.JsonSerializer;
 using Microsoft.Extensions.FileProviders;
 using Path = System.IO.Path;
 using Newtonsoft.Json.Serialization;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using Microsoft.AspNetCore.DataProtection;
 
 namespace TrueVote.Api
 {
     [ExcludeFromCodeCoverage]
     public class Startup
     {
+        private readonly IConfiguration _configuration;
         public string CustomStylesheetPath { get; set; } = "/dist/truevote-api.css";
         public string CustomJavaScriptPath { get; set; } = "/dist/truevote-api.js";
+
+        public Startup(IConfiguration configuration)
+        {
+            _configuration = configuration;
+        }
 
         public void ConfigureServices(IServiceCollection services)
         {
@@ -65,6 +75,45 @@ namespace TrueVote.Api
 
             services.AddApplicationInsightsTelemetry();
             services.AddDbContext<ITrueVoteDbContext, TrueVoteDbContext>();
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
+            {
+                var secretKey = _configuration["JWTSecret"];
+                var secretByte = Convert.FromBase64String(secretKey);
+                var symmetricSecurityKey = new SymmetricSecurityKey(secretByte);
+                var clockSkew = TimeSpan.FromMinutes(1);
+
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = "TrueVoteApi",
+                    ValidAudience = "https://api.truevote.org/api/",
+                    IssuerSigningKey = symmetricSecurityKey,
+                    ValidAlgorithms = [SecurityAlgorithms.HmacSha256],
+                    RequireExpirationTime = true,
+                    RequireSignedTokens = true,
+                    ValidateActor = false,
+                    ValidateTokenReplay = false,
+                    ClockSkew = clockSkew
+                };
+
+                // Enable additional logging
+                options.Events = new JwtBearerEvents
+                {
+                    OnAuthenticationFailed = context =>
+                    {
+                        Console.WriteLine($"Authentication failed: {context.Exception}");
+                        return Task.CompletedTask;
+                    },
+                    OnTokenValidated = context =>
+                    {
+                        // Truncate the token so it doesn't get logged
+                        Console.WriteLine($"Token validated: {context.SecurityToken.ToString()[..3]}");
+                        return Task.CompletedTask;
+                    }
+                };
+            });
             services.TryAddScoped<IFileSystem, FileSystem>();
             services.TryAddScoped<IServiceBus, ServiceBus>();
             services.AddLogging(builder =>
@@ -114,6 +163,8 @@ namespace TrueVote.Api
             app.UseExceptionHandler();
 
             app.UseRouting();
+
+            app.UseAuthentication();
 
             app.UseAuthorization();
 
