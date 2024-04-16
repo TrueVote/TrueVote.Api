@@ -18,8 +18,8 @@ using Path = System.IO.Path;
 using Newtonsoft.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using System.Text;
-using Microsoft.AspNetCore.DataProtection;
+using Swashbuckle.AspNetCore.SwaggerGen;
+using Microsoft.AspNetCore.Authorization;
 
 namespace TrueVote.Api
 {
@@ -71,6 +71,16 @@ namespace TrueVote.Api
                         Url = new Uri("https://raw.githubusercontent.com/TrueVote/TrueVote.Api/master/LICENSE")
                     }
                 });
+                o.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    Description = "Please enter a valid TrueVote.API token",
+                    Name = "Authorization",
+                    In = ParameterLocation.Header,
+                    Type = SecuritySchemeType.Http,
+                    BearerFormat = "JWT",
+                    Scheme = "Bearer"
+                });
+                o.OperationFilter<AuthorizeCheckOperationFilter>();
             });
 
             services.AddApplicationInsightsTelemetry();
@@ -156,6 +166,9 @@ namespace TrueVote.Api
             {
                 c.InjectJavascript(CustomJavaScriptPath);
                 c.InjectStylesheet(CustomStylesheetPath);
+                c.DisplayRequestDuration();
+                c.EnableDeepLinking();
+                c.EnableValidator();
             });
 
             app.UseHttpsRedirection();
@@ -295,6 +308,42 @@ namespace TrueVote.Api
         public override string GetMemberName(MemberInfo member, MemberKind kind)
         {
             return member.Name;
+        }
+    }
+
+    [ExcludeFromCodeCoverage]
+    public class AuthorizeCheckOperationFilter : IOperationFilter
+    {
+        public void Apply(OpenApiOperation operation, OperationFilterContext context)
+        {
+            // Check if the endpoint (action) has the Authorize attribute
+            var hasAuthorizeAttribute = context.MethodInfo.DeclaringType.GetCustomAttributes(true)
+                .OfType<AuthorizeAttribute>().Any() ||
+                context.MethodInfo.GetCustomAttributes(true).OfType<AuthorizeAttribute>().Any();
+
+            if (hasAuthorizeAttribute)
+            {
+                // If the endpoint has [Authorize] attribute, display the "Authorize" button
+                operation.Responses.TryAdd("401", new OpenApiResponse { Description = "Unauthorized" });
+
+                operation.Security = new List<OpenApiSecurityRequirement>
+                {
+                    new OpenApiSecurityRequirement
+                    {
+                        {
+                            new OpenApiSecurityScheme
+                            {
+                                Reference = new OpenApiReference
+                                {
+                                    Type = ReferenceType.SecurityScheme,
+                                    Id = "Bearer"
+                                }
+                            },
+                            new string[] {}
+                        }
+                    }
+                };
+            }
         }
     }
 }
