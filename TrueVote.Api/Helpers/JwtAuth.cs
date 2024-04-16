@@ -4,28 +4,12 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Primitives;
 
-/* 
- * This class shouldn't need to exist. The preferred method is to use the [Authorize] attribute on endpoints to
- * protect. However, that doesn't work with Azure Functions. There is no documentation or workaround that will enable
- * [Authorize] to work properly, hence the need for this class.
- * 
- * To protect a function, these lines need to be added to the top:
- *
-    var (HttpResponse, renewedToken) = await _jwtHandler.ProcessTokenValidationAsync(req);
-    if (HttpResponse != null)
-        return HttpResponse;
- *
- * And something like this to the bottom:
- * 
-    return await req.CreateOkResponseAsync(status, renewedToken);
- *
- */
 namespace TrueVote.Api.Helpers
 {
     public interface IJwtHandler
     {
         string GenerateToken(string userId, IEnumerable<string> roles);
-        // Task<(HttpResponse Response, string RenewedToken)> ProcessTokenValidationAsync(HttpRequest req);
+        (ClaimsPrincipal, string) ValidateAndRenewToken(HttpRequest req);
     }
 
     [ExcludeFromCodeCoverage] // TODO Add coverage for this
@@ -70,7 +54,7 @@ namespace TrueVote.Api.Helpers
             }
 
             var currentTime = DateTimeOffset.UtcNow;
-            var expirationTime = currentTime.AddMinutes(5);
+            var expirationTime = currentTime.AddDays(TokenExpirationDays);
             claims.Add(new Claim(JwtRegisteredClaimNames.Exp, expirationTime.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64));
 
             // Other essential claims
@@ -173,30 +157,5 @@ namespace TrueVote.Api.Helpers
                 throw new Exception("An unexpected error occurred.", e);
             }
         }
-
-        /*
-        public async Task<(HttpResponse Response, string RenewedToken)> ProcessTokenValidationAsync(HttpRequest req)
-        {
-            try
-            {
-                var (principal, token) = ValidateAndRenewToken(req);
-                return (Response: null, RenewedToken: token);
-            }
-            catch (SecurityTokenException e)
-            {
-                LogError($"{e.Message} : {e.InnerException}");
-                LogDebug("HTTP trigger - GetStatus:End");
-                var unauthorizedResponse = await req.CreateUnauthorizedResponseAsync(new SecureString { Value = $"{e.Message} : {e.InnerException}" });
-                return (Response: unauthorizedResponse, RenewedToken: null);
-            }
-            catch (Exception e)
-            {
-                LogError($"{e.Message} : {e.InnerException}");
-                LogDebug("HTTP trigger - GetStatus:End");
-                var badRequestResponse = await req.CreateBadRequestResponseAsync(new SecureString { Value = $"{e.Message} : {e.InnerException}" });
-                return (Response: badRequestResponse, RenewedToken: null);
-            }
-        }
-        */
     }
 }
