@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using Nostr.Client.Keys;
 using Nostr.Client.Messages;
 using System.ComponentModel;
@@ -44,14 +45,7 @@ namespace TrueVote.Api.Services
 
             _log.LogInformation($"Request Data: {baseUser}");
 
-            var user = new UserModel { FirstName = baseUser.FirstName, Email = baseUser.Email, UserId = Guid.NewGuid().ToString(), NostrPubKey = string.Empty, DateCreated = UtcNowProviderFactory.GetProvider().UtcNow };
-
-            await _trueVoteDbContext.EnsureCreatedAsync();
-
-            await _trueVoteDbContext.Users.AddAsync(user);
-            await _trueVoteDbContext.SaveChangesAsync();
-
-            await _serviceBus.SendAsync($"New TrueVote User created: {user.FirstName}");
+            var user = await AddNewUser(baseUser, Guid.NewGuid().ToString());
 
             _log.LogDebug("HTTP trigger - CreateUser:End");
 
@@ -75,7 +69,7 @@ namespace TrueVote.Api.Services
             {
                 Users = await _trueVoteDbContext.Users
                 .Where(u =>
-                    (findUser.FirstName == null || (u.FirstName ?? string.Empty).ToLower().Contains(findUser.FirstName.ToLower())) &&
+                    (findUser.FullName == null || (u.FullName ?? string.Empty).ToLower().Contains(findUser.FullName.ToLower())) &&
                     (findUser.Email == null || (u.Email ?? string.Empty).ToLower().Contains(findUser.Email.ToLower())))
                 .OrderByDescending(u => u.DateCreated).ToListAsync()
             };
@@ -90,9 +84,7 @@ namespace TrueVote.Api.Services
         [Produces(typeof(SecureString))]
         [Description("Signs In a User and returns a Token")]
         [ProducesResponseType(typeof(SecureString), StatusCodes.Status200OK)]
-#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
         public async Task<IActionResult> SignIn([FromBody] SignInEventModel signInEventModel)
-#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
             _log.LogDebug("HTTP trigger - SignIn:Begin");
 
@@ -142,15 +134,63 @@ namespace TrueVote.Api.Services
                 return BadRequest(new SecureString { Value = "Signature did not verify" });
             }
 
-            // TODO - Find the user by PubKey
+            // Find the user by PubKey
+            var items = new UserModelList
+            {
+                Users = await _trueVoteDbContext.Users
+                .Where(u => u.NostrPubKey == signInEventModel.PubKey)
+                .OrderByDescending(u => u.DateCreated).ToListAsync()
+            };
 
-            // TODO - SignIn the user and return token for API access
-            // TODO - Need to use TrueVote UserID here
-            var token = _jwtHandler.GenerateToken(signInEventModel.PubKey, ["User"]);
+            string userId;
+
+            // If the user isn't found, create a new user record
+            if (items.Users.Count == 0)
+            {
+                BaseUserModel baseUserModel;
+
+                // DeSerialize the signed content into model
+                try
+                {
+                    baseUserModel = JsonConvert.DeserializeObject<BaseUserModel>(signInEventModel.Content);
+                }
+                catch (Exception e)
+                {
+                    _log.LogError($"SignIn: deserialization error: {e.Message}");
+                    _log.LogDebug("HTTP trigger - SignIn:End");
+
+                    return BadRequest(new SecureString { Value = "Could not deserialize signature content into BaseUserModel" });
+                }
+
+                userId = Guid.NewGuid().ToString();
+
+                await AddNewUser(new BaseUserModel { Email = baseUserModel.Email, FullName = baseUserModel.FullName, NostrPubKey = signInEventModel.PubKey }, userId);
+            }
+            else
+            {
+                userId = items.Users.FirstOrDefault().UserId;
+            }
+
+            // TODO ["User"] is the only "role" for now. Here's where we could assign an elevated role
+            var token = _jwtHandler.GenerateToken(userId, signInEventModel.PubKey, ["User"]);
 
             _log.LogDebug("HTTP trigger - SignIn:End");
 
             return Ok(new SecureString { Value = token });
+        }
+
+        private async Task<UserModel> AddNewUser(BaseUserModel baseUser, string userId)
+        {
+            var user = new UserModel { FullName = baseUser.FullName, Email = baseUser.Email, UserId = userId, NostrPubKey = baseUser.NostrPubKey, DateCreated = UtcNowProviderFactory.GetProvider().UtcNow };
+
+            await _trueVoteDbContext.EnsureCreatedAsync();
+
+            await _trueVoteDbContext.Users.AddAsync(user);
+            await _trueVoteDbContext.SaveChangesAsync();
+
+            await _serviceBus.SendAsync($"New TrueVote User created: {user.FullName}");
+
+            return user;
         }
     }
 }

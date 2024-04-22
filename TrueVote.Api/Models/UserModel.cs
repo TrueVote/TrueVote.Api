@@ -30,12 +30,12 @@ namespace TrueVote.Api.Models
     public class FindUserModel
     {
         [Required]
-        [Description("First Name")]
+        [Description("Full Name")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
-        [JsonPropertyName("FirstName")]
-        [JsonProperty(nameof(FirstName), Required = Required.Always)]
-        public required string FirstName { get; set; } = string.Empty;
+        [JsonPropertyName("FullName")]
+        [JsonProperty(nameof(FullName), Required = Required.Always)]
+        public required string FullName { get; set; } = string.Empty;
 
         [Description("Email Address")]
         [MaxLength(2048)]
@@ -51,12 +51,14 @@ namespace TrueVote.Api.Models
     public class BaseUserModel
     {
         [Required]
-        [Description("First Name")]
+        [Description("Full Name")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
-        [JsonPropertyName("FirstName")]
-        [JsonProperty(nameof(FirstName), Required = Required.Always)]
-        public required string FirstName { get; set; } = string.Empty;
+        [JsonPropertyName("FullName")]
+        [JsonProperty(nameof(FullName), Required = Required.Always)]
+        public required string FullName { get; set; } = string.Empty;
+
+        private string? _email;
 
         [Required(AllowEmptyStrings = false)]
         [Description("Email Address")]
@@ -66,7 +68,19 @@ namespace TrueVote.Api.Models
         [RegularExpression(Constants.EMailRegex)]
         [JsonPropertyName("Email")]
         [JsonProperty(nameof(Email), Required = Required.Always)]
-        public required string Email { get; set; }
+        public required string Email
+        {
+            get => string.IsNullOrWhiteSpace(_email) ? "unknown@truevote.org" : _email;
+            set => _email = value;
+        }
+
+        [Required]
+        [Description("Nostr Public Key")]
+        [MaxLength(2048)]
+        [DataType(DataType.Text)]
+        [JsonPropertyName("NostrPubKey")]
+        [JsonProperty(nameof(NostrPubKey), Required = Required.Always)]
+        public required string NostrPubKey { get; set; }
     }
 
     [ExcludeFromCodeCoverage]
@@ -90,12 +104,12 @@ namespace TrueVote.Api.Models
         public required string NostrPubKey { get; set; }
 
         [Required]
-        [Description("First Name")]
+        [Description("Full Name")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
-        [JsonPropertyName("FirstName")]
-        [JsonProperty(nameof(FirstName), Required = Required.Always)]
-        public required string FirstName { get; set; } = string.Empty;
+        [JsonPropertyName("FullName")]
+        [JsonProperty(nameof(FullName), Required = Required.Always)]
+        public required string FullName { get; set; } = string.Empty;
 
         [Required(AllowEmptyStrings = false)]
         [Description("Email Address")]

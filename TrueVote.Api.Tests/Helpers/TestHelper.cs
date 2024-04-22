@@ -66,8 +66,8 @@ namespace TrueVote.Api.Tests.Helpers
             _ = _mockServiceBus.Setup(m => m.SendAsync(It.IsAny<string>())).Returns(Task.FromResult(""));
 
             _mockJwtHandler = new Mock<IJwtHandler>();
-            _ = _mockJwtHandler.Setup(m => m.GenerateToken(It.IsAny<string>(), It.IsAny<IEnumerable<string>>()))
-                .Returns((string userId, IEnumerable<string> roles) => "mocked_token_value");
+            _ = _mockJwtHandler.Setup(m => m.GenerateToken(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<IEnumerable<string>>()))
+                .Returns((string userId, string npub, IEnumerable<string> roles) => "mocked_token_value");
 
             _moqDataAccessor = new MoqDataAccessor();
             _userApi = new User(_logHelper.Object, _moqDataAccessor.mockUserContext.Object, _mockServiceBus.Object, _mockJwtHandler.Object);

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.Logging;
 using Moq;
+using Newtonsoft.Json;
 using Nostr.Client.Keys;
 using Nostr.Client.Messages;
 using System;
@@ -17,7 +18,7 @@ namespace TrueVote.Api.Tests.ServiceTests
 {
     public class FakeBaseUserModel
     {
-        public string FirstName { get; set; } = string.Empty;
+        public string FullName { get; set; } = string.Empty;
         public string Email { get; set; }
     }
 
@@ -30,7 +31,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public async Task LogsMessages()
         {
-            var baseUserObj = new BaseUserModel { FirstName = "Joe", Email = "joe@joe.com" };
+            var baseUserObj = new BaseUserModel { FullName = "Joe Blow", Email = "joe@joe.com", NostrPubKey = "nostr-key" };
 
             _ = await _userApi.CreateUser(baseUserObj);
 
@@ -41,7 +42,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public async Task AddsUser()
         {
-            var baseUserObj = new BaseUserModel { FirstName = "Joe", Email = "joe@joe.com" };
+            var baseUserObj = new BaseUserModel { FullName = "Joe Blow", Email = "joe@joe.com", NostrPubKey = "nostr-key" };
 
             var ret = await _userApi.CreateUser(baseUserObj);
             Assert.NotNull(ret);
@@ -52,12 +53,12 @@ namespace TrueVote.Api.Tests.ServiceTests
 
             _output.WriteLine($"Item: {val}");
 
-            _output.WriteLine($"Item.FirstName: {val.FirstName}");
+            _output.WriteLine($"Item.FirstName: {val.FullName}");
             _output.WriteLine($"Item.Email: {val.Email}");
             _output.WriteLine($"Item.DateCreated: {val.DateCreated}");
             _output.WriteLine($"Item.UserId: {val.UserId}");
 
-            Assert.Equal("Joe", val.FirstName);
+            Assert.Equal("Joe Blow", val.FullName);
             Assert.Equal("joe@joe.com", val.Email);
             _ = Assert.IsType<DateTime>(val.DateCreated);
             Assert.NotEmpty(val.UserId);
@@ -69,7 +70,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public async Task FindsUser()
         {
-            var findUserObj = new FindUserModel { FirstName = "Foo" };
+            var findUserObj = new FindUserModel { FullName = "Foo" };
 
             var userApi = new User(_logHelper.Object, _moqDataAccessor.mockUserContext.Object, _mockServiceBus.Object, _mockJwtHandler.Object);
 
@@ -80,7 +81,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             var val = (UserModelList) (ret as OkObjectResult).Value;
             Assert.NotEmpty(val.Users);
             Assert.Equal(2, val.Users.Count);
-            Assert.Equal("Foo2", val.Users[0].FirstName);
+            Assert.Equal("Foo2 Bar", val.Users[0].FullName);
             Assert.Equal("foo2@bar.com", val.Users[0].Email);
 
             _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
@@ -90,7 +91,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public async Task HandlesUnfoundUser()
         {
-            var findUserObj = new FindUserModel { FirstName = "not going to find anything" };
+            var findUserObj = new FindUserModel { FullName = "not going to find anything" };
 
             var userApi = new User(_logHelper.Object, _moqDataAccessor.mockUserContext.Object, _mockServiceBus.Object, _mockJwtHandler.Object);
 
@@ -162,12 +163,18 @@ namespace TrueVote.Api.Tests.ServiceTests
             var utcTime = DateTimeOffset.UtcNow;
 
             // Simulate a client (e.g. TypeScript)
+            var content = new BaseUserModel
+            {
+                Email = "unknown@truevote.org",
+                FullName = "Joe Blow",
+                NostrPubKey = keyPair.PublicKey.ToString(),
+            };
             var nostrEvent = new NostrEvent
             {
                 Kind = NostrKind.ShortTextNote,
                 CreatedAt = utcTime.DateTime,
                 Pubkey = keyPair.PublicKey.Hex,
-                Content = "SIGNIN"
+                Content = JsonConvert.SerializeObject(content)
             };
             var signature = nostrEvent.Sign(keyPair.PrivateKey);
             var valid = signature.IsSignatureValid();

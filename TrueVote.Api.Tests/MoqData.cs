@@ -20,9 +20,9 @@ namespace TrueVote.Api.Tests
 
         public static List<UserModel> MockUserData => new()
         {
-            new UserModel { UserId = "userid1", Email = "foo@foo.com", DateCreated = createDate, FirstName = "Foo", NostrPubKey = "npub" },
-            new UserModel { UserId = "userid2", Email = "foo2@bar.com", DateCreated = createDate2, FirstName = "Foo2", NostrPubKey = "npub" },
-            new UserModel { UserId = "userid3", Email = "boo@bar.com", DateCreated = createDate3, FirstName = "Boo", NostrPubKey = "npub" }
+            new UserModel { UserId = "userid1", Email = "foo@foo.com", DateCreated = createDate, FullName = "Foo Bar", NostrPubKey = "npub" },
+            new UserModel { UserId = "userid2", Email = "foo2@bar.com", DateCreated = createDate2, FullName = "Foo2 Bar", NostrPubKey = "npub" },
+            new UserModel { UserId = "userid3", Email = "boo@bar.com", DateCreated = createDate3, FullName = "Boo Bar", NostrPubKey = "npub" }
         };
 
         public static List<ElectionModel> MockElectionData => new()

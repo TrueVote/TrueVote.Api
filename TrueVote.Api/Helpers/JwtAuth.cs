@@ -8,7 +8,7 @@ namespace TrueVote.Api.Helpers
 {
     public interface IJwtHandler
     {
-        string GenerateToken(string userId, IEnumerable<string> roles);
+        string GenerateToken(string userId, string npub, IEnumerable<string> roles);
         (ClaimsPrincipal, string) ValidateAndRenewToken(HttpRequest req);
     }
 
@@ -35,7 +35,7 @@ namespace TrueVote.Api.Helpers
         }
 
         // Generate a JWT token with a Expiration, UserID, and Roles claims
-        public string GenerateToken(string userId, IEnumerable<string> roles)
+        public string GenerateToken(string userId, string npub, IEnumerable<string> roles)
         {
             if (userId == null)
             {
@@ -58,7 +58,7 @@ namespace TrueVote.Api.Helpers
             claims.Add(new Claim(JwtRegisteredClaimNames.Exp, expirationTime.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64));
 
             // Other essential claims
-            claims.Add(new Claim(JwtRegisteredClaimNames.Sub, userId));
+            claims.Add(new Claim(JwtRegisteredClaimNames.Sub, npub));
             claims.Add(new Claim(JwtRegisteredClaimNames.NameId, userId));
             claims.Add(new Claim(JwtRegisteredClaimNames.Iss, Issuer));
             claims.Add(new Claim(JwtRegisteredClaimNames.Aud, Audience));
@@ -123,6 +123,7 @@ namespace TrueVote.Api.Helpers
                 // THIS should work, but it doesn't. So instead need to fully qualify claim name.
                 // var userId = principal.FindFirst(JwtRegisteredClaimNames.NameId)?.Value;
                 var userId = principal.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
+                var npub = principal.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name")?.Value;
 
                 var roles = principal.FindAll(ClaimTypes.Role)?.Select(c => c.Value);
 
@@ -142,7 +143,7 @@ namespace TrueVote.Api.Helpers
                     if (validFor < TimeSpan.FromSeconds(renewalPeriod))
                     {
                         // If the token is about to expire, generate a new token with the same UserID and Roles
-                        return (principal, GenerateToken(userId, roles));
+                        return (principal, GenerateToken(userId, npub, roles));
                     }
                 }
 
