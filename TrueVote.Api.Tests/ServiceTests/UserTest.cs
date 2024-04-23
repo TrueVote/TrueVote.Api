@@ -7,6 +7,8 @@ using Newtonsoft.Json;
 using Nostr.Client.Keys;
 using Nostr.Client.Messages;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using TrueVote.Api.Models;
 using TrueVote.Api.Services;
@@ -157,7 +159,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         }
 
         [Fact]
-        public async Task SignInSuccess()
+        public async Task SignInSuccessUnfoundUser()
         {
             var keyPair = NostrKeyPair.GenerateNew();
             var utcTime = DateTimeOffset.UtcNow;
@@ -167,7 +169,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             {
                 Email = "unknown@truevote.org",
                 FullName = "Joe Blow",
-                NostrPubKey = keyPair.PublicKey.ToString(),
+                NostrPubKey = keyPair.PublicKey.Bech32,
             };
             var nostrEvent = new NostrEvent
             {
@@ -200,6 +202,112 @@ namespace TrueVote.Api.Tests.ServiceTests
             // TODO Confirm valid token
 
             _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+        }
+
+        [Fact]
+        public async Task SignInSuccessFoundUser()
+        {
+            var keyPair = NostrKeyPair.GenerateNew();
+            var userId = Guid.NewGuid().ToString();
+            var utcTime = DateTimeOffset.UtcNow;
+
+            var newUser = new UserModel
+            {
+                UserId = userId,
+                DateCreated = utcTime.DateTime,
+                Email = "foo4@bar.com",
+                FullName = "Foo Bar",
+                NostrPubKey = keyPair.PublicKey.Bech32
+            };
+
+            // Create own MoqData so it finds it later below
+            var mockUserData = new List<UserModel> { newUser };
+            var mockUserContext = new Mock<MoqTrueVoteDbContext>();
+            var mockUserDataQueryable = mockUserData.AsQueryable();
+            var mockUserDataCollection = mockUserData;
+            var MockUserSet = DbMoqHelper.GetDbSet(mockUserDataQueryable);
+            mockUserContext.Setup(m => m.Users).Returns(MockUserSet.Object);
+            mockUserContext.Setup(m => m.EnsureCreatedAsync()).Returns(Task.FromResult(true));
+
+            // Simulate a client (e.g. TypeScript)
+            var content = new BaseUserModel
+            {
+                Email = newUser.Email,
+                FullName = newUser.FullName,
+                NostrPubKey = keyPair.PublicKey.Bech32,
+            };
+            var nostrEvent = new NostrEvent
+            {
+                Kind = NostrKind.ShortTextNote,
+                CreatedAt = utcTime.DateTime,
+                Pubkey = keyPair.PublicKey.Hex,
+                Content = JsonConvert.SerializeObject(content)
+            };
+            var signature = nostrEvent.Sign(keyPair.PrivateKey);
+            var valid = signature.IsSignatureValid();
+            Assert.True(valid);
+
+            // Package it up into a TrueVote model the way the client side TypeScript would
+            var signInEventModel = new SignInEventModel
+            {
+                Kind = nostrEvent.Kind,
+                PubKey = keyPair.PublicKey.Bech32,
+                CreatedAt = utcTime.DateTime,
+                Content = nostrEvent.Content,
+                Signature = signature.Sig
+            };
+
+            var userApi = new User(_logHelper.Object, mockUserContext.Object, _mockServiceBus.Object, _mockJwtHandler.Object);
+            var ret = await userApi.SignIn(signInEventModel);
+            Assert.NotNull(ret);
+            Assert.Equal(StatusCodes.Status200OK, ((IStatusCodeActionResult) ret).StatusCode);
+
+            var val = (SecureString) (ret as OkObjectResult).Value;
+            Assert.NotEmpty(val.Value);
+
+            // TODO Confirm valid token
+
+            _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+        }
+
+        [Fact]
+        public async Task HandlesSignInSuccessFoundUserInvalidContent()
+        {
+            var keyPair = NostrKeyPair.GenerateNew();
+            var utcTime = DateTimeOffset.UtcNow;
+
+            // Simulate a client (e.g. TypeScript)
+            var nostrEvent = new NostrEvent
+            {
+                Kind = NostrKind.ShortTextNote,
+                CreatedAt = utcTime.DateTime,
+                Pubkey = keyPair.PublicKey.Hex,
+                Content = "INVALID CONTENT - NOT A PROPER BaseUserModel"
+            };
+            var signature = nostrEvent.Sign(keyPair.PrivateKey);
+            var valid = signature.IsSignatureValid();
+            Assert.True(valid);
+
+            // Package it up into a TrueVote model the way the client side TypeScript would
+            var signInEventModel = new SignInEventModel
+            {
+                Kind = nostrEvent.Kind,
+                PubKey = keyPair.PublicKey.Bech32,
+                CreatedAt = utcTime.DateTime,
+                Content = nostrEvent.Content,
+                Signature = signature.Sig
+            };
+
+            var ret = await _userApi.SignIn(signInEventModel);
+            Assert.NotNull(ret);
+            Assert.Equal(StatusCodes.Status400BadRequest, ((IStatusCodeActionResult) ret).StatusCode);
+
+            var val = (SecureString) (ret as BadRequestObjectResult).Value;
+            Assert.Contains("Could not deserialize signature content", val.Value.ToString());
+
+            _logHelper.Verify(LogLevel.Error, Times.Exactly(1));
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
         }
 
