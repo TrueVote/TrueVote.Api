@@ -80,8 +80,8 @@ namespace TrueVote.Api.Tests.ServiceTests
             var ret = await _queryService.GetUser();
 
             Assert.NotNull(ret);
-            Assert.Equal("Boo", ret[0].FirstName);
-            Assert.Equal("Foo2", ret[1].FirstName);
+            Assert.Equal("Boo Bar", ret[0].FullName);
+            Assert.Equal("Foo2 Bar", ret[1].FullName);
             Assert.True(ret.Count == 3);
         }
 

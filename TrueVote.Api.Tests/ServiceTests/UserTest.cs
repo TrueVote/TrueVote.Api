@@ -3,9 +3,12 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.Logging;
 using Moq;
+using Newtonsoft.Json;
 using Nostr.Client.Keys;
 using Nostr.Client.Messages;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using TrueVote.Api.Models;
 using TrueVote.Api.Services;
@@ -17,7 +20,7 @@ namespace TrueVote.Api.Tests.ServiceTests
 {
     public class FakeBaseUserModel
     {
-        public string FirstName { get; set; } = string.Empty;
+        public string FullName { get; set; } = string.Empty;
         public string Email { get; set; }
     }
 
@@ -30,7 +33,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public async Task LogsMessages()
         {
-            var baseUserObj = new BaseUserModel { FirstName = "Joe", Email = "joe@joe.com" };
+            var baseUserObj = new BaseUserModel { FullName = "Joe Blow", Email = "joe@joe.com", NostrPubKey = "nostr-key" };
 
             _ = await _userApi.CreateUser(baseUserObj);
 
@@ -41,7 +44,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public async Task AddsUser()
         {
-            var baseUserObj = new BaseUserModel { FirstName = "Joe", Email = "joe@joe.com" };
+            var baseUserObj = new BaseUserModel { FullName = "Joe Blow", Email = "joe@joe.com", NostrPubKey = "nostr-key" };
 
             var ret = await _userApi.CreateUser(baseUserObj);
             Assert.NotNull(ret);
@@ -52,12 +55,12 @@ namespace TrueVote.Api.Tests.ServiceTests
 
             _output.WriteLine($"Item: {val}");
 
-            _output.WriteLine($"Item.FirstName: {val.FirstName}");
+            _output.WriteLine($"Item.FirstName: {val.FullName}");
             _output.WriteLine($"Item.Email: {val.Email}");
             _output.WriteLine($"Item.DateCreated: {val.DateCreated}");
             _output.WriteLine($"Item.UserId: {val.UserId}");
 
-            Assert.Equal("Joe", val.FirstName);
+            Assert.Equal("Joe Blow", val.FullName);
             Assert.Equal("joe@joe.com", val.Email);
             _ = Assert.IsType<DateTime>(val.DateCreated);
             Assert.NotEmpty(val.UserId);
@@ -69,7 +72,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public async Task FindsUser()
         {
-            var findUserObj = new FindUserModel { FirstName = "Foo" };
+            var findUserObj = new FindUserModel { FullName = "Foo" };
 
             var userApi = new User(_logHelper.Object, _moqDataAccessor.mockUserContext.Object, _mockServiceBus.Object, _mockJwtHandler.Object);
 
@@ -80,7 +83,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             var val = (UserModelList) (ret as OkObjectResult).Value;
             Assert.NotEmpty(val.Users);
             Assert.Equal(2, val.Users.Count);
-            Assert.Equal("Foo2", val.Users[0].FirstName);
+            Assert.Equal("Foo2 Bar", val.Users[0].FullName);
             Assert.Equal("foo2@bar.com", val.Users[0].Email);
 
             _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
@@ -90,7 +93,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public async Task HandlesUnfoundUser()
         {
-            var findUserObj = new FindUserModel { FirstName = "not going to find anything" };
+            var findUserObj = new FindUserModel { FullName = "not going to find anything" };
 
             var userApi = new User(_logHelper.Object, _moqDataAccessor.mockUserContext.Object, _mockServiceBus.Object, _mockJwtHandler.Object);
 
@@ -156,18 +159,24 @@ namespace TrueVote.Api.Tests.ServiceTests
         }
 
         [Fact]
-        public async Task SignInSuccess()
+        public async Task SignInSuccessUnfoundUser()
         {
             var keyPair = NostrKeyPair.GenerateNew();
             var utcTime = DateTimeOffset.UtcNow;
 
             // Simulate a client (e.g. TypeScript)
+            var content = new BaseUserModel
+            {
+                Email = "unknown@truevote.org",
+                FullName = "Joe Blow",
+                NostrPubKey = keyPair.PublicKey.Bech32,
+            };
             var nostrEvent = new NostrEvent
             {
                 Kind = NostrKind.ShortTextNote,
                 CreatedAt = utcTime.DateTime,
                 Pubkey = keyPair.PublicKey.Hex,
-                Content = "SIGNIN"
+                Content = JsonConvert.SerializeObject(content)
             };
             var signature = nostrEvent.Sign(keyPair.PrivateKey);
             var valid = signature.IsSignatureValid();
@@ -193,6 +202,112 @@ namespace TrueVote.Api.Tests.ServiceTests
             // TODO Confirm valid token
 
             _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+        }
+
+        [Fact]
+        public async Task SignInSuccessFoundUser()
+        {
+            var keyPair = NostrKeyPair.GenerateNew();
+            var userId = Guid.NewGuid().ToString();
+            var utcTime = DateTimeOffset.UtcNow;
+
+            var newUser = new UserModel
+            {
+                UserId = userId,
+                DateCreated = utcTime.DateTime,
+                Email = "foo4@bar.com",
+                FullName = "Foo Bar",
+                NostrPubKey = keyPair.PublicKey.Bech32
+            };
+
+            // Create own MoqData so it finds it later below
+            var mockUserData = new List<UserModel> { newUser };
+            var mockUserContext = new Mock<MoqTrueVoteDbContext>();
+            var mockUserDataQueryable = mockUserData.AsQueryable();
+            var mockUserDataCollection = mockUserData;
+            var MockUserSet = DbMoqHelper.GetDbSet(mockUserDataQueryable);
+            mockUserContext.Setup(m => m.Users).Returns(MockUserSet.Object);
+            mockUserContext.Setup(m => m.EnsureCreatedAsync()).Returns(Task.FromResult(true));
+
+            // Simulate a client (e.g. TypeScript)
+            var content = new BaseUserModel
+            {
+                Email = newUser.Email,
+                FullName = newUser.FullName,
+                NostrPubKey = keyPair.PublicKey.Bech32,
+            };
+            var nostrEvent = new NostrEvent
+            {
+                Kind = NostrKind.ShortTextNote,
+                CreatedAt = utcTime.DateTime,
+                Pubkey = keyPair.PublicKey.Hex,
+                Content = JsonConvert.SerializeObject(content)
+            };
+            var signature = nostrEvent.Sign(keyPair.PrivateKey);
+            var valid = signature.IsSignatureValid();
+            Assert.True(valid);
+
+            // Package it up into a TrueVote model the way the client side TypeScript would
+            var signInEventModel = new SignInEventModel
+            {
+                Kind = nostrEvent.Kind,
+                PubKey = keyPair.PublicKey.Bech32,
+                CreatedAt = utcTime.DateTime,
+                Content = nostrEvent.Content,
+                Signature = signature.Sig
+            };
+
+            var userApi = new User(_logHelper.Object, mockUserContext.Object, _mockServiceBus.Object, _mockJwtHandler.Object);
+            var ret = await userApi.SignIn(signInEventModel);
+            Assert.NotNull(ret);
+            Assert.Equal(StatusCodes.Status200OK, ((IStatusCodeActionResult) ret).StatusCode);
+
+            var val = (SecureString) (ret as OkObjectResult).Value;
+            Assert.NotEmpty(val.Value);
+
+            // TODO Confirm valid token
+
+            _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+        }
+
+        [Fact]
+        public async Task HandlesSignInSuccessFoundUserInvalidContent()
+        {
+            var keyPair = NostrKeyPair.GenerateNew();
+            var utcTime = DateTimeOffset.UtcNow;
+
+            // Simulate a client (e.g. TypeScript)
+            var nostrEvent = new NostrEvent
+            {
+                Kind = NostrKind.ShortTextNote,
+                CreatedAt = utcTime.DateTime,
+                Pubkey = keyPair.PublicKey.Hex,
+                Content = "INVALID CONTENT - NOT A PROPER BaseUserModel"
+            };
+            var signature = nostrEvent.Sign(keyPair.PrivateKey);
+            var valid = signature.IsSignatureValid();
+            Assert.True(valid);
+
+            // Package it up into a TrueVote model the way the client side TypeScript would
+            var signInEventModel = new SignInEventModel
+            {
+                Kind = nostrEvent.Kind,
+                PubKey = keyPair.PublicKey.Bech32,
+                CreatedAt = utcTime.DateTime,
+                Content = nostrEvent.Content,
+                Signature = signature.Sig
+            };
+
+            var ret = await _userApi.SignIn(signInEventModel);
+            Assert.NotNull(ret);
+            Assert.Equal(StatusCodes.Status400BadRequest, ((IStatusCodeActionResult) ret).StatusCode);
+
+            var val = (SecureString) (ret as BadRequestObjectResult).Value;
+            Assert.Contains("Could not deserialize signature content", val.Value.ToString());
+
+            _logHelper.Verify(LogLevel.Error, Times.Exactly(1));
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
         }
 
