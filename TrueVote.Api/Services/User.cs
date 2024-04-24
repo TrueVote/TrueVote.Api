@@ -192,5 +192,40 @@ namespace TrueVote.Api.Services
 
             return user;
         }
+
+        [HttpPut]
+        [Route("user/saveuser")]
+        [Produces(typeof(UserModel))]
+        [Description("Saves an existing User preferences and returns the same updated User")]
+        [ProducesResponseType(typeof(UserModel), StatusCodes.Status200OK)]
+        public async Task<IActionResult> SaveUser([FromBody] UserModel user)
+        {
+            _log.LogDebug("HTTP trigger - SaveUser:Begin");
+
+            _log.LogInformation($"Request Data: {user}");
+
+            // TODO Confirm UserId in token matches request
+
+            // Determine if User is found
+            var foundUser = await _trueVoteDbContext.Users.Where(u => u.UserId == user.UserId).SingleOrDefaultAsync();
+            if (foundUser == null)
+            {
+                return NotFound();
+            }
+
+            // TODO Confirm Preferences saved too
+
+            foundUser.DateUpdated = UtcNowProviderFactory.GetProvider().UtcNow;
+
+            // TODO Add Versioning for each update
+            _trueVoteDbContext.Users.Update(foundUser);
+            await _trueVoteDbContext.SaveChangesAsync();
+
+            await _serviceBus.SendAsync($"TrueVote User updated: {foundUser.FullName}");
+
+            _log.LogDebug("HTTP trigger - SaveUser:End");
+
+            return Ok(foundUser);
+        }
     }
 }

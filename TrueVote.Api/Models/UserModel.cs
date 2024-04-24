@@ -127,6 +127,15 @@ namespace TrueVote.Api.Models
         [JsonPropertyName("DateCreated")]
         [JsonProperty(nameof(DateCreated), Required = Required.Always)]
         public required DateTime DateCreated { get; set; }
+
+        [Required]
+        [Description("DateUpdated")]
+        [DataType(DataType.Date)]
+        [JsonPropertyName("DateUpdated")]
+        [JsonProperty(nameof(DateUpdated), Required = Required.DisallowNull)]
+        public DateTime DateUpdated { get; set; }
+
+        // TODO Add "Preferences" model attached to UserModel
     }
 
     [ExcludeFromCodeCoverage]

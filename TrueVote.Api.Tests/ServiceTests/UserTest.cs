@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using TrueVote.Api.Helpers;
 using TrueVote.Api.Models;
 using TrueVote.Api.Services;
 using TrueVote.Api.Tests.Helpers;
@@ -352,6 +353,29 @@ namespace TrueVote.Api.Tests.ServiceTests
             Assert.Contains("Signature did not verify", val.Value.ToString());
 
             _logHelper.Verify(LogLevel.Error, Times.Exactly(1));
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+        }
+
+        [Fact]
+        public async Task SavesUser()
+        {
+            var user = MoqData.MockUserData[0];
+            user.FullName = "Joe Jones";
+            Assert.Equal(user.DateUpdated, DateTime.MinValue);
+            Assert.Equal("Joe Jones", user.FullName);
+
+            var ret = await _userApi.SaveUser(user);
+
+            Assert.NotNull(ret);
+            Assert.Equal(StatusCodes.Status200OK, ((IStatusCodeActionResult) ret).StatusCode);
+
+            var updatedUser = (UserModel) (ret as OkObjectResult).Value;
+
+            // TODO Check for other values to update and ensure they were updated
+            Assert.True(UtcNowProviderFactory.GetProvider().UtcNow - updatedUser.DateUpdated <= TimeSpan.FromSeconds(3));
+            Assert.Equal("Joe Jones", updatedUser.FullName);
+
+            _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
         }
     }

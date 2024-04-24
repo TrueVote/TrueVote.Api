@@ -157,9 +157,10 @@ namespace TrueVote.Api.Tests
             mockRaceContext.Setup(m => m.Races).Returns(MockRaceSet.Object);
             mockRaceContext.Setup(m => m.EnsureCreatedAsync()).Returns(Task.FromResult(true));
 
-            var mockUtcNowProvider = new Mock<IUtcNowProvider>();
-            mockUtcNowProvider.Setup(p => p.UtcNow).Returns(MoqData.startDate);
-            UtcNowProviderFactory.SetProvider(mockUtcNowProvider.Object);
+            // Leaving commented code. This is for Mocking UTC time. Helpful for test consistency.
+            // var mockUtcNowProvider = new Mock<IUtcNowProvider>();
+            // mockUtcNowProvider.Setup(p => p.UtcNow).Returns(MoqData.startDate);
+            // UtcNowProviderFactory.SetProvider(mockUtcNowProvider.Object);
         }
     }
 
