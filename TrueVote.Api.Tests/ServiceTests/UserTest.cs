@@ -364,6 +364,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             Assert.Equal(user.DateUpdated, DateTime.MinValue);
             Assert.Equal("Joe Jones", user.FullName);
 
+            _userApi.ControllerContext = _authControllerContext;
             var ret = await _userApi.SaveUser(user);
 
             Assert.NotNull(ret);

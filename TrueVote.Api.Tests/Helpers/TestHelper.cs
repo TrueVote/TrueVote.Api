@@ -1,10 +1,13 @@
 using HotChocolate.Types.Descriptors;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Moq;
 using System.Collections.Generic;
 using System.IO.Abstractions;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using TrueVote.Api.Helpers;
 using TrueVote.Api.Interfaces;
@@ -30,6 +33,7 @@ namespace TrueVote.Api.Tests.Helpers
         protected readonly Mock<IOpenTimestampsClient> _mockOpenTimestampsClient;
         protected readonly Mock<IServiceBus> _mockServiceBus;
         protected readonly Mock<IJwtHandler> _mockJwtHandler;
+        protected readonly ControllerContext _authControllerContext;
 
         public TestHelper(ITestOutputHelper output)
         {
@@ -78,6 +82,22 @@ namespace TrueVote.Api.Tests.Helpers
             _candidateApi = new Candidate(_logHelper.Object, _moqDataAccessor.mockCandidateContext.Object, _mockServiceBus.Object);
             _timestampApi = new Timestamp(_logHelper.Object, _moqDataAccessor.mockTimestampContext.Object);
             _queryService = new Query((MoqTrueVoteDbContext) serviceProvider.GetService(typeof(MoqTrueVoteDbContext)));
+
+            // For endpoints that require Authorization [Authorize]
+            // Mock a user principal with desired claims
+            var claims = new[]
+            {
+                new Claim(ClaimTypes.NameIdentifier, MoqData.MockUserData[0].UserId),
+                new Claim(ClaimTypes.Role, "User"), // Role
+            };
+            var identity = new ClaimsIdentity(claims, "TestAuthentication");
+            var principal = new ClaimsPrincipal(identity);
+
+            // Create context for controllers to attach to
+            _authControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext { User = principal }
+            };
         }
     }
 }

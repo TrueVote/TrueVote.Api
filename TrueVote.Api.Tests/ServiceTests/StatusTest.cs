@@ -89,6 +89,8 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task CalculatesMathExpression()
         {
             var status = new Status(_logHelper.Object, _mockServiceBus.Object);
+            status.ControllerContext = _authControllerContext;
+            Assert.NotNull(status.User);
 
             var ret = await status.GetAdd();
             Assert.NotNull(ret);

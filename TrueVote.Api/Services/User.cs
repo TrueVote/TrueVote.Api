@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
@@ -194,6 +195,8 @@ namespace TrueVote.Api.Services
         }
 
         [HttpPut]
+        [Authorize]
+        [ServiceFilter(typeof(ValidateUserIdFilter))]
         [Route("user/saveuser")]
         [Produces(typeof(UserModel))]
         [Description("Saves an existing User preferences and returns the same updated User")]
@@ -204,14 +207,17 @@ namespace TrueVote.Api.Services
 
             _log.LogInformation($"Request Data: {user}");
 
-            // TODO Confirm UserId in token matches request
+            if (User == null || User.Identity == null)
+                return Unauthorized();
 
             // Determine if User is found
-            var foundUser = await _trueVoteDbContext.Users.Where(u => u.UserId == user.UserId).SingleOrDefaultAsync();
+            var foundUser = await _trueVoteDbContext.Users.Where(u => u.UserId == user.UserId).FirstOrDefaultAsync();
             if (foundUser == null)
             {
                 return NotFound();
             }
+
+            foundUser.FullName = user.FullName;
 
             // TODO Confirm Preferences saved too
 
