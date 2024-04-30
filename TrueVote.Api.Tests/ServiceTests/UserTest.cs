@@ -12,7 +12,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using TrueVote.Api.Helpers;
 using TrueVote.Api.Models;
-using TrueVote.Api.Services;
 using TrueVote.Api.Tests.Helpers;
 using Xunit;
 using Xunit.Abstractions;
@@ -75,9 +74,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         {
             var findUserObj = new FindUserModel { FullName = "Foo" };
 
-            var userApi = new User(_logHelper.Object, _moqDataAccessor.mockUserContext.Object, _mockServiceBus.Object, _mockJwtHandler.Object);
-
-            var ret = await userApi.UserFind(findUserObj);
+            var ret = await _userApi.UserFind(findUserObj);
             Assert.NotNull(ret);
             Assert.Equal(StatusCodes.Status200OK, ((IStatusCodeActionResult) ret).StatusCode);
 
@@ -96,9 +93,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         {
             var findUserObj = new FindUserModel { FullName = "not going to find anything" };
 
-            var userApi = new User(_logHelper.Object, _moqDataAccessor.mockUserContext.Object, _mockServiceBus.Object, _mockJwtHandler.Object);
-
-            var ret = await userApi.UserFind(findUserObj);
+            var ret = await _userApi.UserFind(findUserObj);
             Assert.NotNull(ret);
             Assert.Equal(StatusCodes.Status404NotFound, ((IStatusCodeActionResult) ret).StatusCode);
 
@@ -259,8 +254,7 @@ namespace TrueVote.Api.Tests.ServiceTests
                 Signature = signature.Sig
             };
 
-            var userApi = new User(_logHelper.Object, mockUserContext.Object, _mockServiceBus.Object, _mockJwtHandler.Object);
-            var ret = await userApi.SignIn(signInEventModel);
+            var ret = await _userApi.SignIn(signInEventModel);
             Assert.NotNull(ret);
             Assert.Equal(StatusCodes.Status200OK, ((IStatusCodeActionResult) ret).StatusCode);
 
