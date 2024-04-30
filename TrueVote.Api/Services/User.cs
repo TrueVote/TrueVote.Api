@@ -182,7 +182,7 @@ namespace TrueVote.Api.Services
 
         private async Task<UserModel> AddNewUser(BaseUserModel baseUser, string userId)
         {
-            var user = new UserModel { FullName = baseUser.FullName, Email = baseUser.Email, UserId = userId, NostrPubKey = baseUser.NostrPubKey, DateCreated = UtcNowProviderFactory.GetProvider().UtcNow };
+            var user = new UserModel { FullName = baseUser.FullName, Email = baseUser.Email, UserId = userId, NostrPubKey = baseUser.NostrPubKey, DateCreated = UtcNowProviderFactory.GetProvider().UtcNow, UserPreferences = new UserPreferencesModel() };
 
             await _trueVoteDbContext.EnsureCreatedAsync();
 
@@ -221,10 +221,20 @@ namespace TrueVote.Api.Services
                 return NotFound();
             }
 
+            // Save settings passed in
             foundUser.FullName = user.FullName;
 
-            // TODO Confirm Preferences saved too
+            if (!foundUser.Email.Equals(user.Email))
+            {
+                _log.LogInformation($"TrueVote User settings - updated email: {foundUser.Email}");
+                // TODO May need to generate a "validate email" workflow here
+            }
+            foundUser.Email = user.Email; 
 
+            // Save all the preferences. Possible in the future here will need to generate workflows if new features are enabled
+            foundUser.UserPreferences = user.UserPreferences;
+
+            // Last thing to do - set the updated timestamp
             foundUser.DateUpdated = UtcNowProviderFactory.GetProvider().UtcNow;
 
             // TODO Add Versioning for each update

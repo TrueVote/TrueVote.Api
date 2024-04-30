@@ -135,7 +135,36 @@ namespace TrueVote.Api.Models
         [JsonProperty(nameof(DateUpdated), Required = Required.DisallowNull)]
         public DateTime DateUpdated { get; set; }
 
-        // TODO Add "Preferences" model attached to UserModel
+        [Required]
+        [Description("UserPreferences")]
+        [DataType("UserPreferencesModel")]
+        [JsonPropertyName("UserPreferences")]
+        [JsonProperty(nameof(UserPreferences), Required = Required.Always)]
+        public required UserPreferencesModel UserPreferences { get; set; } = new UserPreferencesModel();
+    }
+
+    [ExcludeFromCodeCoverage]
+    public class UserPreferencesModel
+    {
+        [Description("Notification: New Elections")]
+        [JsonPropertyName("NotificationNewElections")]
+        [JsonProperty(nameof(NotificationNewElections), Required = Required.Default)]
+        public bool NotificationNewElections { get; set; }
+
+        [Description("Notification: Election Start")]
+        [JsonPropertyName("NotificationElectionStart")]
+        [JsonProperty(nameof(NotificationElectionStart), Required = Required.Default)]
+        public bool NotificationElectionStart { get; set; }
+
+        [Description("Notification: Election End")]
+        [JsonPropertyName("NotificationElectionEnd")]
+        [JsonProperty(nameof(NotificationElectionEnd), Required = Required.Default)]
+        public bool NotificationElectionEnd { get; set; }
+
+        [Description("Notification: New TrueVote Features")]
+        [JsonPropertyName("NotificationNewTrueVoteFeatures")]
+        [JsonProperty(nameof(NotificationNewTrueVoteFeatures), Required = Required.Default)]
+        public bool NotificationNewTrueVoteFeatures { get; set; }
     }
 
     [ExcludeFromCodeCoverage]

@@ -215,7 +215,8 @@ namespace TrueVote.Api.Tests.ServiceTests
                 DateCreated = utcTime.DateTime,
                 Email = "foo4@bar.com",
                 FullName = "Foo Bar",
-                NostrPubKey = keyPair.PublicKey.Bech32
+                NostrPubKey = keyPair.PublicKey.Bech32,
+                UserPreferences = new UserPreferencesModel()
             };
 
             // Create own MoqData so it finds it later below
@@ -368,11 +369,35 @@ namespace TrueVote.Api.Tests.ServiceTests
 
             var updatedUser = (UserModel) (ret as OkObjectResult).Value;
 
-            // TODO Check for other values to update and ensure they were updated
             Assert.True(UtcNowProviderFactory.GetProvider().UtcNow - updatedUser.DateUpdated <= TimeSpan.FromSeconds(3));
             Assert.Equal("Joe Jones", updatedUser.FullName);
 
             _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+        }
+
+        [Fact]
+        public async Task SavesUserWithNewEmail()
+        {
+            var user = MoqData.MockUserData[0];
+            user.FullName = "Joe Jones";
+            user.Email = "anewemail@anywhere.com";
+            Assert.Equal(user.DateUpdated, DateTime.MinValue);
+            Assert.Equal("Joe Jones", user.FullName);
+
+            _userApi.ControllerContext = _authControllerContext;
+            var ret = await _userApi.SaveUser(user);
+
+            Assert.NotNull(ret);
+            Assert.Equal(StatusCodes.Status200OK, ((IStatusCodeActionResult) ret).StatusCode);
+
+            var updatedUser = (UserModel) (ret as OkObjectResult).Value;
+
+            Assert.True(UtcNowProviderFactory.GetProvider().UtcNow - updatedUser.DateUpdated <= TimeSpan.FromSeconds(3));
+            Assert.Equal("Joe Jones", updatedUser.FullName);
+            Assert.Equal("anewemail@anywhere.com", updatedUser.Email);
+
+            _logHelper.Verify(LogLevel.Information, Times.Exactly(2));
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
         }
 
