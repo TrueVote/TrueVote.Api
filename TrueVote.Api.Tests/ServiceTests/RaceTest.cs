@@ -80,7 +80,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task FindsRace()
         {
             var findRaceData = MoqData.MockRaceData;
-            findRaceData[0].Candidates = _moqDataAccessor.mockCandidateDataCollection;
+            findRaceData[0].Candidates = MoqData.MockCandidateData;
 
             var mockRaceSet = DbMoqHelper.GetDbSet(findRaceData.AsQueryable());
 
@@ -191,7 +191,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             var mockRaceSet = addsCandidatesRaceData.AsQueryable().BuildMockDbSet();
             mockRaceContext.Setup(m => m.Races).Returns(mockRaceSet.Object);
 
-            var mockCandidatesSet = _moqDataAccessor.mockCandidateDataQueryable.AsQueryable().BuildMockDbSet();
+            var mockCandidatesSet = MoqData.MockCandidateData.AsQueryable().BuildMockDbSet();
             mockRaceContext.Setup(m => m.Candidates).Returns(mockCandidatesSet.Object);
 
             var addCandidatesObj = new AddCandidatesModel { RaceId = "raceid1", CandidateIds = new List<string> { "68", "69" } };
@@ -212,14 +212,14 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task HandlesAddCandidateAlreadyInRace()
         {
             var addsCandidatesRaceData = MoqData.MockRaceData;
-            addsCandidatesRaceData[0].Candidates = _moqDataAccessor.mockCandidateDataCollection;
+            addsCandidatesRaceData[0].Candidates = MoqData.MockCandidateData;
 
             var mockRaceContext = new Mock<TrueVoteDbContext>();
 
             var mockRaceSet = addsCandidatesRaceData.AsQueryable().BuildMockDbSet();
             mockRaceContext.Setup(m => m.Races).Returns(mockRaceSet.Object);
 
-            var mockCandidatesSet = _moqDataAccessor.mockCandidateDataQueryable.AsQueryable().BuildMockDbSet();
+            var mockCandidatesSet = MoqData.MockCandidateData.AsQueryable().BuildMockDbSet();
             mockRaceContext.Setup(m => m.Candidates).Returns(mockCandidatesSet.Object);
 
             var addCandidatesObj = new AddCandidatesModel { RaceId = "raceid1", CandidateIds = new List<string> { "candidateid1", "candidateid2" } };

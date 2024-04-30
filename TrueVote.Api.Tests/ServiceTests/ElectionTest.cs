@@ -119,7 +119,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             var mockElectionSet = addsRacesElectionData.AsQueryable().BuildMockDbSet();
             mockElectionContext.Setup(m => m.Elections).Returns(mockElectionSet.Object);
 
-            var mockRacesSet = _moqDataAccessor.mockRaceDataCollection.AsQueryable().BuildMockDbSet();
+            var mockRacesSet = MoqData.MockRaceData.AsQueryable().BuildMockDbSet();
             mockElectionContext.Setup(m => m.Races).Returns(mockRacesSet.Object);
 
             var addRacesObj = new AddRacesModel { ElectionId = "1", RaceIds = new List<string> { MoqData.MockRaceData[0].RaceId, MoqData.MockRaceData[1].RaceId, MoqData.MockRaceData[2].RaceId } };
@@ -183,7 +183,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             var mockElectionSet = addsRacesElectionData.AsQueryable().BuildMockDbSet();
             mockElectionContext.Setup(m => m.Elections).Returns(mockElectionSet.Object);
 
-            var mockRacesSet = _moqDataAccessor.mockRaceDataCollection.AsQueryable().BuildMockDbSet();
+            var mockRacesSet = MoqData.MockRaceData.AsQueryable().BuildMockDbSet();
             mockElectionContext.Setup(m => m.Races).Returns(mockRacesSet.Object);
 
             var addRacesObj = new AddRacesModel { ElectionId = "1", RaceIds = new List<string> { "68", "69", "70" } };
@@ -206,7 +206,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         {
             var addsRacesElectionData = MoqData.MockElectionData;
 
-            addsRacesElectionData[0].Races = _moqDataAccessor.mockRaceDataCollection;
+            addsRacesElectionData[0].Races = MoqData.MockRaceData;
             addsRacesElectionData[0].ElectionId = "electionid1";
             addsRacesElectionData[1].ElectionId = "electionid2";
 
@@ -215,7 +215,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             var mockElectionSet = addsRacesElectionData.AsQueryable().BuildMockDbSet();
             mockElectionContext.Setup(m => m.Elections).Returns(mockElectionSet.Object);
 
-            var mockRacesSet = _moqDataAccessor.mockRaceDataCollection.AsQueryable().BuildMockDbSet();
+            var mockRacesSet = MoqData.MockRaceData.AsQueryable().BuildMockDbSet();
             mockElectionContext.Setup(m => m.Races).Returns(mockRacesSet.Object);
 
             var addRacesObj = new AddRacesModel { ElectionId = "electionid1", RaceIds = new List<string> { "raceid1", "raceid2", "raceid3" } };

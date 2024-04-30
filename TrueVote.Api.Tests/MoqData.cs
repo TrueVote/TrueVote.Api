@@ -79,82 +79,54 @@ namespace TrueVote.Api.Tests
         public readonly Mock<MoqTrueVoteDbContext> mockRaceContext;
         public readonly Mock<MoqTrueVoteDbContext> mockTimestampContext;
         public readonly Mock<MoqTrueVoteDbContext> mockBallotHashContext;
-        public readonly IQueryable<UserModel> mockUserDataQueryable;
-        public readonly ICollection<UserModel> mockUserDataCollection;
-        public readonly IQueryable<ElectionModel> mockElectionDataQueryable;
-        public readonly ICollection<ElectionModel> mockElectionDataCollection;
-        public readonly IQueryable<BallotModel> mockBallotDataQueryable;
-        public readonly ICollection<BallotModel> mockBallotDataCollection;
-        public readonly IQueryable<CandidateModel> mockCandidateDataQueryable;
-        public readonly ICollection<CandidateModel> mockCandidateDataCollection;
-        public readonly IQueryable<RaceModel> mockRaceDataQueryable;
-        public readonly ICollection<RaceModel> mockRaceDataCollection;
-        public readonly IQueryable<TimestampModel> mockTimestampDataQueryable;
-        public readonly ICollection<TimestampModel> mockTimestampDataCollection;
-        public readonly IQueryable<BallotHashModel> mockBallotHashDataQueryable;
-        public readonly ICollection<BallotHashModel> mockBallotHashDataCollection;
 
-        public Mock<DbSet<UserModel>> mockUserSet { get; private set; }
-        public Mock<DbSet<RaceModel>> mockRaceSet { get; private set; }
-        public Mock<DbSet<CandidateModel>> mockCandidateSet { get; private set; }
-        public Mock<DbSet<ElectionModel>> mockElectionSet { get; private set; }
-        public Mock<DbSet<BallotModel>> mockBallotSet { get; private set; }
-        public Mock<DbSet<TimestampModel>> mockTimestampSet { get; private set; }
-        public Mock<DbSet<BallotHashModel>> mockBallotHashSet { get; private set; }
+        public Mock<DbSet<UserModel>> MockUserSet { get; private set; }
+        public Mock<DbSet<RaceModel>> MockRaceSet { get; private set; }
+        public Mock<DbSet<CandidateModel>> MockCandidateSet { get; private set; }
+        public Mock<DbSet<ElectionModel>> MockElectionSet { get; private set; }
+        public Mock<DbSet<BallotModel>> MockBallotSet { get; private set; }
+        public Mock<DbSet<TimestampModel>> MockTimestampSet { get; private set; }
+        public Mock<DbSet<BallotHashModel>> MockBallotHashSet { get; private set; }
 
         // https://docs.microsoft.com/en-us/ef/ef6/fundamentals/testing/mocking?redirectedfrom=MSDN
         // https://github.com/romantitov/MockQueryable
         public MoqDataAccessor()
         {
             mockUserContext = new Mock<MoqTrueVoteDbContext>();
-            mockUserDataQueryable = MoqData.MockUserData.AsQueryable();
-            mockUserDataCollection = MoqData.MockUserData;
-            mockUserSet = MoqData.MockUserData.AsQueryable().BuildMockDbSet();
-            mockUserContext.Setup(m => m.Users).Returns(mockUserSet.Object);
+            MockUserSet = MoqData.MockUserData.AsQueryable().BuildMockDbSet();
+            mockUserContext.Setup(m => m.Users).Returns(MockUserSet.Object);
             mockUserContext.Setup(m => m.EnsureCreatedAsync()).Returns(Task.FromResult(true));
 
             mockElectionContext = new Mock<MoqTrueVoteDbContext>();
-            mockElectionDataQueryable = MoqData.MockElectionData.AsQueryable();
-            mockElectionDataCollection = MoqData.MockElectionData;
-            mockElectionSet = MoqData.MockElectionData.AsQueryable().BuildMockDbSet();
-            mockElectionContext.Setup(m => m.Elections).Returns(mockElectionSet.Object);
+            MockElectionSet = MoqData.MockElectionData.AsQueryable().BuildMockDbSet();
+            mockElectionContext.Setup(m => m.Elections).Returns(MockElectionSet.Object);
             mockElectionContext.Setup(m => m.EnsureCreatedAsync()).Returns(Task.FromResult(true));
 
             mockTimestampContext = new Mock<MoqTrueVoteDbContext>();
-            mockTimestampDataQueryable = MoqData.MockTimestampData.AsQueryable();
-            mockTimestampDataCollection = MoqData.MockTimestampData;
-            mockTimestampSet = MoqData.MockTimestampData.AsQueryable().BuildMockDbSet();
-            mockTimestampContext.Setup(m => m.Timestamps).Returns(mockTimestampSet.Object);
+            MockTimestampSet = MoqData.MockTimestampData.AsQueryable().BuildMockDbSet();
+            mockTimestampContext.Setup(m => m.Timestamps).Returns(MockTimestampSet.Object);
             mockTimestampContext.Setup(m => m.EnsureCreatedAsync()).Returns(Task.FromResult(true));
 
             mockBallotHashContext = new Mock<MoqTrueVoteDbContext>();
-            mockBallotHashDataQueryable = MoqData.MockBallotHashData.AsQueryable();
-            mockBallotHashDataCollection = MoqData.MockBallotHashData;
-            mockBallotHashSet = MoqData.MockBallotHashData.AsQueryable().BuildMockDbSet();
-            mockBallotHashContext.Setup(m => m.BallotHashes).Returns(mockBallotHashSet.Object);
+            MockBallotHashSet = MoqData.MockBallotHashData.AsQueryable().BuildMockDbSet();
+            mockBallotHashContext.Setup(m => m.BallotHashes).Returns(MockBallotHashSet.Object);
             mockBallotHashContext.Setup(m => m.EnsureCreatedAsync()).Returns(Task.FromResult(true));
 
             mockBallotContext = new Mock<MoqTrueVoteDbContext>();
-            mockBallotDataQueryable = MoqData.MockBallotData.AsQueryable();
-            mockBallotDataCollection = MoqData.MockBallotData;
-            mockBallotSet = MoqData.MockBallotData.AsQueryable().BuildMockDbSet();
-            mockBallotContext.Setup(m => m.Ballots).Returns(mockBallotSet.Object);
-            mockBallotContext.Setup(m => m.BallotHashes).Returns(mockBallotHashSet.Object);
-            mockBallotContext.Setup(m => m.Timestamps).Returns(mockTimestampSet.Object);
+            MockBallotSet = MoqData.MockBallotData.AsQueryable().BuildMockDbSet();
+            mockBallotContext.Setup(m => m.Ballots).Returns(MockBallotSet.Object);
+            mockBallotContext.Setup(m => m.BallotHashes).Returns(MockBallotHashSet.Object);
+            mockBallotContext.Setup(m => m.Timestamps).Returns(MockTimestampSet.Object);
             mockBallotContext.Setup(m => m.EnsureCreatedAsync()).Returns(Task.FromResult(true));
 
             mockCandidateContext = new Mock<MoqTrueVoteDbContext>();
-            mockCandidateDataQueryable = MoqData.MockCandidateData.AsQueryable();
-            mockCandidateDataCollection = MoqData.MockCandidateData;
-            mockCandidateSet = MoqData.MockCandidateData.AsQueryable().BuildMockDbSet();
-            mockCandidateContext.Setup(m => m.Candidates).Returns(mockCandidateSet.Object);
+            MockCandidateSet = MoqData.MockCandidateData.AsQueryable().BuildMockDbSet();
+            mockCandidateContext.Setup(m => m.Candidates).Returns(MockCandidateSet.Object);
             mockCandidateContext.Setup(m => m.EnsureCreatedAsync()).Returns(Task.FromResult(true));
 
             mockRaceContext = new Mock<MoqTrueVoteDbContext>();
-            mockRaceDataQueryable = MoqData.MockRaceData.AsQueryable();
-            mockRaceDataCollection = MoqData.MockRaceData;
-            mockRaceSet = MoqData.MockRaceData.AsQueryable().BuildMockDbSet();
-            mockRaceContext.Setup(m => m.Races).Returns(mockRaceSet.Object);
+            MockRaceSet = MoqData.MockRaceData.AsQueryable().BuildMockDbSet();
+            mockRaceContext.Setup(m => m.Races).Returns(MockRaceSet.Object);
             mockRaceContext.Setup(m => m.EnsureCreatedAsync()).Returns(Task.FromResult(true));
 
             // Leaving commented code. This is for Mocking UTC time. Helpful for test consistency.
@@ -181,13 +153,13 @@ namespace TrueVote.Api.Tests
         {
             _moqDataAccessor = new MoqDataAccessor();
 
-            Users = _moqDataAccessor.mockUserSet.Object;
-            Elections = _moqDataAccessor.mockElectionSet.Object;
-            Races = _moqDataAccessor.mockRaceSet.Object;
-            Candidates = _moqDataAccessor.mockCandidateSet.Object;
-            Ballots = _moqDataAccessor.mockBallotSet.Object;
-            Timestamps = _moqDataAccessor.mockTimestampSet.Object;
-            BallotHashes = _moqDataAccessor.mockBallotHashSet.Object;
+            Users = _moqDataAccessor.MockUserSet.Object;
+            Elections = _moqDataAccessor.MockElectionSet.Object;
+            Races = _moqDataAccessor.MockRaceSet.Object;
+            Candidates = _moqDataAccessor.MockCandidateSet.Object;
+            Ballots = _moqDataAccessor.MockBallotSet.Object;
+            Timestamps = _moqDataAccessor.MockTimestampSet.Object;
+            BallotHashes = _moqDataAccessor.MockBallotHashSet.Object;
         }
 
         public virtual async Task<bool> EnsureCreatedAsync()
