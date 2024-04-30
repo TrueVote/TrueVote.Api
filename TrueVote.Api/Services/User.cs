@@ -208,12 +208,16 @@ namespace TrueVote.Api.Services
             _log.LogInformation($"Request Data: {user}");
 
             if (User == null || User.Identity == null)
+            {
+                _log.LogDebug("HTTP trigger - SaveUser:End");
                 return Unauthorized();
+            }
 
             // Determine if User is found
             var foundUser = await _trueVoteDbContext.Users.Where(u => u.UserId == user.UserId).FirstOrDefaultAsync();
             if (foundUser == null)
             {
+                _log.LogDebug("HTTP trigger - SaveUser:End");
                 return NotFound();
             }
 

@@ -109,7 +109,10 @@ namespace TrueVote.Api.Services
             _log.LogDebug("HTTP trigger - GetAdd:Begin");
 
             if (User == null || User.Identity == null)
+            {
+                _log.LogDebug("HTTP trigger - GetAdd:End");
                 return Unauthorized();
+            }
 
             var val = await Task.Run(() => 2 + 2);
 

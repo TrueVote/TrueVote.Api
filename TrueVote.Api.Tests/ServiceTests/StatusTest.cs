@@ -95,5 +95,15 @@ namespace TrueVote.Api.Tests.ServiceTests
             Assert.NotNull(val);
             Assert.Equal("4", val.Value);
         }
+
+        [Fact]
+        public async Task HandlesCalculatesMathExpressionWithoutAuthorization()
+        {
+            var ret = await status.GetAdd();
+            Assert.NotNull(ret);
+            Assert.Equal(StatusCodes.Status401Unauthorized, ((IStatusCodeActionResult) ret).StatusCode);
+
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+        }
     }
 }

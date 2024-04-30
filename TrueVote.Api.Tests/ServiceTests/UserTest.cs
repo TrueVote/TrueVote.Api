@@ -12,6 +12,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using TrueVote.Api.Helpers;
 using TrueVote.Api.Models;
+using TrueVote.Api.Services;
 using TrueVote.Api.Tests.Helpers;
 using Xunit;
 using Xunit.Abstractions;
@@ -254,7 +255,8 @@ namespace TrueVote.Api.Tests.ServiceTests
                 Signature = signature.Sig
             };
 
-            var ret = await _userApi.SignIn(signInEventModel);
+            var userApi = new User(_logHelper.Object, mockUserContext.Object, _mockServiceBus.Object, _mockJwtHandler.Object);
+            var ret = await userApi.SignIn(signInEventModel);
             Assert.NotNull(ret);
             Assert.Equal(StatusCodes.Status200OK, ((IStatusCodeActionResult) ret).StatusCode);
 
@@ -371,6 +373,40 @@ namespace TrueVote.Api.Tests.ServiceTests
             Assert.Equal("Joe Jones", updatedUser.FullName);
 
             _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+        }
+
+        [Fact]
+        public async Task HandlesSavesUserWithoutAuthorization()
+        {
+            var user = MoqData.MockUserData[0];
+            user.FullName = "Joe Jones";
+            Assert.Equal(user.DateUpdated, DateTime.MinValue);
+            Assert.Equal("Joe Jones", user.FullName);
+
+            var ret = await _userApi.SaveUser(user);
+
+            Assert.NotNull(ret);
+            Assert.Equal(StatusCodes.Status401Unauthorized, ((IStatusCodeActionResult) ret).StatusCode);
+
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+        }
+
+        [Fact]
+        public async Task HandlesSavesUserNotFound()
+        {
+            var user = MoqData.MockUserData[0];
+            user.UserId = "blah1";
+            user.FullName = "Joe Jones";
+            Assert.Equal(user.DateUpdated, DateTime.MinValue);
+            Assert.Equal("Joe Jones", user.FullName);
+
+            _userApi.ControllerContext = _authControllerContext;
+            var ret = await _userApi.SaveUser(user);
+
+            Assert.NotNull(ret);
+            Assert.Equal(StatusCodes.Status404NotFound, ((IStatusCodeActionResult) ret).StatusCode);
+
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
         }
     }
