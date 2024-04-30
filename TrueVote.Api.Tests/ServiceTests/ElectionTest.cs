@@ -2,18 +2,15 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.Logging;
-using MockQueryable.Moq;
 using Moq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using TrueVote.Api.Models;
-using TrueVote.Api.Services;
 using TrueVote.Api.Tests.Helpers;
 using Xunit;
 using Xunit.Abstractions;
-using static TrueVote.Api.Startup;
 
 namespace TrueVote.Api.Tests.ServiceTests
 {
