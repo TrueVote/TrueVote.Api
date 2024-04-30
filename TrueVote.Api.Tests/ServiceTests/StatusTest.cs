@@ -14,14 +14,16 @@ namespace TrueVote.Api.Tests.ServiceTests
 {
     public class StatusTest : TestHelper
     {
+        private readonly Status status;
+
         public StatusTest(ITestOutputHelper output) : base(output)
         {
+            status = new Status(_logHelper.Object, _mockServiceBus.Object);
         }
 
         [Fact]
         public async Task LogsMessages()
         {
-            var status = new Status(_logHelper.Object, _mockServiceBus.Object);
             _ = await status.GetStatus();
 
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
@@ -30,8 +32,6 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public async Task ReturnsValidModel()
         {
-            var status = new Status(_logHelper.Object, _mockServiceBus.Object);
-
             var ret = await status.GetStatus();
             Assert.NotNull(ret);
             Assert.Equal(StatusCodes.Status200OK, ((IStatusCodeActionResult) ret).StatusCode);
@@ -44,8 +44,6 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public async Task ReturnsValidBuildInfoModel()
         {
-            var status = new Status(_logHelper.Object, _mockServiceBus.Object);
-
             var ret = await status.GetStatus();
             Assert.NotNull(ret);
             Assert.Equal(StatusCodes.Status200OK, ((IStatusCodeActionResult) ret).StatusCode);
@@ -58,8 +56,6 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public async Task RunsStopwatch()
         {
-            var status = new Status(_logHelper.Object, _mockServiceBus.Object);
-
             var ret = await status.GetStatus();
             Assert.NotNull(ret);
             Assert.Equal(StatusCodes.Status200OK, ((IStatusCodeActionResult) ret).StatusCode);
@@ -72,8 +68,6 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public async Task RespondsFromPing()
         {
-            var status = new Status(_logHelper.Object, _mockServiceBus.Object);
-
             var ret = await status.GetPing();
             Assert.NotNull(ret);
             Assert.Equal(StatusCodes.Status200OK, ((IStatusCodeActionResult) ret).StatusCode);
@@ -88,7 +82,6 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public async Task CalculatesMathExpression()
         {
-            var status = new Status(_logHelper.Object, _mockServiceBus.Object);
             status.ControllerContext = _authControllerContext;
             Assert.NotNull(status.User);
 

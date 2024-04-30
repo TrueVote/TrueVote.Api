@@ -79,18 +79,9 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public async Task FindsRace()
         {
-            var findRaceData = MoqData.MockRaceData;
-            findRaceData[0].Candidates = MoqData.MockCandidateData;
-
-            var mockRaceSet = DbMoqHelper.GetDbSet(findRaceData.AsQueryable());
-
-            var mockRaceContext = new Mock<TrueVoteDbContext>();
-            mockRaceContext.Setup(m => m.Races).Returns(mockRaceSet.Object);
             var findRaceObj = new FindRaceModel { Name = "President" };
 
-            var raceApi = new Race(_logHelper.Object, mockRaceContext.Object, _mockServiceBus.Object);
-
-            var ret = await raceApi.RaceFind(findRaceObj);
+            var ret = await _raceApi.RaceFind(findRaceObj);
             Assert.NotNull(ret);
             Assert.Equal(StatusCodes.Status200OK, ((IStatusCodeActionResult) ret).StatusCode);
 
@@ -110,9 +101,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         {
             var findRaceObj = new FindRaceModel { Name = "not going to find anything" };
 
-            var raceApi = new Race(_logHelper.Object, _moqDataAccessor.mockRaceContext.Object, _mockServiceBus.Object);
-
-            var ret = await raceApi.RaceFind(findRaceObj);
+            var ret = await _raceApi.RaceFind(findRaceObj);
             Assert.NotNull(ret);
             Assert.Equal(StatusCodes.Status404NotFound, ((IStatusCodeActionResult) ret).StatusCode);
 
@@ -123,30 +112,16 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public async Task AddsCandidatesToRace()
         {
-            var addsCandidatesRaceData = MoqData.MockRaceData;
+            var addCandidatesObj = new AddCandidatesModel { RaceId = "raceid3", CandidateIds = new List<string> { MoqData.MockCandidateData[0].CandidateId, MoqData.MockCandidateData[1].CandidateId } };
 
-            // https://docs.microsoft.com/en-us/ef/ef6/fundamentals/testing/mocking?redirectedfrom=MSDN
-            // https://github.com/romantitov/MockQueryable
-            var mockRaceContext = new Mock<TrueVoteDbContext>();
-
-            var mockRaceSet = addsCandidatesRaceData.AsQueryable().BuildMockDbSet();
-            mockRaceContext.Setup(m => m.Races).Returns(mockRaceSet.Object);
-
-            var mockCandidatesSet = MoqData.MockCandidateData.AsQueryable().BuildMockDbSet();
-            mockRaceContext.Setup(m => m.Candidates).Returns(mockCandidatesSet.Object);
-
-            var addCandidatesObj = new AddCandidatesModel { RaceId = "raceid1", CandidateIds = new List<string> { MoqData.MockCandidateData[0].CandidateId, MoqData.MockCandidateData[1].CandidateId } };
-
-            var raceApi = new Race(_logHelper.Object, mockRaceContext.Object, _mockServiceBus.Object);
-
-            var ret = await raceApi.AddCandidates(addCandidatesObj);
+            var ret = await _raceApi.AddCandidates(addCandidatesObj);
 
             Assert.NotNull(ret);
             Assert.Equal(StatusCodes.Status201Created, ((IStatusCodeActionResult) ret).StatusCode);
 
             var val = (RaceModel) (ret as CreatedAtActionResult).Value;
             Assert.NotNull(val);
-            Assert.Equal("President", val.Name);
+            Assert.Equal("Governor", val.Name);
             Assert.Equal("John Smith", val.Candidates.ToList()[0].Name);
             Assert.Equal("Republican", val.Candidates.ToList()[0].PartyAffiliation);
             Assert.Equal("Jane Doe", val.Candidates.ToList()[1].Name);
@@ -159,18 +134,9 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public async Task HandlesAddCandidatesUnfoundRace()
         {
-            var addsCandidatesRaceData = MoqData.MockRaceData;
-
-            var mockRaceContext = new Mock<TrueVoteDbContext>();
-
-            var mockRaceSet = addsCandidatesRaceData.AsQueryable().BuildMockDbSet();
-            mockRaceContext.Setup(m => m.Races).Returns(mockRaceSet.Object);
-
             var addCandidatesObj = new AddCandidatesModel { RaceId = "blah", CandidateIds = new List<string>() { } };
 
-            var raceApi = new Race(_logHelper.Object, mockRaceContext.Object, _mockServiceBus.Object);
-
-            var ret = await raceApi.AddCandidates(addCandidatesObj);
+            var ret = await _raceApi.AddCandidates(addCandidatesObj);
             Assert.NotNull(ret);
             Assert.Equal(StatusCodes.Status404NotFound, ((IStatusCodeActionResult) ret).StatusCode);
 
@@ -184,20 +150,9 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public async Task HandlesAddCandidatesUnfoundCandidate()
         {
-            var addsCandidatesRaceData = MoqData.MockRaceData;
-
-            var mockRaceContext = new Mock<TrueVoteDbContext>();
-
-            var mockRaceSet = addsCandidatesRaceData.AsQueryable().BuildMockDbSet();
-            mockRaceContext.Setup(m => m.Races).Returns(mockRaceSet.Object);
-
-            var mockCandidatesSet = MoqData.MockCandidateData.AsQueryable().BuildMockDbSet();
-            mockRaceContext.Setup(m => m.Candidates).Returns(mockCandidatesSet.Object);
-
             var addCandidatesObj = new AddCandidatesModel { RaceId = "raceid1", CandidateIds = new List<string> { "68", "69" } };
 
-            var raceApi = new Race(_logHelper.Object, mockRaceContext.Object, _mockServiceBus.Object);
-            var ret = await raceApi.AddCandidates(addCandidatesObj);
+            var ret = await _raceApi.AddCandidates(addCandidatesObj);
             Assert.NotNull(ret);
             Assert.Equal(StatusCodes.Status404NotFound, ((IStatusCodeActionResult) ret).StatusCode);
 
@@ -211,22 +166,9 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public async Task HandlesAddCandidateAlreadyInRace()
         {
-            var addsCandidatesRaceData = MoqData.MockRaceData;
-            addsCandidatesRaceData[0].Candidates = MoqData.MockCandidateData;
-
-            var mockRaceContext = new Mock<TrueVoteDbContext>();
-
-            var mockRaceSet = addsCandidatesRaceData.AsQueryable().BuildMockDbSet();
-            mockRaceContext.Setup(m => m.Races).Returns(mockRaceSet.Object);
-
-            var mockCandidatesSet = MoqData.MockCandidateData.AsQueryable().BuildMockDbSet();
-            mockRaceContext.Setup(m => m.Candidates).Returns(mockCandidatesSet.Object);
-
             var addCandidatesObj = new AddCandidatesModel { RaceId = "raceid1", CandidateIds = new List<string> { "candidateid1", "candidateid2" } };
 
-            var raceApi = new Race(_logHelper.Object, mockRaceContext.Object, _mockServiceBus.Object);
-
-            var ret = await raceApi.AddCandidates(addCandidatesObj);
+            var ret = await _raceApi.AddCandidates(addCandidatesObj);
             Assert.NotNull(ret);
             Assert.Equal(StatusCodes.Status409Conflict, ((IStatusCodeActionResult) ret).StatusCode);
 
