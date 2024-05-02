@@ -35,6 +35,8 @@ namespace TrueVote.Api.Tests.Helpers
         protected readonly Mock<IJwtHandler> _mockJwtHandler;
         protected readonly ControllerContext _authControllerContext;
 
+        public const string MockedTokenValue = "mocked_token_value";
+
         public TestHelper(ITestOutputHelper output)
         {
             // This will override the setup shims in Startup.cs
@@ -71,7 +73,7 @@ namespace TrueVote.Api.Tests.Helpers
 
             _mockJwtHandler = new Mock<IJwtHandler>();
             _ = _mockJwtHandler.Setup(m => m.GenerateToken(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<IEnumerable<string>>()))
-                .Returns((string userId, string npub, IEnumerable<string> roles) => "mocked_token_value");
+                .Returns((string userId, string npub, IEnumerable<string> roles) => MockedTokenValue);
 
             _moqDataAccessor = new MoqDataAccessor();
             _userApi = new User(_logHelper.Object, _moqDataAccessor.mockUserContext.Object, _mockServiceBus.Object, _mockJwtHandler.Object);

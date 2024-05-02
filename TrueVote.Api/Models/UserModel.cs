@@ -144,6 +144,25 @@ namespace TrueVote.Api.Models
     }
 
     [ExcludeFromCodeCoverage]
+    public class SignInResponse
+    {
+        [Required]
+        [Description("User")]
+        [DataType("UserModel")]
+        [JsonPropertyName("User")]
+        [JsonProperty(nameof(User), Required = Required.Always)]
+        public required UserModel User { get; set; }
+
+        [Required]
+        [Description("Token")]
+        [MaxLength(2048)]
+        [DataType(DataType.Text)]
+        [JsonPropertyName("Token")]
+        [JsonProperty(nameof(Token), Required = Required.Always)]
+        public required string Token { get; set; }
+    }
+
+    [ExcludeFromCodeCoverage]
     public class UserPreferencesModel
     {
         [Description("Notification: New Elections")]

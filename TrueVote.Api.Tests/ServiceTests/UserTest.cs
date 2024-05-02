@@ -193,10 +193,10 @@ namespace TrueVote.Api.Tests.ServiceTests
             Assert.NotNull(ret);
             Assert.Equal(StatusCodes.Status200OK, ((IStatusCodeActionResult) ret).StatusCode);
 
-            var val = (SecureString) (ret as OkObjectResult).Value;
-            Assert.NotEmpty(val.Value);
-
-            // TODO Confirm valid token
+            var val = (SignInResponse) (ret as OkObjectResult).Value;
+            Assert.NotEmpty(val.Token);
+            Assert.NotNull(val.User);
+            Assert.Equal(MockedTokenValue, val.Token);
 
             _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
@@ -261,10 +261,10 @@ namespace TrueVote.Api.Tests.ServiceTests
             Assert.NotNull(ret);
             Assert.Equal(StatusCodes.Status200OK, ((IStatusCodeActionResult) ret).StatusCode);
 
-            var val = (SecureString) (ret as OkObjectResult).Value;
-            Assert.NotEmpty(val.Value);
-
-            // TODO Confirm valid token
+            var val = (SignInResponse) (ret as OkObjectResult).Value;
+            Assert.NotEmpty(val.Token);
+            Assert.NotNull(val.User);
+            Assert.Equal(MockedTokenValue, val.Token);
 
             _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));

@@ -82,9 +82,9 @@ namespace TrueVote.Api.Services
 
         [HttpPost]
         [Route("user/signin")]
-        [Produces(typeof(SecureString))]
+        [Produces(typeof(SignInResponse))]
         [Description("Signs In a User and returns a Token")]
-        [ProducesResponseType(typeof(SecureString), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(SignInResponse), StatusCodes.Status200OK)]
         public async Task<IActionResult> SignIn([FromBody] SignInEventModel signInEventModel)
         {
             _log.LogDebug("HTTP trigger - SignIn:Begin");
@@ -143,7 +143,7 @@ namespace TrueVote.Api.Services
                 .OrderByDescending(u => u.DateCreated).ToListAsync()
             };
 
-            string userId;
+            UserModel user;
 
             // If the user isn't found, create a new user record
             if (items.Users.Count == 0)
@@ -163,21 +163,21 @@ namespace TrueVote.Api.Services
                     return BadRequest(new SecureString { Value = "Could not deserialize signature content into BaseUserModel" });
                 }
 
-                userId = Guid.NewGuid().ToString();
+                var userId = Guid.NewGuid().ToString();
 
-                await AddNewUser(new BaseUserModel { Email = baseUserModel.Email, FullName = baseUserModel.FullName, NostrPubKey = signInEventModel.PubKey }, userId);
+                user = await AddNewUser(new BaseUserModel { Email = baseUserModel.Email, FullName = baseUserModel.FullName, NostrPubKey = signInEventModel.PubKey }, userId);
             }
             else
             {
-                userId = items.Users.FirstOrDefault().UserId;
+                user = items.Users.FirstOrDefault();
             }
 
             // TODO ["User"] is the only "role" for now. Here's where we could assign an elevated role
-            var token = _jwtHandler.GenerateToken(userId, signInEventModel.PubKey, ["User"]);
+            var token = _jwtHandler.GenerateToken(user.UserId, signInEventModel.PubKey, ["User"]);
 
             _log.LogDebug("HTTP trigger - SignIn:End");
 
-            return Ok(new SecureString { Value = token });
+            return Ok(new SignInResponse { User = user, Token = token });
         }
 
         private async Task<UserModel> AddNewUser(BaseUserModel baseUser, string userId)
