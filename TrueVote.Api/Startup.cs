@@ -41,10 +41,7 @@ namespace TrueVote.Api
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddSingleton<ValidateUserIdFilter>();
-            services.AddControllers(options =>
-            {
-                options.Filters.Add(new ValidateUserIdFilter());
-            }).AddNewtonsoftJson(jsonoptions =>
+            services.AddControllers().AddNewtonsoftJson(jsonoptions =>
             {
                 jsonoptions.SerializerSettings.Converters.Add(new Newtonsoft.Json.Converters.IsoDateTimeConverter());
                 jsonoptions.SerializerSettings.DateTimeZoneHandling = DateTimeZoneHandling.Utc;
@@ -360,7 +357,10 @@ namespace TrueVote.Api
         public void OnActionExecuting(ActionExecutingContext context)
         {
             // Get the user ID from the JWT token
-            var userId = context.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
+            // Dereference the ClaimTypes in an odd way because JwtRegisteredClaimNames doesn't work well.
+            // Instead, getting this value from token creation code in JwtAuth.cs:
+            // claims.Add(new Claim(JwtRegisteredClaimNames.NameId, userId));
+            var userId = context.HttpContext.User.Claims.Where(c => c.Type == ClaimTypes.NameIdentifier).Skip(1).Take(1).Select(c => c.Value).FirstOrDefault() ?? null;
             if (userId == null)
             {
                 context.Result = new ForbidResult();
