@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
@@ -81,9 +82,9 @@ namespace TrueVote.Api.Services
 
         [HttpPost]
         [Route("user/signin")]
-        [Produces(typeof(SecureString))]
+        [Produces(typeof(SignInResponse))]
         [Description("Signs In a User and returns a Token")]
-        [ProducesResponseType(typeof(SecureString), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(SignInResponse), StatusCodes.Status200OK)]
         public async Task<IActionResult> SignIn([FromBody] SignInEventModel signInEventModel)
         {
             _log.LogDebug("HTTP trigger - SignIn:Begin");
@@ -142,7 +143,7 @@ namespace TrueVote.Api.Services
                 .OrderByDescending(u => u.DateCreated).ToListAsync()
             };
 
-            string userId;
+            UserModel user;
 
             // If the user isn't found, create a new user record
             if (items.Users.Count == 0)
@@ -162,26 +163,26 @@ namespace TrueVote.Api.Services
                     return BadRequest(new SecureString { Value = "Could not deserialize signature content into BaseUserModel" });
                 }
 
-                userId = Guid.NewGuid().ToString();
+                var userId = Guid.NewGuid().ToString();
 
-                await AddNewUser(new BaseUserModel { Email = baseUserModel.Email, FullName = baseUserModel.FullName, NostrPubKey = signInEventModel.PubKey }, userId);
+                user = await AddNewUser(new BaseUserModel { Email = baseUserModel.Email, FullName = baseUserModel.FullName, NostrPubKey = signInEventModel.PubKey }, userId);
             }
             else
             {
-                userId = items.Users.FirstOrDefault().UserId;
+                user = items.Users.FirstOrDefault();
             }
 
             // TODO ["User"] is the only "role" for now. Here's where we could assign an elevated role
-            var token = _jwtHandler.GenerateToken(userId, signInEventModel.PubKey, ["User"]);
+            var token = _jwtHandler.GenerateToken(user.UserId, signInEventModel.PubKey, ["User"]);
 
             _log.LogDebug("HTTP trigger - SignIn:End");
 
-            return Ok(new SecureString { Value = token });
+            return Ok(new SignInResponse { User = user, Token = token });
         }
 
         private async Task<UserModel> AddNewUser(BaseUserModel baseUser, string userId)
         {
-            var user = new UserModel { FullName = baseUser.FullName, Email = baseUser.Email, UserId = userId, NostrPubKey = baseUser.NostrPubKey, DateCreated = UtcNowProviderFactory.GetProvider().UtcNow };
+            var user = new UserModel { FullName = baseUser.FullName, Email = baseUser.Email, UserId = userId, NostrPubKey = baseUser.NostrPubKey, DateCreated = UtcNowProviderFactory.GetProvider().UtcNow, UserPreferences = new UserPreferencesModel() };
 
             await _trueVoteDbContext.EnsureCreatedAsync();
 
@@ -191,6 +192,60 @@ namespace TrueVote.Api.Services
             await _serviceBus.SendAsync($"New TrueVote User created: {user.FullName}");
 
             return user;
+        }
+
+        [HttpPut]
+        [Authorize]
+        [ServiceFilter(typeof(ValidateUserIdFilter))]
+        [Route("user/saveuser")]
+        [Produces(typeof(UserModel))]
+        [Description("Saves an existing User preferences and returns the same updated User")]
+        [ProducesResponseType(typeof(UserModel), StatusCodes.Status200OK)]
+        public async Task<IActionResult> SaveUser([FromBody] UserModel user)
+        {
+            _log.LogDebug("HTTP trigger - SaveUser:Begin");
+
+            _log.LogInformation($"Request Data: {user}");
+
+            if (User == null || User.Identity == null)
+            {
+                _log.LogDebug("HTTP trigger - SaveUser:End");
+                return Unauthorized();
+            }
+
+            // Determine if User is found
+            var foundUser = await _trueVoteDbContext.Users.Where(u => u.UserId == user.UserId).FirstOrDefaultAsync();
+            if (foundUser == null)
+            {
+                _log.LogDebug("HTTP trigger - SaveUser:End");
+                return NotFound();
+            }
+
+            // Save settings passed in
+            foundUser.FullName = user.FullName;
+
+            if (!foundUser.Email.Equals(user.Email))
+            {
+                _log.LogInformation($"TrueVote User settings - updated email: {foundUser.Email}");
+                // TODO May need to generate a "validate email" workflow here
+            }
+            foundUser.Email = user.Email; 
+
+            // Save all the preferences. Possible in the future here will need to generate workflows if new features are enabled
+            foundUser.UserPreferences = user.UserPreferences;
+
+            // Last thing to do - set the updated timestamp
+            foundUser.DateUpdated = UtcNowProviderFactory.GetProvider().UtcNow;
+
+            // TODO Add Versioning for each update
+            _trueVoteDbContext.Users.Update(foundUser);
+            await _trueVoteDbContext.SaveChangesAsync();
+
+            await _serviceBus.SendAsync($"TrueVote User updated: {foundUser.FullName}");
+
+            _log.LogDebug("HTTP trigger - SaveUser:End");
+
+            return Ok(foundUser);
         }
     }
 }

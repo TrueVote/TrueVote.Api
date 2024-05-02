@@ -14,17 +14,20 @@ namespace TrueVote.Api
 
         public static string ExtractUrl(this string @this)
         {
-            // Define the regular expression pattern
             var pattern = @"https?://\S+$";
-
-            // Create a Regex object with the pattern
             var regex = new Regex(pattern);
-
-            // Match the pattern against the input string
             var match = regex.Match(@this);
 
-            // Check if a match is found
             return match.Success ? match.Value : string.Empty;
+        }
+
+        public static bool IsJwt(this string @this)
+        {
+            var pattern = @"^[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_=]+$";
+            var regex = new Regex(pattern);
+            var match = regex.Match(@this);
+
+            return match.Success;
         }
     }
 }

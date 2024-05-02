@@ -2,7 +2,6 @@ using Moq;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using TrueVote.Api.Helpers;
 using TrueVote.Api.Services;
 using TrueVote.Api.Tests.Helpers;
 using Xunit;
@@ -28,14 +27,11 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public async Task HashesBallotThrowsStampingError()
         {
-            var mockOpenTimestampsClient = new Mock<IOpenTimestampsClient>();
-            mockOpenTimestampsClient.Setup(m => m.Stamp(It.IsAny<byte[]>())).Throws(new Exception("Stamp exception"));
-
-            var validatorApi = new Validator(_logHelper.Object, _moqDataAccessor.mockBallotContext.Object, mockOpenTimestampsClient.Object, _mockServiceBus.Object);
+            _mockOpenTimestampsClient.Setup(m => m.Stamp(It.IsAny<byte[]>())).Throws(new Exception("Stamp exception"));
 
             try
             {
-                var timestamp = await validatorApi.HashBallotsAsync();
+                var timestamp = await _validatorApi.HashBallotsAsync();
                 Assert.True(false);
             }
             catch (Exception ex)

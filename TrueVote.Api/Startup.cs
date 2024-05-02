@@ -20,6 +20,9 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace TrueVote.Api
 {
@@ -37,12 +40,13 @@ namespace TrueVote.Api
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllers().AddNewtonsoftJson(o =>
+            services.AddSingleton<ValidateUserIdFilter>();
+            services.AddControllers().AddNewtonsoftJson(jsonoptions =>
             {
-                o.SerializerSettings.Converters.Add(new Newtonsoft.Json.Converters.IsoDateTimeConverter());
-                o.SerializerSettings.DateTimeZoneHandling = DateTimeZoneHandling.Utc;
-                o.SerializerSettings.DateFormatHandling = DateFormatHandling.IsoDateFormat;
-                o.SerializerSettings.ContractResolver = new DefaultContractResolver();
+                jsonoptions.SerializerSettings.Converters.Add(new Newtonsoft.Json.Converters.IsoDateTimeConverter());
+                jsonoptions.SerializerSettings.DateTimeZoneHandling = DateTimeZoneHandling.Utc;
+                jsonoptions.SerializerSettings.DateFormatHandling = DateFormatHandling.IsoDateFormat;
+                jsonoptions.SerializerSettings.ContractResolver = new DefaultContractResolver();
             });
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen(o =>
@@ -343,6 +347,54 @@ namespace TrueVote.Api
                         }
                     }
                 };
+            }
+        }
+    }
+
+    [ExcludeFromCodeCoverage]
+    public class ValidateUserIdFilter : IActionFilter
+    {
+        public void OnActionExecuting(ActionExecutingContext context)
+        {
+            // Get the user ID from the JWT token
+            // Dereference the ClaimTypes in an odd way because JwtRegisteredClaimNames doesn't work well.
+            // Instead, getting this value from token creation code in JwtAuth.cs:
+            // claims.Add(new Claim(JwtRegisteredClaimNames.NameId, userId));
+            var userId = context.HttpContext.User.Claims.Where(c => c.Type == ClaimTypes.NameIdentifier).Skip(1).Take(1).Select(c => c.Value).FirstOrDefault() ?? null;
+            if (userId == null)
+            {
+                context.Result = new ForbidResult();
+                return;
+            }
+
+            // Check if the action argument is a model with a UserId property
+            foreach (var model in context.ActionArguments.Values.Where(v => v != null))
+            {
+                switch (model)
+                {
+                    case UserModel userModel:
+                    {
+                        ValidateUserId(context, userModel.UserId, userId);
+                        break;
+                    }
+                    // Add more cases for other models with UserId property
+
+                    default:
+                        break;
+                }
+            }
+        }
+
+        public void OnActionExecuted(ActionExecutedContext context)
+        {
+            // Not needed for this filter
+        }
+
+        private void ValidateUserId(ActionExecutingContext context, string modelUserId, string tokenUserId)
+        {
+            if (modelUserId != tokenUserId)
+            {
+                context.Result = new ForbidResult();
             }
         }
     }

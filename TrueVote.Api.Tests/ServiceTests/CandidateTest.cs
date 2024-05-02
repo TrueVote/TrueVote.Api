@@ -6,7 +6,6 @@ using Moq;
 using System;
 using System.Threading.Tasks;
 using TrueVote.Api.Models;
-using TrueVote.Api.Services;
 using TrueVote.Api.Tests.Helpers;
 using Xunit;
 using Xunit.Abstractions;
@@ -69,9 +68,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         {
             var findCandidateObj = new FindCandidateModel { Name = "J" };
 
-            var candidateApi = new Candidate(_logHelper.Object, _moqDataAccessor.mockCandidateContext.Object, _mockServiceBus.Object);
-
-            var ret = await candidateApi.CandidateFind(findCandidateObj);
+            var ret = await _candidateApi.CandidateFind(findCandidateObj);
             Assert.NotNull(ret);
             Assert.Equal(StatusCodes.Status200OK, ((IStatusCodeActionResult) ret).StatusCode);
 
@@ -90,9 +87,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         {
             var findCandidateObj = new FindCandidateModel { Name = "not going to find anything" };
 
-            var candidateApi = new Candidate(_logHelper.Object, _moqDataAccessor.mockCandidateContext.Object, _mockServiceBus.Object);
-
-            var ret = await candidateApi.CandidateFind(findCandidateObj);
+            var ret = await _candidateApi.CandidateFind(findCandidateObj);
             Assert.NotNull(ret);
             Assert.Equal(StatusCodes.Status404NotFound, ((IStatusCodeActionResult) ret).StatusCode);
 

@@ -127,6 +127,63 @@ namespace TrueVote.Api.Models
         [JsonPropertyName("DateCreated")]
         [JsonProperty(nameof(DateCreated), Required = Required.Always)]
         public required DateTime DateCreated { get; set; }
+
+        [Required]
+        [Description("DateUpdated")]
+        [DataType(DataType.Date)]
+        [JsonPropertyName("DateUpdated")]
+        [JsonProperty(nameof(DateUpdated), Required = Required.DisallowNull)]
+        public DateTime DateUpdated { get; set; }
+
+        [Required]
+        [Description("UserPreferences")]
+        [DataType("UserPreferencesModel")]
+        [JsonPropertyName("UserPreferences")]
+        [JsonProperty(nameof(UserPreferences), Required = Required.Always)]
+        public required UserPreferencesModel UserPreferences { get; set; } = new UserPreferencesModel();
+    }
+
+    [ExcludeFromCodeCoverage]
+    public class SignInResponse
+    {
+        [Required]
+        [Description("User")]
+        [DataType("UserModel")]
+        [JsonPropertyName("User")]
+        [JsonProperty(nameof(User), Required = Required.Always)]
+        public required UserModel User { get; set; }
+
+        [Required]
+        [Description("Token")]
+        [MaxLength(2048)]
+        [DataType(DataType.Text)]
+        [JsonPropertyName("Token")]
+        [JsonProperty(nameof(Token), Required = Required.Always)]
+        public required string Token { get; set; }
+    }
+
+    [ExcludeFromCodeCoverage]
+    public class UserPreferencesModel
+    {
+        [Description("Notification: New Elections")]
+        [JsonPropertyName("NotificationNewElections")]
+        [JsonProperty(nameof(NotificationNewElections), Required = Required.Default)]
+        public bool NotificationNewElections { get; set; }
+
+        [Description("Notification: Election Start")]
+        [JsonPropertyName("NotificationElectionStart")]
+        [JsonProperty(nameof(NotificationElectionStart), Required = Required.Default)]
+        public bool NotificationElectionStart { get; set; }
+
+        [Description("Notification: Election End")]
+        [JsonPropertyName("NotificationElectionEnd")]
+        [JsonProperty(nameof(NotificationElectionEnd), Required = Required.Default)]
+        public bool NotificationElectionEnd { get; set; }
+
+        [Description("Notification: New TrueVote Features")]
+        [JsonPropertyName("NotificationNewTrueVoteFeatures")]
+        [JsonProperty(nameof(NotificationNewTrueVoteFeatures), Required = Required.Default)]
+        public bool NotificationNewTrueVoteFeatures { get; set; }
     }
 
     [ExcludeFromCodeCoverage]

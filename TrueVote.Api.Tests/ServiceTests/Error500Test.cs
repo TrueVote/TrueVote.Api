@@ -12,15 +12,16 @@ namespace TrueVote.Api.Tests.ServiceTests
 {
     public class Error500Test : TestHelper
     {
+        private readonly Error500 error500;
+
         public Error500Test(ITestOutputHelper output) : base(output)
         {
+            error500 = new Error500(_logHelper.Object, _mockServiceBus.Object);
         }
 
         [Fact]
         public async Task LogsMessages()
         {
-            var error500 = new Error500(_logHelper.Object, _mockServiceBus.Object);
-
             var error500Flag = new Error500Flag { Error = false };
 
             await error500.ThrowError500(error500Flag);
@@ -32,8 +33,6 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public async Task CausesDivideByZero()
         {
-            var error500 = new Error500(_logHelper.Object, _mockServiceBus.Object);
-
             var error500Flag = new Error500Flag { Error = true };
 
             try

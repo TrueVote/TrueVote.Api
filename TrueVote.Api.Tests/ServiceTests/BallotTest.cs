@@ -70,9 +70,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         {
             var findBallotObj = new FindBallotModel { BallotId = "ballotid3" };
 
-            var ballotApi = new Ballot(_logHelper.Object, _moqDataAccessor.mockBallotContext.Object, _validatorApi, _mockServiceBus.Object);
-
-            var ret = await ballotApi.BallotFind(findBallotObj);
+            var ret = await _ballotApi.BallotFind(findBallotObj);
             Assert.NotNull(ret);
             Assert.Equal(StatusCodes.Status200OK, ((IStatusCodeActionResult) ret).StatusCode);
 
@@ -90,9 +88,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         {
             var findBallotObj = new FindBallotModel { BallotId = "not going to find anything" };
 
-            var ballotApi = new Ballot(_logHelper.Object, _moqDataAccessor.mockBallotContext.Object, _validatorApi, _mockServiceBus.Object);
-
-            var ret = await ballotApi.BallotFind(findBallotObj);
+            var ret = await _ballotApi.BallotFind(findBallotObj);
             Assert.NotNull(ret);
             Assert.Equal(StatusCodes.Status404NotFound, ((IStatusCodeActionResult) ret).StatusCode);
 
@@ -105,9 +101,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         {
             var countBallotsObj = new CountBallotModel { DateCreatedStart = new DateTime(2022, 01, 01), DateCreatedEnd = new DateTime(2033, 12, 31) };
 
-            var ballotApi = new Ballot(_logHelper.Object, _moqDataAccessor.mockBallotContext.Object, _validatorApi, _mockServiceBus.Object);
-
-            var ret = await ballotApi.BallotCount(countBallotsObj);
+            var ret = await _ballotApi.BallotCount(countBallotsObj);
             Assert.NotNull(ret);
             Assert.Equal(StatusCodes.Status200OK, ((IStatusCodeActionResult) ret).StatusCode);
 

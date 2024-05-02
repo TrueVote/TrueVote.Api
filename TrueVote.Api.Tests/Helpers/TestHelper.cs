@@ -1,10 +1,13 @@
 using HotChocolate.Types.Descriptors;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Moq;
 using System.Collections.Generic;
 using System.IO.Abstractions;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using TrueVote.Api.Helpers;
 using TrueVote.Api.Interfaces;
@@ -30,6 +33,9 @@ namespace TrueVote.Api.Tests.Helpers
         protected readonly Mock<IOpenTimestampsClient> _mockOpenTimestampsClient;
         protected readonly Mock<IServiceBus> _mockServiceBus;
         protected readonly Mock<IJwtHandler> _mockJwtHandler;
+        protected readonly ControllerContext _authControllerContext;
+
+        public const string MockedTokenValue = "mocked_token_value";
 
         public TestHelper(ITestOutputHelper output)
         {
@@ -67,7 +73,7 @@ namespace TrueVote.Api.Tests.Helpers
 
             _mockJwtHandler = new Mock<IJwtHandler>();
             _ = _mockJwtHandler.Setup(m => m.GenerateToken(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<IEnumerable<string>>()))
-                .Returns((string userId, string npub, IEnumerable<string> roles) => "mocked_token_value");
+                .Returns((string userId, string npub, IEnumerable<string> roles) => MockedTokenValue);
 
             _moqDataAccessor = new MoqDataAccessor();
             _userApi = new User(_logHelper.Object, _moqDataAccessor.mockUserContext.Object, _mockServiceBus.Object, _mockJwtHandler.Object);
@@ -78,6 +84,22 @@ namespace TrueVote.Api.Tests.Helpers
             _candidateApi = new Candidate(_logHelper.Object, _moqDataAccessor.mockCandidateContext.Object, _mockServiceBus.Object);
             _timestampApi = new Timestamp(_logHelper.Object, _moqDataAccessor.mockTimestampContext.Object);
             _queryService = new Query((MoqTrueVoteDbContext) serviceProvider.GetService(typeof(MoqTrueVoteDbContext)));
+
+            // For endpoints that require Authorization [Authorize]
+            // Mock a user principal with desired claims
+            var claims = new[]
+            {
+                new Claim(ClaimTypes.NameIdentifier, MoqData.MockUserData[0].UserId),
+                new Claim(ClaimTypes.Role, "User"), // Role
+            };
+            var identity = new ClaimsIdentity(claims, "TestAuthentication");
+            var principal = new ClaimsPrincipal(identity);
+
+            // Create context for controllers to attach to
+            _authControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext { User = principal }
+            };
         }
     }
 }

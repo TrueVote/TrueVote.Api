@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using TrueVote.Api.Helpers;
 using TrueVote.Api.Models;
 using TrueVote.Api.Services;
 using TrueVote.Api.Tests.Helpers;
@@ -74,9 +75,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         {
             var findUserObj = new FindUserModel { FullName = "Foo" };
 
-            var userApi = new User(_logHelper.Object, _moqDataAccessor.mockUserContext.Object, _mockServiceBus.Object, _mockJwtHandler.Object);
-
-            var ret = await userApi.UserFind(findUserObj);
+            var ret = await _userApi.UserFind(findUserObj);
             Assert.NotNull(ret);
             Assert.Equal(StatusCodes.Status200OK, ((IStatusCodeActionResult) ret).StatusCode);
 
@@ -95,9 +94,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         {
             var findUserObj = new FindUserModel { FullName = "not going to find anything" };
 
-            var userApi = new User(_logHelper.Object, _moqDataAccessor.mockUserContext.Object, _mockServiceBus.Object, _mockJwtHandler.Object);
-
-            var ret = await userApi.UserFind(findUserObj);
+            var ret = await _userApi.UserFind(findUserObj);
             Assert.NotNull(ret);
             Assert.Equal(StatusCodes.Status404NotFound, ((IStatusCodeActionResult) ret).StatusCode);
 
@@ -196,10 +193,10 @@ namespace TrueVote.Api.Tests.ServiceTests
             Assert.NotNull(ret);
             Assert.Equal(StatusCodes.Status200OK, ((IStatusCodeActionResult) ret).StatusCode);
 
-            var val = (SecureString) (ret as OkObjectResult).Value;
-            Assert.NotEmpty(val.Value);
-
-            // TODO Confirm valid token
+            var val = (SignInResponse) (ret as OkObjectResult).Value;
+            Assert.NotEmpty(val.Token);
+            Assert.NotNull(val.User);
+            Assert.Equal(MockedTokenValue, val.Token);
 
             _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
@@ -218,7 +215,8 @@ namespace TrueVote.Api.Tests.ServiceTests
                 DateCreated = utcTime.DateTime,
                 Email = "foo4@bar.com",
                 FullName = "Foo Bar",
-                NostrPubKey = keyPair.PublicKey.Bech32
+                NostrPubKey = keyPair.PublicKey.Bech32,
+                UserPreferences = new UserPreferencesModel()
             };
 
             // Create own MoqData so it finds it later below
@@ -263,10 +261,10 @@ namespace TrueVote.Api.Tests.ServiceTests
             Assert.NotNull(ret);
             Assert.Equal(StatusCodes.Status200OK, ((IStatusCodeActionResult) ret).StatusCode);
 
-            var val = (SecureString) (ret as OkObjectResult).Value;
-            Assert.NotEmpty(val.Value);
-
-            // TODO Confirm valid token
+            var val = (SignInResponse) (ret as OkObjectResult).Value;
+            Assert.NotEmpty(val.Token);
+            Assert.NotNull(val.User);
+            Assert.Equal(MockedTokenValue, val.Token);
 
             _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
@@ -352,6 +350,88 @@ namespace TrueVote.Api.Tests.ServiceTests
             Assert.Contains("Signature did not verify", val.Value.ToString());
 
             _logHelper.Verify(LogLevel.Error, Times.Exactly(1));
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+        }
+
+        [Fact]
+        public async Task SavesUser()
+        {
+            var user = MoqData.MockUserData[0];
+            user.FullName = "Joe Jones";
+            Assert.Equal(user.DateUpdated, DateTime.MinValue);
+            Assert.Equal("Joe Jones", user.FullName);
+
+            _userApi.ControllerContext = _authControllerContext;
+            var ret = await _userApi.SaveUser(user);
+
+            Assert.NotNull(ret);
+            Assert.Equal(StatusCodes.Status200OK, ((IStatusCodeActionResult) ret).StatusCode);
+
+            var updatedUser = (UserModel) (ret as OkObjectResult).Value;
+
+            Assert.True(UtcNowProviderFactory.GetProvider().UtcNow - updatedUser.DateUpdated <= TimeSpan.FromSeconds(3));
+            Assert.Equal("Joe Jones", updatedUser.FullName);
+
+            _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+        }
+
+        [Fact]
+        public async Task SavesUserWithNewEmail()
+        {
+            var user = MoqData.MockUserData[0];
+            user.FullName = "Joe Jones";
+            user.Email = "anewemail@anywhere.com";
+            Assert.Equal(user.DateUpdated, DateTime.MinValue);
+            Assert.Equal("Joe Jones", user.FullName);
+
+            _userApi.ControllerContext = _authControllerContext;
+            var ret = await _userApi.SaveUser(user);
+
+            Assert.NotNull(ret);
+            Assert.Equal(StatusCodes.Status200OK, ((IStatusCodeActionResult) ret).StatusCode);
+
+            var updatedUser = (UserModel) (ret as OkObjectResult).Value;
+
+            Assert.True(UtcNowProviderFactory.GetProvider().UtcNow - updatedUser.DateUpdated <= TimeSpan.FromSeconds(3));
+            Assert.Equal("Joe Jones", updatedUser.FullName);
+            Assert.Equal("anewemail@anywhere.com", updatedUser.Email);
+
+            _logHelper.Verify(LogLevel.Information, Times.Exactly(2));
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+        }
+
+        [Fact]
+        public async Task HandlesSavesUserWithoutAuthorization()
+        {
+            var user = MoqData.MockUserData[0];
+            user.FullName = "Joe Jones";
+            Assert.Equal(user.DateUpdated, DateTime.MinValue);
+            Assert.Equal("Joe Jones", user.FullName);
+
+            var ret = await _userApi.SaveUser(user);
+
+            Assert.NotNull(ret);
+            Assert.Equal(StatusCodes.Status401Unauthorized, ((IStatusCodeActionResult) ret).StatusCode);
+
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+        }
+
+        [Fact]
+        public async Task HandlesSavesUserNotFound()
+        {
+            var user = MoqData.MockUserData[0];
+            user.UserId = "blah1";
+            user.FullName = "Joe Jones";
+            Assert.Equal(user.DateUpdated, DateTime.MinValue);
+            Assert.Equal("Joe Jones", user.FullName);
+
+            _userApi.ControllerContext = _authControllerContext;
+            var ret = await _userApi.SaveUser(user);
+
+            Assert.NotNull(ret);
+            Assert.Equal(StatusCodes.Status404NotFound, ((IStatusCodeActionResult) ret).StatusCode);
+
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
         }
     }

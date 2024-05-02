@@ -99,6 +99,7 @@ namespace TrueVote.Api.Services
 
         [HttpGet]
         [Authorize]
+        [ServiceFilter(typeof(ValidateUserIdFilter))]
         [Route("add")]
         [Produces(typeof(SecureString))]
         [Description("Returns simple addition")]
@@ -106,6 +107,12 @@ namespace TrueVote.Api.Services
         public async Task<IActionResult> GetAdd()
         {
             _log.LogDebug("HTTP trigger - GetAdd:Begin");
+
+            if (User == null || User.Identity == null)
+            {
+                _log.LogDebug("HTTP trigger - GetAdd:End");
+                return Unauthorized();
+            }
 
             var val = await Task.Run(() => 2 + 2);
 
