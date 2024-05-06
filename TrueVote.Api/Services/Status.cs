@@ -22,6 +22,7 @@ namespace TrueVote.Api.Services
         private static string? _BuildInfoReadTime = null;
         private readonly ILogger _log;
         private readonly IServiceBus _serviceBus;
+        private static readonly string UTCDateFormat = "dddd, MMM dd, yyyy HH:mm:ss UTC";
 
         public Status(ILogger log, IServiceBus serviceBus)
         {
@@ -56,11 +57,11 @@ namespace TrueVote.Api.Services
                 // Convert the time for consistency
                 if (_BuildInfo.BuildTime != string.Empty)
                 {
-                    _BuildInfo.BuildTime = $"{DateTime.Parse(_BuildInfo.BuildTime)} UTC";
+                    _BuildInfo.BuildTime = $"{DateTime.Parse(_BuildInfo.BuildTime).ToString(UTCDateFormat)}";
                 }
 
                 // Set the read time to now. This should never change because it's stored in a static.
-                _BuildInfoReadTime = DateTime.Now.ToUniversalTime().ToString("dddd, MMM dd, yyyy HH:mm:ss");
+                _BuildInfoReadTime = DateTime.Now.ToUniversalTime().ToString(UTCDateFormat);
             }
 
             // Attach the static to the returned object
@@ -72,7 +73,7 @@ namespace TrueVote.Api.Services
 
             status.ExecutionTime = watch.ElapsedMilliseconds;
             status.ExecutionTimeMsg = $"Time to run: {watch.ElapsedMilliseconds}ms";
-            status.CurrentTime = DateTime.Now.ToUniversalTime().ToString("dddd, MMM dd, yyyy HH:mm:ss");
+            status.CurrentTime = DateTime.Now.ToUniversalTime().ToString(UTCDateFormat);
 
             await _serviceBus.SendAsync($"Status Check");
 

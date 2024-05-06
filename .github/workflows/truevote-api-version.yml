@@ -14,12 +14,14 @@ jobs:
   tag_version:
     if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
-    - uses: actions/checkout@master
+    - uses: actions/checkout@v4
 
     - name: Bump version and push tag
-      uses: anothrNick/github-tag-action@master
+      uses: anothrNick/github-tag-action@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         REPO_OWNER: TrueVote
