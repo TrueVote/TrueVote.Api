@@ -53,6 +53,7 @@ jobs:
 
     - name: Fixups
       run: |
+        git fetch --tags
         git update-index --chmod=+x ./scripts/*
         chmod +x ./scripts/*
         # ./scripts/update-git.sh
