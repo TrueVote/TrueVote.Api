@@ -5,6 +5,7 @@ using Newtonsoft.Json;
 using Nostr.Client.Keys;
 using Nostr.Client.Messages;
 using System.ComponentModel;
+using System.Text.RegularExpressions;
 using TrueVote.Api.Helpers;
 using TrueVote.Api.Interfaces;
 using TrueVote.Api.Models;
@@ -182,7 +183,7 @@ namespace TrueVote.Api.Services
 
         private async Task<UserModel> AddNewUser(BaseUserModel baseUser, string userId)
         {
-            var user = new UserModel { FullName = baseUser.FullName, Email = baseUser.Email, UserId = userId, NostrPubKey = baseUser.NostrPubKey, DateCreated = UtcNowProviderFactory.GetProvider().UtcNow, UserPreferences = new UserPreferencesModel() };
+            var user = new UserModel { FullName = baseUser.FullName, Email = baseUser.Email, UserId = userId, NostrPubKey = baseUser.NostrPubKey, DateCreated = UtcNowProviderFactory.GetProvider().UtcNow, DateUpdated = UtcNowProviderFactory.GetProvider().UtcNow, UserPreferences = new UserPreferencesModel() };
 
             await _trueVoteDbContext.EnsureCreatedAsync();
 
@@ -246,6 +247,48 @@ namespace TrueVote.Api.Services
             _log.LogDebug("HTTP trigger - SaveUser:End");
 
             return Ok(foundUser);
+        }
+
+        [HttpPost]
+        [Authorize]
+        [ServiceFilter(typeof(ValidateUserIdFilter))]
+        [Route("user/savefeedback")]
+        [Produces(typeof(SecureString))]
+        [Description("Saves feedback for a user and returns a response")]
+        [ProducesResponseType(typeof(SecureString), StatusCodes.Status200OK)]
+        public async Task<IActionResult> SaveFeedback([FromBody] FeedbackModel feedback)
+        {
+            _log.LogDebug("HTTP trigger - SaveFeedback:Begin");
+
+            _log.LogInformation($"Request Data: {feedback}");
+
+            if (User == null || User.Identity == null)
+            {
+                _log.LogDebug("HTTP trigger - SaveFeedback:End");
+                return Unauthorized();
+            }
+
+            // Determine if User is found
+            var foundUser = await _trueVoteDbContext.Users.Where(u => u.UserId == feedback.UserId).FirstOrDefaultAsync();
+            if (foundUser == null)
+            {
+                _log.LogDebug("HTTP trigger - SaveFeedback:End");
+                return NotFound();
+            }
+
+            // Sanitize the feedback
+            feedback.Feedback = Regex.Replace(feedback.Feedback, "<.*?>", string.Empty);
+
+            await _trueVoteDbContext.EnsureCreatedAsync();
+
+            await _trueVoteDbContext.Feedbacks.AddAsync(feedback);
+            await _trueVoteDbContext.SaveChangesAsync();
+
+            await _serviceBus.SendAsync($"New User feedback submitted: {feedback.Feedback}");
+
+            _log.LogDebug("HTTP trigger - SaveUser:End");
+
+            return Ok(new SecureString { Value = "Success" });
         }
     }
 }

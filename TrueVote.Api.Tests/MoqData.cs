@@ -79,6 +79,7 @@ namespace TrueVote.Api.Tests
         public readonly Mock<MoqTrueVoteDbContext> mockRaceContext;
         public readonly Mock<MoqTrueVoteDbContext> mockTimestampContext;
         public readonly Mock<MoqTrueVoteDbContext> mockBallotHashContext;
+        public readonly Mock<MoqTrueVoteDbContext> mockFeedbacksContext;
 
         public Mock<DbSet<UserModel>> MockUserSet { get; private set; }
         public Mock<DbSet<RaceModel>> MockRaceSet { get; private set; }
@@ -87,6 +88,7 @@ namespace TrueVote.Api.Tests
         public Mock<DbSet<BallotModel>> MockBallotSet { get; private set; }
         public Mock<DbSet<TimestampModel>> MockTimestampSet { get; private set; }
         public Mock<DbSet<BallotHashModel>> MockBallotHashSet { get; private set; }
+        public Mock<DbSet<FeedbackModel>> MockFeedbacksSet { get; private set; }
 
         // https://docs.microsoft.com/en-us/ef/ef6/fundamentals/testing/mocking?redirectedfrom=MSDN
         // https://github.com/romantitov/MockQueryable
@@ -132,6 +134,10 @@ namespace TrueVote.Api.Tests
             mockRaceContext.Setup(m => m.Races).Returns(MockRaceSet.Object);
             mockRaceContext.Setup(m => m.EnsureCreatedAsync()).Returns(Task.FromResult(true));
 
+            mockFeedbacksContext = new Mock<MoqTrueVoteDbContext>();
+            mockFeedbacksContext.Setup(m => m.Feedbacks).Returns(MockFeedbacksSet.Object);
+            mockFeedbacksContext.Setup(m => m.EnsureCreatedAsync()).Returns(Task.FromResult(true));
+
             // Leaving commented code. This is for Mocking UTC time. Helpful for test consistency.
             // var mockUtcNowProvider = new Mock<IUtcNowProvider>();
             // mockUtcNowProvider.Setup(p => p.UtcNow).Returns(MoqData.startDate);
@@ -149,6 +155,7 @@ namespace TrueVote.Api.Tests
         public virtual DbSet<BallotModel> Ballots { get; set; }
         public virtual DbSet<TimestampModel> Timestamps { get; set; }
         public virtual DbSet<BallotHashModel> BallotHashes { get; set; }
+        public virtual DbSet<FeedbackModel> Feedbacks { get; set; }
 
         protected MoqDataAccessor _moqDataAccessor;
 
@@ -163,6 +170,7 @@ namespace TrueVote.Api.Tests
             Ballots = _moqDataAccessor.MockBallotSet.Object;
             Timestamps = _moqDataAccessor.MockTimestampSet.Object;
             BallotHashes = _moqDataAccessor.MockBallotHashSet.Object;
+            Feedbacks = _moqDataAccessor.MockFeedbacksSet.Object;
         }
 
         public virtual async Task<bool> EnsureCreatedAsync()
