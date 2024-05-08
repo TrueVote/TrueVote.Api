@@ -210,6 +210,7 @@ namespace TrueVote.Api
             public virtual DbSet<BallotModel> Ballots { get; set; }
             public virtual DbSet<TimestampModel> Timestamps { get; set; }
             public virtual DbSet<BallotHashModel> BallotHashes { get; set; }
+            public virtual DbSet<FeedbackModel> Feedbacks { get; set; }
             private readonly IConfiguration? _configuration;
             private readonly string? _connectionString;
 
@@ -289,6 +290,10 @@ namespace TrueVote.Api
                 modelBuilder.HasDefaultContainer("BallotHashes");
                 modelBuilder.Entity<BallotHashModel>().ToContainer("BallotHashes");
                 modelBuilder.Entity<BallotHashModel>().HasNoDiscriminator();
+
+                modelBuilder.HasDefaultContainer("Feedbacks");
+                modelBuilder.Entity<FeedbackModel>().ToContainer("Feedbacks");
+                modelBuilder.Entity<FeedbackModel>().HasNoDiscriminator();
             }
         }
 
@@ -356,12 +361,26 @@ namespace TrueVote.Api
     {
         public void OnActionExecuting(ActionExecutingContext context)
         {
+            var userId = Guid.Empty;
+
             // Get the user ID from the JWT token
             // Dereference the ClaimTypes in an odd way because JwtRegisteredClaimNames doesn't work well.
             // Instead, getting this value from token creation code in JwtAuth.cs:
             // claims.Add(new Claim(JwtRegisteredClaimNames.NameId, userId));
-            var userId = context.HttpContext.User.Claims.Where(c => c.Type == ClaimTypes.NameIdentifier).Skip(1).Take(1).Select(c => c.Value).FirstOrDefault() ?? null;
-            if (userId == null)
+            var nameIdentifierList = context.HttpContext.User.Claims.Where(c => c.Type == ClaimTypes.NameIdentifier).ToList();
+            foreach (var claim in nameIdentifierList)
+            {
+                if (claim.Value != null)
+                {
+                    var isValid = Guid.TryParse(claim.Value, out userId);
+
+                    if (isValid)
+                        break;
+                }
+            }
+
+            //var userId = context.HttpContext.User.Claims.Where(c => c.Type == ClaimTypes.NameIdentifier).Skip(1).Take(1).Select(c => c.Value).FirstOrDefault() ?? null;
+            if (userId == Guid.Empty)
             {
                 context.Result = new ForbidResult();
                 return;
@@ -374,7 +393,13 @@ namespace TrueVote.Api
                 {
                     case UserModel userModel:
                     {
-                        ValidateUserId(context, userModel.UserId, userId);
+                        ValidateUserId(context, userModel.UserId, userId.ToString());
+                        break;
+                    }
+
+                    case FeedbackModel feedbackModel:
+                    {
+                        ValidateUserId(context, feedbackModel.UserId, userId.ToString());
                         break;
                     }
                     // Add more cases for other models with UserId property

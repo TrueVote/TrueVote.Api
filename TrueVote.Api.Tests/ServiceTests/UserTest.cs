@@ -213,6 +213,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             {
                 UserId = userId,
                 DateCreated = utcTime.DateTime,
+                DateUpdated = utcTime.DateTime,
                 Email = "foo4@bar.com",
                 FullName = "Foo Bar",
                 NostrPubKey = keyPair.PublicKey.Bech32,
@@ -358,7 +359,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         {
             var user = MoqData.MockUserData[0];
             user.FullName = "Joe Jones";
-            Assert.Equal(user.DateUpdated, DateTime.MinValue);
+            Assert.Equal(DateTime.MinValue, user.DateUpdated);
             Assert.Equal("Joe Jones", user.FullName);
 
             _userApi.ControllerContext = _authControllerContext;
@@ -382,7 +383,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             var user = MoqData.MockUserData[0];
             user.FullName = "Joe Jones";
             user.Email = "anewemail@anywhere.com";
-            Assert.Equal(user.DateUpdated, DateTime.MinValue);
+            Assert.Equal(DateTime.MinValue, user.DateUpdated);
             Assert.Equal("Joe Jones", user.FullName);
 
             _userApi.ControllerContext = _authControllerContext;
@@ -406,7 +407,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         {
             var user = MoqData.MockUserData[0];
             user.FullName = "Joe Jones";
-            Assert.Equal(user.DateUpdated, DateTime.MinValue);
+            Assert.Equal(DateTime.MinValue, user.DateUpdated);
             Assert.Equal("Joe Jones", user.FullName);
 
             var ret = await _userApi.SaveUser(user);
@@ -418,12 +419,12 @@ namespace TrueVote.Api.Tests.ServiceTests
         }
 
         [Fact]
-        public async Task HandlesSavesUserNotFound()
+        public async Task HandlesSavesUserUserNotFound()
         {
             var user = MoqData.MockUserData[0];
             user.UserId = "blah1";
             user.FullName = "Joe Jones";
-            Assert.Equal(user.DateUpdated, DateTime.MinValue);
+            Assert.Equal(DateTime.MinValue, user.DateUpdated);
             Assert.Equal("Joe Jones", user.FullName);
 
             _userApi.ControllerContext = _authControllerContext;
@@ -431,6 +432,53 @@ namespace TrueVote.Api.Tests.ServiceTests
 
             Assert.NotNull(ret);
             Assert.Equal(StatusCodes.Status404NotFound, ((IStatusCodeActionResult) ret).StatusCode);
+
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+        }
+
+        [Fact]
+        public async Task SavesFeedback()
+        {
+            var feedback = MoqData.MockFeedbackData[0];
+
+            _userApi.ControllerContext = _authControllerContext;
+            var ret = await _userApi.SaveFeedback(feedback);
+
+            Assert.NotNull(ret);
+            Assert.Equal(StatusCodes.Status200OK, ((IStatusCodeActionResult) ret).StatusCode);
+
+            var res = (SecureString) (ret as OkObjectResult).Value;
+
+            Assert.Equal("Success", res.Value);
+
+            _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+        }
+
+        [Fact]
+        public async Task HandlesSavesFeedbackUserNotFound()
+        {
+            var feedback = MoqData.MockFeedbackData[0];
+            feedback.UserId = "blah";
+
+            _userApi.ControllerContext = _authControllerContext;
+            var ret = await _userApi.SaveFeedback(feedback);
+
+            Assert.NotNull(ret);
+            Assert.Equal(StatusCodes.Status404NotFound, ((IStatusCodeActionResult) ret).StatusCode);
+
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+        }
+
+        [Fact]
+        public async Task HandlesSavesFeedbackWithoutAuthorization()
+        {
+            var feedback = MoqData.MockFeedbackData[0];
+
+            var ret = await _userApi.SaveFeedback(feedback);
+
+            Assert.NotNull(ret);
+            Assert.Equal(StatusCodes.Status401Unauthorized, ((IStatusCodeActionResult) ret).StatusCode);
 
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
         }

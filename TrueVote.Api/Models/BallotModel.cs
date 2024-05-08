@@ -7,6 +7,7 @@ using System.Text.Json.Serialization;
 using ByteConverter = TrueVote.Api.Helpers.ByteConverter;
 using JsonConverter = System.Text.Json.Serialization.JsonConverter;
 using JsonConverterAttribute = System.Text.Json.Serialization.JsonConverterAttribute;
+using JsonIgnore = Newtonsoft.Json.JsonIgnoreAttribute;
 
 namespace TrueVote.Api.Models
 {
@@ -189,6 +190,7 @@ namespace TrueVote.Api.Models
         [DataType(DataType.Date)]
         [JsonPropertyName("DateUpdated")]
         [JsonProperty(nameof(DateUpdated), Required = Required.Always)]
+        [JsonIgnore]
         public required DateTime DateUpdated { get; set; }
 
         [Description("Timestamp Id")]
