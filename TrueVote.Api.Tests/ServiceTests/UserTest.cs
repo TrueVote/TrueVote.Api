@@ -213,6 +213,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             {
                 UserId = userId,
                 DateCreated = utcTime.DateTime,
+                DateUpdated = utcTime.DateTime,
                 Email = "foo4@bar.com",
                 FullName = "Foo Bar",
                 NostrPubKey = keyPair.PublicKey.Bech32,
@@ -358,7 +359,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         {
             var user = MoqData.MockUserData[0];
             user.FullName = "Joe Jones";
-            Assert.Equal(user.DateUpdated, DateTime.MinValue);
+            Assert.Equal(DateTime.MinValue, user.DateUpdated);
             Assert.Equal("Joe Jones", user.FullName);
 
             _userApi.ControllerContext = _authControllerContext;
@@ -382,7 +383,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             var user = MoqData.MockUserData[0];
             user.FullName = "Joe Jones";
             user.Email = "anewemail@anywhere.com";
-            Assert.Equal(user.DateUpdated, DateTime.MinValue);
+            Assert.Equal(DateTime.MinValue, user.DateUpdated);
             Assert.Equal("Joe Jones", user.FullName);
 
             _userApi.ControllerContext = _authControllerContext;
@@ -406,7 +407,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         {
             var user = MoqData.MockUserData[0];
             user.FullName = "Joe Jones";
-            Assert.Equal(user.DateUpdated, DateTime.MinValue);
+            Assert.Equal(DateTime.MinValue, user.DateUpdated);
             Assert.Equal("Joe Jones", user.FullName);
 
             var ret = await _userApi.SaveUser(user);
@@ -423,7 +424,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             var user = MoqData.MockUserData[0];
             user.UserId = "blah1";
             user.FullName = "Joe Jones";
-            Assert.Equal(user.DateUpdated, DateTime.MinValue);
+            Assert.Equal(DateTime.MinValue, user.DateUpdated);
             Assert.Equal("Joe Jones", user.FullName);
 
             _userApi.ControllerContext = _authControllerContext;

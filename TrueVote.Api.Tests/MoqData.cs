@@ -20,9 +20,9 @@ namespace TrueVote.Api.Tests
 
         public static List<UserModel> MockUserData => new()
         {
-            new UserModel { UserId = "userid1", Email = "foo@foo.com", DateCreated = createDate, FullName = "Foo Bar", NostrPubKey = "npub1", UserPreferences = new UserPreferencesModel() },
-            new UserModel { UserId = "userid2", Email = "foo2@bar.com", DateCreated = createDate2, FullName = "Foo2 Bar", NostrPubKey = "npub2", UserPreferences = new UserPreferencesModel() },
-            new UserModel { UserId = "userid3", Email = "boo@bar.com", DateCreated = createDate3, FullName = "Boo Bar", NostrPubKey = "npub3", UserPreferences = new UserPreferencesModel() }
+            new UserModel { UserId = "userid1", Email = "foo@foo.com", DateCreated = createDate, DateUpdated = DateTime.MinValue, FullName = "Foo Bar", NostrPubKey = "npub1", UserPreferences = new UserPreferencesModel() },
+            new UserModel { UserId = "userid2", Email = "foo2@bar.com", DateCreated = createDate2, DateUpdated = DateTime.MinValue, FullName = "Foo2 Bar", NostrPubKey = "npub2", UserPreferences = new UserPreferencesModel() },
+            new UserModel { UserId = "userid3", Email = "boo@bar.com", DateCreated = createDate3, DateUpdated = DateTime.MinValue, FullName = "Boo Bar", NostrPubKey = "npub3", UserPreferences = new UserPreferencesModel() }
         };
 
         public static List<ElectionModel> MockElectionData => new()
@@ -88,7 +88,6 @@ namespace TrueVote.Api.Tests
         public Mock<DbSet<BallotModel>> MockBallotSet { get; private set; }
         public Mock<DbSet<TimestampModel>> MockTimestampSet { get; private set; }
         public Mock<DbSet<BallotHashModel>> MockBallotHashSet { get; private set; }
-        public Mock<DbSet<FeedbackModel>> MockFeedbacksSet { get; private set; }
 
         // https://docs.microsoft.com/en-us/ef/ef6/fundamentals/testing/mocking?redirectedfrom=MSDN
         // https://github.com/romantitov/MockQueryable
@@ -135,7 +134,6 @@ namespace TrueVote.Api.Tests
             mockRaceContext.Setup(m => m.EnsureCreatedAsync()).Returns(Task.FromResult(true));
 
             mockFeedbacksContext = new Mock<MoqTrueVoteDbContext>();
-            mockFeedbacksContext.Setup(m => m.Feedbacks).Returns(MockFeedbacksSet.Object);
             mockFeedbacksContext.Setup(m => m.EnsureCreatedAsync()).Returns(Task.FromResult(true));
 
             // Leaving commented code. This is for Mocking UTC time. Helpful for test consistency.
@@ -170,7 +168,6 @@ namespace TrueVote.Api.Tests
             Ballots = _moqDataAccessor.MockBallotSet.Object;
             Timestamps = _moqDataAccessor.MockTimestampSet.Object;
             BallotHashes = _moqDataAccessor.MockBallotHashSet.Object;
-            Feedbacks = _moqDataAccessor.MockFeedbacksSet.Object;
         }
 
         public virtual async Task<bool> EnsureCreatedAsync()
