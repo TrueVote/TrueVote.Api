@@ -419,7 +419,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         }
 
         [Fact]
-        public async Task HandlesSavesUserNotFound()
+        public async Task HandlesSavesUserUserNotFound()
         {
             var user = MoqData.MockUserData[0];
             user.UserId = "blah1";
@@ -432,6 +432,53 @@ namespace TrueVote.Api.Tests.ServiceTests
 
             Assert.NotNull(ret);
             Assert.Equal(StatusCodes.Status404NotFound, ((IStatusCodeActionResult) ret).StatusCode);
+
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+        }
+
+        [Fact]
+        public async Task SavesFeedback()
+        {
+            var feedback = MoqData.MockFeedbackData[0];
+
+            _userApi.ControllerContext = _authControllerContext;
+            var ret = await _userApi.SaveFeedback(feedback);
+
+            Assert.NotNull(ret);
+            Assert.Equal(StatusCodes.Status200OK, ((IStatusCodeActionResult) ret).StatusCode);
+
+            var res = (SecureString) (ret as OkObjectResult).Value;
+
+            Assert.Equal("Success", res.Value);
+
+            _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+        }
+
+        [Fact]
+        public async Task HandlesSavesFeedbackUserNotFound()
+        {
+            var feedback = MoqData.MockFeedbackData[0];
+            feedback.UserId = "blah";
+
+            _userApi.ControllerContext = _authControllerContext;
+            var ret = await _userApi.SaveFeedback(feedback);
+
+            Assert.NotNull(ret);
+            Assert.Equal(StatusCodes.Status404NotFound, ((IStatusCodeActionResult) ret).StatusCode);
+
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+        }
+
+        [Fact]
+        public async Task HandlesSavesFeedbackWithoutAuthorization()
+        {
+            var feedback = MoqData.MockFeedbackData[0];
+
+            var ret = await _userApi.SaveFeedback(feedback);
+
+            Assert.NotNull(ret);
+            Assert.Equal(StatusCodes.Status401Unauthorized, ((IStatusCodeActionResult) ret).StatusCode);
 
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
         }
