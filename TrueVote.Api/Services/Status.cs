@@ -57,7 +57,10 @@ namespace TrueVote.Api.Services
                 // Convert the time for consistency
                 if (_BuildInfo.BuildTime != string.Empty)
                 {
-                    _BuildInfo.BuildTime = $"{DateTime.Parse(_BuildInfo.BuildTime).ToString(UTCDateFormat)}";
+                    // For some reason if I put this formatting and assignment all on one line, code coverage misses it, so need variable
+                    var bt = DateTime.Parse(_BuildInfo.BuildTime).ToString(UTCDateFormat);
+
+                    _BuildInfo.BuildTime = bt;
                 }
 
                 // Set the read time to now. This should never change because it's stored in a static.
