@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using Nostr.Client.Messages;
 using System.ComponentModel;
 using System.Text.Json.Serialization;
+using JsonIgnore = Newtonsoft.Json.JsonIgnoreAttribute;
 
 namespace TrueVote.Api.Models
 {
@@ -133,7 +134,8 @@ namespace TrueVote.Api.Models
         [DataType(DataType.Date)]
         [JsonPropertyName("DateUpdated")]
         [JsonProperty(nameof(DateUpdated), Required = Required.DisallowNull)]
-        public DateTime DateUpdated { get; set; }
+        [JsonIgnore]
+        public required DateTime DateUpdated { get; set; }
 
         [Required]
         [Description("UserPreferences")]

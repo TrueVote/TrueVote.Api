@@ -6,6 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
 using TrueVote.Api.Helpers;
+using JsonIgnore = Newtonsoft.Json.JsonIgnoreAttribute;
 
 namespace TrueVote.Api.Models
 {
@@ -79,6 +80,7 @@ namespace TrueVote.Api.Models
         [JsonPropertyName("RaceId")]
         [JsonProperty(nameof(RaceId), Required = Required.Default)]
         [Key]
+        [JsonIgnore]
         public required string RaceId { get; set; } = Guid.NewGuid().ToString();
 
         [Required]
@@ -117,6 +119,7 @@ namespace TrueVote.Api.Models
         [DataType(DataType.Date)]
         [JsonPropertyName("DateCreated")]
         [JsonProperty(nameof(DateCreated), Required = Required.Default)]
+        [JsonIgnore]
         public required DateTime DateCreated { get; set; } = UtcNowProviderFactory.GetProvider().UtcNow;
 
         [Description("List of Candidates")]
@@ -137,6 +140,7 @@ namespace TrueVote.Api.Models
         [JsonPropertyName("RaceId")]
         [JsonProperty(nameof(RaceId), Required = Required.Always)]
         [Key]
+        [JsonIgnore]
         public required string RaceId { get; set; } = Guid.NewGuid().ToString();
 
         [Required]
@@ -168,6 +172,7 @@ namespace TrueVote.Api.Models
         [DataType(DataType.Date)]
         [JsonPropertyName("DateCreated")]
         [JsonProperty(nameof(DateCreated), Required = Required.Always)]
+        [JsonIgnore]
         public required DateTime DateCreated { get; set; } = UtcNowProviderFactory.GetProvider().UtcNow;
 
         [Required]
