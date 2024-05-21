@@ -24,7 +24,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         public string RaceId { get; set; } = Guid.NewGuid().ToString();
         public string Name { get; set; } = string.Empty;
         public RaceTypes RaceType { get; set; }
-        public ICollection<CandidateModel> Candidates { get; set; } = new List<CandidateModel>();
+        public List<CandidateModel> Candidates { get; set; } = new List<CandidateModel>();
     }
 
     public class RaceTest : TestHelper

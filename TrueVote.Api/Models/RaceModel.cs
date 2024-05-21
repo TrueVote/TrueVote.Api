@@ -107,12 +107,11 @@ namespace TrueVote.Api.Models
         [JsonProperty(nameof(RaceTypeName), Required = Required.Default)]
         public string RaceTypeName => RaceType.ToString();
 
-        [Description("Race Type Metadata")]
-        [MaxLength(2048)]
-        [DataType(DataType.Text)]
-        [JsonPropertyName("RaceTypeMetadata")]
-        [JsonProperty(nameof(RaceTypeMetadata), Required = Required.Default)]
-        public string? RaceTypeMetadata { get; set; }
+        [Description("Number of Choices")]
+        [DataType("integer")]
+        [JsonPropertyName("NumberOfChoices")]
+        [JsonProperty(nameof(NumberOfChoices), Required = Required.Default)]
+        public int? NumberOfChoices { get; set; }
 
         [Required]
         [Description("DateCreated")]
@@ -123,10 +122,10 @@ namespace TrueVote.Api.Models
         public required DateTime DateCreated { get; set; } = UtcNowProviderFactory.GetProvider().UtcNow;
 
         [Description("List of Candidates")]
-        [DataType("ICollection<CandidateModel>")]
+        [DataType("List<CandidateModel>")]
         [JsonPropertyName("Candidates")]
         [JsonProperty(nameof(Candidates), Required = Required.Default)]
-        public ICollection<CandidateModel> Candidates { get; set; } = new List<CandidateModel>();
+        public List<CandidateModel> Candidates { get; set; } = new List<CandidateModel>();
     }
 
     // Same as above model but without required properties
@@ -177,10 +176,10 @@ namespace TrueVote.Api.Models
 
         [Required]
         [Description("List of Candidates")]
-        [DataType("ICollection<CandidateModel>")]
+        [DataType("List<CandidateModel>")]
         [JsonPropertyName("Candidates")]
         [JsonProperty(nameof(Candidates), Required = Required.Always)]
-        public required ICollection<CandidateModel> Candidates { get; set; } = new List<CandidateModel>();
+        public required List<CandidateModel> Candidates { get; set; } = new List<CandidateModel>();
     }
 
     [ExcludeFromCodeCoverage]

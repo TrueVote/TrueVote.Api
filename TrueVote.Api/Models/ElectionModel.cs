@@ -82,10 +82,10 @@ namespace TrueVote.Api.Models
 
         [Required]
         [Description("List of Races")]
-        [DataType("ICollection<RaceModel>")]
+        [DataType("List<RaceModel>")]
         [JsonPropertyName("Races")]
         [JsonProperty(nameof(Races), Required = Required.Always)]
-        public required ICollection<RaceModel> Races { get; set; } = new List<RaceModel>();
+        public required List<RaceModel> Races { get; set; } = new List<RaceModel>();
     }
 
     [ExcludeFromCodeCoverage]
@@ -154,10 +154,10 @@ namespace TrueVote.Api.Models
 
         [Required]
         [Description("List of Races")]
-        [DataType("ICollection<RaceModel>")]
+        [DataType("List<RaceModel>")]
         [JsonPropertyName("Races")]
         [JsonProperty(nameof(Races), Required = Required.Always)]
-        public required ICollection<RaceModel> Races { get; set; } = new List<RaceModel>();
+        public required List<RaceModel> Races { get; set; } = new List<RaceModel>();
     }
 
     // Same as above model but without required properties
@@ -221,10 +221,10 @@ namespace TrueVote.Api.Models
 
         [Required]
         [Description("List of Races")]
-        [DataType("ICollection<RaceModel>")]
+        [DataType("List<RaceModel>")]
         [JsonPropertyName("Races")]
         [JsonProperty(nameof(Races), Required = Required.Always)]
-        public required ICollection<RaceModel> Races { get; set; } = new List<RaceModel>();
+        public required List<RaceModel> Races { get; set; } = new List<RaceModel>();
     }
 
     [ExcludeFromCodeCoverage]
