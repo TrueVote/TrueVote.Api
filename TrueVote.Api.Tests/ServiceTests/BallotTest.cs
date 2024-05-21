@@ -49,7 +49,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         {
             var baseBallotObj = new SubmitBallotModel { Election = MoqData.MockBallotData[1].Election };
 
-            var mockValidator = new Mock<IValidator>();
+            var mockValidator = new Mock<IBallotValidator>();
             mockValidator.Setup(m => m.HashBallotAsync(It.IsAny<BallotModel>())).Throws(new Exception("Hash Ballot Exception"));
 
             var ballotApi = new Ballot(_logHelper.Object, _moqDataAccessor.mockBallotContext.Object, mockValidator.Object, _mockServiceBus.Object);

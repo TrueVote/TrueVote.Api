@@ -20,10 +20,10 @@ namespace TrueVote.Api.Services
     {
         private readonly ILogger _log;
         private readonly ITrueVoteDbContext _trueVoteDbContext;
-        private readonly IValidator _validator;
+        private readonly IBallotValidator _validator;
         private readonly IServiceBus _serviceBus;
 
-        public Ballot(ILogger log, ITrueVoteDbContext trueVoteDbContext, IValidator validator, IServiceBus serviceBus)
+        public Ballot(ILogger log, ITrueVoteDbContext trueVoteDbContext, IBallotValidator validator, IServiceBus serviceBus)
         {
             _log = log;
             _trueVoteDbContext = trueVoteDbContext;

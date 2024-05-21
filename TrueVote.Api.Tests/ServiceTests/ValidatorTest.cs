@@ -54,7 +54,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             mockBallotContext.Setup(m => m.BallotHashes).Returns(MockBallotHashSet.Object);
             mockBallotContext.Setup(m => m.EnsureCreatedAsync()).Throws(new Exception("Storing data exception"));
 
-            var validatorApi = new Validator(_logHelper.Object, mockBallotContext.Object, _mockOpenTimestampsClient.Object, _mockServiceBus.Object);
+            var validatorApi = new BallotValidator(_logHelper.Object, mockBallotContext.Object, _mockOpenTimestampsClient.Object, _mockServiceBus.Object);
 
             try
             {
@@ -108,7 +108,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             mockBallotHashContext.Setup(m => m.BallotHashes).Returns(MockBallotHashSet.Object);
             mockBallotHashContext.Setup(m => m.EnsureCreatedAsync()).Throws(new Exception("Storing data exception"));
 
-            var validatorApi = new Validator(_logHelper.Object, mockBallotHashContext.Object, _mockOpenTimestampsClient.Object, _mockServiceBus.Object);
+            var validatorApi = new BallotValidator(_logHelper.Object, mockBallotHashContext.Object, _mockOpenTimestampsClient.Object, _mockServiceBus.Object);
 
             try
             {
@@ -132,7 +132,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             mockTimestampContext.Setup(m => m.Timestamps).Returns(MockTimestampSet.Object);
             mockTimestampContext.Setup(m => m.EnsureCreatedAsync()).Throws(new Exception("Storing data exception"));
 
-            var validatorApi = new Validator(_logHelper.Object, mockTimestampContext.Object, _mockOpenTimestampsClient.Object, _mockServiceBus.Object);
+            var validatorApi = new BallotValidator(_logHelper.Object, mockTimestampContext.Object, _mockOpenTimestampsClient.Object, _mockServiceBus.Object);
 
             try
             {
