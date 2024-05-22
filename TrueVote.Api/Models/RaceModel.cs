@@ -112,7 +112,7 @@ namespace TrueVote.Api.Models
         [Range(0, int.MaxValue)]
         [JsonPropertyName("NumberOfChoices")]
         [JsonProperty(nameof(NumberOfChoices), Required = Required.Default)]
-        [NumberOfChoicesValidator("Candidates")]
+        [NumberOfChoicesValidator(nameof(Candidates))]
         public int? NumberOfChoices { get; set; }
 
         [Required]

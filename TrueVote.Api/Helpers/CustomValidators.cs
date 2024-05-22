@@ -1,11 +1,9 @@
 #pragma warning disable IDE0046 // Convert to conditional expression
 using System.Collections;
 using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.CodeAnalysis;
 
 namespace TrueVote.Api.Helpers
 {
-    [ExcludeFromCodeCoverage]
     public class NumberOfChoicesValidatorAttribute : ValidationAttribute
     {
         private readonly string _propertyName;
@@ -22,22 +20,23 @@ namespace TrueVote.Api.Helpers
 
             if (propertyInfo == null)
             {
-                return new ValidationResult($"Property '{_propertyName}' not found.");
+                return new ValidationResult($"Property not found.", [validationContext.MemberName]);
             }
 
             // Get the value of the property
-            if (propertyInfo.GetValue(validationContext.ObjectInstance) is not IEnumerable propertyValue)
+            var propertyValue = propertyInfo.GetValue(validationContext.ObjectInstance);
+            if (propertyValue is not IEnumerable or string or int or long or DateTime)
             {
-                return new ValidationResult($"Property '{_propertyName}' is not a valid collection.");
+                return new ValidationResult($"Property '{_propertyName}' is not a valid collection.", [validationContext.MemberName]);
             }
 
-            // Calculate the count of the collection using LINQ
-            var count = propertyValue.Cast<object>().Count();
+            // Calculate the count of the collection
+            var count = ((IEnumerable) propertyValue).Cast<object>().Count();
 
             var numberOfChoices = value as int?;
             if (numberOfChoices.HasValue && numberOfChoices.Value > count)
             {
-                return new ValidationResult($"Number of Choices cannot exceed the number of items in '{_propertyName}'. NumberOfChoices: {numberOfChoices}, Count: {count}");
+                return new ValidationResult($"NumberOfChoices cannot exceed the number of items in '{_propertyName}'. NumberOfChoices: {numberOfChoices}, Count: {count}", [validationContext.MemberName]);
             }
 
             return ValidationResult.Success;

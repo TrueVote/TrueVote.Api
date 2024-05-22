@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using TrueVote.Api.Models;
 using TrueVote.Api.Services;
@@ -24,6 +25,8 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task SubmitsBallot()
         {
             var baseBallotObj = new SubmitBallotModel { Election = MoqData.MockBallotData[1].Election };
+            var validationResults = ValidationHelper.Validate(baseBallotObj);
+            Assert.Empty(validationResults);
 
             var ret = await _ballotApi.SubmitBallot(baseBallotObj);
             Assert.NotNull(ret);
@@ -42,6 +45,34 @@ namespace TrueVote.Api.Tests.ServiceTests
 
             _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+        }
+
+        [Fact]
+        public void SubmitsBallotWithInvalidNumberOfChoices()
+        {
+            var baseBallotObj = new SubmitBallotModel { Election = MoqData.MockBallotData[1].Election };
+            baseBallotObj.Election.Races[0].NumberOfChoices = -1;
+
+            var validationResults = ValidationHelper.Validate(baseBallotObj);
+            Assert.NotEmpty(validationResults);
+            Assert.NotNull(validationResults);
+            Assert.Single(validationResults);
+            Assert.Contains("NumberOfChoices must be between 0", validationResults[0].ErrorMessage);
+            Assert.Equal("NumberOfChoices", validationResults[0].MemberNames.First());
+        }
+
+        [Fact]
+        public void SubmitsBallotWithAboveCandidateCountNumberOfChoices()
+        {
+            var baseBallotObj = new SubmitBallotModel { Election = MoqData.MockBallotData[1].Election };
+            baseBallotObj.Election.Races[0].NumberOfChoices = 20;
+
+            var validationResults = ValidationHelper.Validate(baseBallotObj);
+            Assert.NotEmpty(validationResults);
+            Assert.NotNull(validationResults);
+            Assert.Single(validationResults);
+            Assert.Contains("NumberOfChoices cannot exceed the", validationResults[0].ErrorMessage);
+            Assert.Equal("NumberOfChoices", validationResults[0].MemberNames.First());
         }
 
         [Fact]
