@@ -26,23 +26,18 @@ namespace TrueVote.Api.Helpers
             }
 
             // Get the value of the property
-
             if (propertyInfo.GetValue(validationContext.ObjectInstance) is not IEnumerable propertyValue)
             {
                 return new ValidationResult($"Property '{_propertyName}' is not a valid collection.");
             }
 
-            // Calculate the count of the collection
-            var count = 0;
-            foreach (var _ in propertyValue)
-            {
-                count++;
-            }
+            // Calculate the count of the collection using LINQ
+            var count = propertyValue.Cast<object>().Count();
 
             var numberOfChoices = value as int?;
             if (numberOfChoices.HasValue && numberOfChoices.Value > count)
             {
-                return new ValidationResult($"Number of choices cannot exceed the number of {_propertyName}. NumberOfChoices: {numberOfChoices}, {_propertyName}: {count}");
+                return new ValidationResult($"Number of Choices cannot exceed the number of items in '{_propertyName}'. NumberOfChoices: {numberOfChoices}, Count: {count}");
             }
 
             return ValidationResult.Success;
