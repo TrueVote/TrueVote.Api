@@ -28,6 +28,8 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task LogsMessages()
         {
             var baseCandidateObj = new BaseCandidateModel { Name = "John Smith", PartyAffiliation = "Republican" };
+            var validationResults = ValidationHelper.Validate(baseCandidateObj);
+            Assert.Empty(validationResults);
 
             await _candidateApi.CreateCandidate(baseCandidateObj);
 
@@ -39,6 +41,8 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task AddsCandidate()
         {
             var baseCandidateObj = new BaseCandidateModel { Name = "John Smith", PartyAffiliation = "Republican" };
+            var validationResults = ValidationHelper.Validate(baseCandidateObj);
+            Assert.Empty(validationResults);
 
             var ret = await _candidateApi.CreateCandidate(baseCandidateObj);
             Assert.NotNull(ret);
@@ -67,6 +71,8 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task FindsCandidate()
         {
             var findCandidateObj = new FindCandidateModel { Name = "J" };
+            var validationResults = ValidationHelper.Validate(findCandidateObj);
+            Assert.Empty(validationResults);
 
             var ret = await _candidateApi.CandidateFind(findCandidateObj);
             Assert.NotNull(ret);
@@ -86,6 +92,8 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task HandlesUnfoundCandidate()
         {
             var findCandidateObj = new FindCandidateModel { Name = "not going to find anything" };
+            var validationResults = ValidationHelper.Validate(findCandidateObj);
+            Assert.Empty(validationResults);
 
             var ret = await _candidateApi.CandidateFind(findCandidateObj);
             Assert.NotNull(ret);

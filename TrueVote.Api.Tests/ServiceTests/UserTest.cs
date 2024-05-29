@@ -35,6 +35,8 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task LogsMessages()
         {
             var baseUserObj = new BaseUserModel { FullName = "Joe Blow", Email = "joe@joe.com", NostrPubKey = "nostr-key" };
+            var validationResults = ValidationHelper.Validate(baseUserObj);
+            Assert.Empty(validationResults);
 
             _ = await _userApi.CreateUser(baseUserObj);
 
@@ -46,6 +48,8 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task AddsUser()
         {
             var baseUserObj = new BaseUserModel { FullName = "Joe Blow", Email = "joe@joe.com", NostrPubKey = "nostr-key" };
+            var validationResults = ValidationHelper.Validate(baseUserObj);
+            Assert.Empty(validationResults);
 
             var ret = await _userApi.CreateUser(baseUserObj);
             Assert.NotNull(ret);
@@ -73,7 +77,9 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public async Task FindsUser()
         {
-            var findUserObj = new FindUserModel { FullName = "Foo" };
+            var findUserObj = new FindUserModel { FullName = "Foo Bar", Email = "foo@foo.com" };
+            var validationResults = ValidationHelper.Validate(findUserObj);
+            Assert.Empty(validationResults);
 
             var ret = await _userApi.UserFind(findUserObj);
             Assert.NotNull(ret);
@@ -81,9 +87,9 @@ namespace TrueVote.Api.Tests.ServiceTests
 
             var val = (UserModelList) (ret as OkObjectResult).Value;
             Assert.NotEmpty(val.Users);
-            Assert.Equal(2, val.Users.Count);
-            Assert.Equal("Foo2 Bar", val.Users[0].FullName);
-            Assert.Equal("foo2@bar.com", val.Users[0].Email);
+            Assert.Single(val.Users);
+            Assert.Equal("Foo Bar", val.Users[0].FullName);
+            Assert.Equal("foo@foo.com", val.Users[0].Email);
 
             _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
@@ -92,7 +98,9 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public async Task HandlesUnfoundUser()
         {
-            var findUserObj = new FindUserModel { FullName = "not going to find anything" };
+            var findUserObj = new FindUserModel { FullName = "not going to find anything", Email = "foo@whatever.com" };
+            var validationResults = ValidationHelper.Validate(findUserObj);
+            Assert.Empty(validationResults);
 
             var ret = await _userApi.UserFind(findUserObj);
             Assert.NotNull(ret);
@@ -114,8 +122,10 @@ namespace TrueVote.Api.Tests.ServiceTests
                 PubKey = keyPair.PublicKey.Bech32,
                 CreatedAt = utcTime.DateTime,
                 Signature = "INVALID SIG",
-                Content = ""
+                Content = "CONTENT"
             };
+            var validationResults = ValidationHelper.Validate(signInEventModel);
+            Assert.Empty(validationResults);
 
             var ret = await _userApi.SignIn(signInEventModel);
 
@@ -140,8 +150,10 @@ namespace TrueVote.Api.Tests.ServiceTests
                 PubKey = "INVALID KEY",
                 CreatedAt = utcTime.DateTime,
                 Signature = "INVALID SIG",
-                Content = ""
+                Content = "CONTENT"
             };
+            var validationResults = ValidationHelper.Validate(signInEventModel);
+            Assert.Empty(validationResults);
 
             var ret = await _userApi.SignIn(signInEventModel);
 
@@ -168,6 +180,9 @@ namespace TrueVote.Api.Tests.ServiceTests
                 FullName = "Joe Blow",
                 NostrPubKey = keyPair.PublicKey.Bech32,
             };
+            var validationResults = ValidationHelper.Validate(content);
+            Assert.Empty(validationResults);
+
             var nostrEvent = new NostrEvent
             {
                 Kind = NostrKind.ShortTextNote,
@@ -188,6 +203,8 @@ namespace TrueVote.Api.Tests.ServiceTests
                 Content = nostrEvent.Content,
                 Signature = signature.Sig
             };
+            var validationResults2 = ValidationHelper.Validate(signInEventModel);
+            Assert.Empty(validationResults2);
 
             var ret = await _userApi.SignIn(signInEventModel);
             Assert.NotNull(ret);
@@ -219,6 +236,8 @@ namespace TrueVote.Api.Tests.ServiceTests
                 NostrPubKey = keyPair.PublicKey.Bech32,
                 UserPreferences = new UserPreferencesModel()
             };
+            var validationResults = ValidationHelper.Validate(newUser);
+            Assert.Empty(validationResults);
 
             // Create own MoqData so it finds it later below
             var mockUserData = new List<UserModel> { newUser };
@@ -256,6 +275,8 @@ namespace TrueVote.Api.Tests.ServiceTests
                 Content = nostrEvent.Content,
                 Signature = signature.Sig
             };
+            var validationResults2 = ValidationHelper.Validate(signInEventModel);
+            Assert.Empty(validationResults2);
 
             var userApi = new User(_logHelper.Object, mockUserContext.Object, _mockServiceBus.Object, _mockJwtHandler.Object);
             var ret = await userApi.SignIn(signInEventModel);
@@ -298,6 +319,8 @@ namespace TrueVote.Api.Tests.ServiceTests
                 Content = nostrEvent.Content,
                 Signature = signature.Sig
             };
+            var validationResults = ValidationHelper.Validate(signInEventModel);
+            Assert.Empty(validationResults);
 
             var ret = await _userApi.SignIn(signInEventModel);
             Assert.NotNull(ret);
@@ -342,6 +365,8 @@ namespace TrueVote.Api.Tests.ServiceTests
                 Content = nostrEvent.Content,
                 Signature = signature2.Sig
             };
+            var validationResults = ValidationHelper.Validate(signInEventModel);
+            Assert.Empty(validationResults);
 
             var ret = await _userApi.SignIn(signInEventModel);
             Assert.NotNull(ret);
@@ -361,6 +386,8 @@ namespace TrueVote.Api.Tests.ServiceTests
             user.FullName = "Joe Jones";
             Assert.Equal(DateTime.MinValue, user.DateUpdated);
             Assert.Equal("Joe Jones", user.FullName);
+            var validationResults = ValidationHelper.Validate(user);
+            Assert.Empty(validationResults);
 
             _userApi.ControllerContext = _authControllerContext;
             var ret = await _userApi.SaveUser(user);
@@ -385,6 +412,8 @@ namespace TrueVote.Api.Tests.ServiceTests
             user.Email = "anewemail@anywhere.com";
             Assert.Equal(DateTime.MinValue, user.DateUpdated);
             Assert.Equal("Joe Jones", user.FullName);
+            var validationResults = ValidationHelper.Validate(user);
+            Assert.Empty(validationResults);
 
             _userApi.ControllerContext = _authControllerContext;
             var ret = await _userApi.SaveUser(user);
@@ -409,6 +438,8 @@ namespace TrueVote.Api.Tests.ServiceTests
             user.FullName = "Joe Jones";
             Assert.Equal(DateTime.MinValue, user.DateUpdated);
             Assert.Equal("Joe Jones", user.FullName);
+            var validationResults = ValidationHelper.Validate(user);
+            Assert.Empty(validationResults);
 
             var ret = await _userApi.SaveUser(user);
 
@@ -426,6 +457,8 @@ namespace TrueVote.Api.Tests.ServiceTests
             user.FullName = "Joe Jones";
             Assert.Equal(DateTime.MinValue, user.DateUpdated);
             Assert.Equal("Joe Jones", user.FullName);
+            var validationResults = ValidationHelper.Validate(user);
+            Assert.Empty(validationResults);
 
             _userApi.ControllerContext = _authControllerContext;
             var ret = await _userApi.SaveUser(user);
@@ -440,6 +473,8 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task SavesFeedback()
         {
             var feedback = MoqData.MockFeedbackData[0];
+            var validationResults = ValidationHelper.Validate(feedback);
+            Assert.Empty(validationResults);
 
             _userApi.ControllerContext = _authControllerContext;
             var ret = await _userApi.SaveFeedback(feedback);
@@ -460,6 +495,8 @@ namespace TrueVote.Api.Tests.ServiceTests
         {
             var feedback = MoqData.MockFeedbackData[0];
             feedback.UserId = "blah";
+            var validationResults = ValidationHelper.Validate(feedback);
+            Assert.Empty(validationResults);
 
             _userApi.ControllerContext = _authControllerContext;
             var ret = await _userApi.SaveFeedback(feedback);
@@ -474,6 +511,8 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task HandlesSavesFeedbackWithoutAuthorization()
         {
             var feedback = MoqData.MockFeedbackData[0];
+            var validationResults = ValidationHelper.Validate(feedback);
+            Assert.Empty(validationResults);
 
             var ret = await _userApi.SaveFeedback(feedback);
 
@@ -481,6 +520,20 @@ namespace TrueVote.Api.Tests.ServiceTests
             Assert.Equal(StatusCodes.Status401Unauthorized, ((IStatusCodeActionResult) ret).StatusCode);
 
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+        }
+
+        [Fact]
+        public void EmailShouldReturnDefaultValueWhenNotSet()
+        {
+            var userModel = new BaseUserModel
+            {
+                FullName = "John Doe",
+                NostrPubKey = "some-public-key",
+                Email = ""
+            };
+
+            var email = userModel.Email;
+            Assert.Equal("unknown@truevote.org", email);
         }
     }
 }

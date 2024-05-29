@@ -1,14 +1,12 @@
 using Newtonsoft.Json;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 using TrueVote.Api.Helpers;
 using JsonIgnore = Newtonsoft.Json.JsonIgnoreAttribute;
 
 namespace TrueVote.Api.Models
 {
-    [ExcludeFromCodeCoverage]
     public class CandidateObj
     {
         [JsonPropertyName("Candidate")]
@@ -16,7 +14,6 @@ namespace TrueVote.Api.Models
         public List<CandidateModel>? candidate;
     }
 
-    [ExcludeFromCodeCoverage]
     public class CandidateModelList
     {
         [Required]
@@ -27,7 +24,6 @@ namespace TrueVote.Api.Models
         public required List<CandidateModel> Candidates { get; set; }
     }
 
-    [ExcludeFromCodeCoverage]
     public class FindCandidateModel
     {
         [Required]
@@ -46,7 +42,6 @@ namespace TrueVote.Api.Models
         public string PartyAffiliation { get; set; } = string.Empty;
     }
 
-    [ExcludeFromCodeCoverage]
     public class BaseCandidateModel
     {
         [Required]
@@ -66,7 +61,6 @@ namespace TrueVote.Api.Models
         public required string PartyAffiliation { get; set; } = string.Empty;
     }
 
-    [ExcludeFromCodeCoverage]
     public class CandidateModel
     {
         [Required]

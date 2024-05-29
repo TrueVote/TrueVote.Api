@@ -1,12 +1,10 @@
 using Newtonsoft.Json;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 namespace TrueVote.Api.Models
 {
-    [ExcludeFromCodeCoverage]
     public class BuildInfo
     {
         [Description("Git branch of instance")]
@@ -34,7 +32,6 @@ namespace TrueVote.Api.Models
         public string Commit { get; set; } = string.Empty;
     }
 
-    [ExcludeFromCodeCoverage]
     public class StatusModel
     {
         [Description("Current Time")]

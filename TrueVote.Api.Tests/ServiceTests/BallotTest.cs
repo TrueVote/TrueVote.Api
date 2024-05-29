@@ -79,6 +79,8 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task HandlesSubmitBallotHashingError()
         {
             var baseBallotObj = new SubmitBallotModel { Election = MoqData.MockBallotData[1].Election };
+            var validationResults = ValidationHelper.Validate(baseBallotObj);
+            Assert.Empty(validationResults);
 
             var mockValidator = new Mock<IBallotValidator>();
             mockValidator.Setup(m => m.HashBallotAsync(It.IsAny<BallotModel>())).Throws(new Exception("Hash Ballot Exception"));
@@ -100,6 +102,8 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task FindsBallot()
         {
             var findBallotObj = new FindBallotModel { BallotId = "ballotid3" };
+            var validationResults = ValidationHelper.Validate(findBallotObj);
+            Assert.Empty(validationResults);
 
             var ret = await _ballotApi.BallotFind(findBallotObj);
             Assert.NotNull(ret);
@@ -118,6 +122,8 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task HandlesUnfoundBallot()
         {
             var findBallotObj = new FindBallotModel { BallotId = "not going to find anything" };
+            var validationResults = ValidationHelper.Validate(findBallotObj);
+            Assert.Empty(validationResults);
 
             var ret = await _ballotApi.BallotFind(findBallotObj);
             Assert.NotNull(ret);
@@ -131,6 +137,8 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task CountsBallots()
         {
             var countBallotsObj = new CountBallotModel { DateCreatedStart = new DateTime(2022, 01, 01), DateCreatedEnd = new DateTime(2033, 12, 31) };
+            var validationResults = ValidationHelper.Validate(countBallotsObj);
+            Assert.Empty(validationResults);
 
             var ret = await _ballotApi.BallotCount(countBallotsObj);
             Assert.NotNull(ret);
@@ -148,6 +156,8 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task FindsBallotHash()
         {
             var findBallotHashObj = new FindBallotHashModel { BallotId = "ballotid1" };
+            var validationResults = ValidationHelper.Validate(findBallotHashObj);
+            Assert.Empty(validationResults);
 
             var ret = await _ballotApi.BallotHashFind(findBallotHashObj);
             Assert.NotNull(ret);
@@ -166,6 +176,8 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task HandlesUnfoundBallotHash()
         {
             var findBallotHashObj = new FindBallotHashModel { BallotId = "not going to find anything" };
+            var validationResults = ValidationHelper.Validate(findBallotHashObj);
+            Assert.Empty(validationResults);
 
             var ret = await _ballotApi.BallotHashFind(findBallotHashObj);
             Assert.NotNull(ret);

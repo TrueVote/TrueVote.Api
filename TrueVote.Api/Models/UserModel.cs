@@ -1,6 +1,5 @@
 using Newtonsoft.Json;
 using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.CodeAnalysis;
 using Nostr.Client.Messages;
 using System.ComponentModel;
 using System.Text.Json.Serialization;
@@ -8,7 +7,6 @@ using JsonIgnore = Newtonsoft.Json.JsonIgnoreAttribute;
 
 namespace TrueVote.Api.Models
 {
-    [ExcludeFromCodeCoverage]
     public class UserObj
     {
         [JsonPropertyName("User")]
@@ -16,7 +14,6 @@ namespace TrueVote.Api.Models
         public List<UserModel>? user;
     }
 
-    [ExcludeFromCodeCoverage]
     public class UserModelList
     {
         [Required]
@@ -27,7 +24,6 @@ namespace TrueVote.Api.Models
         public required List<UserModel> Users { get; set; }
     }
 
-    [ExcludeFromCodeCoverage]
     public class FindUserModel
     {
         [Required]
@@ -48,7 +44,6 @@ namespace TrueVote.Api.Models
         public string Email { get; set; } = string.Empty;
     }
 
-    [ExcludeFromCodeCoverage]
     public class BaseUserModel
     {
         [Required]
@@ -84,7 +79,6 @@ namespace TrueVote.Api.Models
         public required string NostrPubKey { get; set; }
     }
 
-    [ExcludeFromCodeCoverage]
     public class UserModel
     {
         [Required]
@@ -145,7 +139,6 @@ namespace TrueVote.Api.Models
         public required UserPreferencesModel UserPreferences { get; set; } = new UserPreferencesModel();
     }
 
-    [ExcludeFromCodeCoverage]
     public class SignInResponse
     {
         [Required]
@@ -164,7 +157,6 @@ namespace TrueVote.Api.Models
         public required string Token { get; set; }
     }
 
-    [ExcludeFromCodeCoverage]
     public class UserPreferencesModel
     {
         [Description("Notification: New Elections")]
@@ -188,7 +180,6 @@ namespace TrueVote.Api.Models
         public bool NotificationNewTrueVoteFeatures { get; set; }
     }
 
-    [ExcludeFromCodeCoverage]
     public class SignInEventModel
     {
         [Required]

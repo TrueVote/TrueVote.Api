@@ -23,6 +23,8 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task LogsMessages()
         {
             var error500Flag = new Error500Flag { Error = false };
+            var validationResults = ValidationHelper.Validate(error500Flag);
+            Assert.Empty(validationResults);
 
             await error500.ThrowError500(error500Flag);
 
@@ -34,6 +36,8 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task CausesDivideByZero()
         {
             var error500Flag = new Error500Flag { Error = true };
+            var validationResults = ValidationHelper.Validate(error500Flag);
+            Assert.Empty(validationResults);
 
             try
             {

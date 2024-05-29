@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -30,7 +31,19 @@ namespace TrueVote.Api.Tests.Helpers
             var properties = instance.GetType().GetProperties();
             foreach (var property in properties)
             {
-                var propertyValue = property.GetValue(instance);
+                object propertyValue = null;
+
+                try
+                {
+                    propertyValue = property.GetValue(instance);
+                }
+                catch (Exception ex)
+                {
+                    // Log or handle the exception if necessary
+                    Console.WriteLine($"Exception when getting value of property '{property.Name}': {ex.Message}");
+                    continue; // Skip this property and move to the next one
+                }
+
                 if (propertyValue == null)
                     continue;
 
@@ -60,7 +73,7 @@ namespace TrueVote.Api.Tests.Helpers
 
         private static bool IsCollection(object obj)
         {
-            return obj is IEnumerable and not string;
+            return obj is IEnumerable && obj.GetType() != typeof(string);
         }
 
         private static bool IsComplexType(object obj)
