@@ -5,137 +5,197 @@ using Xunit;
 using TrueVote.Api.Tests.Helpers;
 using TrueVote.Api.Helpers;
 using Newtonsoft.Json;
+using System.Text.Json.Serialization;
+using TrueVote.Api.Models;
 using System.Linq;
 
 namespace TrueVote.Api.Tests.HelperTests
 {
-    public class NameModel
+    public class CandidateTestModel
     {
-        [Required]
-        [Description("Name")]
-        [MaxLength(2048)]
-        [DataType(DataType.Text)]
-        public required string Name { get; set; } = string.Empty;
-    }
+        [Description("List of Candidates")]
+        [DataType("List<CandidateModel>")]
+        [JsonPropertyName("Candidates")]
+        [JsonProperty(nameof(Candidates), Required = Required.Default)]
+        public List<CandidateModel> Candidates { get; set; } = new List<CandidateModel>();
 
-    public class TestModel1
-    {
-        [Description("Number of Choices")]
+        [Description("Max Number of Choices")]
         [DataType("integer")]
         [Range(0, int.MaxValue)]
-        [NumberOfChoicesValidator(nameof(NameModel))]
-        public int? NumberOfChoices { get; set; }
+        [MaxNumberOfChoicesValidator(nameof(Candidates))]
+        public int? MaxNumberOfChoices { get; set; }
 
-        [Description("List of Names")]
-        [DataType("List<NameModel>")]
-        public List<NameModel> NameModel { get; set; } = new List<NameModel>();
-    }
-
-    public class TestModel2
-    {
-        [Description("Number of Choices")]
+        [Description("Min Number of Choices")]
         [DataType("integer")]
         [Range(0, int.MaxValue)]
-        [NumberOfChoicesValidator("")]
-        public int? NumberOfChoices { get; set; }
-
-        [Description("List of Names")]
-        [DataType("List<NameModel>")]
-        public List<NameModel> NameModel { get; set; } = new List<NameModel>();
+        [MinNumberOfChoicesValidator(nameof(Candidates))]
+        public int? MinNumberOfChoices { get; set; }
     }
 
-    public class TestModel3
+    public class CandidateTestModelBlankProperty
     {
-        [Description("Number of Choices")]
+        [Description("List of Candidates")]
+        [DataType("List<CandidateModel>")]
+        [JsonPropertyName("Candidates")]
+        [JsonProperty(nameof(Candidates), Required = Required.Default)]
+        public List<CandidateModel> Candidates { get; set; } = new List<CandidateModel>();
+
+        [Description("Max Number of Choices")]
         [DataType("integer")]
         [Range(0, int.MaxValue)]
-        [NumberOfChoicesValidator(nameof(Name))]
-        public int? NumberOfChoices { get; set; }
+        [MaxNumberOfChoicesValidator("")]
+        public int? MaxNumberOfChoices { get; set; }
 
-        [Description("Name")]
-        [DataType(DataType.Text)]
-        public string Name { get; set; } = string.Empty;
+        [Description("Min Number of Choices")]
+        [DataType("integer")]
+        [Range(0, int.MaxValue)]
+        [MinNumberOfChoicesValidator("")]
+        public int? MinNumberOfChoices { get; set; }
     }
 
-    public class TestModel5
+    public class CandidateTestModelMinInvalidProperty
     {
-        [Description("Number of Choices")]
+        [Description("List of Candidates")]
+        [DataType("List<CandidateModel>")]
+        [JsonPropertyName("Candidates")]
+        [JsonProperty(nameof(Candidates), Required = Required.Default)]
+        public string Candidates { get; set; }
+
+        [Description("Min Number of Choices")]
         [DataType("integer")]
         [Range(0, int.MaxValue)]
-        [NumberOfChoicesValidator(nameof(NameModel))]
-        public int? NumberOfChoices { get; set; }
+        [MinNumberOfChoicesValidator(nameof(Candidates))]
+        public int? MinNumberOfChoices { get; set; }
+    }
 
-        [Description("List of Names")]
-        [DataType("List<NameModel>")]
-        public List<NameModel> NameModel { get; set; } = new List<NameModel>();
+    public class CandidateTestModelMaxInvalidProperty
+    {
+        [Description("List of Candidates")]
+        [DataType("List<CandidateModel>")]
+        [JsonPropertyName("Candidates")]
+        [JsonProperty(nameof(Candidates), Required = Required.Default)]
+        public string Candidates { get; set; }
+
+        [Description("Max Number of Choices")]
+        [DataType("integer")]
+        [Range(0, int.MaxValue)]
+        [MaxNumberOfChoicesValidator(nameof(Candidates))]
+        public int? MaxNumberOfChoices { get; set; }
+    }
+
+    public class CandidateTestModelMaxNotFoundProperty
+    {
+        [Description("Max Number of Choices")]
+        [DataType("integer")]
+        [Range(0, int.MaxValue)]
+        [MaxNumberOfChoicesValidator("foo")]
+        public int? MaxNumberOfChoices { get; set; }
+    }
+
+    public class CandidateTestModelMinNotFoundProperty
+    {
+        [Description("Min Number of Choices")]
+        [DataType("integer")]
+        [Range(0, int.MaxValue)]
+        [MaxNumberOfChoicesValidator("foo")]
+        public int? MinNumberOfChoices { get; set; }
     }
 
     public class CustomValidatorTest
     {
         [Fact]
-        public void TestsNumberOfChoicesSucceeds()
+        public void TestsMinAndMaxNumberOfChoicesSucceeds()
         {
-            var testModel = new TestModel1 { NumberOfChoices = 1 };
-            testModel.NameModel.Add(new NameModel { Name = "name1 "});
-            testModel.NameModel.Add(new NameModel { Name = "name2 " });
-            testModel.NameModel.Add(new NameModel { Name = "name3 " });
+            var testModel = new CandidateTestModel { MaxNumberOfChoices = 1, MinNumberOfChoices = 1, Candidates = MoqData.MockCandidateData };
+            testModel.Candidates[0].Selected = true;
+            Assert.Single(testModel.Candidates.Where(c => c.Selected == true));
 
             var validationResults = ValidationHelper.Validate(testModel);
             Assert.Empty(validationResults);
         }
 
         [Fact]
-        public void TestsNumberOfChoicesFailsWhenTooHigh()
+        public void TestsMinNumberOfChoicesFails()
         {
-            var testModel = new TestModel1 { NumberOfChoices = 5 };
-            testModel.NameModel.Add(new NameModel { Name = "name1 " });
-            testModel.NameModel.Add(new NameModel { Name = "name2 " });
-            testModel.NameModel.Add(new NameModel { Name = "name3 " });
+            var testModel = new CandidateTestModel { MinNumberOfChoices = 3, Candidates = MoqData.MockCandidateData };
+            testModel.Candidates[0].Selected = true;
+            testModel.Candidates[1].Selected = true;
+            Assert.Equal(2, testModel.Candidates.Where(c => c.Selected == true).Count());
 
             var validationResults = ValidationHelper.Validate(testModel);
             Assert.NotEmpty(validationResults);
             Assert.NotNull(validationResults);
             Assert.Single(validationResults);
-            Assert.Contains("NumberOfChoices cannot exceed the", validationResults[0].ErrorMessage);
-            Assert.Equal("NumberOfChoices", validationResults[0].MemberNames.First());
+            Assert.Contains("must be greater or equal to MinNumberOfChoices", validationResults[0].ErrorMessage);
+            Assert.Equal("MinNumberOfChoices", validationResults[0].MemberNames.First());
         }
 
         [Fact]
-        public void TestsNumberOfChoicesFailsWhenPropertyNotFound()
+        public void TestsMaxNumberOfChoicesFails()
         {
-            var testModel = new TestModel2 { NumberOfChoices = 1 };
-            testModel.NameModel.Add(new NameModel { Name = "name1 " });
-            testModel.NameModel.Add(new NameModel { Name = "name2 " });
-            testModel.NameModel.Add(new NameModel { Name = "name3 " });
+            var testModel = new CandidateTestModel { MaxNumberOfChoices = 1, Candidates = MoqData.MockCandidateData };
+            testModel.Candidates[0].Selected = true;
+            testModel.Candidates[1].Selected = true;
+            Assert.Equal(2, testModel.Candidates.Where(c => c.Selected == true).Count());
+
+            var validationResults = ValidationHelper.Validate(testModel);
+            Assert.NotEmpty(validationResults);
+            Assert.NotNull(validationResults);
+            Assert.Single(validationResults);
+            Assert.Contains("cannot exceed MaxNumberOfChoices", validationResults[0].ErrorMessage);
+            Assert.Equal("MaxNumberOfChoices", validationResults[0].MemberNames.First());
+        }
+
+        [Fact]
+        public void TestsMinNumberOfChoicesInvalidProperty()
+        {
+            var testModel = new CandidateTestModelMinInvalidProperty { MinNumberOfChoices = 3, Candidates = "foo" };
+
+            var validationResults = ValidationHelper.Validate(testModel);
+            Assert.NotEmpty(validationResults);
+            Assert.NotNull(validationResults);
+            Assert.Single(validationResults);
+            Assert.Contains("Property 'Candidates' is not a valid List<CandidateModel> type", validationResults[0].ErrorMessage);
+            Assert.Equal("MinNumberOfChoices", validationResults[0].MemberNames.First());
+        }
+
+        [Fact]
+        public void TestsMaxNumberOfChoicesInvalidProperty()
+        {
+            var testModel = new CandidateTestModelMaxInvalidProperty { MaxNumberOfChoices = 3, Candidates = "foo" };
+
+            var validationResults = ValidationHelper.Validate(testModel);
+            Assert.NotEmpty(validationResults);
+            Assert.NotNull(validationResults);
+            Assert.Single(validationResults);
+            Assert.Contains("Property 'Candidates' is not a valid List<CandidateModel> type", validationResults[0].ErrorMessage);
+            Assert.Equal("MaxNumberOfChoices", validationResults[0].MemberNames.First());
+        }
+
+        [Fact]
+        public void TestsNumberOfChoicesMaxNotFoundProperty()
+        {
+            var testModel = new CandidateTestModelMaxNotFoundProperty { MaxNumberOfChoices = 3 };
 
             var validationResults = ValidationHelper.Validate(testModel);
             Assert.NotEmpty(validationResults);
             Assert.NotNull(validationResults);
             Assert.Single(validationResults);
             Assert.Contains("Property not found", validationResults[0].ErrorMessage);
-            Assert.Equal("NumberOfChoices", validationResults[0].MemberNames.First());
+            Assert.Equal("MaxNumberOfChoices", validationResults[0].MemberNames.First());
         }
 
         [Fact]
-        public void TestsNumberOfChoicesFailsWhenPropertyToCheckIsInvalid()
+        public void TestsNumberOfChoicesMinNotFoundProperty()
         {
-            var testModel = new TestModel3 { NumberOfChoices = 1 };
+            var testModel = new CandidateTestModelMinNotFoundProperty { MinNumberOfChoices = 3 };
 
             var validationResults = ValidationHelper.Validate(testModel);
             Assert.NotEmpty(validationResults);
             Assert.NotNull(validationResults);
             Assert.Single(validationResults);
-            Assert.Contains("is not a valid collection", validationResults[0].ErrorMessage);
-            Assert.Equal("NumberOfChoices", validationResults[0].MemberNames.First());
-        }
-
-        [Fact]
-        public void TestsNumberOfChoicesSucceedsWhenNumberOfChoicesIsUnset()
-        {
-            var testModel = new TestModel5();
-
-            var validationResults = ValidationHelper.Validate(testModel);
-            Assert.Empty(validationResults);
+            Assert.Contains("Property not found", validationResults[0].ErrorMessage);
+            Assert.Equal("MinNumberOfChoices", validationResults[0].MemberNames.First());
         }
     }
 }

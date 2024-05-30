@@ -95,13 +95,21 @@ namespace TrueVote.Api.Models
         [JsonProperty(nameof(RaceTypeName), Required = Required.Default)]
         public string RaceTypeName => RaceType.ToString();
 
-        [Description("Number of Choices")]
+        [Description("Max Number of Choices")]
         [DataType("integer")]
         [Range(0, int.MaxValue)]
-        [JsonPropertyName("NumberOfChoices")]
-        [JsonProperty(nameof(NumberOfChoices), Required = Required.Default)]
-        [NumberOfChoicesValidator(nameof(Candidates))]
-        public int? NumberOfChoices { get; set; }
+        [JsonPropertyName("MaxNumberOfChoices")]
+        [JsonProperty(nameof(MaxNumberOfChoices), Required = Required.Default)]
+        [MaxNumberOfChoicesValidator(nameof(Candidates))]
+        public int? MaxNumberOfChoices { get; set; }
+
+        [Description("Min Number of Choices")]
+        [DataType("integer")]
+        [Range(0, int.MaxValue)]
+        [JsonPropertyName("MinNumberOfChoices")]
+        [JsonProperty(nameof(MinNumberOfChoices), Required = Required.Default)]
+        [MinNumberOfChoicesValidator(nameof(Candidates))]
+        public int? MinNumberOfChoices { get; set; }
 
         [Required]
         [Description("DateCreated")]

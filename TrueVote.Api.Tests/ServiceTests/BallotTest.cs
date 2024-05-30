@@ -47,32 +47,64 @@ namespace TrueVote.Api.Tests.ServiceTests
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
         }
 
+        // TODO Test needs to look at selected choices, not just number of total choices
         [Fact]
-        public void SubmitsBallotWithInvalidNumberOfChoices()
+        public void SubmitsBallotWithInvalidNumberOfMaxChoices()
         {
             var baseBallotObj = new SubmitBallotModel { Election = MoqData.MockBallotData[1].Election };
-            baseBallotObj.Election.Races[0].NumberOfChoices = -1;
+            baseBallotObj.Election.Races[0].MaxNumberOfChoices = -1;
 
             var validationResults = ValidationHelper.Validate(baseBallotObj);
             Assert.NotEmpty(validationResults);
             Assert.NotNull(validationResults);
             Assert.Single(validationResults);
-            Assert.Contains("NumberOfChoices must be between 0", validationResults[0].ErrorMessage);
-            Assert.Equal("NumberOfChoices", validationResults[0].MemberNames.First());
+            Assert.Contains("MaxNumberOfChoices must be between 0", validationResults[0].ErrorMessage);
+            Assert.Equal("MaxNumberOfChoices", validationResults[0].MemberNames.First());
         }
 
+        // TODO Test needs to look at selected choices, not just number of total choices
         [Fact]
-        public void SubmitsBallotWithAboveCandidateCountNumberOfChoices()
+        public void SubmitsBallotWithAboveCandidateCountNumberOfMaxChoices()
         {
             var baseBallotObj = new SubmitBallotModel { Election = MoqData.MockBallotData[1].Election };
-            baseBallotObj.Election.Races[0].NumberOfChoices = 20;
+            baseBallotObj.Election.Races[0].MaxNumberOfChoices = 20;
 
             var validationResults = ValidationHelper.Validate(baseBallotObj);
             Assert.NotEmpty(validationResults);
             Assert.NotNull(validationResults);
             Assert.Single(validationResults);
-            Assert.Contains("NumberOfChoices cannot exceed the", validationResults[0].ErrorMessage);
-            Assert.Equal("NumberOfChoices", validationResults[0].MemberNames.First());
+            Assert.Contains("MaxNumberOfChoices cannot exceed the", validationResults[0].ErrorMessage);
+            Assert.Equal("MaxNumberOfChoices", validationResults[0].MemberNames.First());
+        }
+
+        // TODO Test needs to look at selected choices, not just number of total choices
+        [Fact]
+        public void SubmitsBallotWithInvalidNumberOfMinChoices()
+        {
+            var baseBallotObj = new SubmitBallotModel { Election = MoqData.MockBallotData[1].Election };
+            baseBallotObj.Election.Races[0].MinNumberOfChoices = -1;
+
+            var validationResults = ValidationHelper.Validate(baseBallotObj);
+            Assert.NotEmpty(validationResults);
+            Assert.NotNull(validationResults);
+            Assert.Single(validationResults);
+            Assert.Contains("MinNumberOfChoices must be between 0", validationResults[0].ErrorMessage);
+            Assert.Equal("MinNumberOfChoices", validationResults[0].MemberNames.First());
+        }
+
+        // TODO Test needs to look at selected choices, not just number of total choices
+        [Fact]
+        public void SubmitsBallotWithBelowCandidateCountNumberOfMinChoices()
+        {
+            var baseBallotObj = new SubmitBallotModel { Election = MoqData.MockBallotData[1].Election };
+            baseBallotObj.Election.Races[0].MinNumberOfChoices = 20;
+
+            var validationResults = ValidationHelper.Validate(baseBallotObj);
+            Assert.NotEmpty(validationResults);
+            Assert.NotNull(validationResults);
+            Assert.Single(validationResults);
+            Assert.Contains("MinNumberOfChoices must be greater or equal to", validationResults[0].ErrorMessage);
+            Assert.Equal("MinNumberOfChoices", validationResults[0].MemberNames.First());
         }
 
         [Fact]
