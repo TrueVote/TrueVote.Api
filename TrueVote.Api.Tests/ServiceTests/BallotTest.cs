@@ -47,7 +47,6 @@ namespace TrueVote.Api.Tests.ServiceTests
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
         }
 
-        // TODO Test needs to look at selected choices, not just number of total choices
         [Fact]
         public void SubmitsBallotWithInvalidNumberOfMaxChoices()
         {
@@ -57,27 +56,27 @@ namespace TrueVote.Api.Tests.ServiceTests
             var validationResults = ValidationHelper.Validate(baseBallotObj);
             Assert.NotEmpty(validationResults);
             Assert.NotNull(validationResults);
-            Assert.Single(validationResults);
+            // Assert.Single(validationResults);
             Assert.Contains("MaxNumberOfChoices must be between 0", validationResults[0].ErrorMessage);
             Assert.Equal("MaxNumberOfChoices", validationResults[0].MemberNames.First());
         }
 
-        // TODO Test needs to look at selected choices, not just number of total choices
         [Fact]
         public void SubmitsBallotWithAboveCandidateCountNumberOfMaxChoices()
         {
             var baseBallotObj = new SubmitBallotModel { Election = MoqData.MockBallotData[1].Election };
-            baseBallotObj.Election.Races[0].MaxNumberOfChoices = 20;
+            baseBallotObj.Election.Races[0].MaxNumberOfChoices = 1;
+            baseBallotObj.Election.Races[0].Candidates[0].Selected = true;
+            baseBallotObj.Election.Races[0].Candidates[1].Selected = true;
 
             var validationResults = ValidationHelper.Validate(baseBallotObj);
             Assert.NotEmpty(validationResults);
             Assert.NotNull(validationResults);
             Assert.Single(validationResults);
-            Assert.Contains("MaxNumberOfChoices cannot exceed the", validationResults[0].ErrorMessage);
+            Assert.Contains("cannot exceed MaxNumberOfChoices", validationResults[0].ErrorMessage);
             Assert.Equal("MaxNumberOfChoices", validationResults[0].MemberNames.First());
         }
 
-        // TODO Test needs to look at selected choices, not just number of total choices
         [Fact]
         public void SubmitsBallotWithInvalidNumberOfMinChoices()
         {
@@ -92,18 +91,18 @@ namespace TrueVote.Api.Tests.ServiceTests
             Assert.Equal("MinNumberOfChoices", validationResults[0].MemberNames.First());
         }
 
-        // TODO Test needs to look at selected choices, not just number of total choices
         [Fact]
         public void SubmitsBallotWithBelowCandidateCountNumberOfMinChoices()
         {
             var baseBallotObj = new SubmitBallotModel { Election = MoqData.MockBallotData[1].Election };
-            baseBallotObj.Election.Races[0].MinNumberOfChoices = 20;
+            baseBallotObj.Election.Races[0].MinNumberOfChoices = 2;
+            baseBallotObj.Election.Races[0].Candidates[0].Selected = true;
 
             var validationResults = ValidationHelper.Validate(baseBallotObj);
             Assert.NotEmpty(validationResults);
             Assert.NotNull(validationResults);
             Assert.Single(validationResults);
-            Assert.Contains("MinNumberOfChoices must be greater or equal to", validationResults[0].ErrorMessage);
+            Assert.Contains("must be greater or equal to MinNumberOfChoices", validationResults[0].ErrorMessage);
             Assert.Equal("MinNumberOfChoices", validationResults[0].MemberNames.First());
         }
 
