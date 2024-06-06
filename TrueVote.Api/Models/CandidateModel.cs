@@ -106,7 +106,7 @@ namespace TrueVote.Api.Models
         [Description("Selected")]
         [JsonPropertyName("Selected")]
         [JsonProperty(nameof(Selected), Required = Required.Default)]
-        public bool Selected { get; set; } = false;
+        public bool? Selected { get; set; } = null;
 
         [Description("SelectedMetadata")]
         [MaxLength(1024)]
@@ -114,6 +114,5 @@ namespace TrueVote.Api.Models
         [JsonPropertyName("SelectedMetadata")]
         [JsonProperty(nameof(SelectedMetadata), Required = Required.Default)]
         public string SelectedMetadata { get; set; } = string.Empty;
-
     }
 }

@@ -31,10 +31,17 @@ namespace TrueVote.Api.Helpers
                 return new ValidationResult($"Property '{CandidatesPropertyName}' is not a valid List<CandidateModel> type.", [validationContext.MemberName]);
             }
 
-            // Calculate the number of selections in the candidate choices
-            var count = ((IEnumerable) candidatePropertyValue).Cast<CandidateModel>().Where(c => c.Selected == true).Count();
+            // If any of selections are null, then don't validate. This indicates a property check on an unfilled model.
+            var nullCount = ((IEnumerable) candidatePropertyValue).Cast<CandidateModel>().Where(c => c.Selected == null).Count();
+            if (nullCount > 0)
+            {
+                return ValidationResult.Success;
+            }
 
-            return ValidateCount(value, count, validationContext);
+            // Calculate the number of selections in the candidate choices
+            var selectedCount = ((IEnumerable) candidatePropertyValue).Cast<CandidateModel>().Where(c => c.Selected == true).Count();
+
+            return ValidateCount(value, selectedCount, validationContext);
         }
 
         protected abstract ValidationResult ValidateCount(object value, int count, ValidationContext validationContext);
@@ -46,12 +53,12 @@ namespace TrueVote.Api.Helpers
         {
         }
 
-        protected override ValidationResult ValidateCount(object value, int count, ValidationContext validationContext)
+        protected override ValidationResult ValidateCount(object value, int selectedCount, ValidationContext validationContext)
         {
             var maxNumberOfChoices = value as int?;
-            if (maxNumberOfChoices.HasValue && (count > maxNumberOfChoices.Value))
+            if (maxNumberOfChoices.HasValue && (selectedCount > maxNumberOfChoices.Value))
             {
-                return new ValidationResult($"Number of selected items in '{CandidatesPropertyName}' cannot exceed MaxNumberOfChoices. MaxNumberOfChoices: {maxNumberOfChoices}, Count: {count}", [validationContext.MemberName]);
+                return new ValidationResult($"Number of selected items in '{CandidatesPropertyName}' cannot exceed MaxNumberOfChoices. MaxNumberOfChoices: {maxNumberOfChoices}, SelectedCount: {selectedCount}", [validationContext.MemberName]);
             }
 
             return ValidationResult.Success;
@@ -64,12 +71,12 @@ namespace TrueVote.Api.Helpers
         {
         }
 
-        protected override ValidationResult ValidateCount(object value, int count, ValidationContext validationContext)
+        protected override ValidationResult ValidateCount(object value, int selectedCount, ValidationContext validationContext)
         {
             var minNumberOfChoices = value as int?;
-            if (minNumberOfChoices.HasValue && (count < minNumberOfChoices.Value))
+            if (minNumberOfChoices.HasValue && (selectedCount < minNumberOfChoices.Value))
             {
-                return new ValidationResult($"Number of selected items in '{CandidatesPropertyName}' must be greater or equal to MinNumberOfChoices. MinNumberOfChoices: {minNumberOfChoices}, Count: {count}", [validationContext.MemberName]);
+                return new ValidationResult($"Number of selected items in '{CandidatesPropertyName}' must be greater or equal to MinNumberOfChoices. MinNumberOfChoices: {minNumberOfChoices}, Count: {selectedCount}", [validationContext.MemberName]);
             }
 
             return ValidationResult.Success;
