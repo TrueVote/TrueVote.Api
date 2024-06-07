@@ -46,6 +46,7 @@ namespace TrueVote.Api.Services
             // 1. Must have a UserId and not have already submitted a ballot for this election
             // 2. Confirm the election id exists
             // 3. Confirm the election data for this ballot has not been altered.
+            // 4. Confirm none of the races have null for 'Selected'. Must be true or false.
             // ADD CODE FOR ABOVE ITEMS HERE
 
             var ballot = new BallotModel { Election = bindSubmitBallotModel.Election, BallotId = Guid.NewGuid().ToString(), DateCreated = UtcNowProviderFactory.GetProvider().UtcNow };
