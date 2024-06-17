@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TrueVote.Api.Helpers;
@@ -48,6 +49,19 @@ namespace TrueVote.Api.Services
             // 3. Confirm the election data for this ballot has not been altered.
             // 4. Confirm none of the races have null for 'Selected'. Must be true or false.
             // ADD CODE FOR ABOVE ITEMS HERE
+            var validationResults = new List<ValidationResult>();
+            var validationContext = new ValidationContext(bindSubmitBallotModel);
+            validationContext.Items["IsBallot"] = true;
+            var validModel = RecursiveValidator.TryValidateObjectRecursive(bindSubmitBallotModel, validationContext, validationResults);
+            if (!validModel)
+            {
+                var errorDictionary = validationResults
+                            .Select(vr => new KeyValuePair<string, string>(vr.MemberNames.FirstOrDefault(), vr.ErrorMessage))
+                            .GroupBy(kvp => kvp.Key)
+                            .ToDictionary(g => g.Key, g => g.Select(kvp => kvp.Value).ToArray());
+
+                return ValidationProblem(new ValidationProblemDetails(errorDictionary));
+            }
 
             var ballot = new BallotModel { Election = bindSubmitBallotModel.Election, BallotId = Guid.NewGuid().ToString(), DateCreated = UtcNowProviderFactory.GetProvider().UtcNow };
             await _trueVoteDbContext.EnsureCreatedAsync();

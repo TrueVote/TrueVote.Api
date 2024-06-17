@@ -7,19 +7,23 @@ namespace TrueVote.Api.Tests.Helpers
 {
     public static class ValidationHelper
     {
-        public static IList<ValidationResult> Validate(object model)
+        public static IList<ValidationResult> Validate(object model, bool isBallot = false)
         {
             var validationResults = new List<ValidationResult>();
-            ValidateRecursive(model, validationResults);
+            ValidateRecursive(model, validationResults, isBallot);
             return validationResults;
         }
 
-        private static void ValidateRecursive(object instance, IList<ValidationResult> validationResults)
+        private static void ValidateRecursive(object instance, IList<ValidationResult> validationResults, bool isBallot)
         {
             if (instance == null)
                 return;
 
             var context = new ValidationContext(instance);
+            if (isBallot)
+            {
+                context.Items["IsBallot"] = true;
+            }
             var results = new List<ValidationResult>();
 
             Validator.TryValidateObject(instance, context, results, true);
@@ -58,14 +62,14 @@ namespace TrueVote.Api.Tests.Helpers
                             {
                                 if (item != null)
                                 {
-                                    ValidateRecursive(item, validationResults);
+                                    ValidateRecursive(item, validationResults, isBallot);
                                 }
                             }
                         }
                     }
                     else
                     {
-                        ValidateRecursive(propertyValue, validationResults);
+                        ValidateRecursive(propertyValue, validationResults, isBallot);
                     }
                 }
             }

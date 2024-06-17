@@ -1,10 +1,47 @@
 #pragma warning disable IDE0046 // Convert to conditional expression
 using System.Collections;
 using System.ComponentModel.DataAnnotations;
+using System.Reflection;
 using TrueVote.Api.Models;
 
 namespace TrueVote.Api.Helpers
 {
+    public static class RecursiveValidator
+    {
+        public static bool TryValidateObjectRecursive(object obj, ValidationContext validationContext, List<ValidationResult> results)
+        {
+            if (obj == null) return true;
+
+            var result = Validator.TryValidateObject(obj, validationContext, results, true);
+
+            foreach (var property in obj.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
+            {
+                var value = property.GetValue(obj);
+                if (value == null) continue;
+
+                // Check if the property is a collection
+                if (value is IEnumerable enumerable)
+                {
+                    foreach (var item in enumerable)
+                    {
+                        if (item != null)
+                        {
+                            var nestedContext = new ValidationContext(item, validationContext, validationContext.Items);
+                            result = TryValidateObjectRecursive(item, nestedContext, results) && result;
+                        }
+                    }
+                }
+                else if (property.PropertyType.IsClass && property.PropertyType != typeof(string))
+                {
+                    var nestedContext = new ValidationContext(value, validationContext, validationContext.Items);
+                    result = TryValidateObjectRecursive(value, nestedContext, results) && result;
+                }
+            }
+
+            return result;
+        }
+    }
+
     public abstract class NumberOfChoicesValidatorAttribute : ValidationAttribute
     {
         protected readonly string CandidatesPropertyName;
@@ -31,9 +68,13 @@ namespace TrueVote.Api.Helpers
                 return new ValidationResult($"Property '{CandidatesPropertyName}' is not a valid List<CandidateModel> type.", [validationContext.MemberName]);
             }
 
-            // If any of selections are null, then don't validate. This indicates a property check on an unfilled model.
-            var nullCount = ((IEnumerable) candidatePropertyValue).Cast<CandidateModel>().Where(c => c.Selected == null).Count();
-            if (nullCount > 0)
+            // If not a Ballot, then no need to validate. Get out.
+            // This isn't the best way of doing this. It's a bit of a hack. The issue is that we want to use the Election model
+            // both for creating an election and ballot submission. This is optimal for model re-use. But the data annotations
+            // work for ballot submission, are too tight for election creation. So this flag gets around that. When creating an election
+            // if the "IsBallot" flag isn't set, the validator simply allows the validation to proceed.
+            var isBallot = validationContext.Items.Where(i => i.Key.ToString() == "IsBallot");
+            if (!isBallot.Any())
             {
                 return ValidationResult.Success;
             }

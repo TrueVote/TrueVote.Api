@@ -8,6 +8,7 @@ using Newtonsoft.Json;
 using System.Text.Json.Serialization;
 using TrueVote.Api.Models;
 using System.Linq;
+using Microsoft.AspNetCore.Mvc;
 
 namespace TrueVote.Api.Tests.HelperTests
 {
@@ -122,7 +123,7 @@ namespace TrueVote.Api.Tests.HelperTests
             testModel.Candidates[1].Selected = true;
             Assert.Equal(2, testModel.Candidates.Where(c => c.Selected == true).Count());
 
-            var validationResults = ValidationHelper.Validate(testModel);
+            var validationResults = ValidationHelper.Validate(testModel, true);
             Assert.NotEmpty(validationResults);
             Assert.NotNull(validationResults);
             Assert.Single(validationResults);
@@ -138,7 +139,7 @@ namespace TrueVote.Api.Tests.HelperTests
             testModel.Candidates[1].Selected = true;
             Assert.Equal(2, testModel.Candidates.Where(c => c.Selected == true).Count());
 
-            var validationResults = ValidationHelper.Validate(testModel);
+            var validationResults = ValidationHelper.Validate(testModel, true);
             Assert.NotEmpty(validationResults);
             Assert.NotNull(validationResults);
             Assert.Single(validationResults);
@@ -196,6 +197,28 @@ namespace TrueVote.Api.Tests.HelperTests
             Assert.Single(validationResults);
             Assert.Contains("Property not found", validationResults[0].ErrorMessage);
             Assert.Equal("MinNumberOfChoices", validationResults[0].MemberNames.First());
+        }
+
+        [Fact]
+        public void ValidatesModelWithNestedModelProperties()
+        {
+            var validationResults = new List<ValidationResult>();
+            var baseBallotObj = new SubmitBallotModel { Election = MoqData.MockBallotData[1].Election };
+            var validationContext = new ValidationContext(baseBallotObj);
+            var validModel = RecursiveValidator.TryValidateObjectRecursive(baseBallotObj, validationContext, validationResults);
+            Assert.True(validModel);
+            Assert.Empty(validationResults);
+        }
+
+        [Fact]
+        public void ValidatorHandlesNullModel()
+        {
+            var validationResults = new List<ValidationResult>();
+            var baseBallotObj = new SubmitBallotModel { Election = MoqData.MockBallotData[1].Election };
+            var validationContext = new ValidationContext(baseBallotObj);
+            var validModel = RecursiveValidator.TryValidateObjectRecursive(null, validationContext, validationResults);
+            Assert.True(validModel);
+            Assert.Empty(validationResults);
         }
     }
 }
