@@ -52,7 +52,7 @@ namespace TrueVote.Api.Services
 
             var validationResults = new List<ValidationResult>();
             var validationContext = new ValidationContext(bindSubmitBallotModel);
-            validationContext.Items["IsBallot"] = true;
+            validationContext.Items["IsBallot"] = true; // TODO https://truevote.atlassian.net/browse/AD-113
             if (!RecursiveValidator.TryValidateObjectRecursive(bindSubmitBallotModel, validationContext, validationResults))
             {
                 var errorDictionary = RecursiveValidator.GetValidationErrorsDictionary(validationResults);
