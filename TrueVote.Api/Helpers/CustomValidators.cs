@@ -11,7 +11,6 @@ namespace TrueVote.Api.Helpers
         public static bool TryValidateObjectRecursive(object obj, ValidationContext validationContext, List<ValidationResult> results)
         {
             if (obj == null) return true;
-
             var result = Validator.TryValidateObject(obj, validationContext, results, true);
 
             foreach (var property in obj.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
@@ -40,15 +39,26 @@ namespace TrueVote.Api.Helpers
 
             return result;
         }
+
+        public static Dictionary<string, string[]> GetValidationErrorsDictionary(List<ValidationResult> results)
+        {
+            return results
+                .SelectMany(vr => vr.MemberNames.Select(memberName => new { memberName, ErrorMessage = vr.ErrorMessage ?? string.Empty }))
+                .GroupBy(x => x.memberName, x => x.ErrorMessage)
+                .ToDictionary(g => g.Key, g => g.ToArray());
+        }
     }
 
     public abstract class NumberOfChoicesValidatorAttribute : ValidationAttribute
     {
         protected readonly string CandidatesPropertyName;
+        protected readonly string RacePropertyName;
+        protected string RacePropertyValue = string.Empty;
 
-        protected NumberOfChoicesValidatorAttribute(string propertyName)
+        protected NumberOfChoicesValidatorAttribute(string propertyName, string racePropertyName)
         {
             CandidatesPropertyName = propertyName;
+            RacePropertyName = racePropertyName;
         }
 
         protected override ValidationResult IsValid(object value, ValidationContext validationContext)
@@ -66,6 +76,13 @@ namespace TrueVote.Api.Helpers
             if (candidatePropertyValue is not List<CandidateModel>)
             {
                 return new ValidationResult($"Property '{CandidatesPropertyName}' is not a valid List<CandidateModel> type.", [validationContext.MemberName]);
+            }
+
+            // Get the value of the Name Property
+            var nameProperty = validationContext.ObjectType.GetProperty(RacePropertyName);
+            if (nameProperty != null)
+            {
+                RacePropertyValue = nameProperty.GetValue(validationContext.ObjectInstance).ToString();
             }
 
             // If not a Ballot, then no need to validate. Get out.
@@ -90,7 +107,7 @@ namespace TrueVote.Api.Helpers
 
     public class MaxNumberOfChoicesValidatorAttribute : NumberOfChoicesValidatorAttribute
     {
-        public MaxNumberOfChoicesValidatorAttribute(string propertyName) : base(propertyName)
+        public MaxNumberOfChoicesValidatorAttribute(string propertyName, string racePropertyName) : base(propertyName, racePropertyName)
         {
         }
 
@@ -99,7 +116,7 @@ namespace TrueVote.Api.Helpers
             var maxNumberOfChoices = value as int?;
             if (maxNumberOfChoices.HasValue && (selectedCount > maxNumberOfChoices.Value))
             {
-                return new ValidationResult($"Number of selected items in '{CandidatesPropertyName}' cannot exceed MaxNumberOfChoices. MaxNumberOfChoices: {maxNumberOfChoices}, SelectedCount: {selectedCount}", [validationContext.MemberName]);
+                return new ValidationResult($"Number of selected items in '{CandidatesPropertyName}' cannot exceed MaxNumberOfChoices for '{RacePropertyValue}'. MaxNumberOfChoices: {maxNumberOfChoices}, SelectedCount: {selectedCount}", [validationContext.MemberName]);
             }
 
             return ValidationResult.Success;
@@ -108,7 +125,7 @@ namespace TrueVote.Api.Helpers
 
     public class MinNumberOfChoicesValidatorAttribute : NumberOfChoicesValidatorAttribute
     {
-        public MinNumberOfChoicesValidatorAttribute(string propertyName) : base(propertyName)
+        public MinNumberOfChoicesValidatorAttribute(string propertyName, string racePropertyName) : base(propertyName, racePropertyName)
         {
         }
 
@@ -117,7 +134,7 @@ namespace TrueVote.Api.Helpers
             var minNumberOfChoices = value as int?;
             if (minNumberOfChoices.HasValue && (selectedCount < minNumberOfChoices.Value))
             {
-                return new ValidationResult($"Number of selected items in '{CandidatesPropertyName}' must be greater or equal to MinNumberOfChoices. MinNumberOfChoices: {minNumberOfChoices}, Count: {selectedCount}", [validationContext.MemberName]);
+                return new ValidationResult($"Number of selected items in '{CandidatesPropertyName}' must be greater or equal to MinNumberOfChoices for '{RacePropertyValue}'. MinNumberOfChoices: {minNumberOfChoices}, Count: {selectedCount}", [validationContext.MemberName]);
             }
 
             return ValidationResult.Success;

@@ -52,13 +52,9 @@ namespace TrueVote.Api.Services
             var validationResults = new List<ValidationResult>();
             var validationContext = new ValidationContext(bindSubmitBallotModel);
             validationContext.Items["IsBallot"] = true;
-            var validModel = RecursiveValidator.TryValidateObjectRecursive(bindSubmitBallotModel, validationContext, validationResults);
-            if (!validModel)
+            if (!RecursiveValidator.TryValidateObjectRecursive(bindSubmitBallotModel, validationContext, validationResults))
             {
-                var errorDictionary = validationResults
-                            .Select(vr => new KeyValuePair<string, string>(vr.MemberNames.FirstOrDefault(), vr.ErrorMessage))
-                            .GroupBy(kvp => kvp.Key)
-                            .ToDictionary(g => g.Key, g => g.Select(kvp => kvp.Value).ToArray());
+                var errorDictionary = RecursiveValidator.GetValidationErrorsDictionary(validationResults);
 
                 return ValidationProblem(new ValidationProblemDetails(errorDictionary));
             }
