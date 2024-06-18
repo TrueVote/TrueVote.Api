@@ -1,12 +1,10 @@
 using Newtonsoft.Json;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 namespace TrueVote.Api.Models
 {
-    [ExcludeFromCodeCoverage]
     public class TimestampModel
     {
         [Required]
@@ -65,7 +63,6 @@ namespace TrueVote.Api.Models
         public required DateTime DateCreated { get; set; }
     }
 
-    [ExcludeFromCodeCoverage]
     public class FindTimestampModel
     {
         [Required]

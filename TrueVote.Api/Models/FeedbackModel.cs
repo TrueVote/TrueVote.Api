@@ -1,14 +1,12 @@
 using Newtonsoft.Json;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 using JsonIgnore = Newtonsoft.Json.JsonIgnoreAttribute;
 using TrueVote.Api.Helpers;
 
 namespace TrueVote.Api.Models
 {
-    [ExcludeFromCodeCoverage]
     public class FeedbackModel
     {
         [Required]

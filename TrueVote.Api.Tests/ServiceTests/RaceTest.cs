@@ -24,7 +24,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         public string RaceId { get; set; } = Guid.NewGuid().ToString();
         public string Name { get; set; } = string.Empty;
         public RaceTypes RaceType { get; set; }
-        public ICollection<CandidateModel> Candidates { get; set; } = new List<CandidateModel>();
+        public List<CandidateModel> Candidates { get; set; } = new List<CandidateModel>();
     }
 
     public class RaceTest : TestHelper
@@ -37,6 +37,8 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task LogsMessages()
         {
             var baseRaceObj = new BaseRaceModel { Name = "President", RaceType = RaceTypes.ChooseOne };
+            var validationResults = ValidationHelper.Validate(baseRaceObj);
+            Assert.Empty(validationResults);
 
             _ = await _raceApi.CreateRace(baseRaceObj);
 
@@ -48,6 +50,8 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task AddsRace()
         {
             var baseRaceObj = new BaseRaceModel { Name = "President", RaceType = RaceTypes.ChooseOne };
+            var validationResults = ValidationHelper.Validate(baseRaceObj);
+            Assert.Empty(validationResults);
 
             var ret = await _raceApi.CreateRace(baseRaceObj);
             Assert.NotNull(ret);
@@ -77,6 +81,8 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task FindsRace()
         {
             var findRaceObj = new FindRaceModel { Name = "President" };
+            var validationResults = ValidationHelper.Validate(findRaceObj);
+            Assert.Empty(validationResults);
 
             var ret = await _raceApi.RaceFind(findRaceObj);
             Assert.NotNull(ret);
@@ -97,6 +103,8 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task HandlesUnfoundRace()
         {
             var findRaceObj = new FindRaceModel { Name = "not going to find anything" };
+            var validationResults = ValidationHelper.Validate(findRaceObj);
+            Assert.Empty(validationResults);
 
             var ret = await _raceApi.RaceFind(findRaceObj);
             Assert.NotNull(ret);
@@ -110,6 +118,8 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task AddsCandidatesToRace()
         {
             var addCandidatesObj = new AddCandidatesModel { RaceId = "raceid3", CandidateIds = new List<string> { MoqData.MockCandidateData[0].CandidateId, MoqData.MockCandidateData[1].CandidateId } };
+            var validationResults = ValidationHelper.Validate(addCandidatesObj);
+            Assert.Empty(validationResults);
 
             var ret = await _raceApi.AddCandidates(addCandidatesObj);
 
@@ -132,6 +142,8 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task HandlesAddCandidatesUnfoundRace()
         {
             var addCandidatesObj = new AddCandidatesModel { RaceId = "blah", CandidateIds = new List<string>() { } };
+            var validationResults = ValidationHelper.Validate(addCandidatesObj);
+            Assert.Empty(validationResults);
 
             var ret = await _raceApi.AddCandidates(addCandidatesObj);
             Assert.NotNull(ret);
@@ -148,6 +160,8 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task HandlesAddCandidatesUnfoundCandidate()
         {
             var addCandidatesObj = new AddCandidatesModel { RaceId = "raceid1", CandidateIds = new List<string> { "68", "69" } };
+            var validationResults = ValidationHelper.Validate(addCandidatesObj);
+            Assert.Empty(validationResults);
 
             var ret = await _raceApi.AddCandidates(addCandidatesObj);
             Assert.NotNull(ret);
@@ -164,6 +178,8 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task HandlesAddCandidateAlreadyInRace()
         {
             var addCandidatesObj = new AddCandidatesModel { RaceId = "raceid1", CandidateIds = new List<string> { "candidateid1", "candidateid2" } };
+            var validationResults = ValidationHelper.Validate(addCandidatesObj);
+            Assert.Empty(validationResults);
 
             var ret = await _raceApi.AddCandidates(addCandidatesObj);
             Assert.NotNull(ret);

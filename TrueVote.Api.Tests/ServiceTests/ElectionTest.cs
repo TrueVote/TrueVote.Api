@@ -31,6 +31,8 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task LogsMessages()
         {
             var baseElectionObj = new BaseElectionModel { Name = "California State", StartDate = DateTime.Now, EndDate = DateTime.Now.AddDays(30), Description = "desc", HeaderImageUrl = "url", Races = [] };
+            var validationResults = ValidationHelper.Validate(baseElectionObj);
+            Assert.Empty(validationResults);
 
             await _electionApi.CreateElection(baseElectionObj);
 
@@ -42,6 +44,8 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task AddsElection()
         {
             var baseElectionObj = new BaseElectionModel { Name = "California State", StartDate = DateTime.Now, EndDate = DateTime.Now.AddDays(30), Description = "desc", HeaderImageUrl = "url", Races = [] };
+            var validationResults = ValidationHelper.Validate(baseElectionObj);
+            Assert.Empty(validationResults);
 
             var ret = await _electionApi.CreateElection(baseElectionObj);
             Assert.NotNull(ret);
@@ -70,6 +74,8 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task FindsElection()
         {
             var findElectionObj = new FindElectionModel { Name = "County" };
+            var validationResults = ValidationHelper.Validate(findElectionObj);
+            Assert.Empty(validationResults);
 
             var ret = await _electionApi.ElectionFind(findElectionObj);
             Assert.NotNull(ret);
@@ -88,6 +94,8 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task HandlesUnfoundElection()
         {
             var findElectionObj = new FindElectionModel { Name = "not going to find anything" };
+            var validationResults = ValidationHelper.Validate(findElectionObj);
+            Assert.Empty(validationResults);
 
             var ret = await _electionApi.ElectionFind(findElectionObj);
             Assert.NotNull(ret);
@@ -101,6 +109,8 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task AddsRacesToElection()
         {
             var addRacesObj = new AddRacesModel { ElectionId = MoqData.MockElectionData[2].ElectionId, RaceIds = new List<string> { MoqData.MockRaceData[0].RaceId, MoqData.MockRaceData[1].RaceId, MoqData.MockRaceData[2].RaceId } };
+            var validationResults = ValidationHelper.Validate(addRacesObj);
+            Assert.Empty(validationResults);
 
             var ret = await _electionApi.AddRaces(addRacesObj);
 
@@ -122,6 +132,8 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task HandlesAddRacesUnfoundElection()
         {
             var addRacesObj = new AddRacesModel { ElectionId = "blah", RaceIds = new List<string>() { } };
+            var validationResults = ValidationHelper.Validate(addRacesObj);
+            Assert.Empty(validationResults);
 
             var ret = await _electionApi.AddRaces(addRacesObj);
             Assert.NotNull(ret);
@@ -138,6 +150,8 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task HandlesAddRacesUnfoundRace()
         {
             var addRacesObj = new AddRacesModel { ElectionId = "electionid1", RaceIds = new List<string> { "68", "69", "70" } };
+            var validationResults = ValidationHelper.Validate(addRacesObj);
+            Assert.Empty(validationResults);
 
             var ret = await _electionApi.AddRaces(addRacesObj);
             Assert.NotNull(ret);
@@ -154,6 +168,8 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task HandlesAddRaceAlreadyInElection()
         {
             var addRacesObj = new AddRacesModel { ElectionId = "electionid1", RaceIds = new List<string> { "raceid1", "raceid2", "raceid3" } };
+            var validationResults = ValidationHelper.Validate(addRacesObj);
+            Assert.Empty(validationResults);
 
             var ret = await _electionApi.AddRaces(addRacesObj);
             Assert.NotNull(ret);

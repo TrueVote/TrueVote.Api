@@ -144,7 +144,7 @@ namespace TrueVote.Api
                 var uri = provider.GetRequiredService<Uri>();
                 client.BaseAddress = uri;
             });
-            services.TryAddScoped<IValidator, Validator>();
+            services.TryAddScoped<IBallotValidator, BallotValidator>();
             services.AddLogging();
             services.AddSingleton(typeof(ILogger), typeof(Logger<Startup>));
             services.AddGraphQLServer().AddQueryType<Query>();
@@ -262,7 +262,7 @@ namespace TrueVote.Api
                     .HasConversion(
                         v => JsonSerializer.Serialize(v, (JsonSerializerOptions) null),
                         v => JsonSerializer.Deserialize<List<RaceModel>>(v, (JsonSerializerOptions) null),
-                        new ValueComparer<ICollection<RaceModel>>(
+                        new ValueComparer<List<RaceModel>>(
                             (c1, c2) => c1.SequenceEqual(c2),
                             c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
                             c => c.ToList()));
@@ -274,7 +274,7 @@ namespace TrueVote.Api
                     .HasConversion(
                         v => JsonSerializer.Serialize(v, (JsonSerializerOptions) null),
                         v => JsonSerializer.Deserialize<List<CandidateModel>>(v, (JsonSerializerOptions) null),
-                        new ValueComparer<ICollection<CandidateModel>>(
+                        new ValueComparer<List<CandidateModel>>(
                             (c1, c2) => c1.SequenceEqual(c2),
                             c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
                             c => c.ToList()));

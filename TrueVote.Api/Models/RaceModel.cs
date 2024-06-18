@@ -2,7 +2,6 @@ using Newtonsoft.Json;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
 using TrueVote.Api.Helpers;
@@ -22,14 +21,6 @@ namespace TrueVote.Api.Models
         RankedChoice = 2
     }
 
-    [ExcludeFromCodeCoverage]
-    public class RaceObj
-    {
-        [JsonPropertyName("Race")]
-        public List<RaceModelResponse>? race;
-    }
-
-    [ExcludeFromCodeCoverage]
     public class RaceModelList
     {
         [Required]
@@ -39,7 +30,6 @@ namespace TrueVote.Api.Models
         public required List<RaceModel> Races { get; set; }
     }
 
-    [ExcludeFromCodeCoverage]
     public class FindRaceModel
     {
         [Required]
@@ -51,7 +41,6 @@ namespace TrueVote.Api.Models
         public required string Name { get; set; } = string.Empty;
     }
 
-    [ExcludeFromCodeCoverage]
     public class BaseRaceModel
     {
         [Required]
@@ -70,7 +59,6 @@ namespace TrueVote.Api.Models
         public required RaceTypes RaceType { get; set; }
     }
 
-    [ExcludeFromCodeCoverage]
     public class RaceModel
     {
         [Required]
@@ -107,12 +95,21 @@ namespace TrueVote.Api.Models
         [JsonProperty(nameof(RaceTypeName), Required = Required.Default)]
         public string RaceTypeName => RaceType.ToString();
 
-        [Description("Race Type Metadata")]
-        [MaxLength(2048)]
-        [DataType(DataType.Text)]
-        [JsonPropertyName("RaceTypeMetadata")]
-        [JsonProperty(nameof(RaceTypeMetadata), Required = Required.Default)]
-        public string? RaceTypeMetadata { get; set; }
+        [Description("Max Number of Choices")]
+        [DataType("integer")]
+        [Range(0, int.MaxValue)]
+        [JsonPropertyName("MaxNumberOfChoices")]
+        [JsonProperty(nameof(MaxNumberOfChoices), Required = Required.Default)]
+        [MaxNumberOfChoicesValidator(nameof(Candidates), nameof(Name))]
+        public int? MaxNumberOfChoices { get; set; }
+
+        [Description("Min Number of Choices")]
+        [DataType("integer")]
+        [Range(0, int.MaxValue)]
+        [JsonPropertyName("MinNumberOfChoices")]
+        [JsonProperty(nameof(MinNumberOfChoices), Required = Required.Default)]
+        [MinNumberOfChoicesValidator(nameof(Candidates), nameof(Name))]
+        public int? MinNumberOfChoices { get; set; }
 
         [Required]
         [Description("DateCreated")]
@@ -123,67 +120,12 @@ namespace TrueVote.Api.Models
         public required DateTime DateCreated { get; set; } = UtcNowProviderFactory.GetProvider().UtcNow;
 
         [Description("List of Candidates")]
-        [DataType("ICollection<CandidateModel>")]
+        [DataType("List<CandidateModel>")]
         [JsonPropertyName("Candidates")]
         [JsonProperty(nameof(Candidates), Required = Required.Default)]
-        public ICollection<CandidateModel> Candidates { get; set; } = new List<CandidateModel>();
+        public List<CandidateModel> Candidates { get; set; } = new List<CandidateModel>();
     }
 
-    // Same as above model but without required properties
-    [ExcludeFromCodeCoverage]
-    public class RaceModelResponse
-    {
-        [Required]
-        [Description("Race Id")]
-        [MaxLength(2048)]
-        [DataType(DataType.Text)]
-        [JsonPropertyName("RaceId")]
-        [JsonProperty(nameof(RaceId), Required = Required.Always)]
-        [Key]
-        [JsonIgnore]
-        public required string RaceId { get; set; } = Guid.NewGuid().ToString();
-
-        [Required]
-        [Description("Name")]
-        [MaxLength(2048)]
-        [DataType(DataType.Text)]
-        [JsonPropertyName("Name")]
-        [JsonProperty(nameof(Name), Required = Required.Always)]
-        public required string Name { get; set; } = string.Empty;
-
-        [Required]
-        [Description("Race Type")]
-        [EnumDataType(typeof(RaceTypes))]
-        [JsonPropertyName("RaceType")]
-        [JsonProperty(nameof(RaceType), Required = Required.Always)]
-        public required RaceTypes RaceType { get; set; }
-
-        [Required]
-        [Description("Race Type Name")]
-        [MaxLength(2048)]
-        [DataType(DataType.Text)]
-        [NotMapped]
-        [JsonPropertyName("RaceTypeName")]
-        [JsonProperty(nameof(RaceTypeName), Required = Required.Always)]
-        public string RaceTypeName => RaceType.ToString();
-
-        [Required]
-        [Description("DateCreated")]
-        [DataType(DataType.Date)]
-        [JsonPropertyName("DateCreated")]
-        [JsonProperty(nameof(DateCreated), Required = Required.Always)]
-        [JsonIgnore]
-        public required DateTime DateCreated { get; set; } = UtcNowProviderFactory.GetProvider().UtcNow;
-
-        [Required]
-        [Description("List of Candidates")]
-        [DataType("ICollection<CandidateModel>")]
-        [JsonPropertyName("Candidates")]
-        [JsonProperty(nameof(Candidates), Required = Required.Always)]
-        public required ICollection<CandidateModel> Candidates { get; set; } = new List<CandidateModel>();
-    }
-
-    [ExcludeFromCodeCoverage]
     public class AddCandidatesModel
     {
         [Required]

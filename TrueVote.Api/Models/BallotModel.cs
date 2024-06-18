@@ -2,7 +2,6 @@ using Newtonsoft.Json;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 using ByteConverter = TrueVote.Api.Helpers.ByteConverter;
 using JsonConverter = System.Text.Json.Serialization.JsonConverter;
@@ -11,7 +10,6 @@ using JsonIgnore = Newtonsoft.Json.JsonIgnoreAttribute;
 
 namespace TrueVote.Api.Models
 {
-    [ExcludeFromCodeCoverage]
     public class BallotList
     {
         [Required]
@@ -29,7 +27,6 @@ namespace TrueVote.Api.Models
         public required List<BallotHashModel> BallotHashes { get; set; }
     }
 
-    [ExcludeFromCodeCoverage]
     public class FindBallotModel
     {
         [Required]
@@ -42,7 +39,6 @@ namespace TrueVote.Api.Models
         public required string BallotId { get; set; }
     }
 
-    [ExcludeFromCodeCoverage]
     public class CountBallotModel
     {
         [Required]
@@ -60,7 +56,6 @@ namespace TrueVote.Api.Models
         public required DateTime DateCreatedEnd { get; set; }
     }
 
-    [ExcludeFromCodeCoverage]
     public class CountBallotModelResponse
     {
         [Required]
@@ -71,7 +66,6 @@ namespace TrueVote.Api.Models
         public required long BallotCount { get; set; }
     }
 
-    [ExcludeFromCodeCoverage]
     public class BallotModel
     {
         [Required]
@@ -98,7 +92,6 @@ namespace TrueVote.Api.Models
         public required DateTime DateCreated { get; set; }
     }
 
-    [ExcludeFromCodeCoverage]
     public class SubmitBallotModel {
         [Required]
         [Description("Election")]
@@ -113,7 +106,6 @@ namespace TrueVote.Api.Models
         // public string UserIdBallotIdHashed { get; set; }
     }
 
-    [ExcludeFromCodeCoverage]
     public class SubmitBallotModelResponse {
         [Required]
         [Description("Ballot Id")]
@@ -141,7 +133,6 @@ namespace TrueVote.Api.Models
         public required string Message { get; set; }
     }
 
-    [ExcludeFromCodeCoverage]
     public class BallotHashModel
     {
         [Required]
@@ -202,7 +193,6 @@ namespace TrueVote.Api.Models
         public string? TimestampId { get; set; }
     }
 
-    [ExcludeFromCodeCoverage]
     public class FindBallotHashModel
     {
         [Required]

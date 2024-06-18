@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TrueVote.Api.Helpers;
@@ -20,10 +21,10 @@ namespace TrueVote.Api.Services
     {
         private readonly ILogger _log;
         private readonly ITrueVoteDbContext _trueVoteDbContext;
-        private readonly IValidator _validator;
+        private readonly IBallotValidator _validator;
         private readonly IServiceBus _serviceBus;
 
-        public Ballot(ILogger log, ITrueVoteDbContext trueVoteDbContext, IValidator validator, IServiceBus serviceBus)
+        public Ballot(ILogger log, ITrueVoteDbContext trueVoteDbContext, IBallotValidator validator, IServiceBus serviceBus)
         {
             _log = log;
             _trueVoteDbContext = trueVoteDbContext;
@@ -46,7 +47,18 @@ namespace TrueVote.Api.Services
             // 1. Must have a UserId and not have already submitted a ballot for this election
             // 2. Confirm the election id exists
             // 3. Confirm the election data for this ballot has not been altered.
+            // 4. Confirm none of the races have null for 'Selected'. Must be true or false.
             // ADD CODE FOR ABOVE ITEMS HERE
+
+            var validationResults = new List<ValidationResult>();
+            var validationContext = new ValidationContext(bindSubmitBallotModel);
+            validationContext.Items["IsBallot"] = true; // TODO https://truevote.atlassian.net/browse/AD-113
+            if (!RecursiveValidator.TryValidateObjectRecursive(bindSubmitBallotModel, validationContext, validationResults))
+            {
+                var errorDictionary = RecursiveValidator.GetValidationErrorsDictionary(validationResults);
+
+                return ValidationProblem(new ValidationProblemDetails(errorDictionary));
+            }
 
             var ballot = new BallotModel { Election = bindSubmitBallotModel.Election, BallotId = Guid.NewGuid().ToString(), DateCreated = UtcNowProviderFactory.GetProvider().UtcNow };
             await _trueVoteDbContext.EnsureCreatedAsync();
