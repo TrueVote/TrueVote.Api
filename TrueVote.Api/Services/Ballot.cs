@@ -49,6 +49,7 @@ namespace TrueVote.Api.Services
             // 3. Confirm the election data for this ballot has not been altered.
             // 4. Confirm none of the races have null for 'Selected'. Must be true or false.
             // ADD CODE FOR ABOVE ITEMS HERE
+
             var validationResults = new List<ValidationResult>();
             var validationContext = new ValidationContext(bindSubmitBallotModel);
             validationContext.Items["IsBallot"] = true;

@@ -20,16 +20,23 @@ namespace TrueVote.Api.Tests.HelperTests
         [JsonProperty(nameof(Candidates), Required = Required.Default)]
         public List<CandidateModel> Candidates { get; set; } = new List<CandidateModel>();
 
+        [Description("Name")]
+        [MaxLength(2048)]
+        [DataType(DataType.Text)]
+        [JsonPropertyName("Name")]
+        [JsonProperty(nameof(Name), Required = Required.Default)]
+        public string Name { get; set; } = string.Empty;
+
         [Description("Max Number of Choices")]
         [DataType("integer")]
         [Range(0, int.MaxValue)]
-        [MaxNumberOfChoicesValidator(nameof(Candidates))]
+        [MaxNumberOfChoicesValidator(nameof(Candidates), nameof(Name))]
         public int? MaxNumberOfChoices { get; set; }
 
         [Description("Min Number of Choices")]
         [DataType("integer")]
         [Range(0, int.MaxValue)]
-        [MinNumberOfChoicesValidator(nameof(Candidates))]
+        [MinNumberOfChoicesValidator(nameof(Candidates), nameof(Name))]
         public int? MinNumberOfChoices { get; set; }
     }
 
@@ -41,16 +48,23 @@ namespace TrueVote.Api.Tests.HelperTests
         [JsonProperty(nameof(Candidates), Required = Required.Default)]
         public List<CandidateModel> Candidates { get; set; } = new List<CandidateModel>();
 
+        [Description("Name")]
+        [MaxLength(2048)]
+        [DataType(DataType.Text)]
+        [JsonPropertyName("Name")]
+        [JsonProperty(nameof(Name), Required = Required.Default)]
+        public string Name { get; set; } = string.Empty;
+
         [Description("Max Number of Choices")]
         [DataType("integer")]
         [Range(0, int.MaxValue)]
-        [MaxNumberOfChoicesValidator("")]
+        [MaxNumberOfChoicesValidator("", "")]
         public int? MaxNumberOfChoices { get; set; }
 
         [Description("Min Number of Choices")]
         [DataType("integer")]
         [Range(0, int.MaxValue)]
-        [MinNumberOfChoicesValidator("")]
+        [MinNumberOfChoicesValidator("", "")]
         public int? MinNumberOfChoices { get; set; }
     }
 
@@ -62,10 +76,17 @@ namespace TrueVote.Api.Tests.HelperTests
         [JsonProperty(nameof(Candidates), Required = Required.Default)]
         public string Candidates { get; set; }
 
+        [Description("Name")]
+        [MaxLength(2048)]
+        [DataType(DataType.Text)]
+        [JsonPropertyName("Name")]
+        [JsonProperty(nameof(Name), Required = Required.Always)]
+        public string Name { get; set; } = string.Empty;
+
         [Description("Min Number of Choices")]
         [DataType("integer")]
         [Range(0, int.MaxValue)]
-        [MinNumberOfChoicesValidator(nameof(Candidates))]
+        [MinNumberOfChoicesValidator(nameof(Candidates), nameof(Name))]
         public int? MinNumberOfChoices { get; set; }
     }
 
@@ -77,10 +98,17 @@ namespace TrueVote.Api.Tests.HelperTests
         [JsonProperty(nameof(Candidates), Required = Required.Default)]
         public string Candidates { get; set; }
 
+        [Description("Name")]
+        [MaxLength(2048)]
+        [DataType(DataType.Text)]
+        [JsonPropertyName("Name")]
+        [JsonProperty(nameof(Name), Required = Required.Always)]
+        public string Name { get; set; } = string.Empty;
+
         [Description("Max Number of Choices")]
         [DataType("integer")]
         [Range(0, int.MaxValue)]
-        [MaxNumberOfChoicesValidator(nameof(Candidates))]
+        [MaxNumberOfChoicesValidator(nameof(Candidates), nameof(Name))]
         public int? MaxNumberOfChoices { get; set; }
     }
 
@@ -89,7 +117,7 @@ namespace TrueVote.Api.Tests.HelperTests
         [Description("Max Number of Choices")]
         [DataType("integer")]
         [Range(0, int.MaxValue)]
-        [MaxNumberOfChoicesValidator("foo")]
+        [MaxNumberOfChoicesValidator("foo", "bar")]
         public int? MaxNumberOfChoices { get; set; }
     }
 
@@ -98,7 +126,7 @@ namespace TrueVote.Api.Tests.HelperTests
         [Description("Min Number of Choices")]
         [DataType("integer")]
         [Range(0, int.MaxValue)]
-        [MaxNumberOfChoicesValidator("foo")]
+        [MaxNumberOfChoicesValidator("foo", "bar")]
         public int? MinNumberOfChoices { get; set; }
     }
 
@@ -211,6 +239,46 @@ namespace TrueVote.Api.Tests.HelperTests
         }
 
         [Fact]
+        public void ValidatesMinNumberOfChoicesInvalidProperty()
+        {
+            var validationResults = new List<ValidationResult>();
+            var testModel = new CandidateTestModelMinInvalidProperty { MinNumberOfChoices = 3, Candidates = "foo" };
+            var validationContext = new ValidationContext(testModel);
+            var validModel = RecursiveValidator.TryValidateObjectRecursive(testModel, validationContext, validationResults);
+            Assert.False(validModel);
+            Assert.NotEmpty(validationResults);
+            Assert.NotNull(validationResults);
+            Assert.Single(validationResults);
+            Assert.Contains("Property 'Candidates' is not a valid List<CandidateModel> type", validationResults[0].ErrorMessage);
+            Assert.Equal("MinNumberOfChoices", validationResults[0].MemberNames.First());
+
+            var errorDictionary = RecursiveValidator.GetValidationErrorsDictionary(validationResults);
+            Assert.NotEmpty(errorDictionary);
+            Assert.NotNull(errorDictionary);
+            Assert.Single(errorDictionary);
+        }
+
+        [Fact]
+        public void GetValidationErrorsDictionaryShouldHandleMissingErrorMessage()
+        {
+            var validationResults = new List<ValidationResult>
+            {
+                new("Error 1", ["Property1"]),
+                new("Error 2", ["Property2"]),
+                new(null, ["Property3"])
+            };
+
+            var errorDictionary = RecursiveValidator.GetValidationErrorsDictionary(validationResults);
+
+            Assert.NotEmpty(errorDictionary);
+            Assert.NotNull(errorDictionary);
+            Assert.Equal(3, errorDictionary.Count);
+            Assert.Equal(expected: ["Error 1"], errorDictionary["Property1"]);
+            Assert.Equal(expected: ["Error 2"], errorDictionary["Property2"]);
+            Assert.Equal(expected: [string.Empty], errorDictionary["Property3"]);
+        }
+
+        [Fact]
         public void ValidatorHandlesNullModel()
         {
             var validationResults = new List<ValidationResult>();
@@ -219,6 +287,10 @@ namespace TrueVote.Api.Tests.HelperTests
             var validModel = RecursiveValidator.TryValidateObjectRecursive(null, validationContext, validationResults);
             Assert.True(validModel);
             Assert.Empty(validationResults);
+
+            var errorDictionary = RecursiveValidator.GetValidationErrorsDictionary(validationResults);
+            Assert.Empty(errorDictionary);
+            Assert.NotNull(errorDictionary);
         }
     }
 }
