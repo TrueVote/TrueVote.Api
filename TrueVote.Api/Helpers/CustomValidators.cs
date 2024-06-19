@@ -1,8 +1,12 @@
 #pragma warning disable IDE0046 // Convert to conditional expression
+using Microsoft.EntityFrameworkCore;
+using Namotion.Reflection;
 using System.Collections;
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
+using TrueVote.Api.Interfaces;
 using TrueVote.Api.Models;
+using TrueVote.Api.Services;
 
 namespace TrueVote.Api.Helpers
 {
@@ -65,7 +69,6 @@ namespace TrueVote.Api.Helpers
         {
             // Get the property info of the property
             var candidatePropertyInfo = validationContext.ObjectType.GetProperty(CandidatesPropertyName);
-
             if (candidatePropertyInfo == null)
             {
                 return new ValidationResult($"Property not found.", [validationContext.MemberName]);
@@ -135,6 +138,54 @@ namespace TrueVote.Api.Helpers
             if (minNumberOfChoices.HasValue && (selectedCount < minNumberOfChoices.Value))
             {
                 return new ValidationResult($"Number of selected items in '{CandidatesPropertyName}' must be greater or equal to MinNumberOfChoices for '{RacePropertyValue}'. MinNumberOfChoices: {minNumberOfChoices}, Count: {selectedCount}", [validationContext.MemberName]);
+            }
+
+            return ValidationResult.Success;
+        }
+    }
+
+    public class BallotIntegrityChecker : ValidationAttribute
+    {
+        protected readonly string _electionPropertyName;
+
+        public BallotIntegrityChecker(string electionPropertyName)
+        {
+            _electionPropertyName = electionPropertyName;
+        }
+
+        protected override ValidationResult IsValid(object value, ValidationContext validationContext)
+        {
+            var electionPropertyInfo = validationContext.ObjectType.GetProperty(_electionPropertyName);
+            if (electionPropertyInfo == null)
+            {
+                return new ValidationResult($"Property not found.", [validationContext.MemberName]);
+            }
+
+            // Get the value of the property
+            var electionPropertyValue = electionPropertyInfo.GetValue(validationContext.ObjectInstance);
+            if (electionPropertyValue is not ElectionModel)
+            {
+                return new ValidationResult($"Property '{_electionPropertyName}' is not a valid ElectionModel type.", [validationContext.MemberName]);
+            }
+            var election = (ElectionModel) electionPropertyValue;
+
+            // Get the DB Context
+            var trueVoteDbContext = (ITrueVoteDbContext) validationContext.GetService(typeof(ITrueVoteDbContext));
+            if (trueVoteDbContext == null)
+            {
+                // Try and get it from the Items context.
+                trueVoteDbContext = validationContext.Items["DBContext"] as ITrueVoteDbContext;
+                if (trueVoteDbContext == null)
+                {
+                    return new ValidationResult($"Could not get DBContext for Property '{_electionPropertyName}'.", [validationContext.MemberName]);
+                }
+            }
+
+            // See if the Election exists
+            var count = trueVoteDbContext.Elections.Where(e => e.ElectionId == election.ElectionId).Count();
+            if (count == 0)
+            {
+                return new ValidationResult($"Ballot for Election is invalid. ElectionId: {election.ElectionId} not found.", [validationContext.MemberName]);
             }
 
             return ValidationResult.Success;

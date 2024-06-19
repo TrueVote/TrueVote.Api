@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
+using TrueVote.Api.Helpers;
 using ByteConverter = TrueVote.Api.Helpers.ByteConverter;
 using JsonConverter = System.Text.Json.Serialization.JsonConverter;
 using JsonConverterAttribute = System.Text.Json.Serialization.JsonConverterAttribute;
@@ -98,6 +99,7 @@ namespace TrueVote.Api.Models
         [DataType("ElectionModel")]
         [JsonPropertyName("Election")]
         [JsonProperty(nameof(Election), Required = Required.Always)]
+        [BallotIntegrityChecker(nameof(Election))]
         public required ElectionModel Election { get; set; }
 
         // TODO Add Bindings of User / Ballot connection
