@@ -181,11 +181,30 @@ namespace TrueVote.Api.Helpers
                 }
             }
 
+            // Try and get the election from the DB
+            var electionFromDBSet = trueVoteDbContext.Elections.Where(e => e.ElectionId == election.ElectionId);
+
             // See if the Election exists
-            var count = trueVoteDbContext.Elections.Where(e => e.ElectionId == election.ElectionId).Count();
-            if (count == 0)
+            var electionCount = electionFromDBSet.Count();
+            if (electionCount == 0)
             {
-                return new ValidationResult($"Ballot for Election is invalid. ElectionId: {election.ElectionId} not found.", [validationContext.MemberName]);
+                return new ValidationResult($"Ballot for Election: {election.ElectionId} is invalid. Election not found.", [validationContext.MemberName]);
+            }
+
+            // Confirm ballot is within election start / end date.
+            var electionFromDB = electionFromDBSet.FirstOrDefault();
+            var now = UtcNowProviderFactory.GetProvider().UtcNow;
+            var ballotWithinElectionDateTime = now >= electionFromDB.StartDate && now <= electionFromDB.EndDate;
+            if (!ballotWithinElectionDateTime)
+            {
+                return new ValidationResult($"Ballot for Election: {election.ElectionId} is invalid. Submitted at: {now}, which is outside the election start: {electionFromDB.StartDate} and election end: {electionFromDB.EndDate}.", [validationContext.MemberName]);
+            }
+
+            // Confirm the selection flag is set on all candidates.
+            var nullSelections = election.Races.Where(r => r != null).SelectMany(r => r.Candidates).Where(c => c != null).Count(c => c.Selected == null);
+            if (nullSelections > 0)
+            {
+                return new ValidationResult($"Ballot contains {nullSelections} null candidate selections. They must all be true or false.", [validationContext.MemberName]);
             }
 
             return ValidationResult.Success;

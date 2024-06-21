@@ -45,9 +45,10 @@ namespace TrueVote.Api.Services
 
             // TODO Validate the ballot
             // 1. Must have a UserId and not have already submitted a ballot for this election
-            // 2. Confirm the election id exists
+            // 2. Confirm the election id exists - DONE
             // 3. Confirm the election data for this ballot has not been altered.
-            // 4. Confirm none of the races have null for 'Selected'. Must be true or false.
+            // 4. Confirm none of the races have null for 'Selected'. Must be true or false. - DONE
+            // 5. Confirm ballot is within election time range - DONE
             // ADD CODE FOR ABOVE ITEMS HERE
 
             var validationResults = new List<ValidationResult>();
