@@ -2,8 +2,6 @@ using Newtonsoft.Json;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel;
 using System.Text.Json.Serialization;
-using JsonIgnore = Newtonsoft.Json.JsonIgnoreAttribute;
-using TrueVote.Api.Helpers;
 
 namespace TrueVote.Api.Models
 {
@@ -16,8 +14,7 @@ namespace TrueVote.Api.Models
         [JsonPropertyName("FeedbackId")]
         [JsonProperty(nameof(FeedbackId), Required = Required.Always)]
         [Key]
-        [JsonIgnore]
-        public required string FeedbackId { get; set; } = Guid.NewGuid().ToString();
+        public required string FeedbackId { get; set; }
 
         [Required]
         [Description("User Id")]
@@ -32,8 +29,7 @@ namespace TrueVote.Api.Models
         [DataType(DataType.Date)]
         [JsonPropertyName("DateCreated")]
         [JsonProperty(nameof(DateCreated), Required = Required.Default)]
-        [JsonIgnore]
-        public required DateTime DateCreated { get; set; } = UtcNowProviderFactory.GetProvider().UtcNow;
+        public required DateTime DateCreated { get; set; }
 
         [Required]
         [Description("Feedback")]

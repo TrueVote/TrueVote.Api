@@ -70,8 +70,7 @@ namespace TrueVote.Api.Models
         [JsonPropertyName("CandidateId")]
         [JsonProperty(nameof(CandidateId), Required = Required.Default)]
         [Key]
-        [JsonIgnore]
-        public required string CandidateId { get; set; } = Guid.NewGuid().ToString();
+        public required string CandidateId { get; set; }
 
         [Required]
         [Description("Name")]
@@ -100,13 +99,13 @@ namespace TrueVote.Api.Models
         [DataType(DataType.Date)]
         [JsonPropertyName("DateCreated")]
         [JsonProperty(nameof(DateCreated), Required = Required.Default)]
-        [JsonIgnore]
-        public required DateTime DateCreated { get; set; } = UtcNowProviderFactory.GetProvider().UtcNow;
+        public required DateTime DateCreated { get; set; }
 
+        [Required]
         [Description("Selected")]
         [JsonPropertyName("Selected")]
         [JsonProperty(nameof(Selected), Required = Required.Default)]
-        public bool? Selected { get; set; } = null;
+        public required bool Selected { get; set; } = false;
 
         [Description("SelectedMetadata")]
         [MaxLength(1024)]
