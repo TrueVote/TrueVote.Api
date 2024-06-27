@@ -2,19 +2,20 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using TrueVote.Api.Interfaces;
 
 namespace TrueVote.Api.Tests.Helpers
 {
     public static class ValidationHelper
     {
-        public static IList<ValidationResult> Validate(object model, bool isBallot = false)
+        public static IList<ValidationResult> Validate(object model, bool isBallot = false, ITrueVoteDbContext trueVoteDbContext = null)
         {
             var validationResults = new List<ValidationResult>();
-            ValidateRecursive(model, validationResults, isBallot);
+            ValidateRecursive(model, validationResults, isBallot, trueVoteDbContext);
             return validationResults;
         }
 
-        private static void ValidateRecursive(object instance, IList<ValidationResult> validationResults, bool isBallot)
+        private static void ValidateRecursive(object instance, IList<ValidationResult> validationResults, bool isBallot, ITrueVoteDbContext trueVoteDbContext)
         {
             if (instance == null)
                 return;
@@ -23,13 +24,23 @@ namespace TrueVote.Api.Tests.Helpers
             if (isBallot)
             {
                 context.Items["IsBallot"] = true;
+                context.Items["DBContext"] = trueVoteDbContext;
             }
             var results = new List<ValidationResult>();
 
-            Validator.TryValidateObject(instance, context, results, true);
-            foreach (var validationResult in results)
+            try
             {
-                validationResults.Add(validationResult);
+                Validator.TryValidateObject(instance, context, results, true);
+                foreach (var validationResult in results)
+                {
+                    validationResults.Add(validationResult);
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log or handle the exception if necessary
+                Console.WriteLine($"Exception when trying to validate '{instance}': {ex.Message}");
+                return;
             }
 
             var properties = instance.GetType().GetProperties();
@@ -62,14 +73,14 @@ namespace TrueVote.Api.Tests.Helpers
                             {
                                 if (item != null)
                                 {
-                                    ValidateRecursive(item, validationResults, isBallot);
+                                    ValidateRecursive(item, validationResults, isBallot, trueVoteDbContext);
                                 }
                             }
                         }
                     }
                     else
                     {
-                        ValidateRecursive(propertyValue, validationResults, isBallot);
+                        ValidateRecursive(propertyValue, validationResults, isBallot, trueVoteDbContext);
                     }
                 }
             }

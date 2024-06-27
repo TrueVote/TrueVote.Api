@@ -34,6 +34,7 @@ namespace TrueVote.Api.Tests.Helpers
         protected readonly Mock<IServiceBus> _mockServiceBus;
         protected readonly Mock<IJwtHandler> _mockJwtHandler;
         protected readonly ControllerContext _authControllerContext;
+        protected readonly MoqTrueVoteDbContext _trueVoteDbContext;
 
         public const string MockedTokenValue = "mocked_token_value";
 
@@ -54,6 +55,7 @@ namespace TrueVote.Api.Tests.Helpers
             serviceCollection.TryAddScoped<IServiceBus, ServiceBus>();
             serviceCollection.TryAddScoped<IJwtHandler, JwtHandler>();
             var serviceProvider = serviceCollection.BuildServiceProvider();
+            _trueVoteDbContext = (MoqTrueVoteDbContext) serviceProvider.GetService(typeof(MoqTrueVoteDbContext));
 
             _output = output;
 
@@ -83,7 +85,7 @@ namespace TrueVote.Api.Tests.Helpers
             _raceApi = new Race(_logHelper.Object, _moqDataAccessor.mockRaceContext.Object, _mockServiceBus.Object);
             _candidateApi = new Candidate(_logHelper.Object, _moqDataAccessor.mockCandidateContext.Object, _mockServiceBus.Object);
             _timestampApi = new Timestamp(_logHelper.Object, _moqDataAccessor.mockTimestampContext.Object);
-            _queryService = new Query((MoqTrueVoteDbContext) serviceProvider.GetService(typeof(MoqTrueVoteDbContext)));
+            _queryService = new Query(_trueVoteDbContext);
 
             // For endpoints that require Authorization [Authorize]
             // Mock a user principal with desired claims

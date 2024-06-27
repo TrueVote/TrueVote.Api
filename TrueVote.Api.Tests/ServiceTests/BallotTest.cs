@@ -25,7 +25,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task SubmitsBallot()
         {
             var baseBallotObj = new SubmitBallotModel { Election = MoqData.MockBallotData[1].Election };
-            var validationResults = ValidationHelper.Validate(baseBallotObj, true);
+            var validationResults = ValidationHelper.Validate(baseBallotObj, true, _trueVoteDbContext);
             Assert.Empty(validationResults);
 
             var ret = await _ballotApi.SubmitBallot(baseBallotObj);
@@ -53,7 +53,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             var baseBallotObj = new SubmitBallotModel { Election = MoqData.MockBallotData[1].Election };
             baseBallotObj.Election.Races[0].MaxNumberOfChoices = -1;
 
-            var validationResults = ValidationHelper.Validate(baseBallotObj, true);
+            var validationResults = ValidationHelper.Validate(baseBallotObj, true, _trueVoteDbContext);
             Assert.NotEmpty(validationResults);
             Assert.NotNull(validationResults);
             // Assert.Single(validationResults);
@@ -77,7 +77,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             baseBallotObj.Election.Races[0].Candidates[0].Selected = true;
             baseBallotObj.Election.Races[0].Candidates[1].Selected = true;
 
-            var validationResults = ValidationHelper.Validate(baseBallotObj, true);
+            var validationResults = ValidationHelper.Validate(baseBallotObj, true, _trueVoteDbContext);
             Assert.NotEmpty(validationResults);
             Assert.NotNull(validationResults);
             Assert.Single(validationResults);
@@ -99,7 +99,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             var baseBallotObj = new SubmitBallotModel { Election = MoqData.MockBallotData[1].Election };
             baseBallotObj.Election.Races[0].MinNumberOfChoices = -1;
 
-            var validationResults = ValidationHelper.Validate(baseBallotObj, true);
+            var validationResults = ValidationHelper.Validate(baseBallotObj, true, _trueVoteDbContext);
             Assert.NotEmpty(validationResults);
             Assert.NotNull(validationResults);
             Assert.Single(validationResults);
@@ -122,7 +122,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             baseBallotObj.Election.Races[0].MinNumberOfChoices = 2;
             baseBallotObj.Election.Races[0].Candidates[0].Selected = true;
 
-            var validationResults = ValidationHelper.Validate(baseBallotObj, true);
+            var validationResults = ValidationHelper.Validate(baseBallotObj, true, _trueVoteDbContext);
             Assert.NotEmpty(validationResults);
             Assert.NotNull(validationResults);
             Assert.Single(validationResults);
@@ -142,7 +142,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task HandlesSubmitBallotHashingError()
         {
             var baseBallotObj = new SubmitBallotModel { Election = MoqData.MockBallotData[1].Election };
-            var validationResults = ValidationHelper.Validate(baseBallotObj, true);
+            var validationResults = ValidationHelper.Validate(baseBallotObj, true, _trueVoteDbContext);
             Assert.Empty(validationResults);
 
             var mockValidator = new Mock<IBallotValidator>();

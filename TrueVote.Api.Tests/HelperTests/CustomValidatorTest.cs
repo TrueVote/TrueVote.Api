@@ -8,7 +8,7 @@ using Newtonsoft.Json;
 using System.Text.Json.Serialization;
 using TrueVote.Api.Models;
 using System.Linq;
-using Microsoft.AspNetCore.Mvc;
+using Xunit.Abstractions;
 
 namespace TrueVote.Api.Tests.HelperTests
 {
@@ -130,8 +130,12 @@ namespace TrueVote.Api.Tests.HelperTests
         public int? MinNumberOfChoices { get; set; }
     }
 
-    public class CustomValidatorTest
+    public class CustomValidatorTest : TestHelper
     {
+        public CustomValidatorTest(ITestOutputHelper output) : base(output)
+        {
+        }
+
         [Fact]
         public void TestsMinAndMaxNumberOfChoicesSucceeds()
         {
@@ -233,6 +237,9 @@ namespace TrueVote.Api.Tests.HelperTests
             var validationResults = new List<ValidationResult>();
             var baseBallotObj = new SubmitBallotModel { Election = MoqData.MockBallotData[1].Election };
             var validationContext = new ValidationContext(baseBallotObj);
+            validationContext.Items["IsBallot"] = true;
+            validationContext.Items["DBContext"] = _trueVoteDbContext;
+
             var validModel = RecursiveValidator.TryValidateObjectRecursive(baseBallotObj, validationContext, validationResults);
             Assert.True(validModel);
             Assert.Empty(validationResults);
