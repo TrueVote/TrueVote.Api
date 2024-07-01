@@ -1,13 +1,13 @@
-#pragma warning disable IDE0046 // Convert to conditional expression
-using Microsoft.EntityFrameworkCore;
-using Namotion.Reflection;
 using System.Collections;
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 using TrueVote.Api.Interfaces;
 using TrueVote.Api.Models;
-using TrueVote.Api.Services;
 
+#pragma warning disable IDE0046 // Convert to conditional expression
+#pragma warning disable IDE0047 // Remove unnecessary parentheses
+#pragma warning disable IDE0059 // Unnecessary assignment of a value
+#pragma warning disable IDE0045 // Convert to conditional expression
 namespace TrueVote.Api.Helpers
 {
     public static class RecursiveValidator
@@ -201,14 +201,171 @@ namespace TrueVote.Api.Helpers
             }
 
             // Confirm the selection flag is set on all candidates.
-            var nullSelections = election.Races.Where(r => r != null).SelectMany(r => r.Candidates).Where(c => c != null).Count(c => c.Selected == null);
-            if (nullSelections > 0)
+            //var nullCandidates = election.Races.Where(r => r != null).SelectMany(r => r.Candidates).Where(c => c != null && c.Selected == null).ToList();
+            //if (nullCandidates.Any())
+            //{
+            //    // Build a string of Candidate Names
+            //    var candidateNames = string.Join(", ", nullCandidates.Select(c => c.Name));
+
+            //    return new ValidationResult($"Ballot contains {nullCandidates.Count} null candidate selections. They must all be true or false. These candidates have null selections: {candidateNames}", [validationContext.MemberName]);
+            //}
+
+            // Model diff between ballot passed in and DB election. They should be the same other than 'Selected' property
+            var diff = electionFromDB.ModelDiff(election);
+
+            // TODO Make sure the only diffs are the 'Selected' property. Anything else should be a failed validation result
+
+            foreach (var kvp in diff)
             {
-                return new ValidationResult($"Ballot contains {nullSelections} null candidate selections. They must all be true or false.", [validationContext.MemberName]);
+                Console.WriteLine($"{kvp.Key}: Old = {kvp.Value.OldValue}, New = {kvp.Value.NewValue}");
             }
 
             return ValidationResult.Success;
         }
     }
+
+    public static class ModelDiffExtensions
+    {
+        // Custom date comparer that doesn't factor in milliseconds. Seconds should be good enough
+        private static bool AreDateTimesEqual(DateTime? a, DateTime? b)
+        {
+            if (a == null && b == null) return true;
+            if (a == null || b == null) return false;
+
+            return a.Value.Year == b.Value.Year &&
+                   a.Value.Month == b.Value.Month &&
+                   a.Value.Day == b.Value.Day &&
+                   a.Value.Hour == b.Value.Hour &&
+                   a.Value.Minute == b.Value.Minute &&
+                   a.Value.Second == b.Value.Second;
+        }
+
+        public static Dictionary<string, (object? OldValue, object? NewValue)> ModelDiff<T>(this T? a, T? b) where T : class
+        {
+            return CompareObjects(a, b, "");
+        }
+
+        private static Dictionary<string, (object? OldValue, object? NewValue)> CompareObjects(object? a, object? b, string prefix)
+        {
+            var differences = new Dictionary<string, (object? OldValue, object? NewValue)>();
+
+            if (a == null && b == null)
+                return differences;
+
+            if (a == null || b == null)
+            {
+                differences[prefix.TrimEnd('.')] = (a, b);
+                return differences;
+            }
+
+            var type = a.GetType();
+            var properties = type.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+
+            foreach (var property in properties)
+            {
+                object? valueA, valueB;
+                try
+                {
+                    if (property.GetIndexParameters().Length > 0)
+                    {
+                        continue;
+                    }
+
+                    valueA = property.GetValue(a);
+                    valueB = property.GetValue(b);
+                }
+                catch (Exception)
+                {
+                    continue;
+                }
+
+                var propertyName = string.IsNullOrEmpty(prefix) ? property.Name : $"{prefix}{property.Name}";
+
+                if (property.PropertyType.IsGenericType && property.PropertyType.GetGenericTypeDefinition() == typeof(List<>))
+                {
+                    var listDifferences = CompareListObjects(valueA, valueB, propertyName);
+                    foreach (var kvp in listDifferences)
+                    {
+                        differences[kvp.Key] = kvp.Value;
+                    }
+                }
+                else if (IsComplexType(property.PropertyType))
+                {
+                    var nestedDifferences = CompareObjects(valueA, valueB, $"{propertyName}.");
+                    foreach (var kvp in nestedDifferences)
+                    {
+                        differences[kvp.Key] = kvp.Value;
+                    }
+                }
+                else
+                {
+                    var isDifferent = false;
+
+                    if (property.PropertyType == typeof(DateTime) || property.PropertyType == typeof(DateTime?))
+                    {
+                        isDifferent = !AreDateTimesEqual(valueA as DateTime?, valueB as DateTime?);
+                    }
+                    else if (property.PropertyType == typeof(bool?))
+                    {
+                        isDifferent = (valueA == null) != (valueB == null) ||
+                                      (valueA != null && valueB != null && !Equals(valueA, valueB));
+                    }
+                    else
+                    {
+                        isDifferent = !Equals(valueA, valueB);
+                    }
+
+                    if (isDifferent)
+                    {
+                        differences[propertyName] = (valueA, valueB);
+                    }
+                }
+            }
+
+            return differences;
+        }
+
+        private static Dictionary<string, (object? OldValue, object? NewValue)> CompareListObjects(object? listA, object? listB, string prefix)
+        {
+            var differences = new Dictionary<string, (object? OldValue, object? NewValue)>();
+
+            if (listA == null && listB == null)
+                return differences;
+
+            if (listA == null || listB == null)
+            {
+                differences[prefix] = (listA, listB);
+                return differences;
+            }
+
+            var listAItems = ((IList) listA).Cast<object?>().ToList();
+            var listBItems = ((IList) listB).Cast<object?>().ToList();
+
+            var maxCount = Math.Max(listAItems.Count, listBItems.Count);
+
+            for (var i = 0; i < maxCount; i++)
+            {
+                var itemA = i < listAItems.Count ? listAItems[i] : null;
+                var itemB = i < listBItems.Count ? listBItems[i] : null;
+
+                var itemDifferences = CompareObjects(itemA, itemB, $"{prefix}[{i}].");
+
+                foreach (var kvp in itemDifferences)
+                {
+                    differences[kvp.Key] = kvp.Value;
+                }
+            }
+
+            return differences;
+        }
+
+        private static bool IsComplexType(Type type)
+        {
+            return !type.IsPrimitive && type != typeof(string) && type != typeof(DateTime) && !type.IsEnum;
+        }
+    }
 }
+#pragma warning restore IDE0045 // Convert to conditional expression
+#pragma warning restore IDE0059 // Unnecessary assignment of a value
+#pragma warning restore IDE0047 // Remove unnecessary parentheses
 #pragma warning restore IDE0046 // Convert to conditional expression
