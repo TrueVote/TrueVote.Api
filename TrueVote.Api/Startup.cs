@@ -23,7 +23,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using HotChocolate.Language;
+using System.Globalization;
 
+#pragma warning disable IDE0046 // Convert to conditional expression
 namespace TrueVote.Api
 {
     [ExcludeFromCodeCoverage]
@@ -147,7 +150,7 @@ namespace TrueVote.Api
             services.TryAddScoped<IBallotValidator, BallotValidator>();
             services.AddLogging();
             services.AddSingleton(typeof(ILogger), typeof(Logger<Startup>));
-            services.AddGraphQLServer().AddQueryType<Query>();
+            services.AddGraphQLServer().AddQueryType<Query>().BindRuntimeType<DateTime, UTCDateTimeFormatted>();
             services.AddExceptionHandler<GlobalExceptionHandler>();
             services.AddProblemDetails();
         }
@@ -423,4 +426,48 @@ namespace TrueVote.Api
             }
         }
     }
+
+    [ExcludeFromCodeCoverage]
+    public class UTCDateTimeFormatted : ScalarType<DateTime, StringValueNode>
+    {
+        private const string DateTimeFormat = "yyyy-MM-ddTHH:mm:ss";
+
+        public UTCDateTimeFormatted() : base("DateTime")
+        {
+            Description = "Custom UTC DateTime scalar with consistent formatting";
+        }
+
+        public override IValueNode ParseResult(object? resultValue)
+        {
+            if (resultValue is DateTime dateTime)
+            {
+                return new StringValueNode(dateTime.ToString(DateTimeFormat, CultureInfo.InvariantCulture));
+            }
+            throw new SerializationException($"Cannot parse result '{resultValue}' to DateTime.", this);
+        }
+
+        protected override DateTime ParseLiteral(StringValueNode valueSyntax)
+        {
+            if (DateTime.TryParse(valueSyntax.Value, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var dateTime))
+            {
+                return dateTime;
+            }
+            throw new SerializationException($"Cannot parse literal '{valueSyntax}' to DateTime.", this);
+        }
+
+        protected override StringValueNode ParseValue(DateTime runtimeValue)
+        {
+            return new StringValueNode(runtimeValue.ToString(DateTimeFormat, CultureInfo.InvariantCulture));
+        }
+
+        public override object? Serialize(object? runtimeValue)
+        {
+            if (runtimeValue is DateTime dateTime)
+            {
+                return dateTime.ToString(DateTimeFormat, CultureInfo.InvariantCulture);
+            }
+            return null;
+        }
+    }
 }
+#pragma warning restore IDE0046 // Convert to conditional expression
