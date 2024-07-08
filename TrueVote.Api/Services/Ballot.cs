@@ -23,13 +23,15 @@ namespace TrueVote.Api.Services
         private readonly ITrueVoteDbContext _trueVoteDbContext;
         private readonly IBallotValidator _validator;
         private readonly IServiceBus _serviceBus;
+        private readonly IRecursiveValidator _recursiveValidator;
 
-        public Ballot(ILogger log, ITrueVoteDbContext trueVoteDbContext, IBallotValidator validator, IServiceBus serviceBus)
+        public Ballot(ILogger log, ITrueVoteDbContext trueVoteDbContext, IBallotValidator validator, IServiceBus serviceBus, IRecursiveValidator recursiveValidator)
         {
             _log = log;
             _trueVoteDbContext = trueVoteDbContext;
             _validator = validator;
             _serviceBus = serviceBus;
+            _recursiveValidator = recursiveValidator;
         }
 
         [HttpPost]
@@ -55,9 +57,9 @@ namespace TrueVote.Api.Services
             var validationContext = new ValidationContext(bindSubmitBallotModel);
             validationContext.Items["IsBallot"] = true; // TODO https://truevote.atlassian.net/browse/AD-113
             validationContext.Items["DBContext"] = _trueVoteDbContext;
-            if (!RecursiveValidator.TryValidateObjectRecursive(bindSubmitBallotModel, validationContext, validationResults))
+            if (!_recursiveValidator.TryValidateObjectRecursive(bindSubmitBallotModel, validationContext, validationResults))
             {
-                var errorDictionary = RecursiveValidator.GetValidationErrorsDictionary(validationResults);
+                var errorDictionary = _recursiveValidator.GetValidationErrorsDictionary(validationResults);
 
                 return ValidationProblem(new ValidationProblemDetails(errorDictionary));
             }

@@ -10,9 +10,15 @@ using TrueVote.Api.Models;
 #pragma warning disable IDE0045 // Convert to conditional expression
 namespace TrueVote.Api.Helpers
 {
-    public static class RecursiveValidator
+    public interface IRecursiveValidator
     {
-        public static bool TryValidateObjectRecursive(object obj, ValidationContext validationContext, List<ValidationResult> results)
+        bool TryValidateObjectRecursive(object obj, ValidationContext validationContext, List<ValidationResult> results);
+        Dictionary<string, string[]> GetValidationErrorsDictionary(List<ValidationResult> results);
+    }
+
+    public class RecursiveValidator : IRecursiveValidator
+    {
+        public bool TryValidateObjectRecursive(object obj, ValidationContext validationContext, List<ValidationResult> results)
         {
             if (obj == null) return true;
             var result = Validator.TryValidateObject(obj, validationContext, results, true);
@@ -44,7 +50,7 @@ namespace TrueVote.Api.Helpers
             return result;
         }
 
-        public static Dictionary<string, string[]> GetValidationErrorsDictionary(List<ValidationResult> results)
+        public Dictionary<string, string[]> GetValidationErrorsDictionary(List<ValidationResult> results)
         {
             return results
                 .SelectMany(vr => vr.MemberNames.Select(memberName => new { memberName, ErrorMessage = vr.ErrorMessage ?? string.Empty }))
@@ -214,7 +220,6 @@ namespace TrueVote.Api.Helpers
             var diff = electionFromDB.ModelDiff(election);
 
             // TODO Make sure the only diffs are the 'Selected' property. Anything else should be a failed validation result
-
             foreach (var kvp in diff)
             {
                 Console.WriteLine($"{kvp.Key}: Old = {kvp.Value.OldValue}, New = {kvp.Value.NewValue}");
