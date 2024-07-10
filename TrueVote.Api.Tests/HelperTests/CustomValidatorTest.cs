@@ -1,13 +1,14 @@
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel;
-using Xunit;
-using TrueVote.Api.Tests.Helpers;
-using TrueVote.Api.Helpers;
 using Newtonsoft.Json;
-using System.Text.Json.Serialization;
-using TrueVote.Api.Models;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Text.Json.Serialization;
+using TrueVote.Api.Helpers;
+using TrueVote.Api.Models;
+using TrueVote.Api.Tests.Helpers;
+using Xunit;
 using Xunit.Abstractions;
 
 namespace TrueVote.Api.Tests.HelperTests
@@ -132,8 +133,11 @@ namespace TrueVote.Api.Tests.HelperTests
 
     public class CustomValidatorTest : TestHelper
     {
+        private readonly RecursiveValidator recursiveValidator;
+
         public CustomValidatorTest(ITestOutputHelper output) : base(output)
         {
+            recursiveValidator = new RecursiveValidator();
         }
 
         [Fact]
@@ -240,7 +244,7 @@ namespace TrueVote.Api.Tests.HelperTests
             validationContext.Items["IsBallot"] = true;
             validationContext.Items["DBContext"] = _trueVoteDbContext;
 
-            var validModel = RecursiveValidator.TryValidateObjectRecursive(baseBallotObj, validationContext, validationResults);
+            var validModel = recursiveValidator.TryValidateObjectRecursive(baseBallotObj, validationContext, validationResults);
             Assert.True(validModel);
             Assert.Empty(validationResults);
         }
@@ -251,7 +255,7 @@ namespace TrueVote.Api.Tests.HelperTests
             var validationResults = new List<ValidationResult>();
             var testModel = new CandidateTestModelMinInvalidProperty { MinNumberOfChoices = 3, Candidates = "foo" };
             var validationContext = new ValidationContext(testModel);
-            var validModel = RecursiveValidator.TryValidateObjectRecursive(testModel, validationContext, validationResults);
+            var validModel = recursiveValidator.TryValidateObjectRecursive(testModel, validationContext, validationResults);
             Assert.False(validModel);
             Assert.NotEmpty(validationResults);
             Assert.NotNull(validationResults);
@@ -259,7 +263,7 @@ namespace TrueVote.Api.Tests.HelperTests
             Assert.Contains("Property 'Candidates' is not a valid List<CandidateModel> type", validationResults[0].ErrorMessage);
             Assert.Equal("MinNumberOfChoices", validationResults[0].MemberNames.First());
 
-            var errorDictionary = RecursiveValidator.GetValidationErrorsDictionary(validationResults);
+            var errorDictionary = recursiveValidator.GetValidationErrorsDictionary(validationResults);
             Assert.NotEmpty(errorDictionary);
             Assert.NotNull(errorDictionary);
             Assert.Single(errorDictionary);
@@ -275,7 +279,7 @@ namespace TrueVote.Api.Tests.HelperTests
                 new(null, ["Property3"])
             };
 
-            var errorDictionary = RecursiveValidator.GetValidationErrorsDictionary(validationResults);
+            var errorDictionary = recursiveValidator.GetValidationErrorsDictionary(validationResults);
 
             Assert.NotEmpty(errorDictionary);
             Assert.NotNull(errorDictionary);
@@ -291,13 +295,248 @@ namespace TrueVote.Api.Tests.HelperTests
             var validationResults = new List<ValidationResult>();
             var baseBallotObj = new SubmitBallotModel { Election = MoqData.MockBallotData[1].Election };
             var validationContext = new ValidationContext(baseBallotObj);
-            var validModel = RecursiveValidator.TryValidateObjectRecursive(null, validationContext, validationResults);
+            var validModel = recursiveValidator.TryValidateObjectRecursive(null, validationContext, validationResults);
             Assert.True(validModel);
             Assert.Empty(validationResults);
 
-            var errorDictionary = RecursiveValidator.GetValidationErrorsDictionary(validationResults);
+            var errorDictionary = recursiveValidator.GetValidationErrorsDictionary(validationResults);
             Assert.Empty(errorDictionary);
             Assert.NotNull(errorDictionary);
+        }
+
+        [Fact]
+        public void GetValidationErrorsDictionaryHandlesMultipleErrorsForSameProperty()
+        {
+            var validationResults = new List<ValidationResult>
+            {
+                new("Error 1", ["Property1"]),
+                new("Error 2", ["Property1"]),
+                new("Error 3", ["Property2"])
+            };
+
+            var errorDictionary = recursiveValidator.GetValidationErrorsDictionary(validationResults);
+
+            Assert.Equal(2, errorDictionary.Count);
+            Assert.Equal(new[] { "Error 1", "Error 2" }, errorDictionary["Property1"]);
+            Assert.Equal(new[] { "Error 3" }, errorDictionary["Property2"]);
+        }
+
+        [Fact]
+        public void TryValidateObjectRecursiveHandlesNestedObject()
+        {
+            var nestedModel = new CandidateTestModel { MaxNumberOfChoices = 1, MinNumberOfChoices = 1, Candidates = new List<CandidateModel>() };
+            var testModel = new { NestedProperty = nestedModel };
+
+            var validationResults = new List<ValidationResult>();
+            var validationContext = new ValidationContext(testModel);
+            var validModel = recursiveValidator.TryValidateObjectRecursive(testModel, validationContext, validationResults);
+
+            Assert.True(validModel);
+            Assert.Empty(validationResults);
+        }
+
+        [Fact]
+        public void TryValidateObjectRecursiveHandlesCollectionOfObjects()
+        {
+            var testModel = new { Items = new List<CandidateTestModel> { new(), new() } };
+
+            var validationResults = new List<ValidationResult>();
+            var validationContext = new ValidationContext(testModel);
+            var validModel = recursiveValidator.TryValidateObjectRecursive(testModel, validationContext, validationResults);
+
+            Assert.True(validModel);
+            Assert.Empty(validationResults);
+        }
+
+        [Fact]
+        public void NumberOfChoicesValidatorHandlesInvalidPropertyType()
+        {
+            var testModel = new { Candidates = "Not a List<CandidateModel>", MinNumberOfChoices = 1 };
+            var validationContext = new ValidationContext(testModel);
+            validationContext.Items["IsBallot"] = true;
+
+            var attribute = new MinNumberOfChoicesValidatorAttribute("Candidates", "Name");
+            var result = attribute.GetValidationResult(testModel.MinNumberOfChoices, validationContext);
+
+            Assert.NotNull(result);
+            Assert.Contains("Property 'Candidates' is not a valid List<CandidateModel> type", result.ErrorMessage);
+        }
+
+        [Fact]
+        public void NumberOfChoicesValidatorSkipsValidationWhenIsBallotNotSet()
+        {
+            var testModel = new CandidateTestModel { MaxNumberOfChoices = 1, MinNumberOfChoices = 1, Candidates = new List<CandidateModel>() };
+            var validationContext = new ValidationContext(testModel);
+            // Note: We're not setting IsBallot in the Items dictionary
+
+            var attribute = new MaxNumberOfChoicesValidatorAttribute("Candidates", "Name");
+            var result = attribute.GetValidationResult(testModel.MaxNumberOfChoices, validationContext);
+
+            Assert.Equal(ValidationResult.Success, result);
+        }
+
+        [Fact]
+        public void BallotIntegrityCheckerHandlesInvalidElectionPropertyType()
+        {
+            var testModel = new { Election = "Not an ElectionModel" };
+            var validationContext = new ValidationContext(testModel);
+
+            var attribute = new BallotIntegrityChecker("Election");
+            var result = attribute.GetValidationResult(testModel, validationContext);
+
+            Assert.NotNull(result);
+            Assert.Contains("Property 'Election' is not a valid ElectionModel type", result.ErrorMessage);
+        }
+
+        [Fact]
+        public void BallotIntegrityCheckerHandlesMissingElectionPropertyType()
+        {
+            var testModel = new { Election = "Not an ElectionModel" };
+            var validationContext = new ValidationContext(testModel);
+
+            var attribute = new BallotIntegrityChecker("Not an election attribute");
+            var result = attribute.GetValidationResult(testModel, validationContext);
+
+            Assert.NotNull(result);
+            Assert.Contains("property not found", result.ErrorMessage);
+        }
+
+        [Fact]
+        public void BallotIntegrityCheckerHandlesUnfoundElection()
+        {
+            var baseBallotObj = new SubmitBallotModel { Election = MoqData.MockBallotData[1].Election };
+            baseBallotObj.Election.ElectionId = "willnotfind";
+            var validationContext = new ValidationContext(baseBallotObj);
+            validationContext.Items["IsBallot"] = true;
+            validationContext.Items["DBContext"] = _trueVoteDbContext;
+
+            var attribute = new BallotIntegrityChecker("Election");
+            var result = attribute.GetValidationResult(baseBallotObj, validationContext);
+
+            Assert.NotNull(result);
+            Assert.Contains("Ballot for Election", result.ErrorMessage);
+        }
+
+        [Fact]
+        public void BallotIntegrityCheckerHandlesMissingDBContext()
+        {
+            var baseBallotObj = new SubmitBallotModel { Election = MoqData.MockBallotData[1].Election };
+            var validationContext = new ValidationContext(baseBallotObj);
+            validationContext.Items["IsBallot"] = true;
+            // validationContext.Items["DBContext"] = _trueVoteDbContext;
+
+            var attribute = new BallotIntegrityChecker("Election");
+            var result = attribute.GetValidationResult(baseBallotObj, validationContext);
+
+            Assert.NotNull(result);
+            Assert.Contains("Could not get DBContext", result.ErrorMessage);
+        }
+
+        [Fact]
+        public void BallotIntegrityCheckerHandlesSubmissionBeforeElectionStart()
+        {
+            var baseBallotObj = new SubmitBallotModel { Election = MoqData.MockBallotData[4].Election };
+
+            var validationContext = new ValidationContext(baseBallotObj);
+            validationContext.Items["IsBallot"] = true;
+            validationContext.Items["DBContext"] = _trueVoteDbContext;
+
+            var attribute = new BallotIntegrityChecker("Election");
+            var result = attribute.GetValidationResult(baseBallotObj, validationContext);
+
+            Assert.NotNull(result);
+            Assert.Contains("which is before the election start:", result.ErrorMessage);
+        }
+
+        [Fact]
+        public void BallotIntegrityCheckerHandlesSubmissionAfterElectionEnd()
+        {
+            var baseBallotObj = new SubmitBallotModel { Election = MoqData.MockBallotData[3].Election };
+
+            var validationContext = new ValidationContext(baseBallotObj);
+            validationContext.Items["IsBallot"] = true;
+            validationContext.Items["DBContext"] = _trueVoteDbContext;
+
+            var attribute = new BallotIntegrityChecker("Election");
+            var result = attribute.GetValidationResult(baseBallotObj, validationContext);
+
+            Assert.NotNull(result);
+            Assert.Contains("which is after the election end:", result.ErrorMessage);
+        }
+
+        [Fact]
+        public void ModelDiffHandlesDifferentPropertyTypes()
+        {
+            var modelA = new
+            {
+                StringProp = "A",
+                IntProp = 1,
+                DateTimeProp = new DateTime(2023, 1, 1, 12, 0, 0),
+                NullableBoolProp = (bool?) true,
+                ListProp = new List<string> { "A", "B" }
+            };
+
+            var modelB = new
+            {
+                StringProp = "B",
+                IntProp = 2,
+                DateTimeProp = new DateTime(2023, 1, 2, 12, 0, 0),
+                NullableBoolProp = (bool?) false,
+                ListProp = new List<string> { "B", "C" }
+            };
+
+            var diff = modelA.ModelDiff(modelB);
+
+            // Print out all the differences
+            foreach (var kvp in diff)
+            {
+                Console.WriteLine($"Difference in {kvp.Key}: {kvp.Value.OldValue} -> {kvp.Value.NewValue}");
+            }
+
+            Assert.Equal(5, diff.Count);
+
+            // Individual assertions
+            Assert.True(diff.ContainsKey("StringProp"));
+            Assert.True(diff.ContainsKey("IntProp"));
+            Assert.True(diff.ContainsKey("DateTimeProp"));
+            Assert.True(diff.ContainsKey("NullableBoolProp"));
+            Assert.True(diff.ContainsKey("ListProp"));
+
+            Assert.Equal(("A", "B"), diff["StringProp"]);
+            Assert.Equal((1, 2), diff["IntProp"]);
+            Assert.Equal((new DateTime(2023, 1, 1, 12, 0, 0), new DateTime(2023, 1, 2, 12, 0, 0)), diff["DateTimeProp"]);
+            Assert.Equal((true, false), diff["NullableBoolProp"]);
+            Assert.Equal(("A,B", "B,C"), diff["ListProp"]);
+        }
+
+        [Fact]
+        public void ModelDiffHandlesNullDateTimes()
+        {
+            var modelA = new
+            {
+                DateTimeProp = (DateTime?) new DateTime(2023, 1, 1, 12, 0, 0),
+            };
+
+            var modelB = new
+            {
+                DateTimeProp = (DateTime?) null,
+            };
+
+            var modelC = new
+            {
+                DateTimeProp = (DateTime?) null,
+            };
+
+            var diff1 = modelA.ModelDiff(modelB);
+            Assert.Single(diff1);
+            Assert.True(diff1.ContainsKey("DateTimeProp"));
+
+            var diff2 = modelB.ModelDiff(modelC);
+            Assert.Empty(diff2);
+
+            var diff3 = modelB.ModelDiff(modelA);
+            Assert.Single(diff3);
+            Assert.True(diff3.ContainsKey("DateTimeProp"));
         }
     }
 }

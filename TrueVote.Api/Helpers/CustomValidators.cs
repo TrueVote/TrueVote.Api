@@ -61,30 +61,30 @@ namespace TrueVote.Api.Helpers
 
     public abstract class NumberOfChoicesValidatorAttribute : ValidationAttribute
     {
-        protected readonly string CandidatesPropertyName;
+        protected readonly string PropertyName;
         protected readonly string RacePropertyName;
         protected string RacePropertyValue = string.Empty;
 
         protected NumberOfChoicesValidatorAttribute(string propertyName, string racePropertyName)
         {
-            CandidatesPropertyName = propertyName;
+            PropertyName = propertyName;
             RacePropertyName = racePropertyName;
         }
 
         protected override ValidationResult IsValid(object value, ValidationContext validationContext)
         {
             // Get the property info of the property
-            var candidatePropertyInfo = validationContext.ObjectType.GetProperty(CandidatesPropertyName);
-            if (candidatePropertyInfo == null)
+            var propertyInfo = validationContext.ObjectType.GetProperty(PropertyName);
+            if (propertyInfo == null)
             {
                 return new ValidationResult($"Property not found.", [validationContext.MemberName]);
             }
 
             // Get the value of the property
-            var candidatePropertyValue = candidatePropertyInfo.GetValue(validationContext.ObjectInstance);
+            var candidatePropertyValue = propertyInfo.GetValue(validationContext.ObjectInstance);
             if (candidatePropertyValue is not List<CandidateModel>)
             {
-                return new ValidationResult($"Property '{CandidatesPropertyName}' is not a valid List<CandidateModel> type.", [validationContext.MemberName]);
+                return new ValidationResult($"Property '{PropertyName}' is not a valid List<CandidateModel> type.", [validationContext.MemberName]);
             }
 
             // Get the value of the Name Property
@@ -99,8 +99,7 @@ namespace TrueVote.Api.Helpers
             // both for creating an election and ballot submission. This is optimal for model re-use. But the data annotations
             // work for ballot submission, are too tight for election creation. So this flag gets around that. When creating an election
             // if the "IsBallot" flag isn't set, the validator simply allows the validation to proceed.
-            var isBallot = validationContext.Items.Where(i => i.Key.ToString() == "IsBallot");
-            if (!isBallot.Any())
+            if (!validationContext.Items.TryGetValue("IsBallot", out var isBallotObj) || isBallotObj is not bool isBallot || !isBallot)
             {
                 return ValidationResult.Success;
             }
@@ -125,7 +124,7 @@ namespace TrueVote.Api.Helpers
             var maxNumberOfChoices = value as int?;
             if (maxNumberOfChoices.HasValue && (selectedCount > maxNumberOfChoices.Value))
             {
-                return new ValidationResult($"Number of selected items in '{CandidatesPropertyName}' cannot exceed MaxNumberOfChoices for '{RacePropertyValue}'. MaxNumberOfChoices: {maxNumberOfChoices}, SelectedCount: {selectedCount}", [validationContext.MemberName]);
+                return new ValidationResult($"Number of selected items in '{PropertyName}' cannot exceed MaxNumberOfChoices for '{RacePropertyValue}'. MaxNumberOfChoices: {maxNumberOfChoices}, SelectedCount: {selectedCount}", [validationContext.MemberName]);
             }
 
             return ValidationResult.Success;
@@ -143,7 +142,7 @@ namespace TrueVote.Api.Helpers
             var minNumberOfChoices = value as int?;
             if (minNumberOfChoices.HasValue && (selectedCount < minNumberOfChoices.Value))
             {
-                return new ValidationResult($"Number of selected items in '{CandidatesPropertyName}' must be greater or equal to MinNumberOfChoices for '{RacePropertyValue}'. MinNumberOfChoices: {minNumberOfChoices}, Count: {selectedCount}", [validationContext.MemberName]);
+                return new ValidationResult($"Number of selected items in '{PropertyName}' must be greater or equal to MinNumberOfChoices for '{RacePropertyValue}'. MinNumberOfChoices: {minNumberOfChoices}, Count: {selectedCount}", [validationContext.MemberName]);
             }
 
             return ValidationResult.Success;
@@ -164,7 +163,7 @@ namespace TrueVote.Api.Helpers
             var electionPropertyInfo = validationContext.ObjectType.GetProperty(_electionPropertyName);
             if (electionPropertyInfo == null)
             {
-                return new ValidationResult($"Property not found.", [validationContext.MemberName]);
+                return new ValidationResult($"Election Model property not found.", [validationContext.MemberName]);
             }
 
             // Get the value of the property
@@ -180,11 +179,13 @@ namespace TrueVote.Api.Helpers
             if (trueVoteDbContext == null)
             {
                 // Try and get it from the Items context.
-                trueVoteDbContext = validationContext.Items["DBContext"] as ITrueVoteDbContext;
-                if (trueVoteDbContext == null)
+                var dbContext = validationContext.Items.TryGetValue("DBContext", out var dbContextValue) ? dbContextValue : null;
+                if (dbContext == null)
                 {
                     return new ValidationResult($"Could not get DBContext for Property '{_electionPropertyName}'.", [validationContext.MemberName]);
                 }
+
+                trueVoteDbContext = dbContext as ITrueVoteDbContext;
             }
 
             // Try and get the election from the DB
@@ -200,10 +201,17 @@ namespace TrueVote.Api.Helpers
             // Confirm ballot is within election start / end date.
             var electionFromDB = electionFromDBSet.FirstOrDefault();
             var now = UtcNowProviderFactory.GetProvider().UtcNow;
-            var ballotWithinElectionDateTime = now >= electionFromDB.StartDate && now <= electionFromDB.EndDate;
-            if (!ballotWithinElectionDateTime)
+
+            var ballotAfterElectionStartDate = now >= electionFromDB.StartDate;
+            if (!ballotAfterElectionStartDate)
             {
-                return new ValidationResult($"Ballot for Election: {election.ElectionId} is invalid. Submitted at: {now}, which is outside the election start: {electionFromDB.StartDate} and election end: {electionFromDB.EndDate}.", [validationContext.MemberName]);
+                return new ValidationResult($"Ballot for Election: {election.ElectionId} is invalid. Submitted at: {now}, which is before the election start: {electionFromDB.StartDate}.", [validationContext.MemberName]);
+            }
+
+            var ballotBeforeElectionEndDate =  now <= electionFromDB.EndDate;
+            if (!ballotBeforeElectionEndDate)
+            {
+                return new ValidationResult($"Ballot for Election: {election.ElectionId} is invalid. Submitted at: {now}, which is after the election end: {electionFromDB.EndDate}.", [validationContext.MemberName]);
             }
 
             // Confirm the selection flag is set on all candidates.
@@ -231,20 +239,6 @@ namespace TrueVote.Api.Helpers
 
     public static class ModelDiffExtensions
     {
-        // Custom date comparer that doesn't factor in milliseconds. Seconds should be good enough
-        private static bool AreDateTimesEqual(DateTime? a, DateTime? b)
-        {
-            if (a == null && b == null) return true;
-            if (a == null || b == null) return false;
-
-            return a.Value.Year == b.Value.Year &&
-                   a.Value.Month == b.Value.Month &&
-                   a.Value.Day == b.Value.Day &&
-                   a.Value.Hour == b.Value.Hour &&
-                   a.Value.Minute == b.Value.Minute &&
-                   a.Value.Second == b.Value.Second;
-        }
-
         public static Dictionary<string, (object? OldValue, object? NewValue)> ModelDiff<T>(this T? a, T? b) where T : class
         {
             return CompareObjects(a, b, "");
@@ -271,11 +265,6 @@ namespace TrueVote.Api.Helpers
                 object? valueA, valueB;
                 try
                 {
-                    if (property.GetIndexParameters().Length > 0)
-                    {
-                        continue;
-                    }
-
                     valueA = property.GetValue(a);
                     valueB = property.GetValue(b);
                 }
@@ -288,10 +277,22 @@ namespace TrueVote.Api.Helpers
 
                 if (property.PropertyType.IsGenericType && property.PropertyType.GetGenericTypeDefinition() == typeof(List<>))
                 {
-                    var listDifferences = CompareListObjects(valueA, valueB, propertyName);
-                    foreach (var kvp in listDifferences)
+                    var listA = valueA as IEnumerable;
+                    var listB = valueB as IEnumerable;
+
+                    if (listA == null && listB == null) continue;
+                    if (listA == null || listB == null)
                     {
-                        differences[kvp.Key] = kvp.Value;
+                        differences[propertyName] = (valueA, valueB);
+                        continue;
+                    }
+
+                    var listAString = string.Join(",", listA.Cast<object>());
+                    var listBString = string.Join(",", listB.Cast<object>());
+
+                    if (listAString != listBString)
+                    {
+                        differences[propertyName] = (listAString, listBString);
                     }
                 }
                 else if (IsComplexType(property.PropertyType))
@@ -302,25 +303,18 @@ namespace TrueVote.Api.Helpers
                         differences[kvp.Key] = kvp.Value;
                     }
                 }
+                else if (property.PropertyType == typeof(DateTime) || property.PropertyType == typeof(DateTime?))
+                {
+                    var dateTimeA = valueA as DateTime?;
+                    var dateTimeB = valueB as DateTime?;
+                    if (!AreDateTimesEqual(dateTimeA, dateTimeB))
+                    {
+                        differences[propertyName] = (valueA, valueB);
+                    }
+                }
                 else
                 {
-                    var isDifferent = false;
-
-                    if (property.PropertyType == typeof(DateTime) || property.PropertyType == typeof(DateTime?))
-                    {
-                        isDifferent = !AreDateTimesEqual(valueA as DateTime?, valueB as DateTime?);
-                    }
-                    else if (property.PropertyType == typeof(bool?))
-                    {
-                        isDifferent = (valueA == null) != (valueB == null) ||
-                                      (valueA != null && valueB != null && !Equals(valueA, valueB));
-                    }
-                    else
-                    {
-                        isDifferent = !Equals(valueA, valueB);
-                    }
-
-                    if (isDifferent)
+                    if (!Equals(valueA, valueB))
                     {
                         differences[propertyName] = (valueA, valueB);
                     }
@@ -330,43 +324,32 @@ namespace TrueVote.Api.Helpers
             return differences;
         }
 
-        private static Dictionary<string, (object? OldValue, object? NewValue)> CompareListObjects(object? listA, object? listB, string prefix)
-        {
-            var differences = new Dictionary<string, (object? OldValue, object? NewValue)>();
-
-            if (listA == null && listB == null)
-                return differences;
-
-            if (listA == null || listB == null)
-            {
-                differences[prefix] = (listA, listB);
-                return differences;
-            }
-
-            var listAItems = ((IList) listA).Cast<object?>().ToList();
-            var listBItems = ((IList) listB).Cast<object?>().ToList();
-
-            var maxCount = Math.Max(listAItems.Count, listBItems.Count);
-
-            for (var i = 0; i < maxCount; i++)
-            {
-                var itemA = i < listAItems.Count ? listAItems[i] : null;
-                var itemB = i < listBItems.Count ? listBItems[i] : null;
-
-                var itemDifferences = CompareObjects(itemA, itemB, $"{prefix}[{i}].");
-
-                foreach (var kvp in itemDifferences)
-                {
-                    differences[kvp.Key] = kvp.Value;
-                }
-            }
-
-            return differences;
-        }
-
         private static bool IsComplexType(Type type)
         {
-            return !type.IsPrimitive && type != typeof(string) && type != typeof(DateTime) && !type.IsEnum;
+            return !type.IsPrimitive
+                && type != typeof(string)
+                && type != typeof(DateTime)
+                && type != typeof(DateTime?)
+                && !type.IsEnum
+                && !IsNullableValueType(type);
+        }
+
+        private static bool IsNullableValueType(Type type)
+        {
+            return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>);
+        }
+
+        private static bool AreDateTimesEqual(DateTime? a, DateTime? b)
+        {
+            if (a == null && b == null) return true;
+            if (a == null || b == null) return false;
+
+            return a.Value.Year == b.Value.Year &&
+                   a.Value.Month == b.Value.Month &&
+                   a.Value.Day == b.Value.Day &&
+                   a.Value.Hour == b.Value.Hour &&
+                   a.Value.Minute == b.Value.Minute &&
+                   a.Value.Second == b.Value.Second;
         }
     }
 }
