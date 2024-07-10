@@ -295,14 +295,6 @@ namespace TrueVote.Api.Helpers
                         differences[propertyName] = (listAString, listBString);
                     }
                 }
-                else if (IsComplexType(property.PropertyType))
-                {
-                    var nestedDifferences = CompareObjects(valueA, valueB, $"{propertyName}.");
-                    foreach (var kvp in nestedDifferences)
-                    {
-                        differences[kvp.Key] = kvp.Value;
-                    }
-                }
                 else if (property.PropertyType == typeof(DateTime) || property.PropertyType == typeof(DateTime?))
                 {
                     var dateTimeA = valueA as DateTime?;
@@ -322,21 +314,6 @@ namespace TrueVote.Api.Helpers
             }
 
             return differences;
-        }
-
-        private static bool IsComplexType(Type type)
-        {
-            return !type.IsPrimitive
-                && type != typeof(string)
-                && type != typeof(DateTime)
-                && type != typeof(DateTime?)
-                && !type.IsEnum
-                && !IsNullableValueType(type);
-        }
-
-        private static bool IsNullableValueType(Type type)
-        {
-            return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>);
         }
 
         private static bool AreDateTimesEqual(DateTime? a, DateTime? b)
