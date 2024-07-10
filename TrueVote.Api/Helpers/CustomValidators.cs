@@ -259,6 +259,28 @@ namespace TrueVote.Api.Helpers
             }
 
             var type = a.GetType();
+
+            if (IsSimpleType(type))
+            {
+                if (type == typeof(DateTime) || type == typeof(DateTime?))
+                {
+                    if (!AreDateTimesEqual(a as DateTime?, b as DateTime?))
+                    {
+                        differences[prefix.TrimEnd('.')] = (a, b);
+                    }
+                }
+                else if (!Equals(a, b))
+                {
+                    differences[prefix.TrimEnd('.')] = (a, b);
+                }
+                return differences;
+            }
+
+            if (typeof(IEnumerable).IsAssignableFrom(type) && type != typeof(string))
+            {
+                return CompareEnumerables(a as IEnumerable, b as IEnumerable, prefix);
+            }
+
             var properties = type.GetProperties(BindingFlags.Public | BindingFlags.Instance);
 
             foreach (var property in properties)
@@ -275,46 +297,52 @@ namespace TrueVote.Api.Helpers
                 }
 
                 var propertyName = string.IsNullOrEmpty(prefix) ? property.Name : $"{prefix}{property.Name}";
+                var propertyDifferences = CompareObjects(valueA, valueB, propertyName);
 
-                if (property.PropertyType.IsGenericType && property.PropertyType.GetGenericTypeDefinition() == typeof(List<>))
+                foreach (var kvp in propertyDifferences)
                 {
-                    var listA = valueA as IEnumerable;
-                    var listB = valueB as IEnumerable;
-
-                    if (listA == null && listB == null) continue;
-                    if (listA == null || listB == null)
-                    {
-                        differences[propertyName] = (valueA, valueB);
-                        continue;
-                    }
-
-                    var listAString = string.Join(",", listA.Cast<object>());
-                    var listBString = string.Join(",", listB.Cast<object>());
-
-                    if (listAString != listBString)
-                    {
-                        differences[propertyName] = (listAString, listBString);
-                    }
-                }
-                else if (property.PropertyType == typeof(DateTime) || property.PropertyType == typeof(DateTime?))
-                {
-                    var dateTimeA = valueA as DateTime?;
-                    var dateTimeB = valueB as DateTime?;
-                    if (!AreDateTimesEqual(dateTimeA, dateTimeB))
-                    {
-                        differences[propertyName] = (valueA, valueB);
-                    }
-                }
-                else
-                {
-                    if (!Equals(valueA, valueB))
-                    {
-                        differences[propertyName] = (valueA, valueB);
-                    }
+                    differences[kvp.Key] = kvp.Value;
                 }
             }
 
             return differences;
+        }
+
+        private static Dictionary<string, (object? OldValue, object? NewValue)> CompareEnumerables(IEnumerable? a, IEnumerable? b, string prefix)
+        {
+            var differences = new Dictionary<string, (object? OldValue, object? NewValue)>();
+
+            if (a == null && b == null)
+                return differences;
+
+            if (a == null || b == null)
+            {
+                differences[prefix] = (a, b);
+                return differences;
+            }
+
+            var listA = a.Cast<object>().ToList();
+            var listB = b.Cast<object>().ToList();
+
+            if (!listA.SequenceEqual(listB))
+            {
+                differences[prefix] = (string.Join(",", listA), string.Join(",", listB));
+            }
+
+            return differences;
+        }
+
+        private static bool IsSimpleType(Type type)
+        {
+            return type.IsPrimitive
+                || type == typeof(string)
+                || type == typeof(decimal)
+                || type == typeof(DateTime)
+                || type == typeof(DateTimeOffset)
+                || type == typeof(TimeSpan)
+                || type == typeof(Guid)
+                || type.IsEnum
+                || Nullable.GetUnderlyingType(type) != null;
         }
 
         private static bool AreDateTimesEqual(DateTime? a, DateTime? b)
