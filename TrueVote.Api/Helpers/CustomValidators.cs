@@ -149,18 +149,24 @@ namespace TrueVote.Api.Helpers
         }
     }
 
-    public class BallotIntegrityChecker : ValidationAttribute
+    public class BallotIntegrityCheckerAttribute : ValidationAttribute
     {
         protected readonly string _electionPropertyName;
-        protected ILogger _logger => LoggerFactory.Create(builder => builder.AddConsole()).CreateLogger<BallotIntegrityChecker>();
 
-        public BallotIntegrityChecker(string electionPropertyName)
+        public BallotIntegrityCheckerAttribute(string electionPropertyName)
         {
             _electionPropertyName = electionPropertyName;
         }
 
         protected override ValidationResult IsValid(object value, ValidationContext validationContext)
         {
+            // Get the logger
+            ILogger? logger = null;
+            if (validationContext.Items.TryGetValue("Logger", out var loggerContextValue) && loggerContextValue is ILogger castedLogger)
+            {
+                logger = castedLogger; // TODO Get logging working here
+            }
+
             var electionPropertyInfo = validationContext.ObjectType.GetProperty(_electionPropertyName);
             if (electionPropertyInfo == null)
             {
@@ -231,7 +237,7 @@ namespace TrueVote.Api.Helpers
             // TODO Make sure the only diffs are the 'Selected' property. Anything else should be a failed validation result
             foreach (var kvp in diff)
             {
-                _logger.LogInformation($"{kvp.Key}: Old = {kvp.Value.OldValue}, New = {kvp.Value.NewValue}");
+                logger?.LogInformation($"{kvp.Key}: Old = {kvp.Value.OldValue}, New = {kvp.Value.NewValue}");
             }
 
             return ValidationResult.Success;

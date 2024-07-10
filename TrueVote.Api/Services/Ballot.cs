@@ -57,6 +57,7 @@ namespace TrueVote.Api.Services
             var validationContext = new ValidationContext(bindSubmitBallotModel);
             validationContext.Items["IsBallot"] = true; // TODO https://truevote.atlassian.net/browse/AD-113
             validationContext.Items["DBContext"] = _trueVoteDbContext;
+            validationContext.Items["Logger"] = _log;
             if (!_recursiveValidator.TryValidateObjectRecursive(bindSubmitBallotModel, validationContext, validationResults))
             {
                 var errorDictionary = _recursiveValidator.GetValidationErrorsDictionary(validationResults);
