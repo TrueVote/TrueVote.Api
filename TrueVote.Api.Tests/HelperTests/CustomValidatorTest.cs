@@ -1,3 +1,5 @@
+using Microsoft.Extensions.Logging;
+using Moq;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -465,6 +467,22 @@ namespace TrueVote.Api.Tests.HelperTests
         }
 
         [Fact]
+        public void BallotIntegrityCheckerHandlesSelectionDifferences()
+        {
+            var baseBallotObj = new SubmitBallotModel { Election = MoqData.MockBallotData[0].Election };
+            baseBallotObj.Election.Races[0].Candidates[0].Selected = true;
+            var validationContext = new ValidationContext(baseBallotObj);
+            validationContext.Items["IsBallot"] = true;
+            validationContext.Items["DBContext"] = _trueVoteDbContext;
+
+            var attribute = new BallotIntegrityChecker("Election");
+            var result = attribute.GetValidationResult(baseBallotObj, validationContext);
+
+            Assert.Equal(ValidationResult.Success, result);
+            _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
+        }
+
+        [Fact]
         public void ModelDiffHandlesDifferentPropertyTypes()
         {
             var modelA = new
@@ -507,6 +525,58 @@ namespace TrueVote.Api.Tests.HelperTests
             Assert.Equal((new DateTime(2023, 1, 1, 12, 0, 0), new DateTime(2023, 1, 2, 12, 0, 0)), diff["DateTimeProp"]);
             Assert.Equal((true, false), diff["NullableBoolProp"]);
             Assert.Equal(("A,B", "B,C"), diff["ListProp"]);
+        }
+
+        [Fact]
+        public void ModelDiffHandlesNullLists()
+        {
+            var modelA = new
+            {
+                ListProp = new List<string> { "B", "C" }
+            };
+
+            var modelB = new
+            {
+                ListProp = (List<string>) null
+            };
+
+            var modelC = new
+            {
+                ListProp = (List<string>) null
+            };
+
+            var diff1 = modelA.ModelDiff(modelB);
+            Assert.Single(diff1);
+            Assert.True(diff1.ContainsKey("ListProp"));
+
+            var diff2 = modelB.ModelDiff(modelC);
+            Assert.Empty(diff2);
+
+            var diff3 = modelB.ModelDiff(modelA);
+            Assert.Single(diff3);
+            Assert.True(diff3.ContainsKey("ListProp"));
+        }
+
+        [Fact]
+        public void ModelDiffHandlesNullModels()
+        {
+            var modelA = new SubmitBallotModel { Election = null };
+
+            var modelB = (SubmitBallotModel) null;
+
+            var modelC = (SubmitBallotModel) null;
+
+            var diff1 = modelA.ModelDiff(modelB);
+            Assert.Single(diff1);
+
+            // Call using static invocation since we can't call an extension on a null object
+            // var diff2 = modelB.ModelDiff(modelC);
+            var diff2 = ModelDiffExtensions.ModelDiff(modelB, modelC);
+            Assert.Empty(diff2);
+
+            //var diff3 = modelB.ModelDiff(modelA);
+            var diff3 = ModelDiffExtensions.ModelDiff(modelB, modelA);
+            Assert.Single(diff3);
         }
 
         [Fact]

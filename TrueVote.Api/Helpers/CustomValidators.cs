@@ -152,6 +152,7 @@ namespace TrueVote.Api.Helpers
     public class BallotIntegrityChecker : ValidationAttribute
     {
         protected readonly string _electionPropertyName;
+        protected ILogger _logger => LoggerFactory.Create(builder => builder.AddConsole()).CreateLogger<BallotIntegrityChecker>();
 
         public BallotIntegrityChecker(string electionPropertyName)
         {
@@ -230,7 +231,7 @@ namespace TrueVote.Api.Helpers
             // TODO Make sure the only diffs are the 'Selected' property. Anything else should be a failed validation result
             foreach (var kvp in diff)
             {
-                Console.WriteLine($"{kvp.Key}: Old = {kvp.Value.OldValue}, New = {kvp.Value.NewValue}");
+                _logger.LogInformation($"{kvp.Key}: Old = {kvp.Value.OldValue}, New = {kvp.Value.NewValue}");
             }
 
             return ValidationResult.Success;
