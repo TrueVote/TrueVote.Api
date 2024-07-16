@@ -167,7 +167,7 @@ namespace TrueVote.Api.Tests.ServiceTests
 
             var val = (CountBallotModelResponse) (ret as OkObjectResult).Value;
             Assert.NotNull(val);
-            Assert.Equal(3, val.BallotCount);
+            Assert.Equal(5, val.BallotCount);
 
             _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));

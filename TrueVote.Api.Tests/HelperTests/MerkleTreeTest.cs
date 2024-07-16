@@ -56,8 +56,8 @@ namespace TrueVote.Api.Tests.HelperTests
         [Fact]
         public void CreatesHashFromBallotObject()
         {
-            var data1 = MoqData.MockBallotData;
-            var data2 = MoqData.MockBallotData;
+            var data1 = MoqData.MockBallotData[0];
+            var data2 = MoqData.MockBallotData[0];
 
             var data1Json = JsonConvert.SerializeObject(data1);
             var data2Json = JsonConvert.SerializeObject(data2);
@@ -70,8 +70,8 @@ namespace TrueVote.Api.Tests.HelperTests
             Assert.NotNull(hash1);
             Assert.NotNull(hash2);
             Assert.Equal(hash1, hash2);
-            Assert.Equal("118", hash1[0].ToString());
-            Assert.Equal("118", hash2[0].ToString());
+            Assert.Equal("179", hash1[0].ToString());
+            Assert.Equal("179", hash2[0].ToString());
         }
 
         [Fact]

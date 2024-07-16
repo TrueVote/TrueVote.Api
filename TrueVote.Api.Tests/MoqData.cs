@@ -18,7 +18,7 @@ namespace TrueVote.Api.Tests
         private static readonly DateTime createDate2 = DateTime.Parse("2023-12-17").AddHours(1);
         private static readonly DateTime createDate3 = DateTime.Parse("2023-12-17").AddHours(2);
         private static readonly DateTime createDate4 = DateTime.Parse("2023-12-17").AddHours(3);
-        private static readonly DateTime createDate5 = DateTime.Parse("2023-12-17").AddHours(3);
+        private static readonly DateTime createDate5 = DateTime.Parse("2023-12-17").AddHours(4);
 
         public static List<UserModel> MockUserData => new()
         {
