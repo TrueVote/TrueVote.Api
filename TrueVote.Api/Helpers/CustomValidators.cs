@@ -164,7 +164,7 @@ namespace TrueVote.Api.Helpers
             ILogger? logger = null;
             if (validationContext.Items.TryGetValue("Logger", out var loggerContextValue) && loggerContextValue is ILogger castedLogger)
             {
-                logger = castedLogger; // TODO Get logging working here
+                logger = castedLogger;
             }
 
             var electionPropertyInfo = validationContext.ObjectType.GetProperty(_electionPropertyName);

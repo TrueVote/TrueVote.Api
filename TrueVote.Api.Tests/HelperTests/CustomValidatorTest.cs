@@ -245,7 +245,7 @@ namespace TrueVote.Api.Tests.HelperTests
             var validationContext = new ValidationContext(baseBallotObj);
             validationContext.Items["IsBallot"] = true;
             validationContext.Items["DBContext"] = _trueVoteDbContext;
-            validationContext.Items["Logger"] = _logHelper;
+            validationContext.Items["Logger"] = _logHelper.Object;
 
             var validModel = recursiveValidator.TryValidateObjectRecursive(baseBallotObj, validationContext, validationResults);
             Assert.True(validModel);
@@ -412,7 +412,7 @@ namespace TrueVote.Api.Tests.HelperTests
             var validationContext = new ValidationContext(baseBallotObj);
             validationContext.Items["IsBallot"] = true;
             validationContext.Items["DBContext"] = _trueVoteDbContext;
-            validationContext.Items["Logger"] = _logHelper;
+            validationContext.Items["Logger"] = _logHelper.Object;
 
             var attribute = new BallotIntegrityCheckerAttribute("Election");
             var result = attribute.GetValidationResult(baseBallotObj, validationContext);
@@ -428,7 +428,7 @@ namespace TrueVote.Api.Tests.HelperTests
             var validationContext = new ValidationContext(baseBallotObj);
             validationContext.Items["IsBallot"] = true;
             // validationContext.Items["DBContext"] = _trueVoteDbContext;
-            validationContext.Items["Logger"] = _logHelper;
+            validationContext.Items["Logger"] = _logHelper.Object;
 
             var attribute = new BallotIntegrityCheckerAttribute("Election");
             var result = attribute.GetValidationResult(baseBallotObj, validationContext);
@@ -445,7 +445,7 @@ namespace TrueVote.Api.Tests.HelperTests
             var validationContext = new ValidationContext(baseBallotObj);
             validationContext.Items["IsBallot"] = true;
             validationContext.Items["DBContext"] = _trueVoteDbContext;
-            validationContext.Items["Logger"] = _logHelper;
+            validationContext.Items["Logger"] = _logHelper.Object;
 
             var attribute = new BallotIntegrityCheckerAttribute("Election");
             var result = attribute.GetValidationResult(baseBallotObj, validationContext);
@@ -462,7 +462,7 @@ namespace TrueVote.Api.Tests.HelperTests
             var validationContext = new ValidationContext(baseBallotObj);
             validationContext.Items["IsBallot"] = true;
             validationContext.Items["DBContext"] = _trueVoteDbContext;
-            validationContext.Items["Logger"] = _logHelper;
+            validationContext.Items["Logger"] = _logHelper.Object;
 
             var attribute = new BallotIntegrityCheckerAttribute("Election");
             var result = attribute.GetValidationResult(baseBallotObj, validationContext);
@@ -479,7 +479,7 @@ namespace TrueVote.Api.Tests.HelperTests
             var validationContext = new ValidationContext(baseBallotObj);
             validationContext.Items["IsBallot"] = true;
             validationContext.Items["DBContext"] = _trueVoteDbContext;
-            validationContext.Items["Logger"] = _logHelper;
+            validationContext.Items["Logger"] = _logHelper.Object;
 
             var attribute = new BallotIntegrityCheckerAttribute("Election");
             var result = attribute.GetValidationResult(baseBallotObj, validationContext);
