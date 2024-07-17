@@ -322,16 +322,12 @@ namespace TrueVote.Api.Helpers
             var listA = a?.Cast<object>().ToList() ?? new List<object>();
             var listB = b?.Cast<object>().ToList() ?? new List<object>();
 
-            if (listA.Count != listB.Count)
-            {
-                differences[prefix.TrimEnd('.')] = (string.Join(",", listA), string.Join(",", listB));
-                return differences;
-            }
+            var maxCount = Math.Max(listA.Count, listB.Count);
 
-            for (var i = 0; i < listA.Count; i++)
+            for (var i = 0; i < maxCount; i++)
             {
-                var itemA = listA[i];
-                var itemB = listB[i];
+                var itemA = i < listA.Count ? listA[i] : null;
+                var itemB = i < listB.Count ? listB[i] : null;
 
                 if (itemA == null && itemB == null) continue;
 
@@ -347,7 +343,9 @@ namespace TrueVote.Api.Helpers
                     }
                     else
                     {
-                        differences[$"{prefix.TrimEnd('.')}"] = (string.Join(",", listA), string.Join(",", listB));
+                        var displayA = listA.Select(item => item != null && !IsSimpleType(item.GetType()) ? "ComplexType" : item?.ToString()).ToList();
+                        var displayB = listB.Select(item => item != null && !IsSimpleType(item.GetType()) ? "ComplexType" : item?.ToString()).ToList();
+                        differences[$"{prefix.TrimEnd('.')}"] = (string.Join(",", displayA), string.Join(",", displayB));
                         return differences;
                     }
                 }

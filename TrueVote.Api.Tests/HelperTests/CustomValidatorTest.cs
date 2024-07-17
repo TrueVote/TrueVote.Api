@@ -1086,6 +1086,140 @@ namespace TrueVote.Api.Tests.HelperTests
             Assert.True(diff.ContainsKey("ListProp"));
             Assert.Equal(("ComplexType", "ComplexType,ComplexType"), diff["ListProp"]);
         }
+
+        [Fact]
+        public void ModelDiff_HandlesDifferentLengthsWithComplexObjects()
+        {
+            var modelA = new
+            {
+                ListProp = new List<ComplexType>
+                {
+                    new ComplexType { Prop = "A" },
+                    new ComplexType { Prop = "B" }
+                }
+            };
+
+            var modelB = new
+            {
+                ListProp = new List<ComplexType>
+                {
+                    new ComplexType { Prop = "A" }
+                }
+            };
+
+            var diff = modelA.ModelDiff(modelB);
+
+            Assert.Single(diff);
+            Assert.True(diff.ContainsKey("ListProp"));
+            Assert.Equal(("ComplexType,ComplexType", "ComplexType"), diff["ListProp"]);
+        }
+
+        [Fact]
+        public void ModelDiff_HandlesMixedNullAndComplexObjects()
+        {
+            var modelA = new
+            {
+                ListProp = new List<ComplexType?>
+                {
+                    new ComplexType { Prop = "A" },
+                    null
+                }
+            };
+
+            var modelB = new
+            {
+                ListProp = new List<ComplexType?>
+                {
+                    new ComplexType { Prop = "A" },
+                    new ComplexType { Prop = "B" }
+                }
+            };
+
+            var diff = modelA.ModelDiff(modelB);
+
+            Assert.Single(diff);
+            Assert.True(diff.ContainsKey("ListProp"));
+            Assert.Equal(("ComplexType,", "ComplexType,ComplexType"), diff["ListProp"]);
+        }
+
+        [Fact]
+        public void ModelDiff_HandlesListsOfSimpleTypesWithDifferentLengths()
+        {
+            var modelA = new
+            {
+                ListProp = new List<string> { "A", "B", "C" }
+            };
+
+            var modelB = new
+            {
+                ListProp = new List<string> { "A", "B" }
+            };
+
+            var diff = modelA.ModelDiff(modelB);
+
+            Assert.Single(diff);
+            Assert.True(diff.ContainsKey("ListProp"));
+            Assert.Equal(("A,B,C", "A,B"), diff["ListProp"]);
+        }
+
+        [Fact]
+        public void ModelDiff_HandlesEmptyLists()
+        {
+            var modelA = new
+            {
+                ListProp = new List<string>()
+            };
+
+            var modelB = new
+            {
+                ListProp = new List<string> { "A" }
+            };
+
+            var diff = modelA.ModelDiff(modelB);
+
+            Assert.Single(diff);
+            Assert.True(diff.ContainsKey("ListProp"));
+            Assert.Equal(("", "A"), diff["ListProp"]);
+        }
+
+        [Fact]
+        public void ModelDiff_HandlesListsWithAllNullItems()
+        {
+            var modelA = new
+            {
+                ListProp = new List<string?> { null, null }
+            };
+
+            var modelB = new
+            {
+                ListProp = new List<string?> { null, null }
+            };
+
+            var diff = modelA.ModelDiff(modelB);
+
+            Assert.Empty(diff);
+        }
+
+        [Fact]
+        public void ModelDiff_HandlesListsWithSomeNullItemsAndDifferentLengths()
+        {
+            var modelA = new
+            {
+                ListProp = new List<string?> { "A", null, "C" }
+            };
+
+            var modelB = new
+            {
+                ListProp = new List<string?> { "A", "B" }
+            };
+
+            var diff = modelA.ModelDiff(modelB);
+
+            Assert.Single(diff);
+            Assert.True(diff.ContainsKey("ListProp"));
+            Assert.Equal(("A,,C", "A,B"), diff["ListProp"]);
+        }
+
     }
 }
 #pragma warning restore CS8632 // The annotation for nullable reference types should only be used in code within a '#nullable' annotations context.
