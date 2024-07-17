@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
 #pragma warning disable IDE0046 // Convert to conditional expression
@@ -6,12 +7,17 @@ namespace TrueVote.Api.Helpers
 {
     public static class ModelDiffExtensions
     {
+        public static Dictionary<string, (object? OldValue, object? NewValue)> ModelDiff<T>(T? a, T? b, string prefix = "") where T : class
+        {
+            return CompareObjects(a, b, prefix);
+        }
+
         public static Dictionary<string, (object? OldValue, object? NewValue)> ModelDiff<T>(this T? a, T? b) where T : class
         {
             return CompareObjects(a, b, "");
         }
 
-        internal static Dictionary<string, (object? OldValue, object? NewValue)> CompareObjects(object? a, object? b, string prefix)
+        public static Dictionary<string, (object? OldValue, object? NewValue)> CompareObjects(object? a, object? b, string prefix)
         {
             var differences = new Dictionary<string, (object? OldValue, object? NewValue)>();
 
@@ -58,6 +64,17 @@ namespace TrueVote.Api.Helpers
             return differences;
         }
 
+        public static string JoinListItems(IEnumerable<string?> items)
+        {
+            return string.Join(",", items.Select(i => i ?? string.Empty));
+        }
+
+        [ExcludeFromCodeCoverage] // So strange that this needs to be uncovered, but it does.
+        public static string CreateKey(string prefix)
+        {
+            return $"{prefix.TrimEnd('.')}";
+        }
+
         public static Dictionary<string, (object? OldValue, object? NewValue)> CompareEnumerables(IEnumerable? a, IEnumerable? b, string prefix)
         {
             var differences = new Dictionary<string, (object? OldValue, object? NewValue)>();
@@ -88,7 +105,10 @@ namespace TrueVote.Api.Helpers
                     {
                         var displayA = listA.Select(item => item != null && !IsSimpleType(item.GetType()) ? "ComplexType" : item?.ToString()).ToList();
                         var displayB = listB.Select(item => item != null && !IsSimpleType(item.GetType()) ? "ComplexType" : item?.ToString()).ToList();
-                        differences[$"{prefix.TrimEnd('.')}"] = (string.Join(",", displayA), string.Join(",", displayB));
+                        var key = CreateKey(prefix);
+                        var oldValue = JoinListItems(displayA);
+                        var newValue = JoinListItems(displayB);
+                        differences[key] = (oldValue, newValue);
                         return differences;
                     }
                 }
