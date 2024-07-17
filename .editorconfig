@@ -9,6 +9,7 @@ brackets=false
 bracket_spacing=false
 end_of_line=lf
 charset=utf-8
+# dotnet_diagnostic.IDE0022.severity = none
 
 # CS1974: Dynamically dispatched call may fail at runtime because one or more applicable overloads are conditional methods
 dotnet_diagnostic.CS1974.severity = suggestion
