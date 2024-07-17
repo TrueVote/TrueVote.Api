@@ -1,5 +1,5 @@
-using Microsoft.Extensions.Logging;
 using Moq;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System;
 using System.Collections;
@@ -14,6 +14,7 @@ using TrueVote.Api.Tests.Helpers;
 using Xunit;
 using Xunit.Abstractions;
 
+#pragma warning disable CS8632 // The annotation for nullable reference types should only be used in code within a '#nullable' annotations context.
 namespace TrueVote.Api.Tests.HelperTests
 {
     public class CandidateTestModel
@@ -268,8 +269,9 @@ namespace TrueVote.Api.Tests.HelperTests
             Assert.False(validModel);
             Assert.NotEmpty(validationResults);
             Assert.NotNull(validationResults);
-            Assert.Single(validationResults);
-            Assert.Contains("Races field is required", validationResults[0].ErrorMessage);
+            Assert.Contains("Races field is required", validationResults[1].ErrorMessage);
+            Assert.Contains("Races", validationResults[1].MemberNames);
+            _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
         }
 
         [Fact]
@@ -496,6 +498,7 @@ namespace TrueVote.Api.Tests.HelperTests
         {
             var baseBallotObj = new SubmitBallotModel { Election = MoqData.MockBallotData[0].Election };
             baseBallotObj.Election.Races[0].Candidates[0].Selected = true;
+            baseBallotObj.Election.Races[0].Candidates[1].Selected = true;
             var validationContext = new ValidationContext(baseBallotObj);
             validationContext.Items["IsBallot"] = true;
             validationContext.Items["DBContext"] = _trueVoteDbContext;
@@ -505,7 +508,6 @@ namespace TrueVote.Api.Tests.HelperTests
             var result = attribute.GetValidationResult(baseBallotObj, validationContext);
 
             Assert.Equal(ValidationResult.Success, result);
-            _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
         }
 
         [Fact]
@@ -826,5 +828,264 @@ namespace TrueVote.Api.Tests.HelperTests
             Assert.Equal((1, 2), result["NormalProperty"]);
             Assert.False(result.ContainsKey("ExceptionProperty"));  // ExceptionProperty should be skipped
         }
+
+        [Fact]
+        public void ModelDiff_HandlesNullItemsInLists()
+        {
+            var modelA = new
+            {
+                ListProp = new List<string?> { null, "B" }
+            };
+
+            var modelB = new
+            {
+                ListProp = new List<string?> { null, "B" }
+            };
+
+            var diff = modelA.ModelDiff(modelB);
+
+            // There should be no difference
+            Assert.Empty(diff);
+        }
+
+        [Fact]
+        public void ModelDiff_HandlesOneNullItemInList()
+        {
+            var modelA = new
+            {
+                ListProp = new List<string?> { "A", null }
+            };
+
+            var modelB = new
+            {
+                ListProp = new List<string?> { "A", "B" }
+            };
+
+            var diff = modelA.ModelDiff(modelB);
+
+            // There should be one difference
+            Assert.Single(diff);
+            Assert.True(diff.ContainsKey("ListProp"));
+            Assert.Equal(("A,", "A,B"), diff["ListProp"]);
+        }
+
+        public class ComplexType
+        {
+            public string Prop { get; set; } = string.Empty;
+        }
+
+        [Fact]
+        public void ModelDiff_HandlesComplexTypesInLists()
+        {
+            var modelA = new
+            {
+                ListProp = new List<ComplexType>
+                {
+                    new ComplexType { Prop = "A" }
+                }
+            };
+
+            var modelB = new
+            {
+                ListProp = new List<ComplexType>
+                {
+                    new ComplexType { Prop = "B" }
+                }
+            };
+
+            var diff = modelA.ModelDiff(modelB);
+
+            // There should be one difference
+            Assert.Single(diff);
+            Assert.True(diff.ContainsKey("ListProp[0].Prop"));
+            Assert.Equal(("A", "B"), diff["ListProp[0].Prop"]);
+        }
+
+        [Fact]
+        public void ModelDiff_HandlesDifferentLengthLists()
+        {
+            var modelA = new
+            {
+                ListProp = new List<string> { "A", "B" }
+            };
+
+            var modelB = new
+            {
+                ListProp = new List<string> { "A" }
+            };
+
+            var diff = modelA.ModelDiff(modelB);
+
+            // There should be one difference
+            Assert.Single(diff);
+            Assert.True(diff.ContainsKey("ListProp"));
+            Assert.Equal(("A,B", "A"), diff["ListProp"]);
+        }
+
+        [Fact]
+        public void ModelDiff_HandlesOneNullItemInList_CoverAllCases()
+        {
+            var modelA = new
+            {
+                ListProp = new List<string?> { "A", null }
+            };
+
+            var modelB = new
+            {
+                ListProp = new List<string?> { "A", "B" }
+            };
+
+            var diff = modelA.ModelDiff(modelB);
+
+            // There should be one difference
+            Assert.Single(diff);
+            Assert.True(diff.ContainsKey("ListProp"));
+            Assert.Equal(("A,", "A,B"), diff["ListProp"]);
+        }
+
+        [Fact]
+        public void ModelDiff_HandlesComplexTypesInLists_CoverAllCases()
+        {
+            var modelA = new
+            {
+                ListProp = new List<ComplexType>
+                {
+                    new ComplexType { Prop = "A" }
+                }
+            };
+
+            var modelB = new
+            {
+                ListProp = new List<ComplexType>
+                {
+                    new ComplexType { Prop = "B" }
+                }
+            };
+
+            var diff = modelA.ModelDiff(modelB);
+
+            // There should be one difference
+            Assert.Single(diff);
+            Assert.True(diff.ContainsKey("ListProp[0].Prop"));
+            Assert.Equal(("A", "B"), diff["ListProp[0].Prop"]);
+        }
+
+        [Fact]
+        public void ModelDiff_HandlesDifferentLengthListsWithNonNullItems()
+        {
+            var modelA = new
+            {
+                ListProp = new List<string> { "A", "B" }
+            };
+
+            var modelB = new
+            {
+                ListProp = new List<string> { "A" }
+            };
+
+            var diff = modelA.ModelDiff(modelB);
+
+            // There should be one difference
+            Assert.Single(diff);
+            Assert.True(diff.ContainsKey("ListProp"));
+            Assert.Equal(("A,B", "A"), diff["ListProp"]);
+        }
+
+        [Fact]
+        public void ModelDiff_HandlesMixedNullAndNonNullItemsInLists()
+        {
+            var modelA = new
+            {
+                ListProp = new List<string?> { "A", null }
+            };
+
+            var modelB = new
+            {
+                ListProp = new List<string?> { "A", "B" }
+            };
+
+            var diff = modelA.ModelDiff(modelB);
+
+            // There should be one difference
+            Assert.Single(diff);
+            Assert.True(diff.ContainsKey("ListProp"));
+            Assert.Equal(("A,", "A,B"), diff["ListProp"]);
+        }
+
+        [Fact]
+        public void ModelDiff_HandlesAllNullItemsInLists()
+        {
+            var modelA = new
+            {
+                ListProp = new List<string?> { null, null }
+            };
+
+            var modelB = new
+            {
+                ListProp = new List<string?> { null, null }
+            };
+
+            var diff = modelA.ModelDiff(modelB);
+
+            // There should be no difference
+            Assert.Empty(diff);
+        }
+
+        [Fact]
+        public void ModelDiff_HandlesDifferentComplexObjectsInLists()
+        {
+            var modelA = new
+            {
+                ListProp = new List<ComplexType>
+                {
+                    new ComplexType { Prop = "A" },
+                    new ComplexType { Prop = "B" }
+                }
+            };
+
+            var modelB = new
+            {
+                ListProp = new List<ComplexType>
+                {
+                    new ComplexType { Prop = "A" }
+                }
+            };
+
+            var diff = modelA.ModelDiff(modelB);
+
+            // There should be one difference
+            Assert.Single(diff);
+            Assert.True(diff.ContainsKey("ListProp"));
+            Assert.Equal(("ComplexType,ComplexType", "ComplexType"), diff["ListProp"]);
+        }
+
+        [Fact]
+        public void ModelDiff_HandlesIdenticalComplexObjectsWithDifferentCounts()
+        {
+            var modelA = new
+            {
+                ListProp = new List<ComplexType>
+                {
+                    new ComplexType { Prop = "A" }
+                }
+            };
+
+            var modelB = new
+            {
+                ListProp = new List<ComplexType>
+                {
+                    new ComplexType { Prop = "A" },
+                    new ComplexType { Prop = "B" }
+                }
+            };
+
+            var diff = modelA.ModelDiff(modelB);
+
+            // There should be one difference
+            Assert.Single(diff);
+            Assert.True(diff.ContainsKey("ListProp"));
+            Assert.Equal(("ComplexType", "ComplexType,ComplexType"), diff["ListProp"]);
+        }
     }
 }
+#pragma warning restore CS8632 // The annotation for nullable reference types should only be used in code within a '#nullable' annotations context.

@@ -1,6 +1,7 @@
 using System.Collections;
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
+using System.Text.Json;
 using TrueVote.Api.Interfaces;
 using TrueVote.Api.Models;
 
@@ -234,10 +235,26 @@ namespace TrueVote.Api.Helpers
             // Model diff between ballot passed in and DB election. They should be the same other than 'Selected' property
             var diff = electionFromDB.ModelDiff(election);
 
-            // TODO Make sure the only diffs are the 'Selected' property. Anything else should be a failed validation result
+            var validationResults = new List<ValidationResult>();
+
             foreach (var kvp in diff)
             {
-                logger?.LogInformation($"{kvp.Key}: Old = {kvp.Value.OldValue}, New = {kvp.Value.NewValue}");
+                if (!kvp.Key.Contains(".Selected"))
+                {
+                    logger?.LogInformation($"{kvp.Key}: Old = {kvp.Value.OldValue}, New = {kvp.Value.NewValue}");
+                    validationResults.Add(new ValidationResult($"Value for {kvp.Key} changed from {kvp.Value.OldValue} to {kvp.Value.NewValue}", [kvp.Key]));
+                }
+            }
+
+            if (validationResults.Count > 0)
+            {
+                var recursiveValidator = new RecursiveValidator();
+
+                var errorDictionary = recursiveValidator.GetValidationErrorsDictionary(validationResults);
+
+                var errorJson = JsonSerializer.Serialize(errorDictionary, (JsonSerializerOptions) null);
+
+                return new ValidationResult(errorJson);
             }
 
             return ValidationResult.Success;
@@ -302,12 +319,38 @@ namespace TrueVote.Api.Helpers
         {
             var differences = new Dictionary<string, (object? OldValue, object? NewValue)>();
 
-            var listA = a?.Cast<object>().ToList() ?? [];
-            var listB = b?.Cast<object>().ToList() ?? [];
+            var listA = a?.Cast<object>().ToList() ?? new List<object>();
+            var listB = b?.Cast<object>().ToList() ?? new List<object>();
 
-            if (!listA.SequenceEqual(listB))
+            if (listA.Count != listB.Count)
             {
-                differences[prefix] = (string.Join(",", listA), string.Join(",", listB));
+                differences[prefix.TrimEnd('.')] = (string.Join(",", listA), string.Join(",", listB));
+                return differences;
+            }
+
+            for (var i = 0; i < listA.Count; i++)
+            {
+                var itemA = listA[i];
+                var itemB = listB[i];
+
+                if (itemA == null && itemB == null) continue;
+
+                if (itemA == null || itemB == null || !Equals(itemA, itemB))
+                {
+                    if (itemA != null && itemB != null && !IsSimpleType(itemA.GetType()))
+                    {
+                        var nestedDifferences = CompareObjects(itemA, itemB, $"{prefix}[{i}].");
+                        foreach (var kvp in nestedDifferences)
+                        {
+                            differences[kvp.Key] = kvp.Value;
+                        }
+                    }
+                    else
+                    {
+                        differences[$"{prefix.TrimEnd('.')}"] = (string.Join(",", listA), string.Join(",", listB));
+                        return differences;
+                    }
+                }
             }
 
             return differences;
