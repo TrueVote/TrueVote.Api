@@ -106,7 +106,7 @@ namespace TrueVote.Api.Tests.HelperTests
         [InlineData(new[] { 1, 2, 3 }, null, "1,2,3", "")]
         [InlineData(null, null, "", "")]
         [InlineData(new[] { 1, 2, 3 }, new[] { 1, 2, 4 }, "1,2,3", "1,2,4")]
-        public void CompareEnumerables_HandlesVariousScenarios(int[] a, int[] b, string expectedOld, string expectedNew)
+        public void CompareEnumerablesHandlesVariousScenarios(int[] a, int[] b, string expectedOld, string expectedNew)
         {
             var result = ModelDiffExtensions.CompareEnumerables(a, b, "TestPrefix");
 
@@ -127,7 +127,7 @@ namespace TrueVote.Api.Tests.HelperTests
         [InlineData("2023-07-16", null, false)]
         [InlineData("2023-07-16 10:30:00", "2023-07-16 10:30:00", true)]
         [InlineData("2023-07-16 10:30:00", "2023-07-16 10:30:01", false)]
-        public void AreDateTimesEqual_HandlesVariousScenarios(string a, string b, bool expected)
+        public void AreDateTimesEqualHandlesVariousScenarios(string a, string b, bool expected)
         {
             DateTime? dateA = a == null ? null : DateTime.Parse(a);
             DateTime? dateB = b == null ? null : DateTime.Parse(b);
@@ -141,7 +141,7 @@ namespace TrueVote.Api.Tests.HelperTests
         [InlineData(null)]
         [InlineData("")]
         [InlineData("SomePrefix.")]
-        public void CompareComplexTypes_PrefixHandling_WorksCorrectly(string prefix)
+        public void CompareComplexTypesPrefixHandlingWorksCorrectly(string prefix)
         {
             var a = new TestClass { TestProperty = 1 };
             var b = new TestClass { TestProperty = 2 };
@@ -154,7 +154,7 @@ namespace TrueVote.Api.Tests.HelperTests
         }
 
         [Fact]
-        public void CompareComplexTypes_PropertyThrowsException_ContinuesComparison()
+        public void CompareComplexTypesPropertyThrowsExceptionContinuesComparison()
         {
             var a = new TestClassWithExceptionProperty { NormalProperty = 1 };
             var b = new TestClassWithExceptionProperty { NormalProperty = 2 };
@@ -168,7 +168,7 @@ namespace TrueVote.Api.Tests.HelperTests
         }
 
         [Fact]
-        public void ModelDiff_HandlesComplexScenarios()
+        public void ModelDiffHandlesComplexScenarios()
         {
             var modelA = new
             {
@@ -198,20 +198,20 @@ namespace TrueVote.Api.Tests.HelperTests
         [InlineData("Test")]
         [InlineData("Test.")]
         [InlineData("Test...")]
-        public void CreateKey_HandlesVariousPrefixes(string prefix)
+        public void CreateKeyHandlesVariousPrefixes(string prefix)
         {
             var result = ModelDiffExtensions.CreateKey(prefix);
             Assert.Equal(prefix.TrimEnd('.'), result);
         }
 
         [Fact]
-        public void CreateKey_HandlesNullPrefix()
+        public void CreateKeyHandlesNullPrefix()
         {
             Assert.Throws<NullReferenceException>(() => ModelDiffExtensions.CreateKey(null));
         }
 
         [Fact]
-        public void ModelDiff_HandlesListWithComplexAndSimpleTypes()
+        public void ModelDiffHandlesListWithComplexAndSimpleTypes()
         {
             var complexType = new ComplexType { Prop = "Test" };
             var modelA = new

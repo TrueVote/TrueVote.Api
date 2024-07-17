@@ -21,7 +21,7 @@ namespace TrueVote.Api.Helpers
 
             if (a == null || b == null)
             {
-                differences[prefix.TrimEnd('.')] = (a, b);
+                differences[CreateKey(prefix)] = (a, b);
                 return differences;
             }
 
@@ -48,12 +48,12 @@ namespace TrueVote.Api.Helpers
             {
                 if (!AreDateTimesEqual(a as DateTime?, b as DateTime?))
                 {
-                    differences[prefix.TrimEnd('.')] = (a, b);
+                    differences[CreateKey(prefix)] = (a, b);
                 }
             }
             else if (!Equals(a, b))
             {
-                differences[prefix.TrimEnd('.')] = (a, b);
+                differences[CreateKey(prefix)] = (a, b);
             }
 
             return differences;
