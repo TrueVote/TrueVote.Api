@@ -12,7 +12,7 @@ namespace TrueVote.Api.Helpers
             return CompareObjects(a, b, prefix);
         }
 
-        public static Dictionary<string, (object? OldValue, object? NewValue)> CompareObjects(object? a, object? b, string prefix)
+        internal static Dictionary<string, (object? OldValue, object? NewValue)> CompareObjects(object? a, object? b, string prefix)
         {
             var differences = new Dictionary<string, (object? OldValue, object? NewValue)>();
 
@@ -40,11 +40,11 @@ namespace TrueVote.Api.Helpers
             return CompareComplexTypes(a, b, prefix);
         }
 
-        public static Dictionary<string, (object? OldValue, object? NewValue)> CompareSimpleTypes(object a, object b, string prefix)
+        internal static Dictionary<string, (object? OldValue, object? NewValue)> CompareSimpleTypes(object a, object b, string prefix)
         {
             var differences = new Dictionary<string, (object? OldValue, object? NewValue)>();
 
-            if (a.GetType() == typeof(DateTime) || a.GetType() == typeof(DateTime?))
+            if (a is DateTime || a is DateTime?)
             {
                 if (!AreDateTimesEqual(a as DateTime?, b as DateTime?))
                 {
@@ -59,7 +59,7 @@ namespace TrueVote.Api.Helpers
             return differences;
         }
 
-        public static string JoinListItems(IEnumerable<string?> items)
+        internal static string JoinListItems(IEnumerable<string?> items)
         {
             return string.Join(",", items.Select(i => i ?? string.Empty));
         }
@@ -67,7 +67,7 @@ namespace TrueVote.Api.Helpers
         [ExcludeFromCodeCoverage] // So strange that this needs to be uncovered, but it does.
         public static string CreateKey(string prefix)
         {
-            return $"{prefix.TrimEnd('.')}";
+            return prefix.TrimEnd('.');
         }
 
         public static Dictionary<string, (object? OldValue, object? NewValue)> CompareEnumerables(IEnumerable? a, IEnumerable? b, string prefix)
@@ -98,12 +98,9 @@ namespace TrueVote.Api.Helpers
                     }
                     else
                     {
-                        var displayA = listA.Select(item => item != null && !IsSimpleType(item.GetType()) ? "ComplexType" : item?.ToString()).ToList();
-                        var displayB = listB.Select(item => item != null && !IsSimpleType(item.GetType()) ? "ComplexType" : item?.ToString()).ToList();
-                        var key = CreateKey(prefix);
-                        var oldValue = JoinListItems(displayA);
-                        var newValue = JoinListItems(displayB);
-                        differences[key] = (oldValue, newValue);
+                        var displayA = listA.Select(item => item != null && !IsSimpleType(item.GetType()) ? "ComplexType" : item?.ToString());
+                        var displayB = listB.Select(item => item != null && !IsSimpleType(item.GetType()) ? "ComplexType" : item?.ToString());
+                        differences[CreateKey(prefix)] = (JoinListItems(displayA), JoinListItems(displayB));
                         return differences;
                     }
                 }
@@ -157,15 +154,9 @@ namespace TrueVote.Api.Helpers
 
         public static bool AreDateTimesEqual(DateTime? a, DateTime? b)
         {
-            if (a == null && b == null) return true;
-            if (a == null || b == null) return false;
-
-            return a.Value.Year == b.Value.Year &&
-                   a.Value.Month == b.Value.Month &&
-                   a.Value.Day == b.Value.Day &&
-                   a.Value.Hour == b.Value.Hour &&
-                   a.Value.Minute == b.Value.Minute &&
-                   a.Value.Second == b.Value.Second;
+            return a == b || (a.HasValue && b.HasValue && a.Value.Date == b.Value.Date &&
+                   a.Value.Hour == b.Value.Hour && a.Value.Minute == b.Value.Minute &&
+                   a.Value.Second == b.Value.Second);
         }
     }
 }
