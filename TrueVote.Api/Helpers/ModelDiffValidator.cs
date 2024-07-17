@@ -7,14 +7,9 @@ namespace TrueVote.Api.Helpers
 {
     public static class ModelDiffExtensions
     {
-        public static Dictionary<string, (object? OldValue, object? NewValue)> ModelDiff<T>(T? a, T? b, string prefix = "") where T : class
+        public static Dictionary<string, (object? OldValue, object? NewValue)> ModelDiff<T>(this T? a, T? b, string prefix = "") where T : class
         {
             return CompareObjects(a, b, prefix);
-        }
-
-        public static Dictionary<string, (object? OldValue, object? NewValue)> ModelDiff<T>(this T? a, T? b) where T : class
-        {
-            return CompareObjects(a, b, "");
         }
 
         public static Dictionary<string, (object? OldValue, object? NewValue)> CompareObjects(object? a, object? b, string prefix)
