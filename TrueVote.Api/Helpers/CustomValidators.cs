@@ -6,9 +6,6 @@ using TrueVote.Api.Interfaces;
 using TrueVote.Api.Models;
 
 #pragma warning disable IDE0046 // Convert to conditional expression
-#pragma warning disable IDE0047 // Remove unnecessary parentheses
-#pragma warning disable IDE0059 // Unnecessary assignment of a value
-#pragma warning disable IDE0045 // Convert to conditional expression
 namespace TrueVote.Api.Helpers
 {
     public interface IRecursiveValidator
@@ -261,7 +258,4 @@ namespace TrueVote.Api.Helpers
         }
     }
 }
-#pragma warning restore IDE0045 // Convert to conditional expression
-#pragma warning restore IDE0059 // Unnecessary assignment of a value
-#pragma warning restore IDE0047 // Remove unnecessary parentheses
 #pragma warning restore IDE0046 // Convert to conditional expression

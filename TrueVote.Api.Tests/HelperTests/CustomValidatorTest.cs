@@ -13,7 +13,6 @@ using TrueVote.Api.Tests.Helpers;
 using Xunit;
 using Xunit.Abstractions;
 
-#pragma warning disable CS8632 // The annotation for nullable reference types should only be used in code within a '#nullable' annotations context.
 namespace TrueVote.Api.Tests.HelperTests
 {
     public class CandidateTestModel
@@ -510,4 +509,3 @@ namespace TrueVote.Api.Tests.HelperTests
         }
     }
 }
-#pragma warning restore CS8632 // The annotation for nullable reference types should only be used in code within a '#nullable' annotations context.
