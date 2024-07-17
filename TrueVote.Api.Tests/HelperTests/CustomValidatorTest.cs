@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using Newtonsoft.Json;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
@@ -250,6 +251,25 @@ namespace TrueVote.Api.Tests.HelperTests
             var validModel = recursiveValidator.TryValidateObjectRecursive(baseBallotObj, validationContext, validationResults);
             Assert.True(validModel);
             Assert.Empty(validationResults);
+        }
+
+        [Fact]
+        public void HandlesModelWithNullNestedModelProperties()
+        {
+            var validationResults = new List<ValidationResult>();
+            var baseBallotObj = new SubmitBallotModel { Election = MoqData.MockBallotData[1].Election };
+            baseBallotObj.Election.Races = null;
+            var validationContext = new ValidationContext(baseBallotObj);
+            validationContext.Items["IsBallot"] = true;
+            validationContext.Items["DBContext"] = _trueVoteDbContext;
+            validationContext.Items["Logger"] = _logHelper.Object;
+
+            var validModel = recursiveValidator.TryValidateObjectRecursive(baseBallotObj, validationContext, validationResults);
+            Assert.False(validModel);
+            Assert.NotEmpty(validationResults);
+            Assert.NotNull(validationResults);
+            Assert.Single(validationResults);
+            Assert.Contains("Races field is required", validationResults[0].ErrorMessage);
         }
 
         [Fact]
@@ -613,6 +633,198 @@ namespace TrueVote.Api.Tests.HelperTests
             var diff3 = modelB.ModelDiff(modelA);
             Assert.Single(diff3);
             Assert.True(diff3.ContainsKey("DateTimeProp"));
+        }
+
+        [Fact]
+        public void CompareEnumerables_BothNonNull_ReturnsCorrectDifference()
+        {
+            // Arrange
+            var a = new List<int> { 1, 2, 3 };
+            var b = new List<int> { 1, 2, 4 };
+
+            // Act
+            var result = ModelDiffExtensions.CompareEnumerables(a, b, "TestPrefix");
+
+            // Assert
+            Assert.Single(result);
+            Assert.Equal(("1,2,3", "1,2,4"), result["TestPrefix"]);
+        }
+
+        [Fact]
+        public void CompareEnumerables_FirstNull_ReturnsCorrectDifference()
+        {
+            // Arrange
+            IEnumerable a = null;
+            var b = new List<int> { 1, 2, 3 };
+
+            // Act
+            var result = ModelDiffExtensions.CompareEnumerables(a, b, "TestPrefix");
+
+            // Assert
+            Assert.Single(result);
+            Assert.Equal(("", "1,2,3"), result["TestPrefix"]);
+        }
+
+        [Fact]
+        public void CompareEnumerables_SecondNull_ReturnsCorrectDifference()
+        {
+            // Arrange
+            var a = new List<int> { 1, 2, 3 };
+            IEnumerable b = null;
+
+            // Act
+            var result = ModelDiffExtensions.CompareEnumerables(a, b, "TestPrefix");
+
+            // Assert
+            Assert.Single(result);
+            Assert.Equal(("1,2,3", ""), result["TestPrefix"]);
+        }
+
+        [Fact]
+        public void CompareEnumerables_BothNull_ReturnsEmptyDictionary()
+        {
+            // Arrange
+            IEnumerable a = null;
+            IEnumerable b = null;
+
+            // Act
+            var result = ModelDiffExtensions.CompareEnumerables(a, b, "TestPrefix");
+
+            // Assert
+            Assert.Empty(result);
+        }
+
+        [Fact]
+        public void CompareEnumerables_DifferentTypes_HandlesCorrectly()
+        {
+            // Arrange
+            var a = new List<int> { 1, 2, 3 };
+            var b = new string[] { "1", "2", "3" };
+
+            // Act
+            var result = ModelDiffExtensions.CompareEnumerables(a, b, "TestPrefix");
+
+            // Assert
+            Assert.Single(result);
+            Assert.Equal(("1,2,3", "1,2,3"), result["TestPrefix"]);
+        }
+
+        [Fact]
+        public void AreDateTimesEqual_BothNull_ReturnsTrue()
+        {
+            // Arrange
+            DateTime? a = null;
+            DateTime? b = null;
+
+            // Act
+            var result = ModelDiffExtensions.AreDateTimesEqual(a, b);
+
+            // Assert
+            Assert.True(result);
+        }
+
+        [Fact]
+        public void AreDateTimesEqual_FirstNull_ReturnsFalse()
+        {
+            // Arrange
+            DateTime? a = null;
+            DateTime? b = new DateTime(2023, 7, 16);
+
+            // Act
+            var result = ModelDiffExtensions.AreDateTimesEqual(a, b);
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void AreDateTimesEqual_SecondNull_ReturnsFalse()
+        {
+            // Arrange
+            DateTime? a = new DateTime(2023, 7, 16);
+            DateTime? b = null;
+
+            // Act
+            var result = ModelDiffExtensions.AreDateTimesEqual(a, b);
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void AreDateTimesEqual_BothNonNull_Equal_ReturnsTrue()
+        {
+            // Arrange
+            DateTime? a = new DateTime(2023, 7, 16, 10, 30, 0);
+            DateTime? b = new DateTime(2023, 7, 16, 10, 30, 0);
+
+            // Act
+            var result = ModelDiffExtensions.AreDateTimesEqual(a, b);
+
+            // Assert
+            Assert.True(result);
+        }
+
+        [Fact]
+        public void AreDateTimesEqual_BothNonNull_NotEqual_ReturnsFalse()
+        {
+            // Arrange
+            DateTime? a = new DateTime(2023, 7, 16, 10, 30, 0);
+            DateTime? b = new DateTime(2023, 7, 16, 10, 30, 1);
+
+            // Act
+            var result = ModelDiffExtensions.AreDateTimesEqual(a, b);
+
+            // Assert
+            Assert.False(result);
+        }
+
+        private class TestClass
+        {
+            public int TestProperty { get; set; }
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        [InlineData("SomePrefix.")]
+        public void CompareComplexTypes_PrefixHandling_WorksCorrectly(string prefix)
+        {
+            // Arrange
+            var a = new TestClass { TestProperty = 1 };
+            var b = new TestClass { TestProperty = 2 };
+
+            // Act
+            var result = ModelDiffExtensions.CompareComplexTypes(a, b, prefix);
+
+            // Assert
+            var expectedKey = string.IsNullOrEmpty(prefix) ? "TestProperty" : $"{prefix}TestProperty";
+            Assert.True(result.ContainsKey(expectedKey));
+            Assert.Equal((1, 2), result[expectedKey]);
+        }
+
+        private class TestClassWithExceptionProperty
+        {
+            public int NormalProperty { get; set; }
+
+            public int ExceptionProperty => throw new InvalidOperationException("This property always throws an exception");
+        }
+
+        [Fact]
+        public void CompareComplexTypes_PropertyThrowsException_ContinuesComparison()
+        {
+            // Arrange
+            var a = new TestClassWithExceptionProperty { NormalProperty = 1 };
+            var b = new TestClassWithExceptionProperty { NormalProperty = 2 };
+
+            // Act
+            var result = ModelDiffExtensions.CompareComplexTypes(a, b, "");
+
+            // Assert
+            Assert.Single(result);  // Only NormalProperty should be in the result
+            Assert.True(result.ContainsKey("NormalProperty"));
+            Assert.Equal((1, 2), result["NormalProperty"]);
+            Assert.False(result.ContainsKey("ExceptionProperty"));  // ExceptionProperty should be skipped
         }
     }
 }

@@ -251,7 +251,7 @@ namespace TrueVote.Api.Helpers
             return CompareObjects(a, b, "");
         }
 
-        private static Dictionary<string, (object? OldValue, object? NewValue)> CompareObjects(object? a, object? b, string prefix)
+        internal static Dictionary<string, (object? OldValue, object? NewValue)> CompareObjects(object? a, object? b, string prefix)
         {
             var differences = new Dictionary<string, (object? OldValue, object? NewValue)>();
 
@@ -268,18 +268,7 @@ namespace TrueVote.Api.Helpers
 
             if (IsSimpleType(type))
             {
-                if (type == typeof(DateTime) || type == typeof(DateTime?))
-                {
-                    if (!AreDateTimesEqual(a as DateTime?, b as DateTime?))
-                    {
-                        differences[prefix.TrimEnd('.')] = (a, b);
-                    }
-                }
-                else if (!Equals(a, b))
-                {
-                    differences[prefix.TrimEnd('.')] = (a, b);
-                }
-                return differences;
+                return CompareSimpleTypes(a, b, prefix);
             }
 
             if (typeof(IEnumerable).IsAssignableFrom(type) && type != typeof(string))
@@ -287,7 +276,47 @@ namespace TrueVote.Api.Helpers
                 return CompareEnumerables(a as IEnumerable, b as IEnumerable, prefix);
             }
 
-            var properties = type.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+            return CompareComplexTypes(a, b, prefix);
+        }
+
+        public static Dictionary<string, (object? OldValue, object? NewValue)> CompareSimpleTypes(object a, object b, string prefix)
+        {
+            var differences = new Dictionary<string, (object? OldValue, object? NewValue)>();
+
+            if (a.GetType() == typeof(DateTime) || a.GetType() == typeof(DateTime?))
+            {
+                if (!AreDateTimesEqual(a as DateTime?, b as DateTime?))
+                {
+                    differences[prefix.TrimEnd('.')] = (a, b);
+                }
+            }
+            else if (!Equals(a, b))
+            {
+                differences[prefix.TrimEnd('.')] = (a, b);
+            }
+
+            return differences;
+        }
+
+        public static Dictionary<string, (object? OldValue, object? NewValue)> CompareEnumerables(IEnumerable? a, IEnumerable? b, string prefix)
+        {
+            var differences = new Dictionary<string, (object? OldValue, object? NewValue)>();
+
+            var listA = a?.Cast<object>().ToList() ?? [];
+            var listB = b?.Cast<object>().ToList() ?? [];
+
+            if (!listA.SequenceEqual(listB))
+            {
+                differences[prefix] = (string.Join(",", listA), string.Join(",", listB));
+            }
+
+            return differences;
+        }
+
+        public static Dictionary<string, (object? OldValue, object? NewValue)> CompareComplexTypes(object a, object b, string prefix)
+        {
+            var differences = new Dictionary<string, (object? OldValue, object? NewValue)>();
+            var properties = a.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
 
             foreach (var property in properties)
             {
@@ -314,31 +343,7 @@ namespace TrueVote.Api.Helpers
             return differences;
         }
 
-        private static Dictionary<string, (object? OldValue, object? NewValue)> CompareEnumerables(IEnumerable? a, IEnumerable? b, string prefix)
-        {
-            var differences = new Dictionary<string, (object? OldValue, object? NewValue)>();
-
-            if (a == null && b == null)
-                return differences;
-
-            if (a == null || b == null)
-            {
-                differences[prefix] = (a, b);
-                return differences;
-            }
-
-            var listA = a.Cast<object>().ToList();
-            var listB = b.Cast<object>().ToList();
-
-            if (!listA.SequenceEqual(listB))
-            {
-                differences[prefix] = (string.Join(",", listA), string.Join(",", listB));
-            }
-
-            return differences;
-        }
-
-        private static bool IsSimpleType(Type type)
+        internal static bool IsSimpleType(Type type)
         {
             return type.IsPrimitive
                 || type == typeof(string)
@@ -351,7 +356,7 @@ namespace TrueVote.Api.Helpers
                 || Nullable.GetUnderlyingType(type) != null;
         }
 
-        private static bool AreDateTimesEqual(DateTime? a, DateTime? b)
+        public static bool AreDateTimesEqual(DateTime? a, DateTime? b)
         {
             if (a == null && b == null) return true;
             if (a == null || b == null) return false;
