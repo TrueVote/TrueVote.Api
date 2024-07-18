@@ -507,5 +507,45 @@ namespace TrueVote.Api.Tests.HelperTests
 
             Assert.Equal(ValidationResult.Success, result);
         }
+
+        [Fact]
+        public void IsValidWhenRacePropertyValueIsNull_ShouldSetEmptyString()
+        {
+            // Arrange
+            var attribute = new TestNumberOfChoicesValidatorAttribute("CandidatesProperty", "RaceProperty");
+            var mockObject = new MockObjectWithNullProperty();
+            var validationContext = new ValidationContext(mockObject);
+
+            // Act
+            attribute.TestIsValid(null, validationContext);
+
+            // Assert
+            Assert.Equal(string.Empty, attribute.GetRacePropertyValue());
+        }
+
+        // Test-specific subclass of NumberOfChoicesValidatorAttribute
+        private class TestNumberOfChoicesValidatorAttribute : NumberOfChoicesValidatorAttribute
+        {
+            public TestNumberOfChoicesValidatorAttribute(string propertyName, string racePropertyName)
+                : base(propertyName, racePropertyName) { }
+
+            public ValidationResult TestIsValid(object value, ValidationContext validationContext)
+            {
+                return base.IsValid(value, validationContext);
+            }
+
+            protected override ValidationResult ValidateCount(object choicesValue, int count, ValidationContext validationContext)
+            {
+                // Implementation not needed for this test
+                return ValidationResult.Success;
+            }
+        }
+
+        // Mock object that returns null for the RaceProperty
+        private class MockObjectWithNullProperty
+        {
+            public object RaceProperty => null;
+            public List<CandidateModel> CandidatesProperty => new List<CandidateModel>();
+        }
     }
 }
