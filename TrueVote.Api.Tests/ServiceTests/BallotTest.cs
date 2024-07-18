@@ -203,5 +203,30 @@ namespace TrueVote.Api.Tests.ServiceTests
             _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
         }
+
+        [Fact]
+        public async Task HandlesSubmitBallotDatabaseError()
+        {
+            var baseBallotObj = new SubmitBallotModel { Election = MoqData.MockBallotData[1].Election };
+
+            var mockBallotContext = new Mock<MoqTrueVoteDbContext>();
+            var mockBallotDataQueryable = MoqData.MockBallotData.AsQueryable();
+            var mockBallotHashDataQueryable = MoqData.MockBallotHashData.AsQueryable();
+            var MockBallotSet = DbMoqHelper.GetDbSet(mockBallotDataQueryable);
+            mockBallotContext.Setup(m => m.Ballots).Returns(MockBallotSet.Object);
+            mockBallotContext.Setup(m => m.SaveChangesAsync()).Throws(new Exception("DB Saving Changes Exception"));
+
+            var ballotApi = new Ballot(_logHelper.Object, mockBallotContext.Object, _validatorApi, _mockServiceBus.Object, _mockRecursiveValidator.Object);
+            var ret = await ballotApi.SubmitBallot(baseBallotObj);
+            Assert.NotNull(ret);
+            Assert.Equal(StatusCodes.Status409Conflict, ((IStatusCodeActionResult) ret).StatusCode);
+
+            var val = (SecureString) (ret as ConflictObjectResult).Value;
+            Assert.NotNull(val);
+            Assert.Contains("DB Saving Changes Exception", val.Value);
+
+            _logHelper.Verify(LogLevel.Error, Times.Exactly(1));
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+        }
     }
 }
