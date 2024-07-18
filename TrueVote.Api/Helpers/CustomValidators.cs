@@ -127,7 +127,7 @@ public class BallotIntegrityCheckerAttribute : ValidationAttribute
 
         var electionFromDBSet = trueVoteDbContext.Elections.Where(e => e.ElectionId == election.ElectionId);
 
-        if (!electionFromDBSet.Any())
+        if (electionFromDBSet.ToList().Count == 0)
         {
             return new ValidationResult($"Ballot for Election: {election.ElectionId} is invalid. Election not found.", [validationContext.MemberName]);
         }

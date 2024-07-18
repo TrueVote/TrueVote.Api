@@ -7,7 +7,6 @@ using TrueVote.Api.Helpers;
 using ByteConverter = TrueVote.Api.Helpers.ByteConverter;
 using JsonConverter = System.Text.Json.Serialization.JsonConverter;
 using JsonConverterAttribute = System.Text.Json.Serialization.JsonConverterAttribute;
-using JsonIgnore = Newtonsoft.Json.JsonIgnoreAttribute;
 
 namespace TrueVote.Api.Models
 {

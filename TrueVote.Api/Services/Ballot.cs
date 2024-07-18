@@ -48,11 +48,10 @@ namespace TrueVote.Api.Services
             // TODO Validate the ballot
             // 1. Must have a UserId and not have already submitted a ballot for this election
             // 2. Confirm the election id exists - DONE
-            // 3. Confirm the election data for this ballot has not been altered.
+            // 3. Confirm the election data for this ballot has not been altered. - DONE
             // 4. Confirm none of the races have null for 'Selected'. Must be true or false. - DONE
             // 5. Confirm ballot is within election time range - DONE
             // ADD CODE FOR ABOVE ITEMS HERE
-
             var validationResults = new List<ValidationResult>();
             var validationContext = new ValidationContext(bindSubmitBallotModel);
             validationContext.Items["IsBallot"] = true; // TODO https://truevote.atlassian.net/browse/AD-113
@@ -66,22 +65,35 @@ namespace TrueVote.Api.Services
             }
 
             var ballot = new BallotModel { Election = bindSubmitBallotModel.Election, BallotId = Guid.NewGuid().ToString(), DateCreated = UtcNowProviderFactory.GetProvider().UtcNow };
-            await _trueVoteDbContext.EnsureCreatedAsync();
-
-            await _trueVoteDbContext.Ballots.AddAsync(ballot);
-            await _trueVoteDbContext.SaveChangesAsync();
 
             // TODO Localize .Message
-            var submitBallotResponse = new SubmitBallotModelResponse {
+            var submitBallotResponse = new SubmitBallotModelResponse
+            {
                 ElectionId = bindSubmitBallotModel.Election.ElectionId,
                 BallotId = ballot.BallotId,
-                Message = $"Ballot successfully submitted. Election ID: {bindSubmitBallotModel.Election.ElectionId}, Ballot ID: {ballot.BallotId}"
+                Message = $"Election ID: {bindSubmitBallotModel.Election.ElectionId}, Ballot ID: {ballot.BallotId}"
             };
+
+            try
+            {
+                await _trueVoteDbContext.EnsureCreatedAsync();
+                await _trueVoteDbContext.Ballots.AddAsync(ballot);
+                await _trueVoteDbContext.SaveChangesAsync();
+            }
+            catch (Exception e)
+            {
+                _log.LogError("Error in DB Operation Saving Ballot");
+                _log.LogDebug("HTTP trigger - SubmitBallot:End");
+
+                var msg = submitBallotResponse.Message += " - Error in DB Operation Saving Ballot: " + e.Message;
+
+                return Conflict(new SecureString { Value = msg });
+            }
 
             // Post a message to Service Bus for this Ballot
             await _serviceBus.SendAsync($"New TrueVote Ballot successfully submitted. Election ID: {bindSubmitBallotModel.Election.ElectionId}, Ballot ID: {ballot.BallotId}");
 
-            // FOR NOW ONLY - THIS LINE SHOULD BE REPLACED WITH A POST TO SERVICE BUS
+            // //TODO FOR NOW ONLY - THIS LINE SHOULD BE REPLACED WITH A POST TO SERVICE BUS TO PERFORM THIS ACTION
             // Hash the ballot
             try
             {
@@ -98,6 +110,8 @@ namespace TrueVote.Api.Services
             }
 
             _log.LogDebug("HTTP trigger - SubmitBallot:End");
+
+            submitBallotResponse.Message += " - Ballot successfully submitted.";
 
             // TODO Return a Ballot Submitted model response with critical key data to bind ballot / user
             return CreatedAtAction(null, null, submitBallotResponse);
