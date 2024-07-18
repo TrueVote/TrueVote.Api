@@ -1,7 +1,12 @@
+using Moq;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Text.Json.Serialization;
 using TrueVote.Api.Helpers;
 using TrueVote.Api.Models;
 using TrueVote.Api.Tests.Helpers;
@@ -10,101 +15,147 @@ using Xunit.Abstractions;
 
 namespace TrueVote.Api.Tests.HelperTests
 {
-    public class CustomValidatorTest(ITestOutputHelper output) : TestHelper(output)
+    public class RecursiveValidatorTest : TestHelper
     {
-        [Fact]
-        public void TestsMinAndMaxNumberOfChoicesSucceeds()
-        {
-            var testModel = new CandidateTestModel { MaxNumberOfChoices = 1, MinNumberOfChoices = 1, Candidates = MoqData.MockCandidateData };
-            testModel.Candidates[0].Selected = true;
-            Assert.Single(testModel.Candidates.Where(c => c.Selected == true));
+        private readonly RecursiveValidator recursiveValidator;
 
-            var validationResults = ValidationHelper.Validate(testModel);
+        public RecursiveValidatorTest(ITestOutputHelper output) : base(output)
+        {
+            recursiveValidator = new RecursiveValidator();
+        }
+
+        [Fact]
+        public void ValidatesModelWithNestedModelProperties()
+        {
+            var validationResults = new List<ValidationResult>();
+            var baseBallotObj = new SubmitBallotModel { Election = MoqData.MockBallotData[1].Election };
+            var validationContext = new ValidationContext(baseBallotObj);
+            validationContext.Items["IsBallot"] = true;
+            validationContext.Items["DBContext"] = _trueVoteDbContext;
+            validationContext.Items["Logger"] = _logHelper.Object;
+
+            var validModel = recursiveValidator.TryValidateObjectRecursive(baseBallotObj, validationContext, validationResults);
+            Assert.True(validModel);
             Assert.Empty(validationResults);
         }
 
         [Fact]
-        public void TestsMinNumberOfChoicesFails()
+        public void HandlesModelWithNullNestedModelProperties()
         {
-            var testModel = new CandidateTestModel { MinNumberOfChoices = 3, Candidates = MoqData.MockCandidateData };
-            testModel.Candidates[0].Selected = true;
-            testModel.Candidates[1].Selected = true;
-            Assert.Equal(2, testModel.Candidates.Where(c => c.Selected == true).Count());
+            var validationResults = new List<ValidationResult>();
+            var baseBallotObj = new SubmitBallotModel { Election = MoqData.MockBallotData[1].Election };
+            baseBallotObj.Election.Races = null;
+            var validationContext = new ValidationContext(baseBallotObj);
+            validationContext.Items["IsBallot"] = true;
+            validationContext.Items["DBContext"] = _trueVoteDbContext;
+            validationContext.Items["Logger"] = _logHelper.Object;
 
-            var validationResults = ValidationHelper.Validate(testModel, true);
+            var validModel = recursiveValidator.TryValidateObjectRecursive(baseBallotObj, validationContext, validationResults);
+            Assert.False(validModel);
             Assert.NotEmpty(validationResults);
             Assert.NotNull(validationResults);
-            Assert.Single(validationResults);
-            Assert.Contains("must be greater or equal to MinNumberOfChoices", validationResults[0].ErrorMessage);
-            Assert.Equal("MinNumberOfChoices", validationResults[0].MemberNames.First());
+            Assert.Contains("Races field is required", validationResults[1].ErrorMessage);
+            Assert.Contains("Races", validationResults[1].MemberNames);
+            _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
         }
 
         [Fact]
-        public void TestsMaxNumberOfChoicesFails()
+        public void ValidatesMinNumberOfChoicesInvalidProperty()
         {
-            var testModel = new CandidateTestModel { MaxNumberOfChoices = 1, Candidates = MoqData.MockCandidateData };
-            testModel.Candidates[0].Selected = true;
-            testModel.Candidates[1].Selected = true;
-            Assert.Equal(2, testModel.Candidates.Where(c => c.Selected == true).Count());
-
-            var validationResults = ValidationHelper.Validate(testModel, true);
-            Assert.NotEmpty(validationResults);
-            Assert.NotNull(validationResults);
-            Assert.Single(validationResults);
-            Assert.Contains("cannot exceed MaxNumberOfChoices", validationResults[0].ErrorMessage);
-            Assert.Equal("MaxNumberOfChoices", validationResults[0].MemberNames.First());
-        }
-
-        [Fact]
-        public void TestsMinNumberOfChoicesInvalidProperty()
-        {
+            var validationResults = new List<ValidationResult>();
             var testModel = new CandidateTestModelMinInvalidProperty { MinNumberOfChoices = 3, Candidates = "foo" };
-
-            var validationResults = ValidationHelper.Validate(testModel);
+            var validationContext = new ValidationContext(testModel);
+            var validModel = recursiveValidator.TryValidateObjectRecursive(testModel, validationContext, validationResults);
+            Assert.False(validModel);
             Assert.NotEmpty(validationResults);
             Assert.NotNull(validationResults);
             Assert.Single(validationResults);
             Assert.Contains("Property 'Candidates' is not a valid List<CandidateModel> type", validationResults[0].ErrorMessage);
             Assert.Equal("MinNumberOfChoices", validationResults[0].MemberNames.First());
+
+            var errorDictionary = recursiveValidator.GetValidationErrorsDictionary(validationResults);
+            Assert.NotEmpty(errorDictionary);
+            Assert.NotNull(errorDictionary);
+            Assert.Single(errorDictionary);
         }
 
         [Fact]
-        public void TestsMaxNumberOfChoicesInvalidProperty()
+        public void GetValidationErrorsDictionaryShouldHandleMissingErrorMessage()
         {
-            var testModel = new CandidateTestModelMaxInvalidProperty { MaxNumberOfChoices = 3, Candidates = "foo" };
+            var validationResults = new List<ValidationResult>
+            {
+                new("Error 1", ["Property1"]),
+                new("Error 2", ["Property2"]),
+                new(null, ["Property3"])
+            };
 
-            var validationResults = ValidationHelper.Validate(testModel);
-            Assert.NotEmpty(validationResults);
-            Assert.NotNull(validationResults);
-            Assert.Single(validationResults);
-            Assert.Contains("Property 'Candidates' is not a valid List<CandidateModel> type", validationResults[0].ErrorMessage);
-            Assert.Equal("MaxNumberOfChoices", validationResults[0].MemberNames.First());
+            var errorDictionary = recursiveValidator.GetValidationErrorsDictionary(validationResults);
+
+            Assert.NotEmpty(errorDictionary);
+            Assert.NotNull(errorDictionary);
+            Assert.Equal(3, errorDictionary.Count);
+            Assert.Equal(expected: ["Error 1"], errorDictionary["Property1"]);
+            Assert.Equal(expected: ["Error 2"], errorDictionary["Property2"]);
+            Assert.Equal(expected: [string.Empty], errorDictionary["Property3"]);
         }
 
         [Fact]
-        public void TestsNumberOfChoicesMaxNotFoundProperty()
+        public void ValidatorHandlesNullModel()
         {
-            var testModel = new CandidateTestModelMaxNotFoundProperty { MaxNumberOfChoices = 3 };
+            var validationResults = new List<ValidationResult>();
+            var baseBallotObj = new SubmitBallotModel { Election = MoqData.MockBallotData[1].Election };
+            var validationContext = new ValidationContext(baseBallotObj);
+            var validModel = recursiveValidator.TryValidateObjectRecursive(null, validationContext, validationResults);
+            Assert.True(validModel);
+            Assert.Empty(validationResults);
 
-            var validationResults = ValidationHelper.Validate(testModel);
-            Assert.NotEmpty(validationResults);
-            Assert.NotNull(validationResults);
-            Assert.Single(validationResults);
-            Assert.Contains("Property not found", validationResults[0].ErrorMessage);
-            Assert.Equal("MaxNumberOfChoices", validationResults[0].MemberNames.First());
+            var errorDictionary = recursiveValidator.GetValidationErrorsDictionary(validationResults);
+            Assert.Empty(errorDictionary);
+            Assert.NotNull(errorDictionary);
         }
 
         [Fact]
-        public void TestsNumberOfChoicesMinNotFoundProperty()
+        public void GetValidationErrorsDictionaryHandlesMultipleErrorsForSameProperty()
         {
-            var testModel = new CandidateTestModelMinNotFoundProperty { MinNumberOfChoices = 3 };
+            var validationResults = new List<ValidationResult>
+            {
+                new("Error 1", ["Property1"]),
+                new("Error 2", ["Property1"]),
+                new("Error 3", ["Property2"])
+            };
 
-            var validationResults = ValidationHelper.Validate(testModel);
-            Assert.NotEmpty(validationResults);
-            Assert.NotNull(validationResults);
-            Assert.Single(validationResults);
-            Assert.Contains("Property not found", validationResults[0].ErrorMessage);
-            Assert.Equal("MinNumberOfChoices", validationResults[0].MemberNames.First());
+            var errorDictionary = recursiveValidator.GetValidationErrorsDictionary(validationResults);
+
+            Assert.Equal(2, errorDictionary.Count);
+            Assert.Equal(new[] { "Error 1", "Error 2" }, errorDictionary["Property1"]);
+            Assert.Equal(new[] { "Error 3" }, errorDictionary["Property2"]);
+        }
+
+        [Fact]
+        public void TryValidateObjectRecursiveHandlesNestedObject()
+        {
+            var nestedModel = new CandidateTestModel { MaxNumberOfChoices = 1, MinNumberOfChoices = 1, Candidates = new List<CandidateModel>() };
+            var testModel = new { NestedProperty = nestedModel };
+
+            var validationResults = new List<ValidationResult>();
+            var validationContext = new ValidationContext(testModel);
+            var validModel = recursiveValidator.TryValidateObjectRecursive(testModel, validationContext, validationResults);
+
+            Assert.True(validModel);
+            Assert.Empty(validationResults);
+        }
+
+        [Fact]
+        public void TryValidateObjectRecursiveHandlesCollectionOfObjects()
+        {
+            var testModel = new { Items = new List<CandidateTestModel> { new(), new() } };
+
+            var validationResults = new List<ValidationResult>();
+            var validationContext = new ValidationContext(testModel);
+            var validModel = recursiveValidator.TryValidateObjectRecursive(testModel, validationContext, validationResults);
+
+            Assert.True(validModel);
+            Assert.Empty(validationResults);
         }
 
         [Fact]

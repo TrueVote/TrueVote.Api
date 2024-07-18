@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using TrueVote.Api.Helpers;
 using TrueVote.Api.Models;

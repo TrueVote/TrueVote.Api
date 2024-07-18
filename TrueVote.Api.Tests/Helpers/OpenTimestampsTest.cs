@@ -7,7 +7,7 @@ using Moq;
 using Moq.Protected;
 using Xunit;
 
-namespace TrueVote.Api.Helpers.Tests
+namespace TrueVote.Api.Helpers
 {
     public class OpenTimestampsTests
     {
