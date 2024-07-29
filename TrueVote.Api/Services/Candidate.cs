@@ -40,7 +40,7 @@ namespace TrueVote.Api.Services
 
             _log.LogInformation($"Request Data: {baseCandidate}");
 
-            var candidate = new CandidateModel { CandidateId = Guid.NewGuid().ToString(), Name = baseCandidate.Name, PartyAffiliation = baseCandidate.PartyAffiliation, DateCreated = UtcNowProviderFactory.GetProvider().UtcNow };
+            var candidate = new CandidateModel { CandidateId = Guid.NewGuid().ToString(), Name = baseCandidate.Name, PartyAffiliation = baseCandidate.PartyAffiliation, DateCreated = UtcNowProviderFactory.GetProvider().UtcNow, Selected = false };
 
             await _trueVoteDbContext.EnsureCreatedAsync();
 

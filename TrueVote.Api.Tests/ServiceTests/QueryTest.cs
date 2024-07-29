@@ -41,9 +41,9 @@ namespace TrueVote.Api.Tests.ServiceTests
             var ret = await _queryService.GetElection();
 
             Assert.NotNull(ret);
-            Assert.Equal("Federal", ret[0].Name);
-            Assert.Equal("Los Angeles County", ret[1].Name);
-            Assert.True(ret.Count == 3);
+            Assert.Equal("Union", ret[0].Name);
+            Assert.Equal("Association", ret[1].Name);
+            Assert.True(ret.Count == 5);
         }
 
         [Fact]
@@ -91,9 +91,9 @@ namespace TrueVote.Api.Tests.ServiceTests
             var ret = await _queryService.GetBallot();
 
             Assert.NotNull(ret);
-            Assert.Equal("electionid1", ret.Ballots[0].Election.ElectionId);
-            Assert.Equal("ballotid3", ret.Ballots[0].BallotId);
-            Assert.True(ret.Ballots.Count == 3);
+            Assert.Equal("electionid5", ret.Ballots[0].Election.ElectionId);
+            Assert.Equal("ballotid5", ret.Ballots[0].BallotId);
+            Assert.True(ret.Ballots.Count == 5);
         }
 
         [Fact]

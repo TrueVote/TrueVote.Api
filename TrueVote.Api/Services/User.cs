@@ -183,7 +183,8 @@ namespace TrueVote.Api.Services
 
         private async Task<UserModel> AddNewUser(BaseUserModel baseUser, string userId)
         {
-            var user = new UserModel { FullName = baseUser.FullName, Email = baseUser.Email, UserId = userId, NostrPubKey = baseUser.NostrPubKey, DateCreated = UtcNowProviderFactory.GetProvider().UtcNow, DateUpdated = UtcNowProviderFactory.GetProvider().UtcNow, UserPreferences = new UserPreferencesModel() };
+            var now = UtcNowProviderFactory.GetProvider().UtcNow;
+            var user = new UserModel { FullName = baseUser.FullName, Email = baseUser.Email, UserId = userId, NostrPubKey = baseUser.NostrPubKey, DateCreated = now, DateUpdated = now, UserPreferences = new UserPreferencesModel() };
 
             await _trueVoteDbContext.EnsureCreatedAsync();
 
@@ -278,6 +279,8 @@ namespace TrueVote.Api.Services
 
             // Sanitize the feedback
             feedback.Feedback = Regex.Replace(feedback.Feedback, "<.*?>", string.Empty);
+            feedback.FeedbackId = Guid.NewGuid().ToString();
+            feedback.DateCreated = UtcNowProviderFactory.GetProvider().UtcNow;
 
             await _trueVoteDbContext.EnsureCreatedAsync();
 

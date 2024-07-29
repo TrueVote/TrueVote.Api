@@ -12,11 +12,13 @@ namespace TrueVote.Api.Tests
 {
     public static class MoqData
     {
-        private static readonly DateTime startDate = DateTime.Parse("2023-02-25");
-        private static readonly DateTime endDate = DateTime.Parse("2023-02-25").AddDays(30);
-        private static readonly DateTime createDate = DateTime.Parse("2022-12-17");
-        private static readonly DateTime createDate2 = DateTime.Parse("2022-12-17").AddHours(1);
-        private static readonly DateTime createDate3 = DateTime.Parse("2022-12-17").AddHours(2);
+        private static readonly DateTime startDate = DateTime.Parse("2024-02-25");
+        private static readonly DateTime endDate = DateTime.Parse("2026-02-25").AddDays(30);
+        private static readonly DateTime createDate = DateTime.Parse("2023-12-17");
+        private static readonly DateTime createDate2 = DateTime.Parse("2023-12-17").AddHours(1);
+        private static readonly DateTime createDate3 = DateTime.Parse("2023-12-17").AddHours(2);
+        private static readonly DateTime createDate4 = DateTime.Parse("2023-12-17").AddHours(3);
+        private static readonly DateTime createDate5 = DateTime.Parse("2023-12-17").AddHours(4);
 
         public static List<UserModel> MockUserData => new()
         {
@@ -30,6 +32,8 @@ namespace TrueVote.Api.Tests
             new ElectionModel { ElectionId = "electionid1", Name = "California State", DateCreated = createDate, StartDate = startDate, EndDate = endDate, Description = "desc1", HeaderImageUrl = "url1", Races = MockRaceData },
             new ElectionModel { ElectionId = "electionid2", Name = "Los Angeles County", DateCreated = createDate2, StartDate = startDate, EndDate = endDate, Description = "desc2", HeaderImageUrl = "url2", Races = [] },
             new ElectionModel { ElectionId = "electionid3", Name = "Federal", DateCreated = createDate3, StartDate = startDate, EndDate = endDate, Description = "desc3", HeaderImageUrl = "url3", Races = [] },
+            new ElectionModel { ElectionId = "electionid4", Name = "Association", DateCreated = createDate4, StartDate = DateTime.Now.AddDays(-30), EndDate = DateTime.Now.AddDays(-10), Description = "desc4", HeaderImageUrl = "url4", Races = [] },
+            new ElectionModel { ElectionId = "electionid5", Name = "Union", DateCreated = createDate5, StartDate = DateTime.Now.AddDays(10), EndDate = DateTime.Now.AddDays(30), Description = "desc5", HeaderImageUrl = "url5", Races = [] },
         };
 
         public static List<BallotModel> MockBallotData => new()
@@ -37,12 +41,14 @@ namespace TrueVote.Api.Tests
             new BallotModel { BallotId = "ballotid1", DateCreated = createDate, Election = MockElectionData[0] },
             new BallotModel { BallotId = "ballotid2", DateCreated = createDate2, Election = MockElectionData[0] },
             new BallotModel { BallotId = "ballotid3", DateCreated = createDate3, Election = MockElectionData[0] },
+            new BallotModel { BallotId = "ballotid4", DateCreated = createDate4, Election = MockElectionData[3] },
+            new BallotModel { BallotId = "ballotid5", DateCreated = createDate5, Election = MockElectionData[4] },
         };
 
         public static List<CandidateModel> MockCandidateData => new()
         {
-            new CandidateModel { CandidateId = "candidateid1", Name = "John Smith", DateCreated = createDate, PartyAffiliation = "Republican" },
-            new CandidateModel { CandidateId = "candidateid2", Name = "Jane Doe", DateCreated = createDate2, PartyAffiliation = "Democrat" }
+            new CandidateModel { CandidateId = "candidateid1", Name = "John Smith", DateCreated = createDate, PartyAffiliation = "Republican", Selected = false },
+            new CandidateModel { CandidateId = "candidateid2", Name = "Jane Doe", DateCreated = createDate2, PartyAffiliation = "Democrat", Selected = false }
         };
 
         public static List<RaceModel> MockRaceData => new()
@@ -127,6 +133,9 @@ namespace TrueVote.Api.Tests
             mockBallotHashContext.Setup(m => m.EnsureCreatedAsync()).Returns(Task.FromResult(true));
 
             mockBallotContext = new Mock<MoqTrueVoteDbContext>();
+            mockBallotContext.Setup(m => m.Elections).Returns(MockElectionSet.Object);
+            mockBallotContext.Setup(m => m.Races).Returns(MockRaceSet.Object);
+            mockBallotContext.Setup(m => m.Candidates).Returns(MockCandidateSet.Object);
             mockBallotContext.Setup(m => m.Ballots).Returns(MockBallotSet.Object);
             mockBallotContext.Setup(m => m.BallotHashes).Returns(MockBallotHashSet.Object);
             mockBallotContext.Setup(m => m.Timestamps).Returns(MockTimestampSet.Object);

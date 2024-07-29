@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Moq;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.IO.Abstractions;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -33,7 +34,9 @@ namespace TrueVote.Api.Tests.Helpers
         protected readonly Mock<IOpenTimestampsClient> _mockOpenTimestampsClient;
         protected readonly Mock<IServiceBus> _mockServiceBus;
         protected readonly Mock<IJwtHandler> _mockJwtHandler;
+        protected readonly Mock<IRecursiveValidator> _mockRecursiveValidator;
         protected readonly ControllerContext _authControllerContext;
+        protected readonly MoqTrueVoteDbContext _trueVoteDbContext;
 
         public const string MockedTokenValue = "mocked_token_value";
 
@@ -53,7 +56,9 @@ namespace TrueVote.Api.Tests.Helpers
             serviceCollection.TryAddScoped<BallotValidator, BallotValidator>();
             serviceCollection.TryAddScoped<IServiceBus, ServiceBus>();
             serviceCollection.TryAddScoped<IJwtHandler, JwtHandler>();
+            serviceCollection.TryAddScoped<IRecursiveValidator, RecursiveValidator>();
             var serviceProvider = serviceCollection.BuildServiceProvider();
+            _trueVoteDbContext = (MoqTrueVoteDbContext) serviceProvider.GetService(typeof(MoqTrueVoteDbContext));
 
             _output = output;
 
@@ -75,15 +80,18 @@ namespace TrueVote.Api.Tests.Helpers
             _ = _mockJwtHandler.Setup(m => m.GenerateToken(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<IEnumerable<string>>()))
                 .Returns((string userId, string npub, IEnumerable<string> roles) => MockedTokenValue);
 
+            _mockRecursiveValidator = new Mock<IRecursiveValidator>();
+            _ = _mockRecursiveValidator.Setup(m => m.TryValidateObjectRecursive(It.IsAny<object>(), It.IsAny<ValidationContext>(), It.IsAny<List<ValidationResult>>())).Returns(true);
+
             _moqDataAccessor = new MoqDataAccessor();
             _userApi = new User(_logHelper.Object, _moqDataAccessor.mockUserContext.Object, _mockServiceBus.Object, _mockJwtHandler.Object);
             _electionApi = new Election(_logHelper.Object, _moqDataAccessor.mockElectionContext.Object, _mockServiceBus.Object);
             _validatorApi = new BallotValidator(_logHelper.Object, _moqDataAccessor.mockBallotContext.Object, _mockOpenTimestampsClient.Object, _mockServiceBus.Object);
-            _ballotApi = new Ballot(_logHelper.Object, _moqDataAccessor.mockBallotContext.Object, _validatorApi, _mockServiceBus.Object);
+            _ballotApi = new Ballot(_logHelper.Object, _moqDataAccessor.mockBallotContext.Object, _validatorApi, _mockServiceBus.Object, _mockRecursiveValidator.Object);
             _raceApi = new Race(_logHelper.Object, _moqDataAccessor.mockRaceContext.Object, _mockServiceBus.Object);
             _candidateApi = new Candidate(_logHelper.Object, _moqDataAccessor.mockCandidateContext.Object, _mockServiceBus.Object);
             _timestampApi = new Timestamp(_logHelper.Object, _moqDataAccessor.mockTimestampContext.Object);
-            _queryService = new Query((MoqTrueVoteDbContext) serviceProvider.GetService(typeof(MoqTrueVoteDbContext)));
+            _queryService = new Query(_trueVoteDbContext);
 
             // For endpoints that require Authorization [Authorize]
             // Mock a user principal with desired claims

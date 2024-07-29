@@ -3,10 +3,10 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
+using TrueVote.Api.Helpers;
 using ByteConverter = TrueVote.Api.Helpers.ByteConverter;
 using JsonConverter = System.Text.Json.Serialization.JsonConverter;
 using JsonConverterAttribute = System.Text.Json.Serialization.JsonConverterAttribute;
-using JsonIgnore = Newtonsoft.Json.JsonIgnoreAttribute;
 
 namespace TrueVote.Api.Models
 {
@@ -88,7 +88,7 @@ namespace TrueVote.Api.Models
         [Description("DateCreated")]
         [DataType(DataType.Date)]
         [JsonPropertyName("DateCreated")]
-        [JsonProperty(nameof(DateCreated), Required = Required.Always)]
+        [JsonProperty(nameof(DateCreated), Required = Required.Default)]
         public required DateTime DateCreated { get; set; }
     }
 
@@ -98,6 +98,7 @@ namespace TrueVote.Api.Models
         [DataType("ElectionModel")]
         [JsonPropertyName("Election")]
         [JsonProperty(nameof(Election), Required = Required.Always)]
+        [BallotIntegrityChecker(nameof(Election))]
         public required ElectionModel Election { get; set; }
 
         // TODO Add Bindings of User / Ballot connection
@@ -173,15 +174,14 @@ namespace TrueVote.Api.Models
         [Description("DateCreated")]
         [DataType(DataType.Date)]
         [JsonPropertyName("DateCreated")]
-        [JsonProperty(nameof(DateCreated), Required = Required.Always)]
+        [JsonProperty(nameof(DateCreated), Required = Required.Default)]
         public required DateTime DateCreated { get; set; }
 
         [Required]
         [Description("DateUpdated")]
         [DataType(DataType.Date)]
         [JsonPropertyName("DateUpdated")]
-        [JsonProperty(nameof(DateUpdated), Required = Required.Always)]
-        [JsonIgnore]
+        [JsonProperty(nameof(DateUpdated), Required = Required.Default)]
         public required DateTime DateUpdated { get; set; }
 
         [Description("Timestamp Id")]

@@ -59,7 +59,7 @@ namespace TrueVote.Api.Models
         [Description("DateCreated")]
         [DataType(DataType.Date)]
         [JsonPropertyName("DateCreated")]
-        [JsonProperty(nameof(DateCreated), Required = Required.Always)]
+        [JsonProperty(nameof(DateCreated), Required = Required.Default)]
         public required DateTime DateCreated { get; set; }
     }
 

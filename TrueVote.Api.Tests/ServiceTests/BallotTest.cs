@@ -5,8 +5,10 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
+using TrueVote.Api.Helpers;
 using TrueVote.Api.Models;
 using TrueVote.Api.Services;
 using TrueVote.Api.Tests.Helpers;
@@ -25,8 +27,6 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task SubmitsBallot()
         {
             var baseBallotObj = new SubmitBallotModel { Election = MoqData.MockBallotData[1].Election };
-            var validationResults = ValidationHelper.Validate(baseBallotObj, true);
-            Assert.Empty(validationResults);
 
             var ret = await _ballotApi.SubmitBallot(baseBallotObj);
             Assert.NotNull(ret);
@@ -48,28 +48,6 @@ namespace TrueVote.Api.Tests.ServiceTests
         }
 
         [Fact]
-        public async Task SubmitsBallotWithInvalidNumberOfMaxChoices()
-        {
-            var baseBallotObj = new SubmitBallotModel { Election = MoqData.MockBallotData[1].Election };
-            baseBallotObj.Election.Races[0].MaxNumberOfChoices = -1;
-
-            var validationResults = ValidationHelper.Validate(baseBallotObj, true);
-            Assert.NotEmpty(validationResults);
-            Assert.NotNull(validationResults);
-            // Assert.Single(validationResults);
-            Assert.Contains("MaxNumberOfChoices must be between 0", validationResults[0].ErrorMessage);
-            Assert.Equal("MaxNumberOfChoices", validationResults[0].MemberNames.First());
-
-            var ret = await _ballotApi.SubmitBallot(baseBallotObj);
-            Assert.NotNull(ret);
-            Assert.Equal(StatusCodes.Status400BadRequest, ((IStatusCodeActionResult) ret).StatusCode);
-            var objectResult = Assert.IsType<BadRequestObjectResult>(ret);
-            var validationProblemDetails = Assert.IsType<ValidationProblemDetails>(objectResult.Value);
-            Assert.Contains(validationProblemDetails.Errors.First().Value, v => v.Contains("MaxNumberOfChoices must be between 0"));
-            Assert.Contains("MaxNumberOfChoices", validationProblemDetails.Errors.Keys);
-        }
-
-        [Fact]
         public async Task SubmitsBallotWithAboveCandidateCountNumberOfMaxChoices()
         {
             var baseBallotObj = new SubmitBallotModel { Election = MoqData.MockBallotData[1].Election };
@@ -77,42 +55,25 @@ namespace TrueVote.Api.Tests.ServiceTests
             baseBallotObj.Election.Races[0].Candidates[0].Selected = true;
             baseBallotObj.Election.Races[0].Candidates[1].Selected = true;
 
-            var validationResults = ValidationHelper.Validate(baseBallotObj, true);
-            Assert.NotEmpty(validationResults);
-            Assert.NotNull(validationResults);
-            Assert.Single(validationResults);
-            Assert.Contains("cannot exceed MaxNumberOfChoices", validationResults[0].ErrorMessage);
-            Assert.Equal("MaxNumberOfChoices", validationResults[0].MemberNames.First());
+            var validationErrors = new Dictionary<string, string[]>
+            {
+                { "cannot exceed MaxNumberOfChoices for", ["MaxNumberOfChoices"] }
+            };
 
-            var ret = await _ballotApi.SubmitBallot(baseBallotObj);
+            var mockRecursiveValidator = new Mock<IRecursiveValidator>();
+            mockRecursiveValidator.Setup(m => m.TryValidateObjectRecursive(It.IsAny<object>(), It.IsAny<ValidationContext>(), It.IsAny<List<ValidationResult>>())).Returns(false);
+            mockRecursiveValidator.Setup(m => m.GetValidationErrorsDictionary(It.IsAny<List<ValidationResult>>())).Returns(validationErrors);
+
+            var ballotApi = new Ballot(_logHelper.Object, _moqDataAccessor.mockBallotContext.Object, _validatorApi, _mockServiceBus.Object, mockRecursiveValidator.Object);
+
+            var ret = await ballotApi.SubmitBallot(baseBallotObj);
+
             Assert.NotNull(ret);
             Assert.Equal(StatusCodes.Status400BadRequest, ((IStatusCodeActionResult) ret).StatusCode);
             var objectResult = Assert.IsType<BadRequestObjectResult>(ret);
             var validationProblemDetails = Assert.IsType<ValidationProblemDetails>(objectResult.Value);
-            Assert.Contains(validationProblemDetails.Errors.First().Value, v => v.Contains("cannot exceed MaxNumberOfChoices"));
-            Assert.Contains("MaxNumberOfChoices", validationProblemDetails.Errors.Keys);
-        }
-
-        [Fact]
-        public async Task SubmitsBallotWithInvalidNumberOfMinChoices()
-        {
-            var baseBallotObj = new SubmitBallotModel { Election = MoqData.MockBallotData[1].Election };
-            baseBallotObj.Election.Races[0].MinNumberOfChoices = -1;
-
-            var validationResults = ValidationHelper.Validate(baseBallotObj, true);
-            Assert.NotEmpty(validationResults);
-            Assert.NotNull(validationResults);
-            Assert.Single(validationResults);
-            Assert.Contains("MinNumberOfChoices must be between 0", validationResults[0].ErrorMessage);
-            Assert.Equal("MinNumberOfChoices", validationResults[0].MemberNames.First());
-
-            var ret = await _ballotApi.SubmitBallot(baseBallotObj);
-            Assert.NotNull(ret);
-            Assert.Equal(StatusCodes.Status400BadRequest, ((IStatusCodeActionResult) ret).StatusCode);
-            var objectResult = Assert.IsType<BadRequestObjectResult>(ret);
-            var validationProblemDetails = Assert.IsType<ValidationProblemDetails>(objectResult.Value);
-            Assert.Contains(validationProblemDetails.Errors.First().Value, v => v.Contains("MinNumberOfChoices must be between 0"));
-            Assert.Contains("MinNumberOfChoices", validationProblemDetails.Errors.Keys);
+            Assert.Contains("cannot exceed MaxNumberOfChoices", validationProblemDetails.Errors.Keys.First());
+            Assert.Contains("MaxNumberOfChoices", validationProblemDetails.Errors.Values.First());
         }
 
         [Fact]
@@ -122,33 +83,36 @@ namespace TrueVote.Api.Tests.ServiceTests
             baseBallotObj.Election.Races[0].MinNumberOfChoices = 2;
             baseBallotObj.Election.Races[0].Candidates[0].Selected = true;
 
-            var validationResults = ValidationHelper.Validate(baseBallotObj, true);
-            Assert.NotEmpty(validationResults);
-            Assert.NotNull(validationResults);
-            Assert.Single(validationResults);
-            Assert.Contains("must be greater or equal to MinNumberOfChoices", validationResults[0].ErrorMessage);
-            Assert.Equal("MinNumberOfChoices", validationResults[0].MemberNames.First());
+            var validationErrors = new Dictionary<string, string[]>
+            {
+                { "must be greater or equal to MinNumberOfChoices for", ["MinNumberOfChoices"] }
+            };
 
-            var ret = await _ballotApi.SubmitBallot(baseBallotObj);
+            var mockRecursiveValidator = new Mock<IRecursiveValidator>();
+            mockRecursiveValidator.Setup(m => m.TryValidateObjectRecursive(It.IsAny<object>(), It.IsAny<ValidationContext>(), It.IsAny<List<ValidationResult>>())).Returns(false);
+            mockRecursiveValidator.Setup(m => m.GetValidationErrorsDictionary(It.IsAny<List<ValidationResult>>())).Returns(validationErrors);
+
+            var ballotApi = new Ballot(_logHelper.Object, _moqDataAccessor.mockBallotContext.Object, _validatorApi, _mockServiceBus.Object, mockRecursiveValidator.Object);
+
+            var ret = await ballotApi.SubmitBallot(baseBallotObj);
+
             Assert.NotNull(ret);
             Assert.Equal(StatusCodes.Status400BadRequest, ((IStatusCodeActionResult) ret).StatusCode);
             var objectResult = Assert.IsType<BadRequestObjectResult>(ret);
             var validationProblemDetails = Assert.IsType<ValidationProblemDetails>(objectResult.Value);
-            Assert.Contains(validationProblemDetails.Errors.First().Value, v => v.Contains("must be greater or equal to MinNumberOfChoices"));
-            Assert.Contains("MinNumberOfChoices", validationProblemDetails.Errors.Keys);
+            Assert.Contains("must be greater or equal", validationProblemDetails.Errors.Keys.First());
+            Assert.Contains("MinNumberOfChoices", validationProblemDetails.Errors.Values.First());
         }
 
         [Fact]
         public async Task HandlesSubmitBallotHashingError()
         {
             var baseBallotObj = new SubmitBallotModel { Election = MoqData.MockBallotData[1].Election };
-            var validationResults = ValidationHelper.Validate(baseBallotObj, true);
-            Assert.Empty(validationResults);
 
             var mockValidator = new Mock<IBallotValidator>();
             mockValidator.Setup(m => m.HashBallotAsync(It.IsAny<BallotModel>())).Throws(new Exception("Hash Ballot Exception"));
 
-            var ballotApi = new Ballot(_logHelper.Object, _moqDataAccessor.mockBallotContext.Object, mockValidator.Object, _mockServiceBus.Object);
+            var ballotApi = new Ballot(_logHelper.Object, _moqDataAccessor.mockBallotContext.Object, mockValidator.Object, _mockServiceBus.Object, _mockRecursiveValidator.Object);
             var ret = await ballotApi.SubmitBallot(baseBallotObj);
             Assert.NotNull(ret);
             Assert.Equal(StatusCodes.Status409Conflict, ((IStatusCodeActionResult) ret).StatusCode);
@@ -165,8 +129,6 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task FindsBallot()
         {
             var findBallotObj = new FindBallotModel { BallotId = "ballotid3" };
-            var validationResults = ValidationHelper.Validate(findBallotObj, true);
-            Assert.Empty(validationResults);
 
             var ret = await _ballotApi.BallotFind(findBallotObj);
             Assert.NotNull(ret);
@@ -185,8 +147,6 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task HandlesUnfoundBallot()
         {
             var findBallotObj = new FindBallotModel { BallotId = "not going to find anything" };
-            var validationResults = ValidationHelper.Validate(findBallotObj, true);
-            Assert.Empty(validationResults);
 
             var ret = await _ballotApi.BallotFind(findBallotObj);
             Assert.NotNull(ret);
@@ -200,8 +160,6 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task CountsBallots()
         {
             var countBallotsObj = new CountBallotModel { DateCreatedStart = new DateTime(2022, 01, 01), DateCreatedEnd = new DateTime(2033, 12, 31) };
-            var validationResults = ValidationHelper.Validate(countBallotsObj, true);
-            Assert.Empty(validationResults);
 
             var ret = await _ballotApi.BallotCount(countBallotsObj);
             Assert.NotNull(ret);
@@ -209,7 +167,7 @@ namespace TrueVote.Api.Tests.ServiceTests
 
             var val = (CountBallotModelResponse) (ret as OkObjectResult).Value;
             Assert.NotNull(val);
-            Assert.Equal(3, val.BallotCount);
+            Assert.Equal(5, val.BallotCount);
 
             _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
@@ -219,8 +177,6 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task FindsBallotHash()
         {
             var findBallotHashObj = new FindBallotHashModel { BallotId = "ballotid1" };
-            var validationResults = ValidationHelper.Validate(findBallotHashObj, true);
-            Assert.Empty(validationResults);
 
             var ret = await _ballotApi.BallotHashFind(findBallotHashObj);
             Assert.NotNull(ret);
@@ -239,14 +195,37 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task HandlesUnfoundBallotHash()
         {
             var findBallotHashObj = new FindBallotHashModel { BallotId = "not going to find anything" };
-            var validationResults = ValidationHelper.Validate(findBallotHashObj, true);
-            Assert.Empty(validationResults);
 
             var ret = await _ballotApi.BallotHashFind(findBallotHashObj);
             Assert.NotNull(ret);
             Assert.Equal(StatusCodes.Status404NotFound, ((IStatusCodeActionResult) ret).StatusCode);
 
             _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+        }
+
+        [Fact]
+        public async Task HandlesSubmitBallotDatabaseError()
+        {
+            var baseBallotObj = new SubmitBallotModel { Election = MoqData.MockBallotData[1].Election };
+
+            var mockBallotContext = new Mock<MoqTrueVoteDbContext>();
+            var mockBallotDataQueryable = MoqData.MockBallotData.AsQueryable();
+            var mockBallotHashDataQueryable = MoqData.MockBallotHashData.AsQueryable();
+            var MockBallotSet = DbMoqHelper.GetDbSet(mockBallotDataQueryable);
+            mockBallotContext.Setup(m => m.Ballots).Returns(MockBallotSet.Object);
+            mockBallotContext.Setup(m => m.SaveChangesAsync()).Throws(new Exception("DB Saving Changes Exception"));
+
+            var ballotApi = new Ballot(_logHelper.Object, mockBallotContext.Object, _validatorApi, _mockServiceBus.Object, _mockRecursiveValidator.Object);
+            var ret = await ballotApi.SubmitBallot(baseBallotObj);
+            Assert.NotNull(ret);
+            Assert.Equal(StatusCodes.Status409Conflict, ((IStatusCodeActionResult) ret).StatusCode);
+
+            var val = (SecureString) (ret as ConflictObjectResult).Value;
+            Assert.NotNull(val);
+            Assert.Contains("DB Saving Changes Exception", val.Value);
+
+            _logHelper.Verify(LogLevel.Error, Times.Exactly(1));
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
         }
     }

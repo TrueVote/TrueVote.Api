@@ -1,144 +1,172 @@
-#pragma warning disable IDE0046 // Convert to conditional expression
 using System.Collections;
 using System.ComponentModel.DataAnnotations;
-using System.Reflection;
+using System.Text.Json;
+using TrueVote.Api.Interfaces;
 using TrueVote.Api.Models;
 
-namespace TrueVote.Api.Helpers
+#pragma warning disable IDE0046 // Convert to conditional expression
+namespace TrueVote.Api.Helpers;
+
+public abstract class NumberOfChoicesValidatorAttribute : ValidationAttribute
 {
-    public static class RecursiveValidator
+    protected readonly string PropertyName;
+    protected readonly string RacePropertyName;
+    protected string RacePropertyValue = string.Empty;
+    public string GetRacePropertyValue()
     {
-        public static bool TryValidateObjectRecursive(object obj, ValidationContext validationContext, List<ValidationResult> results)
-        {
-            if (obj == null) return true;
-            var result = Validator.TryValidateObject(obj, validationContext, results, true);
-
-            foreach (var property in obj.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
-            {
-                var value = property.GetValue(obj);
-                if (value == null) continue;
-
-                // Check if the property is a collection
-                if (value is IEnumerable enumerable)
-                {
-                    foreach (var item in enumerable)
-                    {
-                        if (item != null)
-                        {
-                            var nestedContext = new ValidationContext(item, validationContext, validationContext.Items);
-                            result = TryValidateObjectRecursive(item, nestedContext, results) && result;
-                        }
-                    }
-                }
-                else if (property.PropertyType.IsClass && property.PropertyType != typeof(string))
-                {
-                    var nestedContext = new ValidationContext(value, validationContext, validationContext.Items);
-                    result = TryValidateObjectRecursive(value, nestedContext, results) && result;
-                }
-            }
-
-            return result;
-        }
-
-        public static Dictionary<string, string[]> GetValidationErrorsDictionary(List<ValidationResult> results)
-        {
-            return results
-                .SelectMany(vr => vr.MemberNames.Select(memberName => new { memberName, ErrorMessage = vr.ErrorMessage ?? string.Empty }))
-                .GroupBy(x => x.memberName, x => x.ErrorMessage)
-                .ToDictionary(g => g.Key, g => g.ToArray());
-        }
+        return RacePropertyValue;
     }
 
-    public abstract class NumberOfChoicesValidatorAttribute : ValidationAttribute
+    protected NumberOfChoicesValidatorAttribute(string propertyName, string racePropertyName)
     {
-        protected readonly string CandidatesPropertyName;
-        protected readonly string RacePropertyName;
-        protected string RacePropertyValue = string.Empty;
-
-        protected NumberOfChoicesValidatorAttribute(string propertyName, string racePropertyName)
-        {
-            CandidatesPropertyName = propertyName;
-            RacePropertyName = racePropertyName;
-        }
-
-        protected override ValidationResult IsValid(object value, ValidationContext validationContext)
-        {
-            // Get the property info of the property
-            var candidatePropertyInfo = validationContext.ObjectType.GetProperty(CandidatesPropertyName);
-
-            if (candidatePropertyInfo == null)
-            {
-                return new ValidationResult($"Property not found.", [validationContext.MemberName]);
-            }
-
-            // Get the value of the property
-            var candidatePropertyValue = candidatePropertyInfo.GetValue(validationContext.ObjectInstance);
-            if (candidatePropertyValue is not List<CandidateModel>)
-            {
-                return new ValidationResult($"Property '{CandidatesPropertyName}' is not a valid List<CandidateModel> type.", [validationContext.MemberName]);
-            }
-
-            // Get the value of the Name Property
-            var nameProperty = validationContext.ObjectType.GetProperty(RacePropertyName);
-            if (nameProperty != null)
-            {
-                RacePropertyValue = nameProperty.GetValue(validationContext.ObjectInstance).ToString();
-            }
-
-            // If not a Ballot, then no need to validate. Get out.
-            // This isn't the best way of doing this. It's a bit of a hack. The issue is that we want to use the Election model
-            // both for creating an election and ballot submission. This is optimal for model re-use. But the data annotations
-            // work for ballot submission, are too tight for election creation. So this flag gets around that. When creating an election
-            // if the "IsBallot" flag isn't set, the validator simply allows the validation to proceed.
-            var isBallot = validationContext.Items.Where(i => i.Key.ToString() == "IsBallot");
-            if (!isBallot.Any())
-            {
-                return ValidationResult.Success;
-            }
-
-            // Calculate the number of selections in the candidate choices
-            var selectedCount = ((IEnumerable) candidatePropertyValue).Cast<CandidateModel>().Where(c => c.Selected == true).Count();
-
-            return ValidateCount(value, selectedCount, validationContext);
-        }
-
-        protected abstract ValidationResult ValidateCount(object value, int count, ValidationContext validationContext);
+        PropertyName = propertyName;
+        RacePropertyName = racePropertyName;
     }
 
-    public class MaxNumberOfChoicesValidatorAttribute : NumberOfChoicesValidatorAttribute
+    protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
     {
-        public MaxNumberOfChoicesValidatorAttribute(string propertyName, string racePropertyName) : base(propertyName, racePropertyName)
+        var propertyInfo = validationContext.ObjectType.GetProperty(PropertyName);
+        if (propertyInfo is null)
         {
+            return new ValidationResult($"Property not found.", [validationContext.MemberName]);
         }
 
-        protected override ValidationResult ValidateCount(object value, int selectedCount, ValidationContext validationContext)
+        var candidatePropertyValue = propertyInfo.GetValue(validationContext.ObjectInstance);
+        if (candidatePropertyValue is not List<CandidateModel>)
         {
-            var maxNumberOfChoices = value as int?;
-            if (maxNumberOfChoices.HasValue && (selectedCount > maxNumberOfChoices.Value))
-            {
-                return new ValidationResult($"Number of selected items in '{CandidatesPropertyName}' cannot exceed MaxNumberOfChoices for '{RacePropertyValue}'. MaxNumberOfChoices: {maxNumberOfChoices}, SelectedCount: {selectedCount}", [validationContext.MemberName]);
-            }
+            return new ValidationResult($"Property '{PropertyName}' is not a valid List<CandidateModel> type.", [validationContext.MemberName]);
+        }
 
+        var nameProperty = validationContext.ObjectType.GetProperty(RacePropertyName);
+        if (nameProperty is not null)
+        {
+            RacePropertyValue = nameProperty.GetValue(validationContext.ObjectInstance)?.ToString() ?? string.Empty;
+        }
+
+        if (!validationContext.Items.TryGetValue("IsBallot", out var isBallotObj) || isBallotObj is not bool isBallot || !isBallot)
+        {
             return ValidationResult.Success;
         }
+
+        var selectedCount = ((IEnumerable) candidatePropertyValue).Cast<CandidateModel>().Count(c => c.Selected == true);
+
+        return ValidateCount(value, selectedCount, validationContext);
     }
 
-    public class MinNumberOfChoicesValidatorAttribute : NumberOfChoicesValidatorAttribute
+    protected abstract ValidationResult? ValidateCount(object? choicesValue, int count, ValidationContext validationContext);
+}
+
+public class MaxNumberOfChoicesValidatorAttribute : NumberOfChoicesValidatorAttribute
+{
+    public MaxNumberOfChoicesValidatorAttribute(string propertyName, string racePropertyName) : base(propertyName, racePropertyName) { }
+
+    protected override ValidationResult? ValidateCount(object? choicesValue, int selectedCount, ValidationContext validationContext)
     {
-        public MinNumberOfChoicesValidatorAttribute(string propertyName, string racePropertyName) : base(propertyName, racePropertyName)
+        if (choicesValue is int maxNumberOfChoices && selectedCount > maxNumberOfChoices)
         {
+            return new ValidationResult($"Number of selected items in '{PropertyName}' cannot exceed MaxNumberOfChoices for '{RacePropertyValue}'. MaxNumberOfChoices: {maxNumberOfChoices}, SelectedCount: {selectedCount}", [validationContext.MemberName]);
         }
 
-        protected override ValidationResult ValidateCount(object value, int selectedCount, ValidationContext validationContext)
+        return ValidationResult.Success;
+    }
+}
+
+public class MinNumberOfChoicesValidatorAttribute : NumberOfChoicesValidatorAttribute
+{
+    public MinNumberOfChoicesValidatorAttribute(string propertyName, string racePropertyName) : base(propertyName, racePropertyName) { }
+
+    protected override ValidationResult? ValidateCount(object? choicesValue, int selectedCount, ValidationContext validationContext)
+    {
+        if (choicesValue is int minNumberOfChoices && selectedCount < minNumberOfChoices)
         {
-            var minNumberOfChoices = value as int?;
-            if (minNumberOfChoices.HasValue && (selectedCount < minNumberOfChoices.Value))
+            return new ValidationResult($"Number of selected items in '{PropertyName}' must be greater or equal to MinNumberOfChoices for '{RacePropertyValue}'. MinNumberOfChoices: {minNumberOfChoices}, Count: {selectedCount}", [validationContext.MemberName]);
+        }
+
+        return ValidationResult.Success;
+    }
+}
+
+public class BallotIntegrityCheckerAttribute : ValidationAttribute
+{
+    private readonly string _electionPropertyName;
+
+    public BallotIntegrityCheckerAttribute(string electionPropertyName)
+    {
+        _electionPropertyName = electionPropertyName;
+    }
+
+    protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
+    {
+        ILogger? logger = null;
+        if (validationContext.Items.TryGetValue("Logger", out var loggerContextValue) && loggerContextValue is ILogger castedLogger)
+        {
+            logger = castedLogger;
+        }
+
+        var electionPropertyInfo = validationContext.ObjectType.GetProperty(_electionPropertyName);
+        if (electionPropertyInfo is null)
+        {
+            return new ValidationResult($"Election Model property not found.", [validationContext.MemberName]);
+        }
+
+        var electionPropertyValue = electionPropertyInfo.GetValue(validationContext.ObjectInstance);
+        if (electionPropertyValue is not ElectionModel election)
+        {
+            return new ValidationResult($"Property '{_electionPropertyName}' is not a valid ElectionModel type.", [validationContext.MemberName]);
+        }
+
+        var trueVoteDbContext = (ITrueVoteDbContext?) validationContext.GetService(typeof(ITrueVoteDbContext));
+        if (trueVoteDbContext is null)
+        {
+            if (!validationContext.Items.TryGetValue("DBContext", out var dbContextValue) || dbContextValue is not ITrueVoteDbContext dbContext)
             {
-                return new ValidationResult($"Number of selected items in '{CandidatesPropertyName}' must be greater or equal to MinNumberOfChoices for '{RacePropertyValue}'. MinNumberOfChoices: {minNumberOfChoices}, Count: {selectedCount}", [validationContext.MemberName]);
+                return new ValidationResult($"Could not get DBContext for Property '{_electionPropertyName}'.", [validationContext.MemberName]);
             }
-
-            return ValidationResult.Success;
+            trueVoteDbContext = dbContext;
         }
+
+        var electionFromDBSet = trueVoteDbContext.Elections.Where(e => e.ElectionId == election.ElectionId);
+
+        if (electionFromDBSet.ToList().Count == 0)
+        {
+            return new ValidationResult($"Ballot for Election: {election.ElectionId} is invalid. Election not found.", [validationContext.MemberName]);
+        }
+
+        var electionFromDB = electionFromDBSet.First();
+        var now = UtcNowProviderFactory.GetProvider().UtcNow;
+
+        if (now < electionFromDB.StartDate)
+        {
+            return new ValidationResult($"Ballot for Election: {election.ElectionId} is invalid. Submitted at: {now}, which is before the election start: {electionFromDB.StartDate}.", [validationContext.MemberName]);
+        }
+
+        if (now > electionFromDB.EndDate)
+        {
+            return new ValidationResult($"Ballot for Election: {election.ElectionId} is invalid. Submitted at: {now}, which is after the election end: {electionFromDB.EndDate}.", [validationContext.MemberName]);
+        }
+
+        var diff = electionFromDB.ModelDiff(election);
+
+        var validationResults = new List<ValidationResult>();
+
+        foreach (var (key, v) in diff)
+        {
+            if (!key.Contains(".Selected"))
+            {
+                logger?.LogInformation($"{key}: Old = {v.OldValue}, New = {v.NewValue}");
+                validationResults.Add(new ValidationResult($"Value for {key} changed from {v.OldValue} to {v.NewValue}", [key]));
+            }
+        }
+
+        if (validationResults.Count > 0)
+        {
+            var recursiveValidator = new RecursiveValidator();
+            var errorDictionary = recursiveValidator.GetValidationErrorsDictionary(validationResults);
+            var errorJson = JsonSerializer.Serialize(errorDictionary);
+            return new ValidationResult(errorJson);
+        }
+
+        return ValidationResult.Success;
     }
 }
 #pragma warning restore IDE0046 // Convert to conditional expression
