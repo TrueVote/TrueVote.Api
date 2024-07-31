@@ -39,8 +39,8 @@ namespace TrueVote.Api.Services
 
             _log.LogInformation($"Request Data: {baseElection}");
 
-            var races = RaceModel.DTOBaseRacesToRaces(baseElection.BaseRaces);
-            var election = ElectionModel.DTOBaseElectionToElection(baseElection, races);
+            var races = baseElection.BaseRaces.DTOToRaces();
+            var election = baseElection.DTOToElection(races);
 
             await _trueVoteDbContext.EnsureCreatedAsync();
 

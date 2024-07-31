@@ -144,23 +144,6 @@ namespace TrueVote.Api.Models
         [JsonPropertyName("Races")]
         [JsonProperty(nameof(Races), Required = Required.Always)]
         public required List<RaceModel> Races { get; set; } = new List<RaceModel>();
-
-        public static ElectionModel DTOBaseElectionToElection(BaseElectionModel baseElection, List<RaceModel> races)
-        {
-            var election = new ElectionModel
-            {
-                ElectionId = Guid.NewGuid().ToString(),
-                Name = baseElection.Name,
-                Description = baseElection.Description,
-                HeaderImageUrl = baseElection.HeaderImageUrl,
-                StartDate = baseElection.StartDate,
-                EndDate = baseElection.EndDate,
-                Races = races,
-                DateCreated = UtcNowProviderFactory.GetProvider().UtcNow
-            };
-
-            return election;
-        }
     }
 
     public class AddRacesModel
@@ -179,5 +162,25 @@ namespace TrueVote.Api.Models
         [JsonPropertyName("RaceIds")]
         [JsonProperty(nameof(RaceIds), Required = Required.Always)]
         public required List<string> RaceIds { get; set; } = new List<string>();
+    }
+
+    public static class ElectionModelExtensions
+    {
+        public static ElectionModel DTOToElection(this BaseElectionModel baseElection, List<RaceModel> races)
+        {
+            var election = new ElectionModel
+            {
+                ElectionId = Guid.NewGuid().ToString(),
+                Name = baseElection.Name,
+                Description = baseElection.Description,
+                HeaderImageUrl = baseElection.HeaderImageUrl,
+                StartDate = baseElection.StartDate,
+                EndDate = baseElection.EndDate,
+                Races = races,
+                DateCreated = UtcNowProviderFactory.GetProvider().UtcNow
+            };
+
+            return election;
+        }
     }
 }

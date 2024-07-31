@@ -160,33 +160,6 @@ namespace TrueVote.Api.Models
         [JsonPropertyName("Candidates")]
         [JsonProperty(nameof(Candidates), Required = Required.Default)]
         public List<CandidateModel> Candidates { get; set; } = new List<CandidateModel>();
-
-        public static List<RaceModel> DTOBaseRacesToRaces(List<BaseRaceModel> baseRaces)
-        {
-            var races = new List<RaceModel>();
-
-            foreach (var br in baseRaces)
-            {
-                var race = DTOBaseRaceToRace(br);
-                races.Add(race);
-            }
-
-            return races;
-        }
-
-        public static RaceModel DTOBaseRaceToRace(BaseRaceModel br)
-        {
-            return new RaceModel
-            {
-                RaceId = Guid.NewGuid().ToString(),
-                Name = br.Name,
-                DateCreated = UtcNowProviderFactory.GetProvider().UtcNow,
-                Candidates = CandidateModel.DTOBaseCandidatesToCandidates(br.BaseCandidates),
-                MaxNumberOfChoices = br.MaxNumberOfChoices,
-                MinNumberOfChoices = br.MinNumberOfChoices,
-                RaceType = br.RaceType
-            };
-        }
     }
 
     public class AddCandidatesModel
@@ -204,5 +177,27 @@ namespace TrueVote.Api.Models
         [JsonPropertyName("CandidateIds")]
         [JsonProperty(nameof(CandidateIds), Required = Required.Always)]
         public required List<string> CandidateIds { get; set; }
+    }
+
+    public static class RaceModelExtensions
+    {
+        public static List<RaceModel> DTOToRaces(this List<BaseRaceModel> baseRaces)
+        {
+            return baseRaces.Select(DTOToRace).ToList();
+        }
+
+        public static RaceModel DTOToRace(this BaseRaceModel baseRaceModel)
+        {
+            return new RaceModel
+            {
+                RaceId = Guid.NewGuid().ToString(),
+                Name = baseRaceModel.Name,
+                DateCreated = UtcNowProviderFactory.GetProvider().UtcNow,
+                Candidates = baseRaceModel.BaseCandidates.DTOToCandidates(),
+                MaxNumberOfChoices = baseRaceModel.MaxNumberOfChoices,
+                MinNumberOfChoices = baseRaceModel.MinNumberOfChoices,
+                RaceType = baseRaceModel.RaceType
+            };
+        }
     }
 }

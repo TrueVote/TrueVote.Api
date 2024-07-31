@@ -41,7 +41,7 @@ namespace TrueVote.Api.Models
         public string PartyAffiliation { get; set; } = string.Empty;
     }
 
-    public class BaseCandidateModel
+    public abstract class RootCandidateBaseModel
     {
         [Required]
         [Description("Name")]
@@ -86,7 +86,9 @@ namespace TrueVote.Api.Models
         public string SelectedMetadata { get; set; } = string.Empty;
     }
 
-    public class CandidateModel
+    public class BaseCandidateModel : RootCandidateBaseModel { }
+
+    public class CandidateModel : RootCandidateBaseModel
     {
         [Required]
         [Description("Candidate Id")]
@@ -96,72 +98,26 @@ namespace TrueVote.Api.Models
         [JsonProperty(nameof(CandidateId), Required = Required.Default)]
         [Key]
         public required string CandidateId { get; set; }
+    }
 
-        [Required]
-        [Description("Name")]
-        [MaxLength(2048)]
-        [DataType(DataType.Text)]
-        [JsonPropertyName("Name")]
-        [JsonProperty(nameof(Name), Required = Required.Always)]
-        public required string Name { get; set; } = string.Empty;
-
-        [Description("Party Affiliation")]
-        [MaxLength(2048)]
-        [DataType(DataType.Text)]
-        [JsonPropertyName("PartyAffiliation")]
-        [JsonProperty(nameof(PartyAffiliation), Required = Required.Default)]
-        public string PartyAffiliation { get; set; } = string.Empty;
-
-        [Description("CandidateImageUrl")]
-        [MaxLength(1024)]
-        [DataType(DataType.Text)]
-        [JsonPropertyName("CandidateImageUrl")]
-        [JsonProperty(nameof(CandidateImageUrl), Required = Required.Default)]
-        public string CandidateImageUrl { get; set; } = string.Empty;
-
-        [Required]
-        [Description("DateCreated")]
-        [DataType(DataType.Date)]
-        [JsonPropertyName("DateCreated")]
-        [JsonProperty(nameof(DateCreated), Required = Required.Default)]
-        public required DateTime DateCreated { get; set; }
-
-        [Required]
-        [Description("Selected")]
-        [JsonPropertyName("Selected")]
-        [JsonProperty(nameof(Selected), Required = Required.Default)]
-        public required bool Selected { get; set; } = false;
-
-        [Description("SelectedMetadata")]
-        [MaxLength(1024)]
-        [DataType(DataType.Text)]
-        [JsonPropertyName("SelectedMetadata")]
-        [JsonProperty(nameof(SelectedMetadata), Required = Required.Default)]
-        public string SelectedMetadata { get; set; } = string.Empty;
-
-        public static List<CandidateModel> DTOBaseCandidatesToCandidates(List<BaseCandidateModel> baseCandidates)
+    public static class CandidateModelExtensions
+    {
+        public static List<CandidateModel> DTOToCandidates(this List<BaseCandidateModel> baseCandidates)
         {
-            var candidates = new List<CandidateModel>();
-
-            foreach (var bc in baseCandidates)
-            {
-                var candidate = DTOBaseCandidateToCandidate(bc);
-                candidates.Add(candidate);
-            }
-
-            return candidates;
+            return baseCandidates.Select(DTOToCandidate).ToList();
         }
 
-        public static CandidateModel DTOBaseCandidateToCandidate(BaseCandidateModel bc)
+        public static CandidateModel DTOToCandidate(this BaseCandidateModel baseCandidateModel)
         {
             return new CandidateModel
             {
                 CandidateId = Guid.NewGuid().ToString(),
-                Name = bc.Name,
+                Name = baseCandidateModel.Name,
                 DateCreated = UtcNowProviderFactory.GetProvider().UtcNow,
-                PartyAffiliation = bc.PartyAffiliation,
-                CandidateImageUrl = bc.CandidateImageUrl,
+                PartyAffiliation = baseCandidateModel.PartyAffiliation,
+                CandidateImageUrl = baseCandidateModel.CandidateImageUrl,
                 Selected = false,
+                SelectedMetadata = baseCandidateModel.SelectedMetadata
             };
         }
     }

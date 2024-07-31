@@ -40,7 +40,7 @@ namespace TrueVote.Api.Services
 
             _log.LogInformation($"Request Data: {baseCandidate}");
 
-            var candidate = CandidateModel.DTOBaseCandidateToCandidate(baseCandidate);
+            var candidate = baseCandidate.DTOToCandidate();
 
             await _trueVoteDbContext.EnsureCreatedAsync();
 
