@@ -3,7 +3,6 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 using TrueVote.Api.Helpers;
-using JsonIgnore = Newtonsoft.Json.JsonIgnoreAttribute;
 
 namespace TrueVote.Api.Models
 {
@@ -52,13 +51,39 @@ namespace TrueVote.Api.Models
         [JsonProperty(nameof(Name), Required = Required.Always)]
         public required string Name { get; set; } = string.Empty;
 
-        [Required]
         [Description("Party Affiliation")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
         [JsonPropertyName("PartyAffiliation")]
         [JsonProperty(nameof(PartyAffiliation), Required = Required.Default)]
-        public required string PartyAffiliation { get; set; } = string.Empty;
+        public string PartyAffiliation { get; set; } = string.Empty;
+
+        [Description("CandidateImageUrl")]
+        [MaxLength(1024)]
+        [DataType(DataType.Text)]
+        [JsonPropertyName("CandidateImageUrl")]
+        [JsonProperty(nameof(CandidateImageUrl), Required = Required.Default)]
+        public string CandidateImageUrl { get; set; } = string.Empty;
+
+        [Required]
+        [Description("DateCreated")]
+        [DataType(DataType.Date)]
+        [JsonPropertyName("DateCreated")]
+        [JsonProperty(nameof(DateCreated), Required = Required.Default)]
+        public required DateTime DateCreated { get; set; }
+
+        [Required]
+        [Description("Selected")]
+        [JsonPropertyName("Selected")]
+        [JsonProperty(nameof(Selected), Required = Required.Default)]
+        public required bool Selected { get; set; } = false;
+
+        [Description("SelectedMetadata")]
+        [MaxLength(1024)]
+        [DataType(DataType.Text)]
+        [JsonPropertyName("SelectedMetadata")]
+        [JsonProperty(nameof(SelectedMetadata), Required = Required.Default)]
+        public string SelectedMetadata { get; set; } = string.Empty;
     }
 
     public class CandidateModel
@@ -113,5 +138,31 @@ namespace TrueVote.Api.Models
         [JsonPropertyName("SelectedMetadata")]
         [JsonProperty(nameof(SelectedMetadata), Required = Required.Default)]
         public string SelectedMetadata { get; set; } = string.Empty;
+
+        public static List<CandidateModel> DTOBaseCandidatesToCandidates(List<BaseCandidateModel> baseCandidates)
+        {
+            var candidates = new List<CandidateModel>();
+
+            foreach (var bc in baseCandidates)
+            {
+                var candidate = DTOBaseCandidateToCandidate(bc);
+                candidates.Add(candidate);
+            }
+
+            return candidates;
+        }
+
+        public static CandidateModel DTOBaseCandidateToCandidate(BaseCandidateModel bc)
+        {
+            return new CandidateModel
+            {
+                CandidateId = Guid.NewGuid().ToString(),
+                Name = bc.Name,
+                DateCreated = UtcNowProviderFactory.GetProvider().UtcNow,
+                PartyAffiliation = bc.PartyAffiliation,
+                CandidateImageUrl = bc.CandidateImageUrl,
+                Selected = false,
+            };
+        }
     }
 }

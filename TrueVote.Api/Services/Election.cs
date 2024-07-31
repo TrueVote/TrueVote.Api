@@ -39,7 +39,8 @@ namespace TrueVote.Api.Services
 
             _log.LogInformation($"Request Data: {baseElection}");
 
-            var election = new ElectionModel { ElectionId = Guid.NewGuid().ToString(), Name = baseElection.Name, Description = baseElection.Description, HeaderImageUrl = baseElection.HeaderImageUrl, StartDate = baseElection.StartDate, EndDate = baseElection.EndDate, Races = baseElection.Races, DateCreated = UtcNowProviderFactory.GetProvider().UtcNow };
+            var races = RaceModel.DTOBaseRacesToRaces(baseElection.BaseRaces);
+            var election = ElectionModel.DTOBaseElectionToElection(baseElection, races);
 
             await _trueVoteDbContext.EnsureCreatedAsync();
 

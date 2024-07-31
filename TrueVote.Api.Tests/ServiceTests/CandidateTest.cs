@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using System;
 using System.Threading.Tasks;
+using TrueVote.Api.Helpers;
 using TrueVote.Api.Models;
 using TrueVote.Api.Tests.Helpers;
 using Xunit;
@@ -27,7 +28,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public async Task LogsMessages()
         {
-            var baseCandidateObj = new BaseCandidateModel { Name = "John Smith", PartyAffiliation = "Republican" };
+            var baseCandidateObj = new BaseCandidateModel { Name = "John Smith", PartyAffiliation = "Republican", DateCreated = UtcNowProviderFactory.GetProvider().UtcNow, CandidateImageUrl = "", Selected = false };
             var validationResults = ValidationHelper.Validate(baseCandidateObj);
             Assert.Empty(validationResults);
 
@@ -40,7 +41,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public async Task AddsCandidate()
         {
-            var baseCandidateObj = new BaseCandidateModel { Name = "John Smith", PartyAffiliation = "Republican" };
+            var baseCandidateObj = new BaseCandidateModel { Name = "John Smith", PartyAffiliation = "Republican", DateCreated = UtcNowProviderFactory.GetProvider().UtcNow, CandidateImageUrl = "", Selected = false };
             var validationResults = ValidationHelper.Validate(baseCandidateObj);
             Assert.Empty(validationResults);
 

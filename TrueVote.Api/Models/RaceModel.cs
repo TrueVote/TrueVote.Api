@@ -5,7 +5,6 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
 using TrueVote.Api.Helpers;
-using JsonIgnore = Newtonsoft.Json.JsonIgnoreAttribute;
 
 namespace TrueVote.Api.Models
 {
@@ -57,6 +56,45 @@ namespace TrueVote.Api.Models
         [JsonPropertyName("RaceType")]
         [JsonProperty(nameof(RaceType), Required = Required.Always)]
         public required RaceTypes RaceType { get; set; }
+
+        [Required]
+        [Description("Race Type Name")]
+        [MaxLength(2048)]
+        [DataType(DataType.Text)]
+        [NotMapped]
+        [JsonPropertyName("RaceTypeName")]
+        [JsonProperty(nameof(RaceTypeName), Required = Required.Default)]
+        public string RaceTypeName => RaceType.ToString();
+
+        [Description("Max Number of Choices")]
+        [DataType("integer")]
+        [Range(0, int.MaxValue)]
+        [JsonPropertyName("MaxNumberOfChoices")]
+        [JsonProperty(nameof(MaxNumberOfChoices), Required = Required.Default)]
+        [MaxNumberOfChoicesValidator(nameof(BaseCandidates), nameof(Name))]
+        public int? MaxNumberOfChoices { get; set; }
+
+        [Description("Min Number of Choices")]
+        [DataType("integer")]
+        [Range(0, int.MaxValue)]
+        [JsonPropertyName("MinNumberOfChoices")]
+        [JsonProperty(nameof(MinNumberOfChoices), Required = Required.Default)]
+        [MinNumberOfChoicesValidator(nameof(BaseCandidates), nameof(Name))]
+        public int? MinNumberOfChoices { get; set; }
+
+        [Required]
+        [Description("DateCreated")]
+        [DataType(DataType.Date)]
+        [JsonPropertyName("DateCreated")]
+        [JsonProperty(nameof(DateCreated), Required = Required.Default)]
+        public required DateTime DateCreated { get; set; }
+
+        [Required]
+        [Description("List of BaseCandidateModel")]
+        [DataType("List<BaseCandidateModel>")]
+        [JsonPropertyName("BaseCandidates")]
+        [JsonProperty(nameof(BaseCandidates), Required = Required.Default)]
+        public required List<BaseCandidateModel> BaseCandidates { get; set; } = new List<BaseCandidateModel>();
     }
 
     public class RaceModel
@@ -122,6 +160,33 @@ namespace TrueVote.Api.Models
         [JsonPropertyName("Candidates")]
         [JsonProperty(nameof(Candidates), Required = Required.Default)]
         public List<CandidateModel> Candidates { get; set; } = new List<CandidateModel>();
+
+        public static List<RaceModel> DTOBaseRacesToRaces(List<BaseRaceModel> baseRaces)
+        {
+            var races = new List<RaceModel>();
+
+            foreach (var br in baseRaces)
+            {
+                var race = DTOBaseRaceToRace(br);
+                races.Add(race);
+            }
+
+            return races;
+        }
+
+        public static RaceModel DTOBaseRaceToRace(BaseRaceModel br)
+        {
+            return new RaceModel
+            {
+                RaceId = Guid.NewGuid().ToString(),
+                Name = br.Name,
+                DateCreated = UtcNowProviderFactory.GetProvider().UtcNow,
+                Candidates = CandidateModel.DTOBaseCandidatesToCandidates(br.BaseCandidates),
+                MaxNumberOfChoices = br.MaxNumberOfChoices,
+                MinNumberOfChoices = br.MinNumberOfChoices,
+                RaceType = br.RaceType
+            };
+        }
     }
 
     public class AddCandidatesModel

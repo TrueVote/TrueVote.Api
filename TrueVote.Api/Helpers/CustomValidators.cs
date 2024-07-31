@@ -32,9 +32,9 @@ public abstract class NumberOfChoicesValidatorAttribute : ValidationAttribute
         }
 
         var candidatePropertyValue = propertyInfo.GetValue(validationContext.ObjectInstance);
-        if (candidatePropertyValue is not List<CandidateModel>)
+        if (candidatePropertyValue is not List<CandidateModel> and not List<BaseCandidateModel>)
         {
-            return new ValidationResult($"Property '{PropertyName}' is not a valid List<CandidateModel> type.", [validationContext.MemberName]);
+            return new ValidationResult($"Property '{PropertyName}' is not a valid List<CandidateModel> and not a valid List<BaseCandidateModel> type.", [validationContext.MemberName]);
         }
 
         var nameProperty = validationContext.ObjectType.GetProperty(RacePropertyName);
@@ -48,7 +48,7 @@ public abstract class NumberOfChoicesValidatorAttribute : ValidationAttribute
             return ValidationResult.Success;
         }
 
-        var selectedCount = ((IEnumerable) candidatePropertyValue).Cast<CandidateModel>().Count(c => c.Selected == true);
+        var selectedCount = ((IEnumerable) candidatePropertyValue).Cast<dynamic>().Count(c => c.Selected == true);
 
         return ValidateCount(value, selectedCount, validationContext);
     }

@@ -2,6 +2,7 @@ using Newtonsoft.Json;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
+using TrueVote.Api.Helpers;
 
 namespace TrueVote.Api.Models
 {
@@ -67,11 +68,11 @@ namespace TrueVote.Api.Models
         public required DateTime EndDate { get; set; }
 
         [Required]
-        [Description("List of Races")]
-        [DataType("List<RaceModel>")]
+        [Description("List of BaseRaces")]
+        [DataType("List<BaseRaceModel>")]
         [JsonPropertyName("Races")]
-        [JsonProperty(nameof(Races), Required = Required.Always)]
-        public required List<RaceModel> Races { get; set; } = new List<RaceModel>();
+        [JsonProperty(nameof(BaseRaces), Required = Required.Always)]
+        public required List<BaseRaceModel> BaseRaces { get; set; } = new List<BaseRaceModel>();
     }
 
     public class ElectionModel
@@ -143,6 +144,23 @@ namespace TrueVote.Api.Models
         [JsonPropertyName("Races")]
         [JsonProperty(nameof(Races), Required = Required.Always)]
         public required List<RaceModel> Races { get; set; } = new List<RaceModel>();
+
+        public static ElectionModel DTOBaseElectionToElection(BaseElectionModel baseElection, List<RaceModel> races)
+        {
+            var election = new ElectionModel
+            {
+                ElectionId = Guid.NewGuid().ToString(),
+                Name = baseElection.Name,
+                Description = baseElection.Description,
+                HeaderImageUrl = baseElection.HeaderImageUrl,
+                StartDate = baseElection.StartDate,
+                EndDate = baseElection.EndDate,
+                Races = races,
+                DateCreated = UtcNowProviderFactory.GetProvider().UtcNow
+            };
+
+            return election;
+        }
     }
 
     public class AddRacesModel

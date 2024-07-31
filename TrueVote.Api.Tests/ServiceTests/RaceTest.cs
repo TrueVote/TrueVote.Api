@@ -11,6 +11,7 @@ using Xunit;
 using Xunit.Abstractions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
+using TrueVote.Api.Helpers;
 
 namespace TrueVote.Api.Tests.ServiceTests
 {
@@ -36,7 +37,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public async Task LogsMessages()
         {
-            var baseRaceObj = new BaseRaceModel { Name = "President", RaceType = RaceTypes.ChooseOne };
+            var baseRaceObj = new BaseRaceModel { Name = "President", RaceType = RaceTypes.ChooseOne, BaseCandidates = [], DateCreated = UtcNowProviderFactory.GetProvider().UtcNow, MaxNumberOfChoices = 1, MinNumberOfChoices = 1 };
             var validationResults = ValidationHelper.Validate(baseRaceObj);
             Assert.Empty(validationResults);
 
@@ -49,7 +50,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public async Task AddsRace()
         {
-            var baseRaceObj = new BaseRaceModel { Name = "President", RaceType = RaceTypes.ChooseOne };
+            var baseRaceObj = new BaseRaceModel { Name = "President", RaceType = RaceTypes.ChooseOne, BaseCandidates = [], DateCreated = UtcNowProviderFactory.GetProvider().UtcNow, MaxNumberOfChoices = 1, MinNumberOfChoices = 1 };
             var validationResults = ValidationHelper.Validate(baseRaceObj);
             Assert.Empty(validationResults);
 
