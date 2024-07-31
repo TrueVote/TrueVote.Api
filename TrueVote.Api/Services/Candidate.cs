@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using System.ComponentModel;
 using TrueVote.Api.Interfaces;
 using TrueVote.Api.Models;
-using TrueVote.Api.Helpers;
 
 namespace TrueVote.Api.Services
 {
@@ -40,7 +39,7 @@ namespace TrueVote.Api.Services
 
             _log.LogInformation($"Request Data: {baseCandidate}");
 
-            var candidate = new CandidateModel { CandidateId = Guid.NewGuid().ToString(), Name = baseCandidate.Name, PartyAffiliation = baseCandidate.PartyAffiliation, DateCreated = UtcNowProviderFactory.GetProvider().UtcNow, Selected = false };
+            var candidate = baseCandidate.DTOToCandidate();
 
             await _trueVoteDbContext.EnsureCreatedAsync();
 

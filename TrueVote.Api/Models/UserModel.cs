@@ -3,7 +3,6 @@ using System.ComponentModel.DataAnnotations;
 using Nostr.Client.Messages;
 using System.ComponentModel;
 using System.Text.Json.Serialization;
-using JsonIgnore = Newtonsoft.Json.JsonIgnoreAttribute;
 
 namespace TrueVote.Api.Models
 {

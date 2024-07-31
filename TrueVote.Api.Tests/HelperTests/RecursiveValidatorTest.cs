@@ -1,12 +1,8 @@
 using Moq;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
-using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using System.Text.Json.Serialization;
 using TrueVote.Api.Helpers;
 using TrueVote.Api.Models;
 using TrueVote.Api.Tests.Helpers;
@@ -70,7 +66,7 @@ namespace TrueVote.Api.Tests.HelperTests
             Assert.NotEmpty(validationResults);
             Assert.NotNull(validationResults);
             Assert.Single(validationResults);
-            Assert.Contains("Property 'Candidates' is not a valid List<CandidateModel> type", validationResults[0].ErrorMessage);
+            Assert.Contains("Property 'Candidates' is not a valid List<CandidateModel>", validationResults[0].ErrorMessage);
             Assert.Equal("MinNumberOfChoices", validationResults[0].MemberNames.First());
 
             var errorDictionary = recursiveValidator.GetValidationErrorsDictionary(validationResults);
@@ -169,7 +165,7 @@ namespace TrueVote.Api.Tests.HelperTests
             var result = attribute.GetValidationResult(testModel.MinNumberOfChoices, validationContext);
 
             Assert.NotNull(result);
-            Assert.Contains("Property 'Candidates' is not a valid List<CandidateModel> type", result.ErrorMessage);
+            Assert.Contains("Property 'Candidates' is not a valid List<CandidateModel>", result.ErrorMessage);
         }
 
         [Fact]

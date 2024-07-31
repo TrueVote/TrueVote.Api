@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using TrueVote.Api.Helpers;
 using TrueVote.Api.Models;
 using TrueVote.Api.Tests.Helpers;
 using Xunit;
@@ -30,7 +31,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public async Task LogsMessages()
         {
-            var baseElectionObj = new BaseElectionModel { Name = "California State", StartDate = DateTime.Now, EndDate = DateTime.Now.AddDays(30), Description = "desc", HeaderImageUrl = "url", Races = [] };
+            var baseElectionObj = new BaseElectionModel { Name = "California State", StartDate = DateTime.Now, EndDate = DateTime.Now.AddDays(30), Description = "desc", HeaderImageUrl = "url", BaseRaces = [] };
             var validationResults = ValidationHelper.Validate(baseElectionObj);
             Assert.Empty(validationResults);
 
@@ -43,7 +44,9 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public async Task AddsElection()
         {
-            var baseElectionObj = new BaseElectionModel { Name = "California State", StartDate = DateTime.Now, EndDate = DateTime.Now.AddDays(30), Description = "desc", HeaderImageUrl = "url", Races = [] };
+            var baseCandidateObj = new BaseCandidateModel { Name = "John Smith", PartyAffiliation = "Republican", DateCreated = UtcNowProviderFactory.GetProvider().UtcNow, CandidateImageUrl = "", Selected = false };
+            var baseRaceObj = new BaseRaceModel { Name = "President", RaceType = RaceTypes.ChooseOne, BaseCandidates = [baseCandidateObj], DateCreated = UtcNowProviderFactory.GetProvider().UtcNow, MaxNumberOfChoices = 1, MinNumberOfChoices = 1 };
+            var baseElectionObj = new BaseElectionModel { Name = "California State", StartDate = DateTime.Now, EndDate = DateTime.Now.AddDays(30), Description = "desc", HeaderImageUrl = "url", BaseRaces = [baseRaceObj] };
             var validationResults = ValidationHelper.Validate(baseElectionObj);
             Assert.Empty(validationResults);
 

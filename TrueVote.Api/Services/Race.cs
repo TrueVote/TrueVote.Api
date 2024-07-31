@@ -40,7 +40,7 @@ namespace TrueVote.Api.Services
 
             _log.LogInformation($"Request Data: {baseRace}");
 
-            var race = new RaceModel { RaceId = Guid.NewGuid().ToString(), Name = baseRace.Name, RaceType = baseRace.RaceType, DateCreated = UtcNowProviderFactory.GetProvider().UtcNow };
+            var race = baseRace.DTOToRace();
 
             await _trueVoteDbContext.EnsureCreatedAsync();
 
