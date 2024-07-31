@@ -83,6 +83,16 @@ namespace TrueVote.Api.Models
         [JsonProperty(nameof(RaceTypeName), Required = Required.Default)]
         public string RaceTypeName => RaceType.ToString();
 
+        [Required]
+        [Description("DateCreated")]
+        [DataType(DataType.Date)]
+        [JsonPropertyName("DateCreated")]
+        [JsonProperty(nameof(DateCreated), Required = Required.Default)]
+        public required DateTime DateCreated { get; set; }
+    }
+
+    public class BaseRaceModel : RootRaceBaseModel
+    {
         [Description("Max Number of Choices")]
         [DataType("integer")]
         [Range(0, int.MaxValue)]
@@ -98,22 +108,10 @@ namespace TrueVote.Api.Models
         public int? MinNumberOfChoices { get; set; }
 
         [Required]
-        [Description("DateCreated")]
-        [DataType(DataType.Date)]
-        [JsonPropertyName("DateCreated")]
-        [JsonProperty(nameof(DateCreated), Required = Required.Default)]
-        public required DateTime DateCreated { get; set; }
-    }
-
-    public class BaseRaceModel : RootRaceBaseModel
-    {
-        [Required]
-        [Description("List of BaseCandidateModel")]
+        [Description("List of BaseCandidates")]
         [DataType("List<BaseCandidateModel>")]
         [JsonPropertyName("BaseCandidates")]
-        [JsonProperty(nameof(BaseCandidates), Required = Required.Default)]
-        [MaxNumberOfChoicesValidator(nameof(BaseCandidates), nameof(Name))]
-        [MinNumberOfChoicesValidator(nameof(BaseCandidates), nameof(Name))]
+        [JsonProperty(nameof(BaseCandidates), Required = Required.Always)]
         public required List<BaseCandidateModel> BaseCandidates { get; set; } = new List<BaseCandidateModel>();
     }
 
@@ -128,13 +126,28 @@ namespace TrueVote.Api.Models
         [Key]
         public required string RaceId { get; set; }
 
+        [Description("Max Number of Choices")]
+        [DataType("integer")]
+        [Range(0, int.MaxValue)]
+        [JsonPropertyName("MaxNumberOfChoices")]
+        [JsonProperty(nameof(MaxNumberOfChoices), Required = Required.Default)]
+        [MaxNumberOfChoicesValidator(nameof(Candidates), nameof(Name))]
+        public int? MaxNumberOfChoices { get; set; }
+
+        [Description("Min Number of Choices")]
+        [DataType("integer")]
+        [Range(0, int.MaxValue)]
+        [JsonPropertyName("MinNumberOfChoices")]
+        [JsonProperty(nameof(MinNumberOfChoices), Required = Required.Default)]
+        [MinNumberOfChoicesValidator(nameof(Candidates), nameof(Name))]
+        public int? MinNumberOfChoices { get; set; }
+
+        [Required]
         [Description("List of Candidates")]
         [DataType("List<CandidateModel>")]
         [JsonPropertyName("Candidates")]
-        [JsonProperty(nameof(Candidates), Required = Required.Default)]
-        [MaxNumberOfChoicesValidator(nameof(Candidates), nameof(Name))]
-        [MinNumberOfChoicesValidator(nameof(Candidates), nameof(Name))]
-        public List<CandidateModel> Candidates { get; set; } = new List<CandidateModel>();
+        [JsonProperty(nameof(Candidates), Required = Required.Always)]
+        public required List<CandidateModel> Candidates { get; set; } = new List<CandidateModel>();
     }
 
     public static class RaceModelExtensions

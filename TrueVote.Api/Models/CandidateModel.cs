@@ -116,7 +116,7 @@ namespace TrueVote.Api.Models
                 DateCreated = UtcNowProviderFactory.GetProvider().UtcNow,
                 PartyAffiliation = baseCandidateModel.PartyAffiliation,
                 CandidateImageUrl = baseCandidateModel.CandidateImageUrl,
-                Selected = false,
+                Selected = baseCandidateModel.Selected,
                 SelectedMetadata = baseCandidateModel.SelectedMetadata
             };
         }

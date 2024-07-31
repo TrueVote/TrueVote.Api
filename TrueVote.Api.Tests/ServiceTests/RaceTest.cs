@@ -130,9 +130,9 @@ namespace TrueVote.Api.Tests.ServiceTests
             var val = (RaceModel) (ret as CreatedAtActionResult).Value;
             Assert.NotNull(val);
             Assert.Equal("Governor", val.Name);
-            Assert.Equal("John Smith", val.Candidates.ToList()[0].Name);
+            Assert.Equal("John Smith 3", val.Candidates.ToList()[0].Name);
             Assert.Equal("Republican", val.Candidates.ToList()[0].PartyAffiliation);
-            Assert.Equal("Jane Doe", val.Candidates.ToList()[1].Name);
+            Assert.Equal("Jane Doe 3", val.Candidates.ToList()[1].Name);
             Assert.Equal("Democrat", val.Candidates.ToList()[1].PartyAffiliation);
 
             _logHelper.Verify(LogLevel.Information, Times.Exactly(1));

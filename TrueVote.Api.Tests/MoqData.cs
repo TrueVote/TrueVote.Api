@@ -51,11 +51,23 @@ namespace TrueVote.Api.Tests
             new CandidateModel { CandidateId = "candidateid2", Name = "Jane Doe", DateCreated = createDate2, PartyAffiliation = "Democrat", Selected = false }
         };
 
+        public static List<CandidateModel> MockCandidateData2 => new()
+        {
+            new CandidateModel { CandidateId = "candidateid21", Name = "John Smith 2", DateCreated = createDate, PartyAffiliation = "Republican", Selected = false },
+            new CandidateModel { CandidateId = "candidateid22", Name = "Jane Doe 2", DateCreated = createDate2, PartyAffiliation = "Democrat", Selected = false }
+        };
+
+        public static List<CandidateModel> MockCandidateData3 => new()
+        {
+            new CandidateModel { CandidateId = "candidateid31", Name = "John Smith 3", DateCreated = createDate, PartyAffiliation = "Republican", Selected = false },
+            new CandidateModel { CandidateId = "candidateid32", Name = "Jane Doe 3", DateCreated = createDate2, PartyAffiliation = "Democrat", Selected = false }
+        };
+
         public static List<RaceModel> MockRaceData => new()
         {
             new RaceModel { RaceId = "raceid1", Name = "President", DateCreated = createDate, RaceType = RaceTypes.ChooseOne, Candidates = MockCandidateData },
-            new RaceModel { RaceId = "raceid2", Name = "Judge", DateCreated = createDate2, RaceType = RaceTypes.ChooseMany },
-            new RaceModel { RaceId = "raceid3", Name = "Governor", DateCreated = createDate3, RaceType = RaceTypes.ChooseOne }
+            new RaceModel { RaceId = "raceid2", Name = "Judge", DateCreated = createDate2, RaceType = RaceTypes.ChooseMany, Candidates = MockCandidateData2 },
+            new RaceModel { RaceId = "raceid3", Name = "Governor", DateCreated = createDate3, RaceType = RaceTypes.ChooseOne, Candidates = MockCandidateData3 }
         };
 
         public static List<TimestampModel> MockTimestampData => new()
