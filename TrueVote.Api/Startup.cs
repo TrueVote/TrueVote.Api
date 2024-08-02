@@ -169,9 +169,25 @@ namespace TrueVote.Api
 
             app.UsePathBase("/api");
             app.UseOpenApi();
+
+            // Redirect /swagger and /swagger/index.html to /
+            // Unfortunately, browser renders as /index.html
+            // Ideally it would just stop at / and not show /index.html
+            app.Use(async (context, next) =>
+            {
+                if (context.Request.Path == "/swagger" || context.Request.Path == "/swagger/index.html")
+                {
+                    context.Response.Redirect("/");
+                    return;
+                }
+                await next();
+            });
+
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "TrueVote.Api");
+                c.RoutePrefix = string.Empty;
                 c.InjectJavascript(CustomJavaScriptPath);
                 c.InjectStylesheet(CustomStylesheetPath);
                 c.DisplayRequestDuration();
