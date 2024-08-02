@@ -170,14 +170,14 @@ namespace TrueVote.Api
             app.UsePathBase("/api");
             app.UseOpenApi();
 
-            // Redirect / and index.html to /swagger/index.html
-            // Not ideal. Ideal is all root tries redirect to / and the page renders without adding anything to the root URL
-            // e.g. / is better than /index.html and better than /swagger/index.html
+            // Redirect /swagger and /swagger/index.html to /
+            // Unfortunately, browser renders as /index.html
+            // Ideally it would just stop at / and not show /index.html
             app.Use(async (context, next) =>
             {
-                if (context.Request.Path == "/" || context.Request.Path == "/index.html")
+                if (context.Request.Path == "/swagger" || context.Request.Path == "/swagger/index.html")
                 {
-                    context.Response.Redirect("/swagger");
+                    context.Response.Redirect("/");
                     return;
                 }
                 await next();
@@ -187,7 +187,7 @@ namespace TrueVote.Api
             app.UseSwaggerUI(c =>
             {
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "TrueVote.Api");
-                c.RoutePrefix = "swagger";
+                c.RoutePrefix = string.Empty;
                 c.InjectJavascript(CustomJavaScriptPath);
                 c.InjectStylesheet(CustomStylesheetPath);
                 c.DisplayRequestDuration();
