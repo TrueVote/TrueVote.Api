@@ -220,7 +220,7 @@ namespace TrueVote.Api.Services
             if (foundUser == null)
             {
                 _log.LogDebug("HTTP trigger - SaveUser:End");
-                return NotFound();
+                return NotFound(new SecureString { Value = $"User: '{user.UserId}' not found" });
             }
 
             // Save settings passed in
@@ -274,7 +274,7 @@ namespace TrueVote.Api.Services
             if (foundUser == null)
             {
                 _log.LogDebug("HTTP trigger - SaveFeedback:End");
-                return NotFound();
+                return NotFound(new SecureString { Value = $"User: '{feedback.UserId}' not found" });
             }
 
             // Sanitize the feedback

@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel;
@@ -129,6 +130,77 @@ namespace TrueVote.Api.Services
             _log.LogDebug("HTTP trigger - AddRaces:End");
 
             return CreatedAtAction(null, null, election);
+        }
+
+        [HttpPost]
+        [Authorize]
+        [ServiceFilter(typeof(ValidateUserIdFilter))]
+        [Route("election/createaccesscodes")]
+        [Produces(typeof(AccessCodesResponse))]
+        [Description("Returns an AccessCodesResponse with a list of AccessCodes")]
+        [ProducesResponseType(typeof(AccessCodesResponse), StatusCodes.Status201Created)]
+        public async Task<IActionResult> CreateAccessCodes([FromBody] AccessCodesRequest accessCodesRequest)
+        {
+            _log.LogDebug("HTTP trigger - CreateAccessCodes:Begin");
+
+            _log.LogInformation($"Request Data: {accessCodesRequest}");
+
+            if (User == null || User.Identity == null)
+            {
+                _log.LogDebug("HTTP trigger - CreateAccessCodes:End");
+                return Unauthorized();
+            }
+
+            // Determine if User is found
+            var foundUser = await _trueVoteDbContext.Users.Where(u => u.UserId == accessCodesRequest.UserId).FirstOrDefaultAsync();
+            if (foundUser == null)
+            {
+                _log.LogDebug("HTTP trigger - CreateAccessCodes:End");
+                return NotFound(new SecureString { Value = $"User: '{accessCodesRequest.UserId}' not found" });
+            }
+
+            // Check if the election exists.
+            var election = await _trueVoteDbContext.Elections.Where(r => r.ElectionId == accessCodesRequest.ElectionId).AsNoTracking().OrderByDescending(r => r.DateCreated).FirstOrDefaultAsync();
+            if (election == null)
+            {
+                _log.LogDebug("HTTP trigger - CreateAccessCodes:End");
+                return NotFound(new SecureString { Value = $"Election: '{accessCodesRequest.ElectionId}' not found" });
+            }
+
+            var requestId = Guid.NewGuid().ToString();
+            var dateCreated = UtcNowProviderFactory.GetProvider().UtcNow;
+
+            var accessCodesResponse = new AccessCodesResponse
+            {
+                ElectionId = accessCodesRequest.ElectionId,
+                RequestId = requestId,
+                AccessCodes = []
+            };
+
+            for (var i = 0; i < accessCodesRequest.NumberOfAccessCodes; i++)
+            {
+                var uniqueKey = UniqueKeyGenerator.GenerateUniqueKey();
+
+                var accessCode = new AccessCodeModel
+                {
+                    RequestId = requestId,
+                    ElectionId = accessCodesRequest.ElectionId,
+                    DateCreated = dateCreated,
+                    AccessCode = uniqueKey,
+                    RequestDescription = accessCodesRequest.RequestDescription,
+                    RequestedByUserId = accessCodesRequest.UserId
+                };
+
+                accessCodesResponse.AccessCodes.Add(accessCode);
+
+                // TODO Add to database
+            }
+
+            // TODO Save changes to database
+
+            _log.LogDebug("HTTP trigger - CreateAccessCodes:End");
+
+            return CreatedAtAction(null, null, accessCodesResponse);
         }
     }
 }

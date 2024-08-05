@@ -148,4 +148,117 @@ namespace TrueVote.Api.Models
             return election;
         }
     }
+
+    public class AccessCodeModel
+    {
+        [Required]
+        [Description("Request Id")]
+        [MaxLength(2048)]
+        [DataType(DataType.Text)]
+        [JsonPropertyName("RequestId")]
+        [JsonProperty(nameof(RequestId), Required = Required.Always)]
+        [Key]
+        public required string RequestId { get; set; }
+
+        [Required]
+        [Description("Request Description")]
+        [MaxLength(2048)]
+        [DataType(DataType.Text)]
+        [JsonPropertyName("RequestDescription")]
+        [JsonProperty(nameof(RequestDescription), Required = Required.Always)]
+        public required string RequestDescription { get; set; }
+
+        [Required]
+        [Description("Election Id")]
+        [MaxLength(2048)]
+        [DataType(DataType.Text)]
+        [JsonPropertyName("ElectionId")]
+        [JsonProperty(nameof(ElectionId), Required = Required.Always)]
+        public required string ElectionId { get; set; }
+
+        [Required]
+        [Description("Requested By User Id")]
+        [MaxLength(2048)]
+        [DataType(DataType.Text)]
+        [JsonPropertyName("RequestedByUserId")]
+        [JsonProperty(nameof(RequestedByUserId), Required = Required.Always)]
+        public required string RequestedByUserId { get; set; }
+
+        [Required]
+        [Description("DateCreated")]
+        [DataType(DataType.Date)]
+        [JsonPropertyName("DateCreated")]
+        [JsonProperty(nameof(DateCreated), Required = Required.Default)]
+        public required DateTime DateCreated { get; set; }
+
+        [Required]
+        [Description("Access Code")]
+        [MaxLength(16)]
+        [DataType(DataType.Text)]
+        [JsonPropertyName("AccessCode")]
+        [JsonProperty(nameof(AccessCode), Required = Required.Always)]
+        public required string AccessCode { get; set; }
+    }
+
+    public class AccessCodesResponse
+    {
+        [Required]
+        [Description("Request Id")]
+        [MaxLength(2048)]
+        [DataType(DataType.Text)]
+        [JsonPropertyName("RequestId")]
+        [JsonProperty(nameof(RequestId), Required = Required.Always)]
+        [Key]
+        public required string RequestId { get; set; }
+
+        [Required]
+        [Description("Election Id")]
+        [MaxLength(2048)]
+        [DataType(DataType.Text)]
+        [JsonPropertyName("ElectionId")]
+        [JsonProperty(nameof(ElectionId), Required = Required.Always)]
+        public required string ElectionId { get; set; }
+
+        [Required]
+        [Description("List of Access Codes")]
+        [DataType("List<AccessCodeModel>")]
+        [JsonPropertyName("AccessCodes")]
+        [JsonProperty(nameof(AccessCodes), Required = Required.Always)]
+        public required List<AccessCodeModel> AccessCodes { get; set; } = [];
+    }
+
+    public class AccessCodesRequest
+    {
+        [Required]
+        [Description("Election Id")]
+        [MaxLength(2048)]
+        [DataType(DataType.Text)]
+        [JsonPropertyName("ElectionId")]
+        [JsonProperty(nameof(ElectionId), Required = Required.Always)]
+        [Key]
+        public required string ElectionId { get; set; }
+
+        [Required]
+        [Description("User Id")]
+        [MaxLength(2048)]
+        [DataType(DataType.Text)]
+        [JsonPropertyName("UserId")]
+        [JsonProperty(nameof(UserId), Required = Required.Always)]
+        public required string UserId { get; set; }
+
+        [Required]
+        [Description("Request Description")]
+        [MaxLength(2048)]
+        [DataType(DataType.Text)]
+        [JsonPropertyName("RequestDescription")]
+        [JsonProperty(nameof(RequestDescription), Required = Required.Always)]
+        public required string RequestDescription { get; set; }
+
+        [Required]
+        [Description("Number of Access Codes")]
+        [Range(0, int.MaxValue)]
+        [JsonPropertyName("NumberOfAccessCodes")]
+        [JsonProperty(nameof(NumberOfAccessCodes), Required = Required.Always)]
+        public required int? NumberOfAccessCodes { get; set; }
+    }
 }
