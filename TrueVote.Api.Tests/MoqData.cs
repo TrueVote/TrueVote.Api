@@ -134,6 +134,7 @@ namespace TrueVote.Api.Tests
             mockElectionContext = new Mock<MoqTrueVoteDbContext>();
             mockElectionContext.Setup(m => m.Elections).Returns(MockElectionSet.Object);
             mockElectionContext.Setup(m => m.Races).Returns(MockRaceSet.Object);
+            mockElectionContext.Setup(m => m.Users).Returns(MockUserSet.Object);
             mockElectionContext.Setup(m => m.EnsureCreatedAsync()).Returns(Task.FromResult(true));
 
             mockTimestampContext = new Mock<MoqTrueVoteDbContext>();

@@ -9,7 +9,7 @@ namespace TrueVote.Api.Tests.HelperTests
     public class KeyGeneratorTests(ITestOutputHelper output) : TestHelper(output)
     {
         [Fact]
-        public void GenerateUniqueKey_ReturnsValidString()
+        public void GenerateUniqueKeyReturnsValidString()
         {
             var key = UniqueKeyGenerator.GenerateUniqueKey();
 
@@ -19,7 +19,7 @@ namespace TrueVote.Api.Tests.HelperTests
         }
 
         [Fact]
-        public void GenerateUniqueKey_GeneratesUniqueKeys()
+        public void GenerateUniqueKeyGeneratesUniqueKeys()
         {
             var generatedKeys = new HashSet<string>();
             const int iterations = 10000;
@@ -34,7 +34,7 @@ namespace TrueVote.Api.Tests.HelperTests
         }
 
         [Fact]
-        public void GenerateUniqueKey_DistributionTest()
+        public void GenerateUniqueKeyDistributionTest()
         {
             var charCounts = new Dictionary<char, int>();
             const int iterations = 100000;
