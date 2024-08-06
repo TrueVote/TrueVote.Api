@@ -177,6 +177,8 @@ namespace TrueVote.Api.Services
                 AccessCodes = []
             };
 
+            await _trueVoteDbContext.EnsureCreatedAsync();
+
             for (var i = 0; i < accessCodesRequest.NumberOfAccessCodes; i++)
             {
                 var uniqueKey = UniqueKeyGenerator.GenerateUniqueKey();
@@ -193,10 +195,12 @@ namespace TrueVote.Api.Services
 
                 accessCodesResponse.AccessCodes.Add(accessCode);
 
-                // TODO Add to database
+                await _trueVoteDbContext.ElectionAccessCodes.AddAsync(accessCode);
             }
 
-            // TODO Save changes to database
+            await _trueVoteDbContext.SaveChangesAsync();
+
+            await _serviceBus.SendAsync($"Election Access Codes created for ElectionId: {accessCodesRequest.ElectionId}, Number of Access Codes: {accessCodesRequest.NumberOfAccessCodes}");
 
             _log.LogDebug("HTTP trigger - CreateAccessCodes:End");
 
