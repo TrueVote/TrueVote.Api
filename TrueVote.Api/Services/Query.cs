@@ -79,5 +79,19 @@ namespace TrueVote.Api.Services
 
             return items;
         }
+
+        public async Task<IReadOnlyList<AccessCodeModel>> GetElectionAccessCodesByElectionId([GraphQLName("ElectionId")] string ElectionId)
+        {
+            var items = await _trueVoteDbContext.ElectionAccessCodes.Where(e => e.ElectionId == ElectionId).OrderByDescending(c => c.DateCreated).ToListAsync();
+
+            return items;
+        }
+
+        public async Task<IReadOnlyList<AccessCodeModel>> GetElectionAccessCodesByAccessCode([GraphQLName("AccessCode")] string AccessCode)
+        {
+            var items = await _trueVoteDbContext.ElectionAccessCodes.Where(e => e.AccessCode == AccessCode).OrderByDescending(c => c.DateCreated).ToListAsync();
+
+            return items;
+        }
     }
 }
