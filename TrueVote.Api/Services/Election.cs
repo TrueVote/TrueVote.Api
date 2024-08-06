@@ -194,9 +194,9 @@ namespace TrueVote.Api.Services
                 };
 
                 accessCodesResponse.AccessCodes.Add(accessCode);
-
-                await _trueVoteDbContext.ElectionAccessCodes.AddAsync(accessCode);
             }
+
+            await _trueVoteDbContext.ElectionAccessCodes.AddRangeAsync(accessCodesResponse.AccessCodes);
 
             await _trueVoteDbContext.SaveChangesAsync();
 

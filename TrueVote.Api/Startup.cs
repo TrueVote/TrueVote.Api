@@ -319,6 +319,7 @@ namespace TrueVote.Api
                 modelBuilder.HasDefaultContainer("ElectionAccessCodes");
                 modelBuilder.Entity<AccessCodeModel>().ToContainer("ElectionAccessCodes");
                 modelBuilder.Entity<AccessCodeModel>().HasNoDiscriminator();
+                modelBuilder.Entity<AccessCodeModel>().HasKey(ac => new { ac.RequestId, ac.AccessCode, ac.ElectionId });
             }
         }
 

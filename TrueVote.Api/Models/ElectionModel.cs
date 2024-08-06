@@ -174,6 +174,7 @@ namespace TrueVote.Api.Models
         [DataType(DataType.Text)]
         [JsonPropertyName("ElectionId")]
         [JsonProperty(nameof(ElectionId), Required = Required.Always)]
+        [Key]
         public required string ElectionId { get; set; }
 
         [Required]
@@ -197,6 +198,7 @@ namespace TrueVote.Api.Models
         [DataType(DataType.Text)]
         [JsonPropertyName("AccessCode")]
         [JsonProperty(nameof(AccessCode), Required = Required.Always)]
+        [Key]
         public required string AccessCode { get; set; }
     }
 
