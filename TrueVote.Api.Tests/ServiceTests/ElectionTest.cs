@@ -260,5 +260,96 @@ namespace TrueVote.Api.Tests.ServiceTests
             _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
         }
+
+        [Fact]
+        public async Task HandlesApplyAccessCodeWithoutAuthorization()
+        {
+            var applyCodeRequest = new ApplyCodeRequest { UserId = MoqData.MockUserData[0].UserId, AccessCode = "blah" };
+            var validationResults = ValidationHelper.Validate(applyCodeRequest);
+            Assert.Empty(validationResults);
+
+            var ret = await _electionApi.ApplyAccessCode(applyCodeRequest);
+
+            Assert.NotNull(ret);
+            Assert.Equal(StatusCodes.Status401Unauthorized, ((IStatusCodeActionResult) ret).StatusCode);
+
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+        }
+
+        [Fact]
+        public async Task HandlesApplyAccessCodeUserNotFound()
+        {
+            var applyCodeRequest = new ApplyCodeRequest { UserId = MoqData.MockUserData[0].UserId, AccessCode = "blah" };
+
+            applyCodeRequest.UserId = "blah";
+            var validationResults = ValidationHelper.Validate(applyCodeRequest);
+            Assert.Empty(validationResults);
+
+            _electionApi.ControllerContext = _authControllerContext;
+            var ret = await _electionApi.ApplyAccessCode(applyCodeRequest);
+
+            Assert.NotNull(ret);
+            Assert.Equal(StatusCodes.Status404NotFound, ((IStatusCodeActionResult) ret).StatusCode);
+
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+        }
+
+        [Fact]
+        public async Task HandlesApplyAccessCodeUnfoundAccessCode()
+        {
+            var applyCodeRequest = new ApplyCodeRequest { UserId = MoqData.MockUserData[0].UserId, AccessCode = "blah" };
+            var validationResults = ValidationHelper.Validate(applyCodeRequest);
+            Assert.Empty(validationResults);
+
+            _electionApi.ControllerContext = _authControllerContext;
+            var ret = await _electionApi.ApplyAccessCode(applyCodeRequest);
+            Assert.NotNull(ret);
+            Assert.Equal(StatusCodes.Status404NotFound, ((IStatusCodeActionResult) ret).StatusCode);
+
+            var val = (SecureString) (ret as NotFoundObjectResult).Value;
+            Assert.Contains("AccessCode", val.Value.ToString());
+            Assert.Contains("not found", val.Value.ToString());
+
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+        }
+
+        [Fact]
+        public async Task HandlesApplyAccessCodeUnfoundElection()
+        {
+            var applyCodeRequest = new ApplyCodeRequest { UserId = MoqData.MockUserData[0].UserId, AccessCode = "accesscode3" };
+            var validationResults = ValidationHelper.Validate(applyCodeRequest);
+            Assert.Empty(validationResults);
+
+            _electionApi.ControllerContext = _authControllerContext;
+            var ret = await _electionApi.ApplyAccessCode(applyCodeRequest);
+            Assert.NotNull(ret);
+            Assert.Equal(StatusCodes.Status404NotFound, ((IStatusCodeActionResult) ret).StatusCode);
+
+            var val = (SecureString) (ret as NotFoundObjectResult).Value;
+            Assert.Contains("Election", val.Value.ToString());
+            Assert.Contains("not found", val.Value.ToString());
+
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+        }
+
+        [Fact]
+        public async Task ReturnsElectionFromAccessCode()
+        {
+            var applyCodeRequest = new ApplyCodeRequest { UserId = MoqData.MockUserData[0].UserId, AccessCode = "accesscode1" };
+            var validationResults = ValidationHelper.Validate(applyCodeRequest);
+            Assert.Empty(validationResults);
+
+            _electionApi.ControllerContext = _authControllerContext;
+            var ret = await _electionApi.ApplyAccessCode(applyCodeRequest);
+            Assert.NotNull(ret);
+            Assert.Equal(StatusCodes.Status200OK, ((IStatusCodeActionResult) ret).StatusCode);
+
+            var val = (ElectionModel) (ret as OkObjectResult).Value;
+            Assert.NotNull(val);
+            Assert.Equal("California State", val.Name);
+
+            _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+        }
     }
 }

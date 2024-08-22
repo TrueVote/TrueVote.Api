@@ -263,4 +263,23 @@ namespace TrueVote.Api.Models
         [JsonProperty(nameof(NumberOfAccessCodes), Required = Required.Always)]
         public required int? NumberOfAccessCodes { get; set; }
     }
+
+    public class ApplyCodeRequest
+    {
+        [Required]
+        [Description("User Id")]
+        [MaxLength(2048)]
+        [DataType(DataType.Text)]
+        [JsonPropertyName("UserId")]
+        [JsonProperty(nameof(UserId), Required = Required.Always)]
+        public required string UserId { get; set; }
+
+        [Required]
+        [Description("AccessCode")]
+        [MaxLength(2048)]
+        [DataType(DataType.Text)]
+        [JsonPropertyName("AccessCode")]
+        [JsonProperty(nameof(AccessCode), Required = Required.Always)]
+        public required string AccessCode { get; set; }
+    }
 }

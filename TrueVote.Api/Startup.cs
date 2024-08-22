@@ -434,6 +434,12 @@ namespace TrueVote.Api
                         ValidateUserId(context, accessCodesRequest.UserId, userId.ToString());
                         break;
                     }
+
+                    case ApplyCodeRequest applyCodeRequest:
+                    {
+                        ValidateUserId(context, applyCodeRequest.UserId, userId.ToString());
+                        break;
+                    }
                     // Add more cases for other models with UserId property
 
                     default:
