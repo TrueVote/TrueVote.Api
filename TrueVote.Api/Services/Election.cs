@@ -210,49 +210,49 @@ namespace TrueVote.Api.Services
         [HttpGet]
         [Authorize]
         [ServiceFilter(typeof(ValidateUserIdFilter))]
-        [Route("election/applyaccesscode")]
+        [Route("election/checkaccesscode")]
         [Produces(typeof(Election))]
         [Description("Returns an Election for the AccessCode")]
         [ProducesResponseType(typeof(Election), StatusCodes.Status201Created)]
-        public async Task<IActionResult> ApplyAccessCode([FromBody] ApplyCodeRequest applyCodeRequest)
+        public async Task<IActionResult> CheckAccessCode([FromBody] CheckCodeRequest checkCodeRequest)
         {
-            _log.LogDebug("HTTP trigger - ApplyAccessCode:Begin");
+            _log.LogDebug("HTTP trigger - CheckAccessCode:Begin");
 
-            _log.LogInformation($"Request Data: {applyCodeRequest}");
+            _log.LogInformation($"Request Data: {checkCodeRequest}");
 
             if (User == null || User.Identity == null)
             {
-                _log.LogDebug("HTTP trigger - ApplyAccessCode:End");
+                _log.LogDebug("HTTP trigger - CheckAccessCode:End");
                 return Unauthorized();
             }
 
             // Determine if User is found
-            var foundUser = await _trueVoteDbContext.Users.Where(u => u.UserId == applyCodeRequest.UserId).FirstOrDefaultAsync();
+            var foundUser = await _trueVoteDbContext.Users.Where(u => u.UserId == checkCodeRequest.UserId).FirstOrDefaultAsync();
             if (foundUser == null)
             {
-                _log.LogDebug("HTTP trigger - ApplyAccessCode:End");
-                return NotFound(new SecureString { Value = $"User: '{applyCodeRequest.UserId}' not found" });
+                _log.LogDebug("HTTP trigger - CheckAccessCode:End");
+                return NotFound(new SecureString { Value = $"User: '{checkCodeRequest.UserId}' not found" });
             }
 
             // Determine if the EAC exists
-            var accessCode = await _trueVoteDbContext.ElectionAccessCodes.Where(u => u.AccessCode == applyCodeRequest.AccessCode).FirstOrDefaultAsync();
+            var accessCode = await _trueVoteDbContext.ElectionAccessCodes.Where(u => u.AccessCode == checkCodeRequest.AccessCode).FirstOrDefaultAsync();
             if (accessCode == null)
             {
-                _log.LogDebug("HTTP trigger - ApplyAccessCode:End");
-                return NotFound(new SecureString { Value = $"AccessCode: '{applyCodeRequest.AccessCode}' not found" });
+                _log.LogDebug("HTTP trigger - CheckAccessCode:End");
+                return NotFound(new SecureString { Value = $"AccessCode: '{checkCodeRequest.AccessCode}' not found" });
             }
 
             // Check if the election (still) exists for this EAC
             var election = await _trueVoteDbContext.Elections.Where(r => r.ElectionId == accessCode.ElectionId).AsNoTracking().OrderByDescending(r => r.DateCreated).FirstOrDefaultAsync();
             if (election == null)
             {
-                _log.LogDebug("HTTP trigger - ApplyAccessCode:End");
+                _log.LogDebug("HTTP trigger - CheckAccessCode:End");
                 return NotFound(new SecureString { Value = $"Election: '{accessCode.ElectionId}' not found" });
             }
 
             // TODO See if the access code was used on a ballot already
 
-            _log.LogDebug("HTTP trigger - ApplyAccessCode:End");
+            _log.LogDebug("HTTP trigger - CheckAccessCode:End");
 
             return Ok(election);
         }

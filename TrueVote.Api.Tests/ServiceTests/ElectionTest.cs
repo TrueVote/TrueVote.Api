@@ -262,13 +262,13 @@ namespace TrueVote.Api.Tests.ServiceTests
         }
 
         [Fact]
-        public async Task HandlesApplyAccessCodeWithoutAuthorization()
+        public async Task HandlesCheckAccessCodeWithoutAuthorization()
         {
-            var applyCodeRequest = new ApplyCodeRequest { UserId = MoqData.MockUserData[0].UserId, AccessCode = "blah" };
-            var validationResults = ValidationHelper.Validate(applyCodeRequest);
+            var checkCodeRequest = new CheckCodeRequest { UserId = MoqData.MockUserData[0].UserId, AccessCode = "blah" };
+            var validationResults = ValidationHelper.Validate(checkCodeRequest);
             Assert.Empty(validationResults);
 
-            var ret = await _electionApi.ApplyAccessCode(applyCodeRequest);
+            var ret = await _electionApi.CheckAccessCode(checkCodeRequest);
 
             Assert.NotNull(ret);
             Assert.Equal(StatusCodes.Status401Unauthorized, ((IStatusCodeActionResult) ret).StatusCode);
@@ -277,16 +277,16 @@ namespace TrueVote.Api.Tests.ServiceTests
         }
 
         [Fact]
-        public async Task HandlesApplyAccessCodeUserNotFound()
+        public async Task HandlesCheckAccessCodeUserNotFound()
         {
-            var applyCodeRequest = new ApplyCodeRequest { UserId = MoqData.MockUserData[0].UserId, AccessCode = "blah" };
+            var checkCodeRequest = new CheckCodeRequest { UserId = MoqData.MockUserData[0].UserId, AccessCode = "blah" };
 
-            applyCodeRequest.UserId = "blah";
-            var validationResults = ValidationHelper.Validate(applyCodeRequest);
+            checkCodeRequest.UserId = "blah";
+            var validationResults = ValidationHelper.Validate(checkCodeRequest);
             Assert.Empty(validationResults);
 
             _electionApi.ControllerContext = _authControllerContext;
-            var ret = await _electionApi.ApplyAccessCode(applyCodeRequest);
+            var ret = await _electionApi.CheckAccessCode(checkCodeRequest);
 
             Assert.NotNull(ret);
             Assert.Equal(StatusCodes.Status404NotFound, ((IStatusCodeActionResult) ret).StatusCode);
@@ -295,14 +295,14 @@ namespace TrueVote.Api.Tests.ServiceTests
         }
 
         [Fact]
-        public async Task HandlesApplyAccessCodeUnfoundAccessCode()
+        public async Task HandlesCheckAccessCodeUnfoundAccessCode()
         {
-            var applyCodeRequest = new ApplyCodeRequest { UserId = MoqData.MockUserData[0].UserId, AccessCode = "blah" };
-            var validationResults = ValidationHelper.Validate(applyCodeRequest);
+            var checkCodeRequest = new CheckCodeRequest { UserId = MoqData.MockUserData[0].UserId, AccessCode = "blah" };
+            var validationResults = ValidationHelper.Validate(checkCodeRequest);
             Assert.Empty(validationResults);
 
             _electionApi.ControllerContext = _authControllerContext;
-            var ret = await _electionApi.ApplyAccessCode(applyCodeRequest);
+            var ret = await _electionApi.CheckAccessCode(checkCodeRequest);
             Assert.NotNull(ret);
             Assert.Equal(StatusCodes.Status404NotFound, ((IStatusCodeActionResult) ret).StatusCode);
 
@@ -314,14 +314,14 @@ namespace TrueVote.Api.Tests.ServiceTests
         }
 
         [Fact]
-        public async Task HandlesApplyAccessCodeUnfoundElection()
+        public async Task HandlesCheckAccessCodeUnfoundElection()
         {
-            var applyCodeRequest = new ApplyCodeRequest { UserId = MoqData.MockUserData[0].UserId, AccessCode = "accesscode3" };
-            var validationResults = ValidationHelper.Validate(applyCodeRequest);
+            var checkCodeRequest = new CheckCodeRequest { UserId = MoqData.MockUserData[0].UserId, AccessCode = "accesscode3" };
+            var validationResults = ValidationHelper.Validate(checkCodeRequest);
             Assert.Empty(validationResults);
 
             _electionApi.ControllerContext = _authControllerContext;
-            var ret = await _electionApi.ApplyAccessCode(applyCodeRequest);
+            var ret = await _electionApi.CheckAccessCode(checkCodeRequest);
             Assert.NotNull(ret);
             Assert.Equal(StatusCodes.Status404NotFound, ((IStatusCodeActionResult) ret).StatusCode);
 
@@ -335,12 +335,12 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public async Task ReturnsElectionFromAccessCode()
         {
-            var applyCodeRequest = new ApplyCodeRequest { UserId = MoqData.MockUserData[0].UserId, AccessCode = "accesscode1" };
-            var validationResults = ValidationHelper.Validate(applyCodeRequest);
+            var checkCodeRequest = new CheckCodeRequest { UserId = MoqData.MockUserData[0].UserId, AccessCode = "accesscode1" };
+            var validationResults = ValidationHelper.Validate(checkCodeRequest);
             Assert.Empty(validationResults);
 
             _electionApi.ControllerContext = _authControllerContext;
-            var ret = await _electionApi.ApplyAccessCode(applyCodeRequest);
+            var ret = await _electionApi.CheckAccessCode(checkCodeRequest);
             Assert.NotNull(ret);
             Assert.Equal(StatusCodes.Status200OK, ((IStatusCodeActionResult) ret).StatusCode);
 

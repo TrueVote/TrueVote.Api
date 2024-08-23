@@ -264,7 +264,7 @@ namespace TrueVote.Api.Models
         public required int? NumberOfAccessCodes { get; set; }
     }
 
-    public class ApplyCodeRequest
+    public class CheckCodeRequest
     {
         [Required]
         [Description("User Id")]
