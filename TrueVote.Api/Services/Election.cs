@@ -214,7 +214,7 @@ namespace TrueVote.Api.Services
         [Produces(typeof(Election))]
         [Description("Returns an Election for the AccessCode")]
         [ProducesResponseType(typeof(Election), StatusCodes.Status201Created)]
-        public async Task<IActionResult> CheckAccessCode([FromBody] CheckCodeRequest checkCodeRequest)
+        public async Task<IActionResult> CheckAccessCode([FromQuery] CheckCodeRequest checkCodeRequest)
         {
             _log.LogDebug("HTTP trigger - CheckAccessCode:Begin");
 
