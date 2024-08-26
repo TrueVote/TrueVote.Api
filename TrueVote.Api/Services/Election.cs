@@ -60,7 +60,7 @@ namespace TrueVote.Api.Services
         [Produces(typeof(ElectionModelList))]
         [Description("Returns collection of Elections")]
         [ProducesResponseType(typeof(ElectionModelList), StatusCodes.Status200OK)]
-        public async Task<IActionResult> ElectionFind([FromBody] FindElectionModel findElection)
+        public async Task<IActionResult> ElectionFind([FromQuery] FindElectionModel findElection)
         {
             _log.LogDebug("HTTP trigger - ElectionFind:Begin");
 

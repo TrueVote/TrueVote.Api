@@ -112,7 +112,7 @@ namespace TrueVote.Api.Services
         [Produces(typeof(RaceModelList))]
         [Description("Returns collection of Races")]
         [ProducesResponseType(typeof(RaceModelList), StatusCodes.Status200OK)]
-        public async Task<IActionResult> RaceFind([FromBody] FindRaceModel findRace)
+        public async Task<IActionResult> RaceFind([FromQuery] FindRaceModel findRace)
         {
             _log.LogDebug("HTTP trigger - RaceFind:Begin");
 
