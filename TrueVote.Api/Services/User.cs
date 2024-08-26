@@ -59,7 +59,7 @@ namespace TrueVote.Api.Services
         [Produces(typeof(UserModelList))]
         [Description("Returns collection of Users")]
         [ProducesResponseType(typeof(UserModelList), StatusCodes.Status200OK)]
-        public async Task<IActionResult> UserFind([FromBody] FindUserModel findUser)
+        public async Task<IActionResult> UserFind([FromQuery] FindUserModel findUser)
         {
             _log.LogDebug("HTTP trigger - UserFind:Begin");
 

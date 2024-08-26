@@ -31,7 +31,7 @@ namespace TrueVote.Api.Services
         [Produces(typeof(List<TimestampModel>))]
         [Description("Returns List of Timestamps by Date")]
         [ProducesResponseType(typeof(List<TimestampModel>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> TimestampFind([FromBody] FindTimestampModel findTimestamp)
+        public async Task<IActionResult> TimestampFind([FromQuery] FindTimestampModel findTimestamp)
         {
             _log.LogDebug("HTTP trigger - TimestampFind:Begin");
 
