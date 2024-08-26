@@ -231,6 +231,7 @@ namespace TrueVote.Api
             public virtual DbSet<TimestampModel> Timestamps { get; set; }
             public virtual DbSet<BallotHashModel> BallotHashes { get; set; }
             public virtual DbSet<FeedbackModel> Feedbacks { get; set; }
+            public virtual DbSet<AccessCodeModel> ElectionAccessCodes { get; set; }
             private readonly IConfiguration? _configuration;
             private readonly string? _connectionString;
 
@@ -314,6 +315,11 @@ namespace TrueVote.Api
                 modelBuilder.HasDefaultContainer("Feedbacks");
                 modelBuilder.Entity<FeedbackModel>().ToContainer("Feedbacks");
                 modelBuilder.Entity<FeedbackModel>().HasNoDiscriminator();
+
+                modelBuilder.HasDefaultContainer("ElectionAccessCodes");
+                modelBuilder.Entity<AccessCodeModel>().ToContainer("ElectionAccessCodes");
+                modelBuilder.Entity<AccessCodeModel>().HasNoDiscriminator();
+                modelBuilder.Entity<AccessCodeModel>().HasKey(ac => new { ac.RequestId, ac.AccessCode, ac.ElectionId });
             }
         }
 
@@ -420,6 +426,18 @@ namespace TrueVote.Api
                     case FeedbackModel feedbackModel:
                     {
                         ValidateUserId(context, feedbackModel.UserId, userId.ToString());
+                        break;
+                    }
+
+                    case AccessCodesRequest accessCodesRequest:
+                    {
+                        ValidateUserId(context, accessCodesRequest.UserId, userId.ToString());
+                        break;
+                    }
+
+                    case CheckCodeRequest checkCodeRequest:
+                    {
+                        ValidateUserId(context, checkCodeRequest.UserId, userId.ToString());
                         break;
                     }
                     // Add more cases for other models with UserId property

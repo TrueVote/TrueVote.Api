@@ -108,5 +108,33 @@ namespace TrueVote.Api.Tests.ServiceTests
             Assert.Equal("ballotid3", ret.Ballots[0].BallotId);
             Assert.True(ret.Ballots.Count == 1);
         }
+
+        [Fact]
+        public async Task RunsGetElectionAccessCodesByElectionIdQuery()
+        {
+            var electionId = "electionid1";
+
+            var ret = await _queryService.GetElectionAccessCodesByElectionId(electionId);
+
+            Assert.NotNull(ret);
+            Assert.Equal("electionid1", ret[0].ElectionId);
+            Assert.Equal("accesscode1", ret[0].AccessCode);
+            Assert.Equal("electionid1", ret[1].ElectionId);
+            Assert.Equal("accesscode2", ret[1].AccessCode);
+            Assert.True(ret.Count == 2);
+        }
+
+        [Fact]
+        public async Task RunsGetElectionAccessCodesByAccessCodeQuery()
+        {
+            var accessCode = "accesscode1";
+
+            var ret = await _queryService.GetElectionAccessCodesByAccessCode(accessCode);
+
+            Assert.NotNull(ret);
+            Assert.Equal("electionid1", ret[0].ElectionId);
+            Assert.Equal("accesscode1", ret[0].AccessCode);
+            Assert.True(ret.Count == 1);
+        }
     }
 }

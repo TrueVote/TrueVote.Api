@@ -184,5 +184,172 @@ namespace TrueVote.Api.Tests.ServiceTests
 
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(1));
         }
+
+        [Fact]
+        public async Task HandlesCreateAccessCodesUserNotFound()
+        {
+            var accessCodesRequest = new AccessCodesRequest { UserId = MoqData.MockUserData[0].UserId, ElectionId = "123", NumberOfAccessCodes = 5, RequestDescription = "Test Harness" };
+
+            accessCodesRequest.UserId = "blah";
+            var validationResults = ValidationHelper.Validate(accessCodesRequest);
+            Assert.Empty(validationResults);
+
+            _electionApi.ControllerContext = _authControllerContext;
+            var ret = await _electionApi.CreateAccessCodes(accessCodesRequest);
+
+            Assert.NotNull(ret);
+            Assert.Equal(StatusCodes.Status404NotFound, ((IStatusCodeActionResult) ret).StatusCode);
+
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+        }
+
+        [Fact]
+        public async Task HandlesCreateAccessCodesWithoutAuthorization()
+        {
+            var accessCodesRequest = new AccessCodesRequest { UserId = MoqData.MockUserData[0].UserId, ElectionId = "blah", NumberOfAccessCodes = 5, RequestDescription = "Test Harness" };
+            var validationResults = ValidationHelper.Validate(accessCodesRequest);
+            Assert.Empty(validationResults);
+
+            var ret = await _electionApi.CreateAccessCodes(accessCodesRequest);
+
+            Assert.NotNull(ret);
+            Assert.Equal(StatusCodes.Status401Unauthorized, ((IStatusCodeActionResult) ret).StatusCode);
+
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+        }
+
+        [Fact]
+        public async Task HandlesCreateAccessCodesUnfoundElection()
+        {
+            var accessCodesRequest = new AccessCodesRequest { UserId = MoqData.MockUserData[0].UserId, ElectionId = "123", NumberOfAccessCodes = 5, RequestDescription = "Test Harness" };
+            var validationResults = ValidationHelper.Validate(accessCodesRequest);
+            Assert.Empty(validationResults);
+
+            _electionApi.ControllerContext = _authControllerContext;
+            var ret = await _electionApi.CreateAccessCodes(accessCodesRequest);
+            Assert.NotNull(ret);
+            Assert.Equal(StatusCodes.Status404NotFound, ((IStatusCodeActionResult) ret).StatusCode);
+
+            var val = (SecureString) (ret as NotFoundObjectResult).Value;
+            Assert.Contains("Election", val.Value.ToString());
+            Assert.Contains("not found", val.Value.ToString());
+
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+        }
+
+        [Fact]
+        public async Task CreatesAccessCodes()
+        {
+            var numberOfAccessCodes = 5;
+            var accessCodesRequest = new AccessCodesRequest { UserId = MoqData.MockUserData[0].UserId, ElectionId = MoqData.MockElectionData[0].ElectionId, NumberOfAccessCodes = numberOfAccessCodes, RequestDescription = "Test Harness" };
+            var validationResults = ValidationHelper.Validate(accessCodesRequest);
+            Assert.Empty(validationResults);
+
+            _electionApi.ControllerContext = _authControllerContext;
+            var ret = await _electionApi.CreateAccessCodes(accessCodesRequest);
+            Assert.NotNull(ret);
+            Assert.Equal(StatusCodes.Status201Created, ((IStatusCodeActionResult) ret).StatusCode);
+
+            var val = (AccessCodesResponse) (ret as CreatedAtActionResult).Value;
+            Assert.NotNull(val);
+
+            Assert.NotEmpty(val.RequestId);
+            Assert.NotEmpty(val.ElectionId);
+            Assert.True(val.AccessCodes.Count == numberOfAccessCodes);
+
+            _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+        }
+
+        [Fact]
+        public async Task HandlesCheckAccessCodeWithoutAuthorization()
+        {
+            var checkCodeRequest = new CheckCodeRequest { UserId = MoqData.MockUserData[0].UserId, AccessCode = "blah" };
+            var validationResults = ValidationHelper.Validate(checkCodeRequest);
+            Assert.Empty(validationResults);
+
+            var ret = await _electionApi.CheckAccessCode(checkCodeRequest);
+
+            Assert.NotNull(ret);
+            Assert.Equal(StatusCodes.Status401Unauthorized, ((IStatusCodeActionResult) ret).StatusCode);
+
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+        }
+
+        [Fact]
+        public async Task HandlesCheckAccessCodeUserNotFound()
+        {
+            var checkCodeRequest = new CheckCodeRequest { UserId = MoqData.MockUserData[0].UserId, AccessCode = "blah" };
+
+            checkCodeRequest.UserId = "blah";
+            var validationResults = ValidationHelper.Validate(checkCodeRequest);
+            Assert.Empty(validationResults);
+
+            _electionApi.ControllerContext = _authControllerContext;
+            var ret = await _electionApi.CheckAccessCode(checkCodeRequest);
+
+            Assert.NotNull(ret);
+            Assert.Equal(StatusCodes.Status404NotFound, ((IStatusCodeActionResult) ret).StatusCode);
+
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+        }
+
+        [Fact]
+        public async Task HandlesCheckAccessCodeUnfoundAccessCode()
+        {
+            var checkCodeRequest = new CheckCodeRequest { UserId = MoqData.MockUserData[0].UserId, AccessCode = "blah" };
+            var validationResults = ValidationHelper.Validate(checkCodeRequest);
+            Assert.Empty(validationResults);
+
+            _electionApi.ControllerContext = _authControllerContext;
+            var ret = await _electionApi.CheckAccessCode(checkCodeRequest);
+            Assert.NotNull(ret);
+            Assert.Equal(StatusCodes.Status404NotFound, ((IStatusCodeActionResult) ret).StatusCode);
+
+            var val = (SecureString) (ret as NotFoundObjectResult).Value;
+            Assert.Contains("AccessCode", val.Value.ToString());
+            Assert.Contains("not found", val.Value.ToString());
+
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+        }
+
+        [Fact]
+        public async Task HandlesCheckAccessCodeUnfoundElection()
+        {
+            var checkCodeRequest = new CheckCodeRequest { UserId = MoqData.MockUserData[0].UserId, AccessCode = "accesscode3" };
+            var validationResults = ValidationHelper.Validate(checkCodeRequest);
+            Assert.Empty(validationResults);
+
+            _electionApi.ControllerContext = _authControllerContext;
+            var ret = await _electionApi.CheckAccessCode(checkCodeRequest);
+            Assert.NotNull(ret);
+            Assert.Equal(StatusCodes.Status404NotFound, ((IStatusCodeActionResult) ret).StatusCode);
+
+            var val = (SecureString) (ret as NotFoundObjectResult).Value;
+            Assert.Contains("Election", val.Value.ToString());
+            Assert.Contains("not found", val.Value.ToString());
+
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+        }
+
+        [Fact]
+        public async Task ReturnsElectionFromAccessCode()
+        {
+            var checkCodeRequest = new CheckCodeRequest { UserId = MoqData.MockUserData[0].UserId, AccessCode = "accesscode1" };
+            var validationResults = ValidationHelper.Validate(checkCodeRequest);
+            Assert.Empty(validationResults);
+
+            _electionApi.ControllerContext = _authControllerContext;
+            var ret = await _electionApi.CheckAccessCode(checkCodeRequest);
+            Assert.NotNull(ret);
+            Assert.Equal(StatusCodes.Status200OK, ((IStatusCodeActionResult) ret).StatusCode);
+
+            var val = (ElectionModel) (ret as OkObjectResult).Value;
+            Assert.NotNull(val);
+            Assert.Equal("California State", val.Name);
+
+            _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+        }
     }
 }
