@@ -46,10 +46,7 @@ namespace TrueVote.Api
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddSingleton<ValidateUserIdFilter>();
-            services.AddControllers(options =>
-            {
-                options.ModelBinderProviders.Insert(0, new QueryStringModelBinderProvider());
-            }).AddNewtonsoftJson(jsonoptions =>
+            services.AddControllers().AddNewtonsoftJson(jsonoptions =>
             {
                 jsonoptions.SerializerSettings.Converters.Add(new Newtonsoft.Json.Converters.IsoDateTimeConverter());
                 jsonoptions.SerializerSettings.DateTimeZoneHandling = DateTimeZoneHandling.Utc;
