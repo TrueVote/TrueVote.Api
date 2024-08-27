@@ -30,7 +30,7 @@ namespace TrueVote.Api.Services
         [Description("Tests Error Logging of a Server 500")]
         [ProducesResponseType(typeof(SecureString), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(SecureString), StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> ThrowError500([FromQuery] Error500Flag error500Flag)
+        public async Task<IActionResult> ThrowError500([ModelBinder(BinderType = typeof(QueryStringModelBinder))] [FromQuery] Error500Flag error500Flag)
         {
             _log.LogDebug("HTTP trigger - ThrowError500:Begin");
 

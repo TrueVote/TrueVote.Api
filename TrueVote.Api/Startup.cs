@@ -1,30 +1,32 @@
-using Microsoft.EntityFrameworkCore.ChangeTracking;
+using HotChocolate.Language;
+using HotChocolate.Types.Descriptors;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.FileProviders;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using TrueVote.Api.Services;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
+using Swashbuckle.AspNetCore.SwaggerGen;
+using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
+using System.IO.Abstractions;
+using System.Reflection;
+using System.Security.Claims;
+using System.Text.Json;
+using TrueVote.Api.Helpers;
 using TrueVote.Api.Interfaces;
 using TrueVote.Api.Models;
-using System.Text.Json;
-using HotChocolate.Types.Descriptors;
-using System.IO.Abstractions;
-using Microsoft.Extensions.DependencyInjection.Extensions;
-using TrueVote.Api.Helpers;
-using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
-using Newtonsoft.Json;
+using TrueVote.Api.Services;
 using JsonSerializer = System.Text.Json.JsonSerializer;
-using Microsoft.Extensions.FileProviders;
 using Path = System.IO.Path;
-using Newtonsoft.Json.Serialization;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
-using Swashbuckle.AspNetCore.SwaggerGen;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
-using HotChocolate.Language;
-using System.Globalization;
 
 #pragma warning disable IDE0046 // Convert to conditional expression
 namespace TrueVote.Api
@@ -44,7 +46,10 @@ namespace TrueVote.Api
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddSingleton<ValidateUserIdFilter>();
-            services.AddControllers().AddNewtonsoftJson(jsonoptions =>
+            services.AddControllers(options =>
+            {
+                options.ModelBinderProviders.Insert(0, new QueryStringModelBinderProvider());
+            }).AddNewtonsoftJson(jsonoptions =>
             {
                 jsonoptions.SerializerSettings.Converters.Add(new Newtonsoft.Json.Converters.IsoDateTimeConverter());
                 jsonoptions.SerializerSettings.DateTimeZoneHandling = DateTimeZoneHandling.Utc;
@@ -502,6 +507,64 @@ namespace TrueVote.Api
                 return dateTime.ToString(DateTimeFormat, CultureInfo.InvariantCulture);
             }
             return null;
+        }
+    }
+
+    [ExcludeFromCodeCoverage]
+    public class QueryStringModelBinderProvider : IModelBinderProvider
+    {
+        public IModelBinder GetBinder(ModelBinderProviderContext context)
+        {
+            ArgumentNullException.ThrowIfNull(context);
+
+            if (context.Metadata.IsComplexType)
+            {
+                return new QueryStringModelBinder();
+            }
+
+            return null;
+        }
+    }
+
+    [ExcludeFromCodeCoverage]
+    public class QueryStringModelBinder : IModelBinder
+    {
+        public Task BindModelAsync(ModelBindingContext bindingContext)
+        {
+            ArgumentNullException.ThrowIfNull(bindingContext);
+
+            var model = Activator.CreateInstance(bindingContext.ModelType);
+
+            foreach (var property in bindingContext.ModelType.GetProperties())
+            {
+                var key = property.Name;
+                var value = bindingContext.ValueProvider.GetValue(key).FirstValue;
+
+                if (!string.IsNullOrEmpty(value))
+                {
+                    var convertedValue = ConvertValue(value, property.PropertyType);
+                    property.SetValue(model, convertedValue);
+                }
+            }
+
+            bindingContext.Result = ModelBindingResult.Success(model);
+            return Task.CompletedTask;
+        }
+
+        private static object ConvertValue(string value, Type targetType)
+        {
+            if (targetType == typeof(string))
+            {
+                return value;
+            }
+
+            var converter = TypeDescriptor.GetConverter(targetType);
+            if (converter != null && converter.CanConvertFrom(typeof(string)))
+            {
+                return converter.ConvertFromString(value);
+            }
+
+            throw new InvalidOperationException($"Unable to convert value '{value}' to type {targetType}");
         }
     }
 }

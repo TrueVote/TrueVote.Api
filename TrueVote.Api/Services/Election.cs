@@ -60,7 +60,7 @@ namespace TrueVote.Api.Services
         [Produces(typeof(ElectionModelList))]
         [Description("Returns collection of Elections")]
         [ProducesResponseType(typeof(ElectionModelList), StatusCodes.Status200OK)]
-        public async Task<IActionResult> ElectionFind([FromQuery] FindElectionModel findElection)
+        public async Task<IActionResult> ElectionFind([ModelBinder(BinderType = typeof(QueryStringModelBinder))] [FromQuery] FindElectionModel findElection)
         {
             _log.LogDebug("HTTP trigger - ElectionFind:Begin");
 
@@ -211,10 +211,10 @@ namespace TrueVote.Api.Services
         [Authorize]
         [ServiceFilter(typeof(ValidateUserIdFilter))]
         [Route("election/checkaccesscode")]
-        [Produces(typeof(Election))]
+        [Produces(typeof(ElectionModel))]
         [Description("Returns an Election for the AccessCode")]
-        [ProducesResponseType(typeof(Election), StatusCodes.Status201Created)]
-        public async Task<IActionResult> CheckAccessCode([FromQuery] CheckCodeRequest checkCodeRequest)
+        [ProducesResponseType(typeof(ElectionModel), StatusCodes.Status201Created)]
+        public async Task<IActionResult> CheckAccessCode([ModelBinder(BinderType = typeof(QueryStringModelBinder))] [FromQuery] CheckCodeRequest checkCodeRequest)
         {
             _log.LogDebug("HTTP trigger - CheckAccessCode:Begin");
 
