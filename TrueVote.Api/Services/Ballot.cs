@@ -122,7 +122,7 @@ namespace TrueVote.Api.Services
         [Produces(typeof(BallotList))]
         [Description("Returns collection of Ballots")]
         [ProducesResponseType(typeof(BallotList), StatusCodes.Status200OK)]
-        public async Task<IActionResult> BallotFind([FromQuery] FindBallotModel findBallot)
+        public async Task<IActionResult> BallotFind([ModelBinder(BinderType = typeof(QueryStringModelBinder))] [FromQuery] FindBallotModel findBallot)
         {
             _log.LogDebug("HTTP trigger - BallotFind:Begin");
 
@@ -150,7 +150,7 @@ namespace TrueVote.Api.Services
         [Produces(typeof(CountBallotModelResponse))]
         [Description("Returns count of Ballots")]
         [ProducesResponseType(typeof(CountBallotModelResponse), StatusCodes.Status200OK)]
-        public async Task<IActionResult> BallotCount([FromQuery] CountBallotModel countBallot)
+        public async Task<IActionResult> BallotCount([ModelBinder(BinderType = typeof(QueryStringModelBinder))] [FromQuery] CountBallotModel countBallot)
         {
             _log.LogDebug("HTTP trigger - BallotCount:Begin");
 
@@ -172,7 +172,7 @@ namespace TrueVote.Api.Services
         [Produces(typeof(List<BallotHashModel>))]
         [Description("Returns collection of Ballot Hashes")]
         [ProducesResponseType(typeof(List<BallotHashModel>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> BallotHashFind([FromQuery] FindBallotHashModel findBallotHash)
+        public async Task<IActionResult> BallotHashFind([ModelBinder(BinderType = typeof(QueryStringModelBinder))] [FromQuery] FindBallotHashModel findBallotHash)
         {
             _log.LogDebug("HTTP trigger - BallotHashFind:Begin");
 
