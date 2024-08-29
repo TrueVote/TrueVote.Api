@@ -351,52 +351,5 @@ namespace TrueVote.Api.Tests.ServiceTests
             _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
         }
-
-        [Fact]
-        public async Task AddsUsedAccessCode()
-        {
-            var usedAccessCode = new UsedAccessCodeModel { AccessCode = "accesscode3" };
-
-            var ret = await _electionApi.UseAccessCode(usedAccessCode);
-            Assert.NotNull(ret);
-            Assert.Equal(StatusCodes.Status200OK, ((IStatusCodeActionResult) ret).StatusCode);
-
-            _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
-            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
-        }
-
-        [Fact]
-        public async Task HandlesWhenCodeAlreadyUsed()
-        {
-            var usedAccessCode = new UsedAccessCodeModel { AccessCode = "accesscode2" };
-
-            var ret = await _electionApi.UseAccessCode(usedAccessCode);
-            Assert.NotNull(ret);
-            Assert.Equal(StatusCodes.Status409Conflict, ((IStatusCodeActionResult) ret).StatusCode);
-
-            var val = (SecureString) (ret as ConflictObjectResult).Value;
-            Assert.Contains("AccessCode", val.Value.ToString());
-            Assert.Contains("already used", val.Value.ToString());
-
-            _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
-            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
-        }
-
-        [Fact]
-        public async Task HandlesWhenCodeDoesNotExist()
-        {
-            var usedAccessCode = new UsedAccessCodeModel { AccessCode = "blah" };
-
-            var ret = await _electionApi.UseAccessCode(usedAccessCode);
-            Assert.NotNull(ret);
-            Assert.Equal(StatusCodes.Status404NotFound, ((IStatusCodeActionResult) ret).StatusCode);
-
-            var val = (SecureString) (ret as NotFoundObjectResult).Value;
-            Assert.Contains("AccessCode", val.Value.ToString());
-            Assert.Contains("not found", val.Value.ToString());
-
-            _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
-            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
-        }
     }
 }

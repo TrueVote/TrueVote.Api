@@ -173,6 +173,8 @@ namespace TrueVote.Api.Tests
             mockBallotContext.Setup(m => m.Ballots).Returns(MockBallotSet.Object);
             mockBallotContext.Setup(m => m.BallotHashes).Returns(MockBallotHashSet.Object);
             mockBallotContext.Setup(m => m.Timestamps).Returns(MockTimestampSet.Object);
+            mockBallotContext.Setup(m => m.ElectionAccessCodes).Returns(MockElectionAccessCodeSet.Object);
+            mockBallotContext.Setup(m => m.UsedAccessCodes).Returns(MockUsedAccessCodeSet.Object);
             mockBallotContext.Setup(m => m.EnsureCreatedAsync()).Returns(Task.FromResult(true));
 
             mockCandidateContext = new Mock<MoqTrueVoteDbContext>();
