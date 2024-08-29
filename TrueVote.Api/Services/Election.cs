@@ -256,5 +256,39 @@ namespace TrueVote.Api.Services
 
             return Ok(election);
         }
+
+        // TODO Should return a status and string error message
+        public async Task<bool> UseAccessCode(UsedAccessCodeModel usedAccessCode)
+        {
+            _log.LogDebug("Non-Public Function - UseAccessCode:Begin");
+
+            _log.LogInformation($"Request Data: {usedAccessCode}");
+
+            // Determine if the EAC exists
+            var accessCode = await _trueVoteDbContext.ElectionAccessCodes.Where(u => u.AccessCode == usedAccessCode.AccessCode).FirstOrDefaultAsync();
+            if (accessCode == null)
+            {
+                _log.LogDebug("Non-Public Function - UseAccessCode:End");
+                return false;
+            }
+
+            // Determine if EAC was already used
+            var alreadyUsed = await _trueVoteDbContext.UsedAccessCodes.Where(u => u.AccessCode == usedAccessCode.AccessCode).FirstOrDefaultAsync();
+            if (alreadyUsed != null)
+            {
+                _log.LogDebug("Non-Public Function - UseAccessCode:End");
+                return false;
+            }
+
+            // Add it
+            await _trueVoteDbContext.EnsureCreatedAsync();
+
+            await _trueVoteDbContext.UsedAccessCodes.AddAsync(usedAccessCode);
+            await _trueVoteDbContext.SaveChangesAsync();
+
+            _log.LogDebug("Non-Public Function - UseAccessCode:End");
+
+            return true;
+        }
     }
 }

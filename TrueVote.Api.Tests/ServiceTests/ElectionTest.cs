@@ -351,5 +351,17 @@ namespace TrueVote.Api.Tests.ServiceTests
             _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
         }
+
+        [Fact]
+        public async Task AddsUsedAccessCode()
+        {
+            var usedAccessCode = new UsedAccessCodeModel { AccessCode = "accesscode3" };
+
+            var ret = await _electionApi.UseAccessCode(usedAccessCode);
+            Assert.True(ret);
+
+            _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+        }
     }
 }

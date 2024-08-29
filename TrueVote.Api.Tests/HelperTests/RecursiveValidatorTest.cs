@@ -24,7 +24,7 @@ namespace TrueVote.Api.Tests.HelperTests
         public void ValidatesModelWithNestedModelProperties()
         {
             var validationResults = new List<ValidationResult>();
-            var baseBallotObj = new SubmitBallotModel { Election = MoqData.MockBallotData[1].Election };
+            var baseBallotObj = new SubmitBallotModel { AccessCode = MoqData.MockUsedAccessCodeData[0].AccessCode, Election = MoqData.MockBallotData[1].Election };
             var validationContext = new ValidationContext(baseBallotObj);
             validationContext.Items["IsBallot"] = true;
             validationContext.Items["DBContext"] = _trueVoteDbContext;
@@ -39,7 +39,7 @@ namespace TrueVote.Api.Tests.HelperTests
         public void HandlesModelWithNullNestedModelProperties()
         {
             var validationResults = new List<ValidationResult>();
-            var baseBallotObj = new SubmitBallotModel { Election = MoqData.MockBallotData[1].Election };
+            var baseBallotObj = new SubmitBallotModel { AccessCode = MoqData.MockUsedAccessCodeData[0].AccessCode, Election = MoqData.MockBallotData[1].Election };
             baseBallotObj.Election.Races = null;
             var validationContext = new ValidationContext(baseBallotObj);
             validationContext.Items["IsBallot"] = true;
@@ -99,7 +99,7 @@ namespace TrueVote.Api.Tests.HelperTests
         public void ValidatorHandlesNullModel()
         {
             var validationResults = new List<ValidationResult>();
-            var baseBallotObj = new SubmitBallotModel { Election = MoqData.MockBallotData[1].Election };
+            var baseBallotObj = new SubmitBallotModel { AccessCode = MoqData.MockUsedAccessCodeData[0].AccessCode, Election = MoqData.MockBallotData[1].Election };
             var validationContext = new ValidationContext(baseBallotObj);
             var validModel = recursiveValidator.TryValidateObjectRecursive(null, validationContext, validationResults);
             Assert.True(validModel);
@@ -210,7 +210,7 @@ namespace TrueVote.Api.Tests.HelperTests
         [Fact]
         public void BallotIntegrityCheckerHandlesUnfoundElection()
         {
-            var baseBallotObj = new SubmitBallotModel { Election = MoqData.MockBallotData[1].Election };
+            var baseBallotObj = new SubmitBallotModel { AccessCode = MoqData.MockUsedAccessCodeData[0].AccessCode, Election = MoqData.MockBallotData[1].Election };
             baseBallotObj.Election.ElectionId = "willnotfind";
             var validationContext = new ValidationContext(baseBallotObj);
             validationContext.Items["IsBallot"] = true;
@@ -227,7 +227,7 @@ namespace TrueVote.Api.Tests.HelperTests
         [Fact]
         public void BallotIntegrityCheckerHandlesMissingDBContext()
         {
-            var baseBallotObj = new SubmitBallotModel { Election = MoqData.MockBallotData[1].Election };
+            var baseBallotObj = new SubmitBallotModel { AccessCode = MoqData.MockUsedAccessCodeData[0].AccessCode, Election = MoqData.MockBallotData[1].Election };
             var validationContext = new ValidationContext(baseBallotObj);
             validationContext.Items["IsBallot"] = true;
             // validationContext.Items["DBContext"] = _trueVoteDbContext;
@@ -243,7 +243,7 @@ namespace TrueVote.Api.Tests.HelperTests
         [Fact]
         public void BallotIntegrityCheckerHandlesSubmissionBeforeElectionStart()
         {
-            var baseBallotObj = new SubmitBallotModel { Election = MoqData.MockBallotData[4].Election };
+            var baseBallotObj = new SubmitBallotModel { AccessCode = MoqData.MockUsedAccessCodeData[0].AccessCode, Election = MoqData.MockBallotData[4].Election };
 
             var validationContext = new ValidationContext(baseBallotObj);
             validationContext.Items["IsBallot"] = true;
@@ -260,7 +260,7 @@ namespace TrueVote.Api.Tests.HelperTests
         [Fact]
         public void BallotIntegrityCheckerHandlesSubmissionAfterElectionEnd()
         {
-            var baseBallotObj = new SubmitBallotModel { Election = MoqData.MockBallotData[3].Election };
+            var baseBallotObj = new SubmitBallotModel { AccessCode = MoqData.MockUsedAccessCodeData[0].AccessCode, Election = MoqData.MockBallotData[3].Election };
 
             var validationContext = new ValidationContext(baseBallotObj);
             validationContext.Items["IsBallot"] = true;
@@ -277,7 +277,7 @@ namespace TrueVote.Api.Tests.HelperTests
         [Fact]
         public void BallotIntegrityCheckerHandlesSelectionDifferences()
         {
-            var baseBallotObj = new SubmitBallotModel { Election = MoqData.MockBallotData[0].Election };
+            var baseBallotObj = new SubmitBallotModel { AccessCode = MoqData.MockUsedAccessCodeData[0].AccessCode, Election = MoqData.MockBallotData[0].Election };
             baseBallotObj.Election.Races[0].Candidates[0].Selected = true;
             baseBallotObj.Election.Races[0].Candidates[1].Selected = true;
             var validationContext = new ValidationContext(baseBallotObj);

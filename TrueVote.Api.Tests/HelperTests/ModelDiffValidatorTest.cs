@@ -73,7 +73,7 @@ namespace TrueVote.Api.Tests.HelperTests
         [Fact]
         public void ModelDiffHandlesNullModels()
         {
-            var modelA = new SubmitBallotModel { Election = null };
+            var modelA = new SubmitBallotModel { AccessCode = null, Election = null };
             var modelB = (SubmitBallotModel) null;
 
             var diff1 = modelA.ModelDiff(modelB);

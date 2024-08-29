@@ -234,6 +234,8 @@ namespace TrueVote.Api
             public virtual DbSet<BallotHashModel> BallotHashes { get; set; }
             public virtual DbSet<FeedbackModel> Feedbacks { get; set; }
             public virtual DbSet<AccessCodeModel> ElectionAccessCodes { get; set; }
+            public virtual DbSet<UsedAccessCodeModel> UsedAccessCodes { get; set; }
+
             private readonly IConfiguration? _configuration;
             private readonly string? _connectionString;
 
@@ -322,6 +324,11 @@ namespace TrueVote.Api
                 modelBuilder.Entity<AccessCodeModel>().ToContainer("ElectionAccessCodes");
                 modelBuilder.Entity<AccessCodeModel>().HasNoDiscriminator();
                 modelBuilder.Entity<AccessCodeModel>().HasKey(ac => new { ac.RequestId, ac.AccessCode, ac.ElectionId });
+
+                modelBuilder.HasDefaultContainer("UsedAccessCodes");
+                modelBuilder.Entity<UsedAccessCodeModel>().ToContainer("UsedAccessCodes");
+                modelBuilder.Entity<UsedAccessCodeModel>().HasNoDiscriminator();
+                modelBuilder.Entity<UsedAccessCodeModel>().HasKey(ac => new { ac.AccessCode });
             }
         }
 
