@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TrueVote.Api.Helpers;
@@ -35,6 +36,8 @@ namespace TrueVote.Api.Services
         }
 
         [HttpPost]
+        [Authorize]
+        [ServiceFilter(typeof(ValidateUserIdFilter))]
         [Route("ballot/submitballot")]
         [Produces(typeof(SubmitBallotModelResponse))]
         [Description("Election Model with vote selections")]
