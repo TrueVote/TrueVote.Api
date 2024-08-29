@@ -257,8 +257,8 @@ namespace TrueVote.Api.Services
             return Ok(election);
         }
 
-        // TODO Should return a status and string error message
-        public async Task<bool> UseAccessCode(UsedAccessCodeModel usedAccessCode)
+        // public (for testing) internal method for AccessCode usage
+        public async Task<IActionResult> UseAccessCode(UsedAccessCodeModel usedAccessCode)
         {
             _log.LogDebug("Non-Public Function - UseAccessCode:Begin");
 
@@ -269,7 +269,7 @@ namespace TrueVote.Api.Services
             if (accessCode == null)
             {
                 _log.LogDebug("Non-Public Function - UseAccessCode:End");
-                return false;
+                return NotFound(new SecureString { Value = $"AccessCode: '{usedAccessCode.AccessCode}' not found" });
             }
 
             // Determine if EAC was already used
@@ -277,7 +277,7 @@ namespace TrueVote.Api.Services
             if (alreadyUsed != null)
             {
                 _log.LogDebug("Non-Public Function - UseAccessCode:End");
-                return false;
+                return Conflict(new SecureString { Value = $"AccessCode: '{usedAccessCode.AccessCode}' already used" });
             }
 
             // Add it
@@ -288,7 +288,7 @@ namespace TrueVote.Api.Services
 
             _log.LogDebug("Non-Public Function - UseAccessCode:End");
 
-            return true;
+            return Ok();
         }
     }
 }
