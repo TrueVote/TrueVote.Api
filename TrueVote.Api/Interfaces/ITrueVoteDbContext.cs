@@ -14,6 +14,7 @@ namespace TrueVote.Api.Interfaces
         DbSet<BallotHashModel> BallotHashes { get; set; }
         DbSet<FeedbackModel> Feedbacks { get; set; }
         DbSet<AccessCodeModel> ElectionAccessCodes { get; set; }
+        DbSet<UsedAccessCodeModel> UsedAccessCodes { get; set; }
 
         Task<bool> EnsureCreatedAsync();
         Task<int> SaveChangesAsync();

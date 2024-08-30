@@ -92,7 +92,8 @@ namespace TrueVote.Api.Models
         public required DateTime DateCreated { get; set; }
     }
 
-    public class SubmitBallotModel {
+    public class SubmitBallotModel
+    {
         [Required]
         [Description("Election")]
         [DataType("ElectionModel")]
@@ -100,6 +101,15 @@ namespace TrueVote.Api.Models
         [JsonProperty(nameof(Election), Required = Required.Always)]
         [BallotIntegrityChecker(nameof(Election))]
         public required ElectionModel Election { get; set; }
+
+        // We don't store the AccessCode with the ballot. That could identify the user that submitted the ballot. It's passed in with the payload, but stored decoupled. See SubmitBallot()
+        [Required]
+        [Description("Access Code")]
+        [MaxLength(16)]
+        [DataType(DataType.Text)]
+        [JsonPropertyName("AccessCode")]
+        [JsonProperty(nameof(AccessCode), Required = Required.Always)]
+        public required string AccessCode { get; set; }
 
         // TODO Add Bindings of User / Ballot connection
         // Requires encryption for binding stored at client and server for match

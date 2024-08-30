@@ -26,7 +26,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public async Task SubmitsBallot()
         {
-            var baseBallotObj = new SubmitBallotModel { Election = MoqData.MockBallotData[1].Election };
+            var baseBallotObj = new SubmitBallotModel { AccessCode = MoqData.MockElectionAccessCodeData[0].AccessCode, Election = MoqData.MockBallotData[1].Election };
 
             var ret = await _ballotApi.SubmitBallot(baseBallotObj);
             Assert.NotNull(ret);
@@ -50,7 +50,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public async Task SubmitsBallotWithAboveCandidateCountNumberOfMaxChoices()
         {
-            var baseBallotObj = new SubmitBallotModel { Election = MoqData.MockBallotData[1].Election };
+            var baseBallotObj = new SubmitBallotModel { AccessCode = MoqData.MockUsedAccessCodeData[0].AccessCode, Election = MoqData.MockBallotData[1].Election };
             baseBallotObj.Election.Races[0].MaxNumberOfChoices = 1;
             baseBallotObj.Election.Races[0].Candidates[0].Selected = true;
             baseBallotObj.Election.Races[0].Candidates[1].Selected = true;
@@ -79,7 +79,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public async Task SubmitsBallotWithBelowCandidateCountNumberOfMinChoices()
         {
-            var baseBallotObj = new SubmitBallotModel { Election = MoqData.MockBallotData[1].Election };
+            var baseBallotObj = new SubmitBallotModel { AccessCode = MoqData.MockUsedAccessCodeData[0].AccessCode, Election = MoqData.MockBallotData[1].Election };
             baseBallotObj.Election.Races[0].MinNumberOfChoices = 2;
             baseBallotObj.Election.Races[0].Candidates[0].Selected = true;
 
@@ -107,7 +107,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public async Task HandlesSubmitBallotHashingError()
         {
-            var baseBallotObj = new SubmitBallotModel { Election = MoqData.MockBallotData[1].Election };
+            var baseBallotObj = new SubmitBallotModel { AccessCode = MoqData.MockElectionAccessCodeData[0].AccessCode, Election = MoqData.MockBallotData[1].Election };
 
             var mockValidator = new Mock<IBallotValidator>();
             mockValidator.Setup(m => m.HashBallotAsync(It.IsAny<BallotModel>())).Throws(new Exception("Hash Ballot Exception"));
@@ -207,13 +207,15 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public async Task HandlesSubmitBallotDatabaseError()
         {
-            var baseBallotObj = new SubmitBallotModel { Election = MoqData.MockBallotData[1].Election };
+            var baseBallotObj = new SubmitBallotModel { AccessCode = MoqData.MockElectionAccessCodeData[0].AccessCode, Election = MoqData.MockBallotData[1].Election };
 
             var mockBallotContext = new Mock<MoqTrueVoteDbContext>();
+
             var mockBallotDataQueryable = MoqData.MockBallotData.AsQueryable();
-            var mockBallotHashDataQueryable = MoqData.MockBallotHashData.AsQueryable();
             var MockBallotSet = DbMoqHelper.GetDbSet(mockBallotDataQueryable);
             mockBallotContext.Setup(m => m.Ballots).Returns(MockBallotSet.Object);
+            mockBallotContext.Setup(m => m.ElectionAccessCodes).Returns(_moqDataAccessor.MockElectionAccessCodeSet.Object);
+            mockBallotContext.Setup(m => m.UsedAccessCodes).Returns(_moqDataAccessor.MockUsedAccessCodeSet.Object);
             mockBallotContext.Setup(m => m.SaveChangesAsync()).Throws(new Exception("DB Saving Changes Exception"));
 
             var ballotApi = new Ballot(_logHelper.Object, mockBallotContext.Object, _validatorApi, _mockServiceBus.Object, _mockRecursiveValidator.Object);
@@ -226,6 +228,42 @@ namespace TrueVote.Api.Tests.ServiceTests
             Assert.Contains("DB Saving Changes Exception", val.Value);
 
             _logHelper.Verify(LogLevel.Error, Times.Exactly(1));
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+        }
+
+        [Fact]
+        public async Task HandlesSubmitBallotUnfoundAccessCode()
+        {
+            var baseBallotObj = new SubmitBallotModel { AccessCode = "blah", Election = MoqData.MockBallotData[1].Election };
+
+            var ret = await _ballotApi.SubmitBallot(baseBallotObj);
+            Assert.NotNull(ret);
+            Assert.Equal(StatusCodes.Status404NotFound, ((IStatusCodeActionResult) ret).StatusCode);
+
+            var val = (SecureString) (ret as NotFoundObjectResult).Value;
+            Assert.NotNull(val);
+            Assert.Contains("AccessCode", val.Value);
+            Assert.Contains("not found", val.Value);
+
+            _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+        }
+
+        [Fact]
+        public async Task HandlesSubmitBallotAlreadyUsedAccessCode()
+        {
+            var baseBallotObj = new SubmitBallotModel { AccessCode = MoqData.MockUsedAccessCodeData[0].AccessCode, Election = MoqData.MockBallotData[1].Election };
+
+            var ret = await _ballotApi.SubmitBallot(baseBallotObj);
+            Assert.NotNull(ret);
+            Assert.Equal(StatusCodes.Status409Conflict, ((IStatusCodeActionResult) ret).StatusCode);
+
+            var val = (SecureString) (ret as ConflictObjectResult).Value;
+            Assert.NotNull(val);
+            Assert.Contains("AccessCode", val.Value);
+            Assert.Contains("already used", val.Value);
+
+            _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
         }
     }

@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TrueVote.Api.Helpers;
@@ -35,6 +36,8 @@ namespace TrueVote.Api.Services
         }
 
         [HttpPost]
+        [Authorize]
+        [ServiceFilter(typeof(ValidateUserIdFilter))]
         [Route("ballot/submitballot")]
         [Produces(typeof(SubmitBallotModelResponse))]
         [Description("Election Model with vote selections")]
@@ -64,6 +67,24 @@ namespace TrueVote.Api.Services
                 return ValidationProblem(new ValidationProblemDetails(errorDictionary));
             }
 
+            // Check if access code has been used or is invalid
+            var usedAccessCode = new UsedAccessCodeModel { AccessCode = bindSubmitBallotModel.AccessCode };
+
+            // Determine if the EAC exists
+            var accessCode = await _trueVoteDbContext.ElectionAccessCodes.Where(u => u.AccessCode == usedAccessCode.AccessCode).FirstOrDefaultAsync();
+            if (accessCode == null)
+            {
+                _log.LogDebug("Non-Public Function - UseAccessCode:End");
+                return NotFound(new SecureString { Value = $"AccessCode: '{usedAccessCode.AccessCode}' not found" });
+            }
+
+            // Determine if EAC was already used
+            var alreadyUsed = await _trueVoteDbContext.UsedAccessCodes.Where(u => u.AccessCode == usedAccessCode.AccessCode).FirstOrDefaultAsync();
+            if (alreadyUsed != null)
+            {
+                _log.LogDebug("Non-Public Function - UseAccessCode:End");
+                return Conflict(new SecureString { Value = $"AccessCode: '{usedAccessCode.AccessCode}' already used" });
+            }
             var ballot = new BallotModel { Election = bindSubmitBallotModel.Election, BallotId = Guid.NewGuid().ToString(), DateCreated = UtcNowProviderFactory.GetProvider().UtcNow };
 
             // TODO Localize .Message
@@ -78,6 +99,7 @@ namespace TrueVote.Api.Services
             {
                 await _trueVoteDbContext.EnsureCreatedAsync();
                 await _trueVoteDbContext.Ballots.AddAsync(ballot);
+                await _trueVoteDbContext.UsedAccessCodes.AddAsync(usedAccessCode);
                 await _trueVoteDbContext.SaveChangesAsync();
             }
             catch (Exception e)

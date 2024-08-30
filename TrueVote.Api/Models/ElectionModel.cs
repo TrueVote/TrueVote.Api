@@ -202,6 +202,21 @@ namespace TrueVote.Api.Models
         public required string AccessCode { get; set; }
     }
 
+    // This model is bare bones, with no timestamp. Because if we were to store a timestamp, heuristics could be used to see the timestamp of this Date and match it to the Ballot Date,
+    // and then determine the access code used to submit the ballot. With that info, the user that submitted the ballot could be determined.
+    // So we just store the raw access code in a table to determine if it was used or not.
+    public class UsedAccessCodeModel
+    {
+        [Required]
+        [Description("Access Code")]
+        [MaxLength(16)]
+        [DataType(DataType.Text)]
+        [JsonPropertyName("AccessCode")]
+        [JsonProperty(nameof(AccessCode), Required = Required.Always)]
+        [Key]
+        public required string AccessCode { get; set; }
+    }
+
     public class AccessCodesResponse
     {
         [Required]

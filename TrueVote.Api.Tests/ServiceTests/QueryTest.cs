@@ -20,7 +20,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             Assert.NotNull(ret);
             Assert.Equal("Jane Doe", ret[0].Name);
             Assert.Equal("John Smith", ret[1].Name);
-            Assert.True(ret.Count == 2);
+            Assert.Equal(2, ret.Count);
         }
 
         [Fact]
@@ -32,7 +32,7 @@ namespace TrueVote.Api.Tests.ServiceTests
 
             Assert.NotNull(ret);
             Assert.Equal("John Smith", ret[0].Name);
-            Assert.True(ret.Count == 1);
+            Assert.Single(ret);
         }
 
         [Fact]
@@ -43,7 +43,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             Assert.NotNull(ret);
             Assert.Equal("Union", ret[0].Name);
             Assert.Equal("Association", ret[1].Name);
-            Assert.True(ret.Count == 5);
+            Assert.Equal(5, ret.Count);
         }
 
         [Fact]
@@ -56,7 +56,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             Assert.NotNull(ret);
             Assert.Equal("Federal", ret[0].Name);
             Assert.Equal("electionid3", ret[0].ElectionId);
-            Assert.True(ret.Count == 1);
+            Assert.Single(ret);
         }
 
         [Fact]
@@ -71,7 +71,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             Assert.Equal("Judge", ret[1].Name);
             Assert.Equal(RaceTypes.ChooseMany, ret[1].RaceType);
             Assert.Equal("ChooseMany", ret[1].RaceTypeName);
-            Assert.True(ret.Count == 3);
+            Assert.Equal(3, ret.Count);
         }
 
         [Fact]
@@ -82,7 +82,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             Assert.NotNull(ret);
             Assert.Equal("Boo Bar", ret[0].FullName);
             Assert.Equal("Foo2 Bar", ret[1].FullName);
-            Assert.True(ret.Count == 3);
+            Assert.Equal(3, ret.Count);
         }
 
         [Fact]
@@ -93,7 +93,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             Assert.NotNull(ret);
             Assert.Equal("electionid5", ret.Ballots[0].Election.ElectionId);
             Assert.Equal("ballotid5", ret.Ballots[0].BallotId);
-            Assert.True(ret.Ballots.Count == 5);
+            Assert.Equal(5, ret.Ballots.Count);
         }
 
         [Fact]
@@ -106,7 +106,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             Assert.NotNull(ret);
             Assert.Equal("electionid1", ret.Ballots[0].Election.ElectionId);
             Assert.Equal("ballotid3", ret.Ballots[0].BallotId);
-            Assert.True(ret.Ballots.Count == 1);
+            Assert.Single(ret.Ballots);
         }
 
         [Fact]
@@ -118,10 +118,10 @@ namespace TrueVote.Api.Tests.ServiceTests
 
             Assert.NotNull(ret);
             Assert.Equal("electionid1", ret[0].ElectionId);
-            Assert.Equal("accesscode1", ret[0].AccessCode);
+            Assert.Equal("accesscode0", ret[0].AccessCode);
             Assert.Equal("electionid1", ret[1].ElectionId);
-            Assert.Equal("accesscode2", ret[1].AccessCode);
-            Assert.True(ret.Count == 2);
+            Assert.Equal("accesscode1", ret[1].AccessCode);
+            Assert.Equal(3, ret.Count);
         }
 
         [Fact]
@@ -134,7 +134,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             Assert.NotNull(ret);
             Assert.Equal("electionid1", ret[0].ElectionId);
             Assert.Equal("accesscode1", ret[0].AccessCode);
-            Assert.True(ret.Count == 1);
+            Assert.Single(ret);
         }
     }
 }
