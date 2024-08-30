@@ -88,6 +88,7 @@ namespace TrueVote.Api.Tests
 
         public static List<AccessCodeModel> MockElectionAccessCodeData => new()
         {
+            new AccessCodeModel { DateCreated = createDate, RequestId = "122", ElectionId = MockElectionData[0].ElectionId, AccessCode = "accesscode0", RequestDescription = "Mock Election Access Code Harness 0", RequestedByUserId = MockUserData[0].UserId },
             new AccessCodeModel { DateCreated = createDate, RequestId = "123", ElectionId = MockElectionData[0].ElectionId, AccessCode = "accesscode1", RequestDescription = "Mock Election Access Code Harness 1", RequestedByUserId = MockUserData[0].UserId },
             new AccessCodeModel { DateCreated = createDate, RequestId = "124", ElectionId = MockElectionData[0].ElectionId, AccessCode = "accesscode2", RequestDescription = "Mock Election Access Code Harness 2", RequestedByUserId = MockUserData[0].UserId },
             new AccessCodeModel { DateCreated = createDate, RequestId = "125", ElectionId = "blah", AccessCode = "accesscode3", RequestDescription = "Mock Election Access Code Harness 3", RequestedByUserId = MockUserData[0].UserId }

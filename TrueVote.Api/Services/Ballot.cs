@@ -67,6 +67,24 @@ namespace TrueVote.Api.Services
                 return ValidationProblem(new ValidationProblemDetails(errorDictionary));
             }
 
+            // Check if access code has been used or is invalid
+            var usedAccessCode = new UsedAccessCodeModel { AccessCode = bindSubmitBallotModel.AccessCode };
+
+            // Determine if the EAC exists
+            var accessCode = await _trueVoteDbContext.ElectionAccessCodes.Where(u => u.AccessCode == usedAccessCode.AccessCode).FirstOrDefaultAsync();
+            if (accessCode == null)
+            {
+                _log.LogDebug("Non-Public Function - UseAccessCode:End");
+                return NotFound(new SecureString { Value = $"AccessCode: '{usedAccessCode.AccessCode}' not found" });
+            }
+
+            // Determine if EAC was already used
+            var alreadyUsed = await _trueVoteDbContext.UsedAccessCodes.Where(u => u.AccessCode == usedAccessCode.AccessCode).FirstOrDefaultAsync();
+            if (alreadyUsed != null)
+            {
+                _log.LogDebug("Non-Public Function - UseAccessCode:End");
+                return Conflict(new SecureString { Value = $"AccessCode: '{usedAccessCode.AccessCode}' already used" });
+            }
             var ballot = new BallotModel { Election = bindSubmitBallotModel.Election, BallotId = Guid.NewGuid().ToString(), DateCreated = UtcNowProviderFactory.GetProvider().UtcNow };
 
             // TODO Localize .Message
@@ -81,6 +99,7 @@ namespace TrueVote.Api.Services
             {
                 await _trueVoteDbContext.EnsureCreatedAsync();
                 await _trueVoteDbContext.Ballots.AddAsync(ballot);
+                await _trueVoteDbContext.UsedAccessCodes.AddAsync(usedAccessCode);
                 await _trueVoteDbContext.SaveChangesAsync();
             }
             catch (Exception e)
@@ -189,40 +208,6 @@ namespace TrueVote.Api.Services
             _log.LogDebug("HTTP trigger - BallotHashFind:End");
 
             return items.Count == 0 ? NotFound() : Ok(items);
-        }
-
-        // public (for testing) internal method for AccessCode usage
-        public async Task<IActionResult> UseAccessCode(UsedAccessCodeModel usedAccessCode)
-        {
-            _log.LogDebug("Non-Public Function - UseAccessCode:Begin");
-
-            _log.LogInformation($"Request Data: {usedAccessCode}");
-
-            // Determine if the EAC exists
-            var accessCode = await _trueVoteDbContext.ElectionAccessCodes.Where(u => u.AccessCode == usedAccessCode.AccessCode).FirstOrDefaultAsync();
-            if (accessCode == null)
-            {
-                _log.LogDebug("Non-Public Function - UseAccessCode:End");
-                return NotFound(new SecureString { Value = $"AccessCode: '{usedAccessCode.AccessCode}' not found" });
-            }
-
-            // Determine if EAC was already used
-            var alreadyUsed = await _trueVoteDbContext.UsedAccessCodes.Where(u => u.AccessCode == usedAccessCode.AccessCode).FirstOrDefaultAsync();
-            if (alreadyUsed != null)
-            {
-                _log.LogDebug("Non-Public Function - UseAccessCode:End");
-                return Conflict(new SecureString { Value = $"AccessCode: '{usedAccessCode.AccessCode}' already used" });
-            }
-
-            // Add it
-            await _trueVoteDbContext.EnsureCreatedAsync();
-
-            await _trueVoteDbContext.UsedAccessCodes.AddAsync(usedAccessCode);
-            await _trueVoteDbContext.SaveChangesAsync();
-
-            _log.LogDebug("Non-Public Function - UseAccessCode:End");
-
-            return Ok();
         }
     }
 }
