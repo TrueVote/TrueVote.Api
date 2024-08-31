@@ -96,8 +96,13 @@ namespace TrueVote.Api.Tests
 
         public static List<UsedAccessCodeModel> MockUsedAccessCodeData => new()
         {
-            new UsedAccessCodeModel { AccessCode = "accesscode1" },
-            new UsedAccessCodeModel { AccessCode = "accesscode2" },
+            new UsedAccessCodeModel { AccessCode = "accesscode1", DateCreated = createDate.Date },
+            new UsedAccessCodeModel { AccessCode = "accesscode2", DateCreated = createDate.Date },
+        };
+
+        public static List<ElectionUserBindingModel> MockElectionUserBindingsData => new()
+        {
+            new ElectionUserBindingModel { UserId = MockUserData[2].UserId, ElectionId = MockElectionData[0].ElectionId, DateCreated = createDate.Date },
         };
 
         public static BallotList MockBallotList => new()
@@ -119,6 +124,7 @@ namespace TrueVote.Api.Tests
         public readonly Mock<MoqTrueVoteDbContext> mockFeedbacksContext;
         public readonly Mock<MoqTrueVoteDbContext> mockElectionAccessCodeContext;
         public readonly Mock<MoqTrueVoteDbContext> mockUsedAccessCodeContext;
+        public readonly Mock<MoqTrueVoteDbContext> mockElectionUserBindingsContext;
 
         public Mock<DbSet<UserModel>> MockUserSet { get; private set; }
         public Mock<DbSet<RaceModel>> MockRaceSet { get; private set; }
@@ -130,6 +136,7 @@ namespace TrueVote.Api.Tests
         public Mock<DbSet<FeedbackModel>> MockFeedbackSet { get; private set; }
         public Mock<DbSet<AccessCodeModel>> MockElectionAccessCodeSet { get; private set; }
         public Mock<DbSet<UsedAccessCodeModel>> MockUsedAccessCodeSet { get; private set; }
+        public Mock<DbSet<ElectionUserBindingModel>> MockElectionUserBindingsSet { get; private set; }
 
         // https://docs.microsoft.com/en-us/ef/ef6/fundamentals/testing/mocking?redirectedfrom=MSDN
         // https://github.com/romantitov/MockQueryable
@@ -145,6 +152,7 @@ namespace TrueVote.Api.Tests
             MockFeedbackSet = MoqData.MockFeedbackData.AsQueryable().BuildMockDbSet();
             MockElectionAccessCodeSet = MoqData.MockElectionAccessCodeData.AsQueryable().BuildMockDbSet();
             MockUsedAccessCodeSet = MoqData.MockUsedAccessCodeData.AsQueryable().BuildMockDbSet();
+            MockElectionUserBindingsSet = MoqData.MockElectionUserBindingsData.AsQueryable().BuildMockDbSet();
 
             mockUserContext = new Mock<MoqTrueVoteDbContext>();
             mockUserContext.Setup(m => m.Feedbacks).Returns(MockFeedbackSet.Object);
@@ -176,6 +184,7 @@ namespace TrueVote.Api.Tests
             mockBallotContext.Setup(m => m.Timestamps).Returns(MockTimestampSet.Object);
             mockBallotContext.Setup(m => m.ElectionAccessCodes).Returns(MockElectionAccessCodeSet.Object);
             mockBallotContext.Setup(m => m.UsedAccessCodes).Returns(MockUsedAccessCodeSet.Object);
+            mockBallotContext.Setup(m => m.ElectionUserBindings).Returns(MockElectionUserBindingsSet.Object);
             mockBallotContext.Setup(m => m.EnsureCreatedAsync()).Returns(Task.FromResult(true));
 
             mockCandidateContext = new Mock<MoqTrueVoteDbContext>();
@@ -199,6 +208,10 @@ namespace TrueVote.Api.Tests
             mockUsedAccessCodeContext.Setup(m => m.UsedAccessCodes).Returns(MockUsedAccessCodeSet.Object);
             mockUsedAccessCodeContext.Setup(m => m.EnsureCreatedAsync()).Returns(Task.FromResult(true));
 
+            mockElectionUserBindingsContext = new Mock<MoqTrueVoteDbContext>();
+            mockElectionUserBindingsContext.Setup(m => m.ElectionUserBindings).Returns(MockElectionUserBindingsSet.Object);
+            mockElectionUserBindingsContext.Setup(m => m.EnsureCreatedAsync()).Returns(Task.FromResult(true));
+
             // Leaving commented code. This is for Mocking UTC time. Helpful for test consistency.
             // var mockUtcNowProvider = new Mock<IUtcNowProvider>();
             // mockUtcNowProvider.Setup(p => p.UtcNow).Returns(MoqData.startDate);
@@ -219,6 +232,7 @@ namespace TrueVote.Api.Tests
         public virtual DbSet<FeedbackModel> Feedbacks { get; set; }
         public virtual DbSet<AccessCodeModel> ElectionAccessCodes { get; set; }
         public virtual DbSet<UsedAccessCodeModel> UsedAccessCodes { get; set; }
+        public virtual DbSet<ElectionUserBindingModel> ElectionUserBindings { get; set; }
 
         protected MoqDataAccessor _moqDataAccessor;
 
@@ -236,6 +250,7 @@ namespace TrueVote.Api.Tests
             Feedbacks = _moqDataAccessor.MockFeedbackSet.Object;
             ElectionAccessCodes = _moqDataAccessor.MockElectionAccessCodeSet.Object;
             UsedAccessCodes = _moqDataAccessor.MockUsedAccessCodeSet.Object;
+            ElectionUserBindings = _moqDataAccessor.MockElectionUserBindingsSet.Object;
         }
 
         public virtual async Task<bool> EnsureCreatedAsync()

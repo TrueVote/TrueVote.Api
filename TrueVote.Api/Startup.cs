@@ -235,6 +235,7 @@ namespace TrueVote.Api
             public virtual DbSet<FeedbackModel> Feedbacks { get; set; }
             public virtual DbSet<AccessCodeModel> ElectionAccessCodes { get; set; }
             public virtual DbSet<UsedAccessCodeModel> UsedAccessCodes { get; set; }
+            public virtual DbSet<ElectionUserBindingModel> ElectionUserBindings { get; set; }
 
             private readonly IConfiguration? _configuration;
             private readonly string? _connectionString;
@@ -329,6 +330,11 @@ namespace TrueVote.Api
                 modelBuilder.Entity<UsedAccessCodeModel>().ToContainer("UsedAccessCodes");
                 modelBuilder.Entity<UsedAccessCodeModel>().HasNoDiscriminator();
                 modelBuilder.Entity<UsedAccessCodeModel>().HasKey(ac => new { ac.AccessCode });
+
+                modelBuilder.HasDefaultContainer("ElectionUserBindings");
+                modelBuilder.Entity<ElectionUserBindingModel>().ToContainer("ElectionUserBindings");
+                modelBuilder.Entity<ElectionUserBindingModel>().HasNoDiscriminator();
+                modelBuilder.Entity<ElectionUserBindingModel>().HasKey(eub => new { eub.UserId, eub.ElectionId });
             }
         }
 

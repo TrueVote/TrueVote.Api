@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -67,14 +68,25 @@ namespace TrueVote.Api.Services
                 return ValidationProblem(new ValidationProblemDetails(errorDictionary));
             }
 
-            // Check if access code has been used or is invalid
-            var usedAccessCode = new UsedAccessCodeModel { AccessCode = bindSubmitBallotModel.AccessCode };
+            // Check if user already submitted ballot for this election
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var alreadySubmitted = await _trueVoteDbContext.ElectionUserBindings.Where(u => u.UserId == userId && u.ElectionId == bindSubmitBallotModel.Election.ElectionId).FirstOrDefaultAsync();
+            if (alreadySubmitted != null)
+            {
+                _log.LogDebug("HTTP trigger - SubmitBallot:End");
+                return Conflict(new SecureString { Value = $"Ballot already submitted for User" });
+            }
+
+            var now = UtcNowProviderFactory.GetProvider().UtcNow;
+
+            // Check if access code has been used or is invalid. Note timestamp only stores the .Date, not the time.
+            var usedAccessCode = new UsedAccessCodeModel { AccessCode = bindSubmitBallotModel.AccessCode, DateCreated = now.Date };
 
             // Determine if the EAC exists
             var accessCode = await _trueVoteDbContext.ElectionAccessCodes.Where(u => u.AccessCode == usedAccessCode.AccessCode).FirstOrDefaultAsync();
             if (accessCode == null)
             {
-                _log.LogDebug("Non-Public Function - UseAccessCode:End");
+                _log.LogDebug("HTTP trigger - SubmitBallot:End");
                 return NotFound(new SecureString { Value = $"AccessCode: '{usedAccessCode.AccessCode}' not found" });
             }
 
@@ -82,10 +94,11 @@ namespace TrueVote.Api.Services
             var alreadyUsed = await _trueVoteDbContext.UsedAccessCodes.Where(u => u.AccessCode == usedAccessCode.AccessCode).FirstOrDefaultAsync();
             if (alreadyUsed != null)
             {
-                _log.LogDebug("Non-Public Function - UseAccessCode:End");
+                _log.LogDebug("HTTP trigger - SubmitBallot:End");
                 return Conflict(new SecureString { Value = $"AccessCode: '{usedAccessCode.AccessCode}' already used" });
             }
-            var ballot = new BallotModel { Election = bindSubmitBallotModel.Election, BallotId = Guid.NewGuid().ToString(), DateCreated = UtcNowProviderFactory.GetProvider().UtcNow };
+
+            var ballot = new BallotModel { Election = bindSubmitBallotModel.Election, BallotId = Guid.NewGuid().ToString(), DateCreated = now };
 
             // TODO Localize .Message
             var submitBallotResponse = new SubmitBallotModelResponse
@@ -95,11 +108,19 @@ namespace TrueVote.Api.Services
                 Message = $"Election ID: {bindSubmitBallotModel.Election.ElectionId}, Ballot ID: {ballot.BallotId}"
             };
 
+            var electionUserBindingModel = new ElectionUserBindingModel
+            {
+                ElectionId = bindSubmitBallotModel.Election.ElectionId,
+                UserId = userId,
+                DateCreated = now.Date
+            };
+
             try
             {
                 await _trueVoteDbContext.EnsureCreatedAsync();
-                await _trueVoteDbContext.Ballots.AddAsync(ballot);
                 await _trueVoteDbContext.UsedAccessCodes.AddAsync(usedAccessCode);
+                await _trueVoteDbContext.ElectionUserBindings.AddAsync(electionUserBindingModel);
+                await _trueVoteDbContext.Ballots.AddAsync(ballot);
                 await _trueVoteDbContext.SaveChangesAsync();
             }
             catch (Exception e)
