@@ -40,6 +40,27 @@ namespace TrueVote.Api.Tests.Helpers
 
         public const string MockedTokenValue = "mocked_token_value";
 
+        public static ControllerContext AuthHelper(string userId)
+        {
+            // For endpoints that require Authorization [Authorize]
+            // Mock a user principal with desired claims
+            var claims = new[]
+            {
+                new Claim(ClaimTypes.NameIdentifier, userId),
+                new Claim(ClaimTypes.Role, "User"), // Role
+            };
+            var identity = new ClaimsIdentity(claims, "TestAuthentication");
+            var principal = new ClaimsPrincipal(identity);
+
+            // Create context for controllers to attach to
+            var authControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext { User = principal }
+            };
+
+            return authControllerContext;
+        }
+
         public TestHelper(ITestOutputHelper output)
         {
             // This will override the setup shims in Startup.cs
@@ -92,22 +113,7 @@ namespace TrueVote.Api.Tests.Helpers
             _candidateApi = new Candidate(_logHelper.Object, _moqDataAccessor.mockCandidateContext.Object, _mockServiceBus.Object);
             _timestampApi = new Timestamp(_logHelper.Object, _moqDataAccessor.mockTimestampContext.Object);
             _queryService = new Query(_trueVoteDbContext);
-
-            // For endpoints that require Authorization [Authorize]
-            // Mock a user principal with desired claims
-            var claims = new[]
-            {
-                new Claim(ClaimTypes.NameIdentifier, MoqData.MockUserData[0].UserId),
-                new Claim(ClaimTypes.Role, "User"), // Role
-            };
-            var identity = new ClaimsIdentity(claims, "TestAuthentication");
-            var principal = new ClaimsPrincipal(identity);
-
-            // Create context for controllers to attach to
-            _authControllerContext = new ControllerContext
-            {
-                HttpContext = new DefaultHttpContext { User = principal }
-            };
+            _authControllerContext = AuthHelper(MoqData.MockUserData[0].UserId);
         }
     }
 }

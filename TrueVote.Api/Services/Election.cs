@@ -43,8 +43,6 @@ namespace TrueVote.Api.Services
             var races = baseElection.BaseRaces.DTOToRaces();
             var election = baseElection.DTOToElection(races);
 
-            await _trueVoteDbContext.EnsureCreatedAsync();
-
             await _trueVoteDbContext.Elections.AddAsync(election);
             await _trueVoteDbContext.SaveChangesAsync();
 
@@ -122,8 +120,6 @@ namespace TrueVote.Api.Services
             election.DateCreated = UtcNowProviderFactory.GetProvider().UtcNow;
             election.ElectionId = Guid.NewGuid().ToString();
 
-            await _trueVoteDbContext.EnsureCreatedAsync();
-
             await _trueVoteDbContext.Elections.AddAsync(election);
             await _trueVoteDbContext.SaveChangesAsync();
 
@@ -176,8 +172,6 @@ namespace TrueVote.Api.Services
                 RequestId = requestId,
                 AccessCodes = []
             };
-
-            await _trueVoteDbContext.EnsureCreatedAsync();
 
             for (var i = 0; i < accessCodesRequest.NumberOfAccessCodes; i++)
             {

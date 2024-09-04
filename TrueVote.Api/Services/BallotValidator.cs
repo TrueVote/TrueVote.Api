@@ -132,7 +132,6 @@ namespace TrueVote.Api.Services
         {
             try
             {
-                await _trueVoteDbContext.EnsureCreatedAsync();
                 await _trueVoteDbContext.Timestamps.AddAsync(timestamp);
             }
             catch (Exception ex)
@@ -146,7 +145,6 @@ namespace TrueVote.Api.Services
         {
             try
             {
-                await _trueVoteDbContext.EnsureCreatedAsync();
                 await _trueVoteDbContext.BallotHashes.AddAsync(ballotHashModel);
             }
             catch (Exception ex)

@@ -202,9 +202,8 @@ namespace TrueVote.Api.Models
         public required string AccessCode { get; set; }
     }
 
-    // This model is bare bones, with no timestamp. Because if we were to store a timestamp, heuristics could be used to see the timestamp of this Date and match it to the Ballot Date,
-    // and then determine the access code used to submit the ballot. With that info, the user that submitted the ballot could be determined.
-    // So we just store the raw access code in a table to determine if it was used or not.
+    // For DateCreated, only going to store YYYYMMDD, not the time. Because if we stored a very precise date,
+    // it would be possible to bind to a BallotId which could reveal the User by using heuristics.
     public class UsedAccessCodeModel
     {
         [Required]
@@ -215,6 +214,43 @@ namespace TrueVote.Api.Models
         [JsonProperty(nameof(AccessCode), Required = Required.Always)]
         [Key]
         public required string AccessCode { get; set; }
+
+        [Required]
+        [Description("DateCreated")]
+        [DataType(DataType.Date)]
+        [JsonPropertyName("DateCreated")]
+        [JsonProperty(nameof(DateCreated), Required = Required.Default)]
+        public required DateTime DateCreated { get; set; }
+    }
+
+    // For DateCreated, only going to store YYYYMMDD, not the time. Because if we stored a very precise date,
+    // it would be possible to bind to a BallotId which could reveal the User by using heuristics.
+    public class ElectionUserBindingModel
+    {
+        [Required]
+        [Description("Election Id")]
+        [MaxLength(2048)]
+        [DataType(DataType.Text)]
+        [JsonPropertyName("ElectionId")]
+        [JsonProperty(nameof(ElectionId), Required = Required.Always)]
+        [Key]
+        public required string ElectionId { get; set; }
+
+        [Required]
+        [Description("User Id")]
+        [MaxLength(2048)]
+        [DataType(DataType.Text)]
+        [JsonPropertyName("UserId")]
+        [JsonProperty(nameof(UserId), Required = Required.Always)]
+        [Key]
+        public required string UserId { get; set; }
+
+        [Required]
+        [Description("DateCreated")]
+        [DataType(DataType.Date)]
+        [JsonPropertyName("DateCreated")]
+        [JsonProperty(nameof(DateCreated), Required = Required.Default)]
+        public required DateTime DateCreated { get; set; }
     }
 
     public class AccessCodesResponse

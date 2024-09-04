@@ -28,6 +28,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         {
             var baseBallotObj = new SubmitBallotModel { AccessCode = MoqData.MockElectionAccessCodeData[0].AccessCode, Election = MoqData.MockBallotData[1].Election };
 
+            _ballotApi.ControllerContext = _authControllerContext;
             var ret = await _ballotApi.SubmitBallot(baseBallotObj);
             Assert.NotNull(ret);
             Assert.Equal(StatusCodes.Status201Created, ((IStatusCodeActionResult) ret).StatusCode);
@@ -113,6 +114,8 @@ namespace TrueVote.Api.Tests.ServiceTests
             mockValidator.Setup(m => m.HashBallotAsync(It.IsAny<BallotModel>())).Throws(new Exception("Hash Ballot Exception"));
 
             var ballotApi = new Ballot(_logHelper.Object, _moqDataAccessor.mockBallotContext.Object, mockValidator.Object, _mockServiceBus.Object, _mockRecursiveValidator.Object);
+
+            ballotApi.ControllerContext = _authControllerContext;
             var ret = await ballotApi.SubmitBallot(baseBallotObj);
             Assert.NotNull(ret);
             Assert.Equal(StatusCodes.Status409Conflict, ((IStatusCodeActionResult) ret).StatusCode);
@@ -216,9 +219,12 @@ namespace TrueVote.Api.Tests.ServiceTests
             mockBallotContext.Setup(m => m.Ballots).Returns(MockBallotSet.Object);
             mockBallotContext.Setup(m => m.ElectionAccessCodes).Returns(_moqDataAccessor.MockElectionAccessCodeSet.Object);
             mockBallotContext.Setup(m => m.UsedAccessCodes).Returns(_moqDataAccessor.MockUsedAccessCodeSet.Object);
+            mockBallotContext.Setup(m => m.ElectionUserBindings).Returns(_moqDataAccessor.MockElectionUserBindingsSet.Object);
             mockBallotContext.Setup(m => m.SaveChangesAsync()).Throws(new Exception("DB Saving Changes Exception"));
 
             var ballotApi = new Ballot(_logHelper.Object, mockBallotContext.Object, _validatorApi, _mockServiceBus.Object, _mockRecursiveValidator.Object);
+
+            ballotApi.ControllerContext = _authControllerContext;
             var ret = await ballotApi.SubmitBallot(baseBallotObj);
             Assert.NotNull(ret);
             Assert.Equal(StatusCodes.Status409Conflict, ((IStatusCodeActionResult) ret).StatusCode);
@@ -236,6 +242,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         {
             var baseBallotObj = new SubmitBallotModel { AccessCode = "blah", Election = MoqData.MockBallotData[1].Election };
 
+            _ballotApi.ControllerContext = _authControllerContext;
             var ret = await _ballotApi.SubmitBallot(baseBallotObj);
             Assert.NotNull(ret);
             Assert.Equal(StatusCodes.Status404NotFound, ((IStatusCodeActionResult) ret).StatusCode);
@@ -254,6 +261,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         {
             var baseBallotObj = new SubmitBallotModel { AccessCode = MoqData.MockUsedAccessCodeData[0].AccessCode, Election = MoqData.MockBallotData[1].Election };
 
+            _ballotApi.ControllerContext = _authControllerContext;
             var ret = await _ballotApi.SubmitBallot(baseBallotObj);
             Assert.NotNull(ret);
             Assert.Equal(StatusCodes.Status409Conflict, ((IStatusCodeActionResult) ret).StatusCode);
@@ -262,6 +270,24 @@ namespace TrueVote.Api.Tests.ServiceTests
             Assert.NotNull(val);
             Assert.Contains("AccessCode", val.Value);
             Assert.Contains("already used", val.Value);
+
+            _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+        }
+
+        [Fact]
+        public async Task HandlesSubmitBallotUserAlreadySubmitted()
+        {
+            var baseBallotObj = new SubmitBallotModel { AccessCode = MoqData.MockUsedAccessCodeData[0].AccessCode, Election = MoqData.MockBallotData[1].Election };
+
+            _ballotApi.ControllerContext = AuthHelper(MoqData.MockUserData[2].UserId);
+            var ret = await _ballotApi.SubmitBallot(baseBallotObj);
+            Assert.NotNull(ret);
+            Assert.Equal(StatusCodes.Status409Conflict, ((IStatusCodeActionResult) ret).StatusCode);
+
+            var val = (SecureString) (ret as ConflictObjectResult).Value;
+            Assert.NotNull(val);
+            Assert.Contains("Ballot already submitted", val.Value);
 
             _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));

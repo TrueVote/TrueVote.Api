@@ -246,7 +246,6 @@ namespace TrueVote.Api.Tests.ServiceTests
             var mockUserDataCollection = mockUserData;
             var MockUserSet = DbMoqHelper.GetDbSet(mockUserDataQueryable);
             mockUserContext.Setup(m => m.Users).Returns(MockUserSet.Object);
-            mockUserContext.Setup(m => m.EnsureCreatedAsync()).Returns(Task.FromResult(true));
 
             // Simulate a client (e.g. TypeScript)
             var content = new BaseUserModel
