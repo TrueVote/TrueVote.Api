@@ -253,10 +253,5 @@ namespace TrueVote.Api.Tests
         {
             return await base.SaveChangesAsync();
         }
-
-        public override async ValueTask<EntityEntry<TEntity>> AddAsync<TEntity>(TEntity entity, CancellationToken cancellationToken = default) where TEntity : class
-        {
-            return await base.AddAsync(entity, cancellationToken);
-        }
     }
 }

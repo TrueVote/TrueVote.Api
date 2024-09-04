@@ -3,6 +3,7 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using TrueVote.Api.Models;
 using TrueVote.Api.Services;
 using TrueVote.Api.Tests.Helpers;
 using Xunit;
@@ -56,7 +57,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             mockBallotContext.Setup(m => m.Ballots).Returns(MockBallotSet.Object);
             mockBallotContext.Setup(m => m.BallotHashes).Returns(MockBallotHashSet.Object);
             mockBallotContext.Setup(m => m.Timestamps).Returns(MockTimestampsSet.Object);
-            mockBallotContext.Setup(m => m.SaveChangesAsync(default)).Throws(new Exception("Storing data exception"));
+            mockBallotContext.Setup(m => m.SaveChangesAsync()).Throws(new Exception("Storing data exception"));
 
             var validatorApi = new BallotValidator(_logHelper.Object, mockBallotContext.Object, _mockOpenTimestampsClient.Object, _mockServiceBus.Object);
 
@@ -116,7 +117,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             mockBallotHashContext.Setup(m => m.Ballots).Returns(MockBallotSet.Object);
             mockBallotHashContext.Setup(m => m.BallotHashes).Returns(MockBallotHashSet.Object);
             mockBallotHashContext.Setup(m => m.Timestamps).Returns(MockTimestampsSet.Object);
-            mockBallotHashContext.Setup(m => m.AddAsync(It.IsAny<object>(), It.IsAny<CancellationToken>())).Throws(new Exception("Storing data exception"));
+            mockBallotHashContext.Setup(m => m.BallotHashes.AddAsync(It.IsAny<BallotHashModel>(), It.IsAny<CancellationToken>())).Throws(new Exception("Storing data exception"));
 
             var validatorApi = new BallotValidator(_logHelper.Object, mockBallotHashContext.Object, _mockOpenTimestampsClient.Object, _mockServiceBus.Object);
 
@@ -146,7 +147,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             mockTimestampContext.Setup(m => m.Ballots).Returns(MockBallotSet.Object);
             mockTimestampContext.Setup(m => m.BallotHashes).Returns(MockBallotHashSet.Object);
             mockTimestampContext.Setup(m => m.Timestamps).Returns(MockTimestampsSet.Object);
-            mockTimestampContext.Setup(m => m.SaveChangesAsync(default)).Throws(new Exception("Storing data exception"));
+            mockTimestampContext.Setup(m => m.Timestamps.AddAsync(It.IsAny<TimestampModel>(), It.IsAny<CancellationToken>())).Throws(new Exception("Storing data exception"));
 
             var validatorApi = new BallotValidator(_logHelper.Object, mockTimestampContext.Object, _mockOpenTimestampsClient.Object, _mockServiceBus.Object);
 
