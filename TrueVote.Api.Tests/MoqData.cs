@@ -1,9 +1,11 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using MockQueryable.Moq;
 using Moq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using TrueVote.Api.Interfaces;
 using TrueVote.Api.Models;
@@ -157,7 +159,6 @@ namespace TrueVote.Api.Tests
             mockUserContext = new Mock<MoqTrueVoteDbContext>();
             mockUserContext.Setup(m => m.Feedbacks).Returns(MockFeedbackSet.Object);
             mockUserContext.Setup(m => m.Users).Returns(MockUserSet.Object);
-            mockUserContext.Setup(m => m.EnsureCreatedAsync()).Returns(Task.FromResult(true));
 
             mockElectionContext = new Mock<MoqTrueVoteDbContext>();
             mockElectionContext.Setup(m => m.Elections).Returns(MockElectionSet.Object);
@@ -165,15 +166,12 @@ namespace TrueVote.Api.Tests
             mockElectionContext.Setup(m => m.Users).Returns(MockUserSet.Object);
             mockElectionContext.Setup(m => m.ElectionAccessCodes).Returns(MockElectionAccessCodeSet.Object);
             mockElectionContext.Setup(m => m.UsedAccessCodes).Returns(MockUsedAccessCodeSet.Object);
-            mockElectionContext.Setup(m => m.EnsureCreatedAsync()).Returns(Task.FromResult(true));
 
             mockTimestampContext = new Mock<MoqTrueVoteDbContext>();
             mockTimestampContext.Setup(m => m.Timestamps).Returns(MockTimestampSet.Object);
-            mockTimestampContext.Setup(m => m.EnsureCreatedAsync()).Returns(Task.FromResult(true));
 
             mockBallotHashContext = new Mock<MoqTrueVoteDbContext>();
             mockBallotHashContext.Setup(m => m.BallotHashes).Returns(MockBallotHashSet.Object);
-            mockBallotHashContext.Setup(m => m.EnsureCreatedAsync()).Returns(Task.FromResult(true));
 
             mockBallotContext = new Mock<MoqTrueVoteDbContext>();
             mockBallotContext.Setup(m => m.Elections).Returns(MockElectionSet.Object);
@@ -185,32 +183,25 @@ namespace TrueVote.Api.Tests
             mockBallotContext.Setup(m => m.ElectionAccessCodes).Returns(MockElectionAccessCodeSet.Object);
             mockBallotContext.Setup(m => m.UsedAccessCodes).Returns(MockUsedAccessCodeSet.Object);
             mockBallotContext.Setup(m => m.ElectionUserBindings).Returns(MockElectionUserBindingsSet.Object);
-            mockBallotContext.Setup(m => m.EnsureCreatedAsync()).Returns(Task.FromResult(true));
 
             mockCandidateContext = new Mock<MoqTrueVoteDbContext>();
             mockCandidateContext.Setup(m => m.Candidates).Returns(MockCandidateSet.Object);
-            mockCandidateContext.Setup(m => m.EnsureCreatedAsync()).Returns(Task.FromResult(true));
 
             mockRaceContext = new Mock<MoqTrueVoteDbContext>();
             mockRaceContext.Setup(m => m.Candidates).Returns(MockCandidateSet.Object);
             mockRaceContext.Setup(m => m.Races).Returns(MockRaceSet.Object);
-            mockRaceContext.Setup(m => m.EnsureCreatedAsync()).Returns(Task.FromResult(true));
 
             mockFeedbacksContext = new Mock<MoqTrueVoteDbContext>();
             mockFeedbacksContext.Setup(m => m.Feedbacks).Returns(MockFeedbackSet.Object);
-            mockFeedbacksContext.Setup(m => m.EnsureCreatedAsync()).Returns(Task.FromResult(true));
 
             mockElectionAccessCodeContext = new Mock<MoqTrueVoteDbContext>();
             mockElectionAccessCodeContext.Setup(m => m.ElectionAccessCodes).Returns(MockElectionAccessCodeSet.Object);
-            mockElectionAccessCodeContext.Setup(m => m.EnsureCreatedAsync()).Returns(Task.FromResult(true));
 
             mockUsedAccessCodeContext = new Mock<MoqTrueVoteDbContext>();
             mockUsedAccessCodeContext.Setup(m => m.UsedAccessCodes).Returns(MockUsedAccessCodeSet.Object);
-            mockUsedAccessCodeContext.Setup(m => m.EnsureCreatedAsync()).Returns(Task.FromResult(true));
 
             mockElectionUserBindingsContext = new Mock<MoqTrueVoteDbContext>();
             mockElectionUserBindingsContext.Setup(m => m.ElectionUserBindings).Returns(MockElectionUserBindingsSet.Object);
-            mockElectionUserBindingsContext.Setup(m => m.EnsureCreatedAsync()).Returns(Task.FromResult(true));
 
             // Leaving commented code. This is for Mocking UTC time. Helpful for test consistency.
             // var mockUtcNowProvider = new Mock<IUtcNowProvider>();
@@ -261,6 +252,11 @@ namespace TrueVote.Api.Tests
         public virtual async Task<int> SaveChangesAsync()
         {
             return await base.SaveChangesAsync();
+        }
+
+        public override async ValueTask<EntityEntry<TEntity>> AddAsync<TEntity>(TEntity entity, CancellationToken cancellationToken = default) where TEntity : class
+        {
+            return await base.AddAsync(entity, cancellationToken);
         }
     }
 }

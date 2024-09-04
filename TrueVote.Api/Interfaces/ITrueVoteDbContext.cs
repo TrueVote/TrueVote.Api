@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using TrueVote.Api.Models;
 
 namespace TrueVote.Api.Interfaces
@@ -19,5 +20,6 @@ namespace TrueVote.Api.Interfaces
 
         Task<bool> EnsureCreatedAsync();
         Task<int> SaveChangesAsync();
+        ValueTask<EntityEntry<TEntity>> AddAsync<TEntity>(TEntity entity, CancellationToken cancellationToken = default) where TEntity : class;
     }
 }

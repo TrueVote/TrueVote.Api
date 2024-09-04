@@ -41,8 +41,6 @@ namespace TrueVote.Api.Services
 
             var candidate = baseCandidate.DTOToCandidate();
 
-            await _trueVoteDbContext.EnsureCreatedAsync();
-
             await _trueVoteDbContext.Candidates.AddAsync(candidate);
             await _trueVoteDbContext.SaveChangesAsync();
 

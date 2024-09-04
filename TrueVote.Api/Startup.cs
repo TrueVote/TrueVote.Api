@@ -158,7 +158,7 @@ namespace TrueVote.Api
             services.AddProblemDetails();
         }
 
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, TrueVoteDbContext dbContext)
         {
             if (env.IsDevelopment())
             {
@@ -220,6 +220,8 @@ namespace TrueVote.Api
                 e.MapSwagger();
             });
 
+            dbContext.EnsureCreatedAsync().GetAwaiter().GetResult();
+
             Console.WriteLine("HostingEnvironmentName: '{0}'", env.EnvironmentName);
         }
 
@@ -258,6 +260,11 @@ namespace TrueVote.Api
             public virtual async Task<int> SaveChangesAsync()
             {
                 return await base.SaveChangesAsync();
+            }
+
+            public override async ValueTask<EntityEntry<TEntity>> AddAsync<TEntity>(TEntity entity, CancellationToken cancellationToken = default) where TEntity : class
+            {
+                return await base.AddAsync(entity, cancellationToken);
             }
 
             protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

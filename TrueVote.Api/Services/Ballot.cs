@@ -118,9 +118,9 @@ namespace TrueVote.Api.Services
             try
             {
                 await _trueVoteDbContext.EnsureCreatedAsync();
+                await _trueVoteDbContext.Ballots.AddAsync(ballot);
                 await _trueVoteDbContext.UsedAccessCodes.AddAsync(usedAccessCode);
                 await _trueVoteDbContext.ElectionUserBindings.AddAsync(electionUserBindingModel);
-                await _trueVoteDbContext.Ballots.AddAsync(ballot);
                 await _trueVoteDbContext.SaveChangesAsync();
             }
             catch (Exception e)

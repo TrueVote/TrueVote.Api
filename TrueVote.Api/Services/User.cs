@@ -186,8 +186,6 @@ namespace TrueVote.Api.Services
             var now = UtcNowProviderFactory.GetProvider().UtcNow;
             var user = new UserModel { FullName = baseUser.FullName, Email = baseUser.Email, UserId = userId, NostrPubKey = baseUser.NostrPubKey, DateCreated = now, DateUpdated = now, UserPreferences = new UserPreferencesModel() };
 
-            await _trueVoteDbContext.EnsureCreatedAsync();
-
             await _trueVoteDbContext.Users.AddAsync(user);
             await _trueVoteDbContext.SaveChangesAsync();
 
@@ -281,8 +279,6 @@ namespace TrueVote.Api.Services
             feedback.Feedback = Regex.Replace(feedback.Feedback, "<.*?>", string.Empty);
             feedback.FeedbackId = Guid.NewGuid().ToString();
             feedback.DateCreated = UtcNowProviderFactory.GetProvider().UtcNow;
-
-            await _trueVoteDbContext.EnsureCreatedAsync();
 
             await _trueVoteDbContext.Feedbacks.AddAsync(feedback);
             await _trueVoteDbContext.SaveChangesAsync();
