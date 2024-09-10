@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using TrueVote.Api.Helpers;
 using TrueVote.Api.Models;
@@ -288,6 +289,38 @@ namespace TrueVote.Api.Tests.ServiceTests
             var val = (SecureString) (ret as ConflictObjectResult).Value;
             Assert.NotNull(val);
             Assert.Contains("Ballot already submitted", val.Value);
+
+            _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+        }
+
+        [Fact]
+        public async Task HandlesSubmitBallotUnfoundUser()
+        {
+            var baseBallotObj = new SubmitBallotModel { AccessCode = "blah", Election = MoqData.MockBallotData[1].Election };
+
+            // Mock the claims .FindAll but also include an npub for it to pass over
+            var userMock = new Mock<ClaimsPrincipal>();
+            userMock.Setup(u => u.FindAll(ClaimTypes.NameIdentifier)).Returns(new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier, "npub12345")
+            });
+
+            // Need to mock httpContext to get access to the .User object
+            var httpContextMock = new Mock<HttpContext>();
+            httpContextMock.Setup(c => c.User).Returns(userMock.Object);
+            _ballotApi.ControllerContext = new ControllerContext
+            {
+                HttpContext = httpContextMock.Object
+            };
+
+            var ret = await _ballotApi.SubmitBallot(baseBallotObj);
+            Assert.NotNull(ret);
+            Assert.Equal(StatusCodes.Status404NotFound, ((IStatusCodeActionResult) ret).StatusCode);
+
+            var val = (SecureString) (ret as NotFoundObjectResult).Value;
+            Assert.NotNull(val);
+            Assert.Contains("UserId not found", val.Value);
 
             _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
