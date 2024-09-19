@@ -8,7 +8,8 @@ namespace TrueVote.Api.Services
     {
         private readonly ILogger _log;
         private readonly IServiceProvider _serviceProvider;
-        private const int BALLOT_HASHING_INTERVAL_MINUTES = 5;
+        private const int BALLOT_HASHING_INTERVAL_MINUTES = 1;
+        private const int OPENTIMESTAMPS_STAMPING_INTERVAL_MINUTES = 5;
 
         public TimerJobs(ILogger log, IServiceProvider serviceProvider)
         {
@@ -18,23 +19,33 @@ namespace TrueVote.Api.Services
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
+            var ballotHashingTask = RunPeriodically(ProcessPendingBallots,
+                TimeSpan.FromMinutes(BALLOT_HASHING_INTERVAL_MINUTES), stoppingToken);
+
+            var otherProcessTask = RunPeriodically(ProcessPendingOpentimestamps,
+                TimeSpan.FromMinutes(OPENTIMESTAMPS_STAMPING_INTERVAL_MINUTES), stoppingToken);
+
+            // Wait for all tasks to complete
+            await Task.WhenAll(ballotHashingTask, otherProcessTask);
+        }
+
+        private async Task RunPeriodically(Func<CancellationToken, Task> process, TimeSpan interval, CancellationToken stoppingToken)
+        {
             while (!stoppingToken.IsCancellationRequested)
             {
                 try
                 {
-                    _log.LogInformation("Timer trigger function ExecuteAsync() executed at: {time} UTC", DateTime.UtcNow);
-                    await ProcessPendingBallots(stoppingToken);
+                    await process(stoppingToken);
                 }
                 catch (Exception ex)
                 {
-                    _log.LogError(ex, "An error occurred during ExecuteAsync");
+                    _log.LogError(ex, $"An error occurred during {process.Method.Name}");
                 }
-
-                await Task.Delay(TimeSpan.FromMinutes(BALLOT_HASHING_INTERVAL_MINUTES), stoppingToken);
+                await Task.Delay(interval, stoppingToken);
             }
         }
 
-        public async Task<List<BallotModel>> GetBallotsWithoutHashesAsync(CancellationToken cancellationToken)
+        private async Task<List<BallotModel>> GetBallotsWithoutHashesAsync(CancellationToken cancellationToken)
         {
             using var scope = _serviceProvider.CreateScope();
             var trueVoteDbContext = scope.ServiceProvider.GetRequiredService<ITrueVoteDbContext>();
@@ -94,6 +105,15 @@ namespace TrueVote.Api.Services
             {
                 _log.LogError(ex, "Error processing pending ballots");
             }
+        }
+
+#pragma warning disable IDE0060 // Remove unused parameter
+        private Task ProcessPendingOpentimestamps(CancellationToken cancellationToken)
+#pragma warning restore IDE0060 // Remove unused parameter
+        {
+            _log.LogDebug("ProcessPendingOpentimestamps");
+
+            return Task.CompletedTask;
         }
     }
 }
