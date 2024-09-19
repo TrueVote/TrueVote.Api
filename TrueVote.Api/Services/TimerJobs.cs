@@ -77,7 +77,7 @@ namespace TrueVote.Api.Services
             try
             {
                 using var scope = _serviceProvider.CreateScope();
-                var ballotValidator = scope.ServiceProvider.GetRequiredService<IBallotValidator>();
+                var hasher = scope.ServiceProvider.GetRequiredService<IHasher>();
                 var ballotsWithoutHashes = await GetBallotsWithoutHashesAsync(cancellationToken);
 
                 var tasks = new List<Task>();
@@ -90,7 +90,7 @@ namespace TrueVote.Api.Services
                         {
                             _log.LogDebug("Hashing Ballot: {ballotId}", ballot.BallotId);
 
-                            await ballotValidator.HashBallotAsync(ballot);
+                            await hasher.HashBallotAsync(ballot);
                         }
                         catch (Exception ex)
                         {

@@ -150,7 +150,7 @@ namespace TrueVote.Api
                 var uri = provider.GetRequiredService<Uri>();
                 client.BaseAddress = uri;
             });
-            services.TryAddScoped<IBallotValidator, BallotValidator>();
+            services.TryAddScoped<IHasher, Hasher>();
             services.AddLogging();
             services.AddSingleton(typeof(ILogger), typeof(Logger<Startup>));
             services.AddGraphQLServer().AddQueryType<Query>().BindRuntimeType<DateTime, UTCDateTimeFormatted>();

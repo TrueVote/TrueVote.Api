@@ -6,7 +6,7 @@ using Newtonsoft.Json.Linq;
 
 namespace TrueVote.Api.Services
 {
-    public interface IBallotValidator
+    public interface IHasher
     {
         Task<BallotHashModel> HashBallotAsync(BallotModel ballot);
         Task<TimestampModel> HashBallotsAsync();
@@ -14,14 +14,14 @@ namespace TrueVote.Api.Services
         Task StoreBallotHashAsync(BallotHashModel ballotHashModel);
     }
 
-    public class BallotValidator : IBallotValidator
+    public class Hasher : IHasher
     {
         private readonly ITrueVoteDbContext _trueVoteDbContext;
         private readonly IOpenTimestampsClient _openTimestampsClient;
         private readonly IServiceBus _serviceBus;
         private readonly ILogger _log;
 
-        public BallotValidator(ILogger log, ITrueVoteDbContext trueVoteDbContext, IOpenTimestampsClient openTimestampsClient, IServiceBus serviceBus)
+        public Hasher(ILogger log, ITrueVoteDbContext trueVoteDbContext, IOpenTimestampsClient openTimestampsClient, IServiceBus serviceBus)
         {
             _trueVoteDbContext = trueVoteDbContext;
             _openTimestampsClient = openTimestampsClient;
