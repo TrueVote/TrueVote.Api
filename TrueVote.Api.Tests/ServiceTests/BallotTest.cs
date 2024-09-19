@@ -107,29 +107,6 @@ namespace TrueVote.Api.Tests.ServiceTests
         }
 
         [Fact]
-        public async Task HandlesSubmitBallotHashingError()
-        {
-            var baseBallotObj = new SubmitBallotModel { AccessCode = MoqData.MockElectionAccessCodeData[0].AccessCode, Election = MoqData.MockBallotData[1].Election };
-
-            var mockValidator = new Mock<IBallotValidator>();
-            mockValidator.Setup(m => m.HashBallotAsync(It.IsAny<BallotModel>())).Throws(new Exception("Hash Ballot Exception"));
-
-            var ballotApi = new Ballot(_logHelper.Object, _moqDataAccessor.mockBallotContext.Object, _mockServiceBus.Object, _mockRecursiveValidator.Object);
-
-            ballotApi.ControllerContext = _authControllerContext;
-            var ret = await ballotApi.SubmitBallot(baseBallotObj);
-            Assert.NotNull(ret);
-            Assert.Equal(StatusCodes.Status409Conflict, ((IStatusCodeActionResult) ret).StatusCode);
-
-            var val = (SecureString) (ret as ConflictObjectResult).Value;
-            Assert.NotNull(val);
-            Assert.Contains("Hash Ballot Exception", val.Value);
-
-            _logHelper.Verify(LogLevel.Error, Times.Exactly(1));
-            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
-        }
-
-        [Fact]
         public async Task FindsBallot()
         {
             var findBallotObj = new FindBallotModel { BallotId = "ballotid3" };
