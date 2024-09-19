@@ -23,15 +23,13 @@ namespace TrueVote.Api.Services
     {
         private readonly ILogger _log;
         private readonly ITrueVoteDbContext _trueVoteDbContext;
-        private readonly IBallotValidator _validator;
         private readonly IServiceBus _serviceBus;
         private readonly IRecursiveValidator _recursiveValidator;
 
-        public Ballot(ILogger log, ITrueVoteDbContext trueVoteDbContext, IBallotValidator validator, IServiceBus serviceBus, IRecursiveValidator recursiveValidator)
+        public Ballot(ILogger log, ITrueVoteDbContext trueVoteDbContext, IServiceBus serviceBus, IRecursiveValidator recursiveValidator)
         {
             _log = log;
             _trueVoteDbContext = trueVoteDbContext;
-            _validator = validator;
             _serviceBus = serviceBus;
             _recursiveValidator = recursiveValidator;
         }
@@ -141,22 +139,6 @@ namespace TrueVote.Api.Services
 
             // Post a message to Service Bus for this Ballot
             await _serviceBus.SendAsync($"New TrueVote Ballot successfully submitted. Election ID: {bindSubmitBallotModel.Election.ElectionId}, Ballot ID: {ballot.BallotId}");
-
-            // //TODO FOR NOW ONLY - THIS LINE SHOULD BE REPLACED WITH A POST TO SERVICE BUS TO PERFORM THIS ACTION
-            // Hash the ballot
-            try
-            {
-                await _validator.HashBallotAsync(ballot);
-            }
-            catch (Exception e)
-            {
-                _log.LogError("HashBallotAsync()");
-                _log.LogDebug("HTTP trigger - SubmitBallot:End");
-
-                var msg = submitBallotResponse.Message += " - Failure Hashing: " + e.Message;
-
-                return Conflict(new SecureString { Value = msg });
-            }
 
             _log.LogDebug("HTTP trigger - SubmitBallot:End");
 
