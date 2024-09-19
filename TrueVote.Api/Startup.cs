@@ -135,6 +135,7 @@ namespace TrueVote.Api
             });
             services.TryAddScoped<IFileSystem, FileSystem>();
             services.TryAddScoped<IServiceBus, ServiceBus>();
+            services.TryAddScoped<Ballot>();
             services.AddLogging(builder =>
             {
                 builder.SetMinimumLevel(LogLevel.Debug)

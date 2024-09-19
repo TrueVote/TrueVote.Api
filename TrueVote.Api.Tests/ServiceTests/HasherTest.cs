@@ -11,9 +11,9 @@ using Xunit.Abstractions;
 
 namespace TrueVote.Api.Tests.ServiceTests
 {
-    public class ValidatorTest : TestHelper
+    public class HasherTest : TestHelper
     {
-        public ValidatorTest(ITestOutputHelper output) : base(output)
+        public HasherTest(ITestOutputHelper output) : base(output)
         {
         }
 
@@ -64,6 +64,36 @@ namespace TrueVote.Api.Tests.ServiceTests
             try
             {
                 var timestamp = await hasherApi.HashBallotsAsync();
+                Assert.True(false);
+            }
+            catch (Exception ex)
+            {
+                _output.WriteLine($"{ex}");
+                Assert.NotNull(ex);
+                Assert.Contains("Storing data exception", ex.Message);
+            }
+        }
+
+        [Fact]
+        public async Task HashesBallotThrowsStoreBallotHashException()
+        {
+            var mockBallotContext = new Mock<MoqTrueVoteDbContext>();
+            var mockBallotDataQueryable = MoqData.MockBallotData.AsQueryable();
+            var mockBallotHashDataQueryable = MoqData.MockBallotHashData.AsQueryable();
+            var mockTimestampsDataQueryable = MoqData.MockTimestampData.AsQueryable();
+            var MockBallotSet = DbMoqHelper.GetDbSet(mockBallotDataQueryable);
+            var MockBallotHashSet = DbMoqHelper.GetDbSet(mockBallotHashDataQueryable);
+            var MockTimestampsSet = DbMoqHelper.GetDbSet(mockTimestampsDataQueryable);
+            mockBallotContext.Setup(m => m.Ballots).Returns(MockBallotSet.Object);
+            mockBallotContext.Setup(m => m.BallotHashes).Returns(MockBallotHashSet.Object);
+            mockBallotContext.Setup(m => m.Timestamps).Returns(MockTimestampsSet.Object);
+            mockBallotContext.Setup(m => m.SaveChangesAsync()).Throws(new Exception("Storing data exception"));
+
+            var hasherApi = new Hasher(_logHelper.Object, mockBallotContext.Object, _mockOpenTimestampsClient.Object, _mockServiceBus.Object);
+
+            try
+            {
+                var timestamp = await hasherApi.HashBallotAsync(MoqData.MockBallotData[4]);
                 Assert.True(false);
             }
             catch (Exception ex)

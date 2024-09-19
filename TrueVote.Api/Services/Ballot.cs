@@ -218,5 +218,30 @@ namespace TrueVote.Api.Services
 
             return items.Count == 0 ? NotFound() : Ok(items);
         }
+
+        [NonAction]
+        public async Task<List<BallotModel>> GetBallotsWithoutHashesAsync(CancellationToken cancellationToken)
+        {
+            try
+            {
+                var allBallotHashIds = await _trueVoteDbContext.BallotHashes.Select(bh => bh.BallotId)
+                    .ToListAsync(cancellationToken);
+
+                var ballotHashIdSet = new HashSet<string>(allBallotHashIds);
+
+                var ballotsWithoutHashes = await _trueVoteDbContext.Ballots.Where(ballot => !ballotHashIdSet.Contains(ballot.BallotId))
+                    .OrderByDescending(e => e.DateCreated)
+                    .ToListAsync(cancellationToken);
+
+                _log.LogDebug("Found {count} ballots without hashes", ballotsWithoutHashes.Count);
+
+                return ballotsWithoutHashes;
+            }
+            catch (Exception ex)
+            {
+                _log.LogError(ex, "An error occurred while fetching ballots without hashes");
+                throw;
+            }
+        }
     }
 }

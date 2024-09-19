@@ -66,6 +66,7 @@ namespace TrueVote.Api.Services
             catch (Exception ex)
             {
                 _log.LogError(ex, $"Error saving ballot hash to database: {ballot.BallotId}");
+                throw;
             }
 
             var ballotHashJson = JsonConvert.SerializeObject(ballotHashModel, Formatting.Indented);
@@ -115,18 +116,26 @@ namespace TrueVote.Api.Services
             // TODO Do we need to wrap these 2 separate DB operations in a Transaction?
             // https://learn.microsoft.com/en-us/ef/ef6/saving/transactions#what-ef-does-by-default
 
-            // Store the timestamp in Database
-            await StoreTimestampAsync(timestamp);
-
-            // Update all the BallotHash models and Database with the new Timestamp
-            items.ToList().ForEach(e =>
+            try
             {
-                e.TimestampId = timestamp.TimestampId;
-                e.DateUpdated = UtcNowProviderFactory.GetProvider().UtcNow;
-                _trueVoteDbContext.BallotHashes.Update(e);
-            });
+                // Store the timestamp in Database
+                await StoreTimestampAsync(timestamp);
 
-            await _trueVoteDbContext.SaveChangesAsync();
+                // Update all the BallotHash models and Database with the new Timestamp
+                items.ToList().ForEach(e =>
+                {
+                    e.TimestampId = timestamp.TimestampId;
+                    e.DateUpdated = UtcNowProviderFactory.GetProvider().UtcNow;
+                    _trueVoteDbContext.BallotHashes.Update(e);
+                });
+
+                await _trueVoteDbContext.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                _log.LogError(ex, $"Error saving or updating timestamp to database: {timestamp.TimestampId}");
+                throw;
+            }
 
             var timestampJson = JsonConvert.SerializeObject(timestamp, Formatting.Indented);
 

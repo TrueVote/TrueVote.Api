@@ -1,7 +1,3 @@
-using Microsoft.EntityFrameworkCore;
-using TrueVote.Api.Interfaces;
-using TrueVote.Api.Models;
-
 namespace TrueVote.Api.Services
 {
     public class TimerJobs : BackgroundService
@@ -45,56 +41,30 @@ namespace TrueVote.Api.Services
             }
         }
 
-        private async Task<List<BallotModel>> GetBallotsWithoutHashesAsync(CancellationToken cancellationToken)
-        {
-            using var scope = _serviceProvider.CreateScope();
-            var trueVoteDbContext = scope.ServiceProvider.GetRequiredService<ITrueVoteDbContext>();
-
-            try
-            {
-                var allBallotHashIds = await trueVoteDbContext.BallotHashes.Select(bh => bh.BallotId)
-                    .ToListAsync(cancellationToken);
-
-                var ballotHashIdSet = new HashSet<string>(allBallotHashIds);
-
-                var ballotsWithoutHashes = await trueVoteDbContext.Ballots.Where(ballot => !ballotHashIdSet.Contains(ballot.BallotId))
-                    .OrderByDescending(e => e.DateCreated)
-                    .ToListAsync(cancellationToken);
-
-                _log.LogDebug("Found {count} ballots without hashes", ballotsWithoutHashes.Count);
-
-                return ballotsWithoutHashes;
-            }
-            catch (Exception ex)
-            {
-                _log.LogError(ex, "An error occurred while fetching ballots without hashes");
-                throw;
-            }
-        }
-
         private async Task ProcessPendingBallots(CancellationToken cancellationToken)
         {
             try
             {
                 using var scope = _serviceProvider.CreateScope();
                 var hasher = scope.ServiceProvider.GetRequiredService<IHasher>();
-                var ballotsWithoutHashes = await GetBallotsWithoutHashesAsync(cancellationToken);
+                var ballot = scope.ServiceProvider.GetRequiredService<Ballot>();
+                var ballotsWithoutHashes = await ballot.GetBallotsWithoutHashesAsync(cancellationToken);
 
                 var tasks = new List<Task>();
 
-                foreach (var ballot in ballotsWithoutHashes)
+                foreach (var b in ballotsWithoutHashes)
                 {
                     tasks.Add(Task.Run(async () =>
                     {
                         try
                         {
-                            _log.LogDebug("Hashing Ballot: {ballotId}", ballot.BallotId);
+                            _log.LogDebug("Hashing Ballot: {ballotId}", b.BallotId);
 
-                            await hasher.HashBallotAsync(ballot);
+                            await hasher.HashBallotAsync(b);
                         }
                         catch (Exception ex)
                         {
-                            _log.LogError(ex, "Error hashing ballot {ballotId}", ballot.BallotId);
+                            _log.LogError(ex, "Error hashing ballot {ballotId}", b.BallotId);
                         }
                     }, cancellationToken));
                 }
