@@ -57,9 +57,16 @@ namespace TrueVote.Api.Services
                 BallotHashId = Guid.NewGuid().ToString()
             };
 
-            // Store the BallotHash in Database
-            await StoreBallotHashAsync(ballotHashModel);
-            await _trueVoteDbContext.SaveChangesAsync();
+            try
+            {
+                // Store the BallotHash in Database
+                await StoreBallotHashAsync(ballotHashModel);
+                await _trueVoteDbContext.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                _log.LogError(ex, $"Error saving ballot hash to database: {ballot.BallotId}");
+            }
 
             var ballotHashJson = JsonConvert.SerializeObject(ballotHashModel, Formatting.Indented);
 
