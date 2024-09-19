@@ -8,6 +8,7 @@ namespace TrueVote.Api.Services
     {
         private readonly ILogger _log;
         private readonly IServiceProvider _serviceProvider;
+        private const int BALLOT_HASHING_INTERVAL_MINUTES = 5;
 
         public TimerJobs(ILogger log, IServiceProvider serviceProvider)
         {
@@ -29,7 +30,7 @@ namespace TrueVote.Api.Services
                     _log.LogError(ex, "An error occurred during ExecuteAsync");
                 }
 
-                await Task.Delay(TimeSpan.FromSeconds(30), stoppingToken);
+                await Task.Delay(TimeSpan.FromMinutes(BALLOT_HASHING_INTERVAL_MINUTES), stoppingToken);
             }
         }
 

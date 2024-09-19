@@ -66,7 +66,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             mockRecursiveValidator.Setup(m => m.TryValidateObjectRecursive(It.IsAny<object>(), It.IsAny<ValidationContext>(), It.IsAny<List<ValidationResult>>())).Returns(false);
             mockRecursiveValidator.Setup(m => m.GetValidationErrorsDictionary(It.IsAny<List<ValidationResult>>())).Returns(validationErrors);
 
-            var ballotApi = new Ballot(_logHelper.Object, _moqDataAccessor.mockBallotContext.Object, _validatorApi, _mockServiceBus.Object, mockRecursiveValidator.Object);
+            var ballotApi = new Ballot(_logHelper.Object, _moqDataAccessor.mockBallotContext.Object, _mockServiceBus.Object, mockRecursiveValidator.Object);
 
             var ret = await ballotApi.SubmitBallot(baseBallotObj);
 
@@ -94,7 +94,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             mockRecursiveValidator.Setup(m => m.TryValidateObjectRecursive(It.IsAny<object>(), It.IsAny<ValidationContext>(), It.IsAny<List<ValidationResult>>())).Returns(false);
             mockRecursiveValidator.Setup(m => m.GetValidationErrorsDictionary(It.IsAny<List<ValidationResult>>())).Returns(validationErrors);
 
-            var ballotApi = new Ballot(_logHelper.Object, _moqDataAccessor.mockBallotContext.Object, _validatorApi, _mockServiceBus.Object, mockRecursiveValidator.Object);
+            var ballotApi = new Ballot(_logHelper.Object, _moqDataAccessor.mockBallotContext.Object, _mockServiceBus.Object, mockRecursiveValidator.Object);
 
             var ret = await ballotApi.SubmitBallot(baseBallotObj);
 
@@ -114,7 +114,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             var mockValidator = new Mock<IBallotValidator>();
             mockValidator.Setup(m => m.HashBallotAsync(It.IsAny<BallotModel>())).Throws(new Exception("Hash Ballot Exception"));
 
-            var ballotApi = new Ballot(_logHelper.Object, _moqDataAccessor.mockBallotContext.Object, mockValidator.Object, _mockServiceBus.Object, _mockRecursiveValidator.Object);
+            var ballotApi = new Ballot(_logHelper.Object, _moqDataAccessor.mockBallotContext.Object, _mockServiceBus.Object, _mockRecursiveValidator.Object);
 
             ballotApi.ControllerContext = _authControllerContext;
             var ret = await ballotApi.SubmitBallot(baseBallotObj);
@@ -223,7 +223,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             mockBallotContext.Setup(m => m.ElectionUserBindings).Returns(_moqDataAccessor.MockElectionUserBindingsSet.Object);
             mockBallotContext.Setup(m => m.SaveChangesAsync()).Throws(new Exception("DB Saving Changes Exception"));
 
-            var ballotApi = new Ballot(_logHelper.Object, mockBallotContext.Object, _validatorApi, _mockServiceBus.Object, _mockRecursiveValidator.Object);
+            var ballotApi = new Ballot(_logHelper.Object, mockBallotContext.Object, _mockServiceBus.Object, _mockRecursiveValidator.Object);
 
             ballotApi.ControllerContext = _authControllerContext;
             var ret = await ballotApi.SubmitBallot(baseBallotObj);

@@ -345,7 +345,7 @@ namespace TrueVote.Api
                 modelBuilder.HasDefaultContainer("ElectionAccessCodes");
                 modelBuilder.Entity<AccessCodeModel>().ToContainer("ElectionAccessCodes");
                 modelBuilder.Entity<AccessCodeModel>().HasNoDiscriminator();
-                modelBuilder.Entity<AccessCodeModel>().HasPartitionKey(eac => new { eac.RequestId, eac.AccessCode, eac.ElectionId });
+                modelBuilder.Entity<AccessCodeModel>().HasPartitionKey(eac => eac.RequestId);
                 modelBuilder.Entity<AccessCodeModel>().HasKey(eac => new { eac.RequestId, eac.AccessCode, eac.ElectionId });
 
                 modelBuilder.HasDefaultContainer("UsedAccessCodes");
@@ -357,7 +357,7 @@ namespace TrueVote.Api
                 modelBuilder.HasDefaultContainer("ElectionUserBindings");
                 modelBuilder.Entity<ElectionUserBindingModel>().ToContainer("ElectionUserBindings");
                 modelBuilder.Entity<ElectionUserBindingModel>().HasNoDiscriminator();
-                modelBuilder.Entity<ElectionUserBindingModel>().HasPartitionKey(eub => new { eub.UserId, eub.ElectionId });
+                modelBuilder.Entity<ElectionUserBindingModel>().HasPartitionKey(eub => eub.UserId);
                 modelBuilder.Entity<ElectionUserBindingModel>().HasKey(eub => new { eub.UserId, eub.ElectionId });
             }
         }
