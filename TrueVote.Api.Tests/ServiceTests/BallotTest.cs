@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Security.Claims;
+using System.Threading;
 using System.Threading.Tasks;
 using TrueVote.Api.Helpers;
 using TrueVote.Api.Models;
@@ -301,6 +302,33 @@ namespace TrueVote.Api.Tests.ServiceTests
 
             _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+        }
+
+        [Fact]
+        public async Task GetsBallotsWithoutHashes()
+        {
+            var ret = await _ballotApi.GetBallotsWithoutHashesAsync(new CancellationToken());
+            Assert.NotNull(ret);
+            Assert.True(ret.Count > 0);
+
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(1));
+        }
+
+        [Fact]
+        public async Task HandlesGetsBallotsWithoutHashesException()
+        {
+            var baseBallotObj = new SubmitBallotModel { AccessCode = MoqData.MockElectionAccessCodeData[0].AccessCode, Election = MoqData.MockBallotData[1].Election };
+
+            var mockBallotContext = new Mock<MoqTrueVoteDbContext>();
+
+            var mockBallotDataQueryable = MoqData.MockBallotData.AsQueryable();
+            var MockBallotSet = DbMoqHelper.GetDbSet(mockBallotDataQueryable);
+            mockBallotContext.Setup(m => m.Ballots).Throws(new Exception("Ballots are null")); ;
+
+            var ballotApi = new Ballot(_logHelper.Object, mockBallotContext.Object, _mockServiceBus.Object, _mockRecursiveValidator.Object);
+            var ret = await ballotApi.GetBallotsWithoutHashesAsync(new CancellationToken());
+            Assert.Null(ret);
+            _logHelper.Verify(LogLevel.Error, Times.Exactly(1));
         }
     }
 }

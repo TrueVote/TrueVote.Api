@@ -1,5 +1,8 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace TrueVote.Api.Services
 {
+    [ExcludeFromCodeCoverage]
     public class TimerJobs : BackgroundService
     {
         private readonly ILogger _log;

@@ -224,6 +224,9 @@ namespace TrueVote.Api.Services
         {
             try
             {
+                // This retrieves ALL the BallotHashes, which could be in the millions.
+                // TODO Optimize this to use a CosmosDB join or some other way. Maybe have another table
+                // that sets a flag and query that. Or have the flag live in the Ballots table and do updates when it's hashed
                 var allBallotHashIds = await _trueVoteDbContext.BallotHashes.Select(bh => bh.BallotId)
                     .ToListAsync(cancellationToken);
 
@@ -240,7 +243,7 @@ namespace TrueVote.Api.Services
             catch (Exception ex)
             {
                 _log.LogError(ex, "An error occurred while fetching ballots without hashes");
-                throw;
+                return null;
             }
         }
     }
