@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Security.Claims;
+using System.Threading;
 using System.Threading.Tasks;
 using TrueVote.Api.Helpers;
 using TrueVote.Api.Models;
@@ -66,7 +67,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             mockRecursiveValidator.Setup(m => m.TryValidateObjectRecursive(It.IsAny<object>(), It.IsAny<ValidationContext>(), It.IsAny<List<ValidationResult>>())).Returns(false);
             mockRecursiveValidator.Setup(m => m.GetValidationErrorsDictionary(It.IsAny<List<ValidationResult>>())).Returns(validationErrors);
 
-            var ballotApi = new Ballot(_logHelper.Object, _moqDataAccessor.mockBallotContext.Object, _validatorApi, _mockServiceBus.Object, mockRecursiveValidator.Object);
+            var ballotApi = new Ballot(_logHelper.Object, _moqDataAccessor.mockBallotContext.Object, _mockServiceBus.Object, mockRecursiveValidator.Object);
 
             var ret = await ballotApi.SubmitBallot(baseBallotObj);
 
@@ -94,7 +95,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             mockRecursiveValidator.Setup(m => m.TryValidateObjectRecursive(It.IsAny<object>(), It.IsAny<ValidationContext>(), It.IsAny<List<ValidationResult>>())).Returns(false);
             mockRecursiveValidator.Setup(m => m.GetValidationErrorsDictionary(It.IsAny<List<ValidationResult>>())).Returns(validationErrors);
 
-            var ballotApi = new Ballot(_logHelper.Object, _moqDataAccessor.mockBallotContext.Object, _validatorApi, _mockServiceBus.Object, mockRecursiveValidator.Object);
+            var ballotApi = new Ballot(_logHelper.Object, _moqDataAccessor.mockBallotContext.Object, _mockServiceBus.Object, mockRecursiveValidator.Object);
 
             var ret = await ballotApi.SubmitBallot(baseBallotObj);
 
@@ -104,29 +105,6 @@ namespace TrueVote.Api.Tests.ServiceTests
             var validationProblemDetails = Assert.IsType<ValidationProblemDetails>(objectResult.Value);
             Assert.Contains("must be greater or equal", validationProblemDetails.Errors.Keys.First());
             Assert.Contains("MinNumberOfChoices", validationProblemDetails.Errors.Values.First());
-        }
-
-        [Fact]
-        public async Task HandlesSubmitBallotHashingError()
-        {
-            var baseBallotObj = new SubmitBallotModel { AccessCode = MoqData.MockElectionAccessCodeData[0].AccessCode, Election = MoqData.MockBallotData[1].Election };
-
-            var mockValidator = new Mock<IBallotValidator>();
-            mockValidator.Setup(m => m.HashBallotAsync(It.IsAny<BallotModel>())).Throws(new Exception("Hash Ballot Exception"));
-
-            var ballotApi = new Ballot(_logHelper.Object, _moqDataAccessor.mockBallotContext.Object, mockValidator.Object, _mockServiceBus.Object, _mockRecursiveValidator.Object);
-
-            ballotApi.ControllerContext = _authControllerContext;
-            var ret = await ballotApi.SubmitBallot(baseBallotObj);
-            Assert.NotNull(ret);
-            Assert.Equal(StatusCodes.Status409Conflict, ((IStatusCodeActionResult) ret).StatusCode);
-
-            var val = (SecureString) (ret as ConflictObjectResult).Value;
-            Assert.NotNull(val);
-            Assert.Contains("Hash Ballot Exception", val.Value);
-
-            _logHelper.Verify(LogLevel.Error, Times.Exactly(1));
-            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
         }
 
         [Fact]
@@ -223,7 +201,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             mockBallotContext.Setup(m => m.ElectionUserBindings).Returns(_moqDataAccessor.MockElectionUserBindingsSet.Object);
             mockBallotContext.Setup(m => m.SaveChangesAsync()).Throws(new Exception("DB Saving Changes Exception"));
 
-            var ballotApi = new Ballot(_logHelper.Object, mockBallotContext.Object, _validatorApi, _mockServiceBus.Object, _mockRecursiveValidator.Object);
+            var ballotApi = new Ballot(_logHelper.Object, mockBallotContext.Object, _mockServiceBus.Object, _mockRecursiveValidator.Object);
 
             ballotApi.ControllerContext = _authControllerContext;
             var ret = await ballotApi.SubmitBallot(baseBallotObj);
@@ -324,6 +302,33 @@ namespace TrueVote.Api.Tests.ServiceTests
 
             _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+        }
+
+        [Fact]
+        public async Task GetsBallotsWithoutHashes()
+        {
+            var ret = await _ballotApi.GetBallotsWithoutHashesAsync(new CancellationToken());
+            Assert.NotNull(ret);
+            Assert.True(ret.Count > 0);
+
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(1));
+        }
+
+        [Fact]
+        public async Task HandlesGetsBallotsWithoutHashesException()
+        {
+            var baseBallotObj = new SubmitBallotModel { AccessCode = MoqData.MockElectionAccessCodeData[0].AccessCode, Election = MoqData.MockBallotData[1].Election };
+
+            var mockBallotContext = new Mock<MoqTrueVoteDbContext>();
+
+            var mockBallotDataQueryable = MoqData.MockBallotData.AsQueryable();
+            var MockBallotSet = DbMoqHelper.GetDbSet(mockBallotDataQueryable);
+            mockBallotContext.Setup(m => m.Ballots).Throws(new Exception("Ballots are null")); ;
+
+            var ballotApi = new Ballot(_logHelper.Object, mockBallotContext.Object, _mockServiceBus.Object, _mockRecursiveValidator.Object);
+            var ret = await ballotApi.GetBallotsWithoutHashesAsync(new CancellationToken());
+            Assert.Null(ret);
+            _logHelper.Verify(LogLevel.Error, Times.Exactly(1));
         }
     }
 }

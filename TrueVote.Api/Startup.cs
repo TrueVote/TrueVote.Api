@@ -135,6 +135,7 @@ namespace TrueVote.Api
             });
             services.TryAddScoped<IFileSystem, FileSystem>();
             services.TryAddScoped<IServiceBus, ServiceBus>();
+            services.TryAddScoped<Ballot>();
             services.AddLogging(builder =>
             {
                 builder.SetMinimumLevel(LogLevel.Debug)
@@ -150,12 +151,13 @@ namespace TrueVote.Api
                 var uri = provider.GetRequiredService<Uri>();
                 client.BaseAddress = uri;
             });
-            services.TryAddScoped<IBallotValidator, BallotValidator>();
+            services.TryAddScoped<IHasher, Hasher>();
             services.AddLogging();
             services.AddSingleton(typeof(ILogger), typeof(Logger<Startup>));
             services.AddGraphQLServer().AddQueryType<Query>().BindRuntimeType<DateTime, UTCDateTimeFormatted>();
             services.AddExceptionHandler<GlobalExceptionHandler>();
             services.AddProblemDetails();
+            services.AddHostedService<TimerJobs>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, TrueVoteDbContext dbContext)
@@ -274,19 +276,27 @@ namespace TrueVote.Api
                 modelBuilder.HasDefaultContainer("Users");
                 modelBuilder.Entity<UserModel>().ToContainer("Users");
                 modelBuilder.Entity<UserModel>().HasNoDiscriminator();
+                modelBuilder.Entity<UserModel>().HasPartitionKey(u => u.UserId);
+                modelBuilder.Entity<UserModel>().HasKey(u => u.UserId);
 
                 modelBuilder.HasDefaultContainer("Ballots");
                 modelBuilder.Entity<BallotModel>().ToContainer("Ballots");
                 modelBuilder.Entity<BallotModel>().HasNoDiscriminator();
+                modelBuilder.Entity<BallotModel>().HasPartitionKey(b => b.BallotId);
+                modelBuilder.Entity<BallotModel>().HasKey(b => b.BallotId);
                 modelBuilder.Entity<BallotModel>().Property(p => p.Election)
                     .HasConversion(
                         v => JsonSerializer.Serialize(v, (JsonSerializerOptions) null),
                         v => JsonSerializer.Deserialize<ElectionModel>(v, (JsonSerializerOptions) null));
+                modelBuilder.Entity<BallotModel>().HasOne<BallotHashModel>().WithOne()
+                    .HasForeignKey<BallotHashModel>(e => e.BallotId).IsRequired(false);
 
                 modelBuilder.HasDefaultContainer("Elections");
                 modelBuilder.Entity<ElectionModel>().ToContainer("Elections");
                 modelBuilder.Entity<ElectionModel>().HasNoDiscriminator();
-                modelBuilder.Entity<ElectionModel>().Property(p => p.Races)
+                modelBuilder.Entity<ElectionModel>().HasPartitionKey(e => e.ElectionId);
+                modelBuilder.Entity<ElectionModel>().HasKey(e => e.ElectionId);
+                modelBuilder.Entity<ElectionModel>().Property(e => e.Races)
                     .HasConversion(
                         v => JsonSerializer.Serialize(v, (JsonSerializerOptions) null),
                         v => JsonSerializer.Deserialize<List<RaceModel>>(v, (JsonSerializerOptions) null),
@@ -298,7 +308,9 @@ namespace TrueVote.Api
                 modelBuilder.HasDefaultContainer("Races");
                 modelBuilder.Entity<RaceModel>().ToContainer("Races");
                 modelBuilder.Entity<RaceModel>().HasNoDiscriminator();
-                modelBuilder.Entity<RaceModel>().Property(p => p.Candidates)
+                modelBuilder.Entity<RaceModel>().HasPartitionKey(r => r.RaceId);
+                modelBuilder.Entity<RaceModel>().HasKey(r => r.RaceId);
+                modelBuilder.Entity<RaceModel>().Property(r => r.Candidates)
                     .HasConversion(
                         v => JsonSerializer.Serialize(v, (JsonSerializerOptions) null),
                         v => JsonSerializer.Deserialize<List<CandidateModel>>(v, (JsonSerializerOptions) null),
@@ -310,32 +322,43 @@ namespace TrueVote.Api
                 modelBuilder.HasDefaultContainer("Candidates");
                 modelBuilder.Entity<CandidateModel>().ToContainer("Candidates");
                 modelBuilder.Entity<CandidateModel>().HasNoDiscriminator();
+                modelBuilder.Entity<CandidateModel>().HasPartitionKey(c => c.CandidateId);
+                modelBuilder.Entity<CandidateModel>().HasKey(c => c.CandidateId);
 
                 modelBuilder.HasDefaultContainer("Timestamps");
                 modelBuilder.Entity<TimestampModel>().ToContainer("Timestamps");
                 modelBuilder.Entity<TimestampModel>().HasNoDiscriminator();
+                modelBuilder.Entity<TimestampModel>().HasPartitionKey(t => t.TimestampId);
+                modelBuilder.Entity<TimestampModel>().HasKey(t => t.TimestampId);
 
                 modelBuilder.HasDefaultContainer("BallotHashes");
                 modelBuilder.Entity<BallotHashModel>().ToContainer("BallotHashes");
                 modelBuilder.Entity<BallotHashModel>().HasNoDiscriminator();
+                modelBuilder.Entity<BallotHashModel>().HasPartitionKey(b => b.BallotId);
+                modelBuilder.Entity<BallotHashModel>().HasKey(b => b.BallotId);
 
                 modelBuilder.HasDefaultContainer("Feedbacks");
                 modelBuilder.Entity<FeedbackModel>().ToContainer("Feedbacks");
                 modelBuilder.Entity<FeedbackModel>().HasNoDiscriminator();
+                modelBuilder.Entity<FeedbackModel>().HasPartitionKey(f => f.FeedbackId);
+                modelBuilder.Entity<FeedbackModel>().HasKey(f => f.FeedbackId);
 
                 modelBuilder.HasDefaultContainer("ElectionAccessCodes");
                 modelBuilder.Entity<AccessCodeModel>().ToContainer("ElectionAccessCodes");
                 modelBuilder.Entity<AccessCodeModel>().HasNoDiscriminator();
-                modelBuilder.Entity<AccessCodeModel>().HasKey(ac => new { ac.RequestId, ac.AccessCode, ac.ElectionId });
+                modelBuilder.Entity<AccessCodeModel>().HasPartitionKey(eac => eac.RequestId);
+                modelBuilder.Entity<AccessCodeModel>().HasKey(eac => new { eac.RequestId, eac.AccessCode, eac.ElectionId });
 
                 modelBuilder.HasDefaultContainer("UsedAccessCodes");
                 modelBuilder.Entity<UsedAccessCodeModel>().ToContainer("UsedAccessCodes");
                 modelBuilder.Entity<UsedAccessCodeModel>().HasNoDiscriminator();
-                modelBuilder.Entity<UsedAccessCodeModel>().HasKey(ac => new { ac.AccessCode });
+                modelBuilder.Entity<UsedAccessCodeModel>().HasPartitionKey(uac => uac.AccessCode);
+                modelBuilder.Entity<UsedAccessCodeModel>().HasKey(uac => uac.AccessCode);
 
                 modelBuilder.HasDefaultContainer("ElectionUserBindings");
                 modelBuilder.Entity<ElectionUserBindingModel>().ToContainer("ElectionUserBindings");
                 modelBuilder.Entity<ElectionUserBindingModel>().HasNoDiscriminator();
+                modelBuilder.Entity<ElectionUserBindingModel>().HasPartitionKey(eub => eub.UserId);
                 modelBuilder.Entity<ElectionUserBindingModel>().HasKey(eub => new { eub.UserId, eub.ElectionId });
             }
         }

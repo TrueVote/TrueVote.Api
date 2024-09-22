@@ -27,7 +27,7 @@ namespace TrueVote.Api.Tests.Helpers
         protected readonly Ballot _ballotApi;
         protected readonly Race _raceApi;
         protected readonly Candidate _candidateApi;
-        protected readonly BallotValidator _validatorApi;
+        protected readonly Hasher _hasherApi;
         protected readonly Timestamp _timestampApi;
         protected readonly Query _queryService;
         protected readonly MoqDataAccessor _moqDataAccessor;
@@ -74,7 +74,7 @@ namespace TrueVote.Api.Tests.Helpers
             serviceCollection.TryAddScoped<Query, Query>();
             serviceCollection.TryAddSingleton<INamingConventions, TrueVoteNamingConventions>();
             serviceCollection.TryAddScoped<IFileSystem, FileSystem>();
-            serviceCollection.TryAddScoped<BallotValidator, BallotValidator>();
+            serviceCollection.TryAddScoped<Hasher, Hasher>();
             serviceCollection.TryAddScoped<IServiceBus, ServiceBus>();
             serviceCollection.TryAddScoped<IJwtHandler, JwtHandler>();
             serviceCollection.TryAddScoped<IRecursiveValidator, RecursiveValidator>();
@@ -107,8 +107,8 @@ namespace TrueVote.Api.Tests.Helpers
             _moqDataAccessor = new MoqDataAccessor();
             _userApi = new User(_logHelper.Object, _moqDataAccessor.mockUserContext.Object, _mockServiceBus.Object, _mockJwtHandler.Object);
             _electionApi = new Election(_logHelper.Object, _moqDataAccessor.mockElectionContext.Object, _mockServiceBus.Object);
-            _validatorApi = new BallotValidator(_logHelper.Object, _moqDataAccessor.mockBallotContext.Object, _mockOpenTimestampsClient.Object, _mockServiceBus.Object);
-            _ballotApi = new Ballot(_logHelper.Object, _moqDataAccessor.mockBallotContext.Object, _validatorApi, _mockServiceBus.Object, _mockRecursiveValidator.Object);
+            _hasherApi = new Hasher(_logHelper.Object, _moqDataAccessor.mockBallotContext.Object, _mockOpenTimestampsClient.Object, _mockServiceBus.Object);
+            _ballotApi = new Ballot(_logHelper.Object, _moqDataAccessor.mockBallotContext.Object, _mockServiceBus.Object, _mockRecursiveValidator.Object);
             _raceApi = new Race(_logHelper.Object, _moqDataAccessor.mockRaceContext.Object, _mockServiceBus.Object);
             _candidateApi = new Candidate(_logHelper.Object, _moqDataAccessor.mockCandidateContext.Object, _mockServiceBus.Object);
             _timestampApi = new Timestamp(_logHelper.Object, _moqDataAccessor.mockTimestampContext.Object);

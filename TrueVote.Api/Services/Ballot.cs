@@ -23,15 +23,13 @@ namespace TrueVote.Api.Services
     {
         private readonly ILogger _log;
         private readonly ITrueVoteDbContext _trueVoteDbContext;
-        private readonly IBallotValidator _validator;
         private readonly IServiceBus _serviceBus;
         private readonly IRecursiveValidator _recursiveValidator;
 
-        public Ballot(ILogger log, ITrueVoteDbContext trueVoteDbContext, IBallotValidator validator, IServiceBus serviceBus, IRecursiveValidator recursiveValidator)
+        public Ballot(ILogger log, ITrueVoteDbContext trueVoteDbContext, IServiceBus serviceBus, IRecursiveValidator recursiveValidator)
         {
             _log = log;
             _trueVoteDbContext = trueVoteDbContext;
-            _validator = validator;
             _serviceBus = serviceBus;
             _recursiveValidator = recursiveValidator;
         }
@@ -142,22 +140,6 @@ namespace TrueVote.Api.Services
             // Post a message to Service Bus for this Ballot
             await _serviceBus.SendAsync($"New TrueVote Ballot successfully submitted. Election ID: {bindSubmitBallotModel.Election.ElectionId}, Ballot ID: {ballot.BallotId}");
 
-            // //TODO FOR NOW ONLY - THIS LINE SHOULD BE REPLACED WITH A POST TO SERVICE BUS TO PERFORM THIS ACTION
-            // Hash the ballot
-            try
-            {
-                await _validator.HashBallotAsync(ballot);
-            }
-            catch (Exception e)
-            {
-                _log.LogError("HashBallotAsync()");
-                _log.LogDebug("HTTP trigger - SubmitBallot:End");
-
-                var msg = submitBallotResponse.Message += " - Failure Hashing: " + e.Message;
-
-                return Conflict(new SecureString { Value = msg });
-            }
-
             _log.LogDebug("HTTP trigger - SubmitBallot:End");
 
             submitBallotResponse.Message += " - Ballot successfully submitted.";
@@ -235,6 +217,34 @@ namespace TrueVote.Api.Services
             _log.LogDebug("HTTP trigger - BallotHashFind:End");
 
             return items.Count == 0 ? NotFound() : Ok(items);
+        }
+
+        [NonAction]
+        public async Task<List<BallotModel>> GetBallotsWithoutHashesAsync(CancellationToken cancellationToken)
+        {
+            try
+            {
+                // This retrieves ALL the BallotHashes, which could be in the millions.
+                // TODO Optimize this to use a CosmosDB join or some other way. Maybe have another table
+                // that sets a flag and query that. Or have the flag live in the Ballots table and do updates when it's hashed
+                var allBallotHashIds = await _trueVoteDbContext.BallotHashes.Select(bh => bh.BallotId)
+                    .ToListAsync(cancellationToken);
+
+                var ballotHashIdSet = new HashSet<string>(allBallotHashIds);
+
+                var ballotsWithoutHashes = await _trueVoteDbContext.Ballots.Where(ballot => !ballotHashIdSet.Contains(ballot.BallotId))
+                    .OrderByDescending(e => e.DateCreated)
+                    .ToListAsync(cancellationToken);
+
+                _log.LogDebug("Found {count} ballots without hashes", ballotsWithoutHashes.Count);
+
+                return ballotsWithoutHashes;
+            }
+            catch (Exception ex)
+            {
+                _log.LogError(ex, "An error occurred while fetching ballots without hashes");
+                return null;
+            }
         }
     }
 }

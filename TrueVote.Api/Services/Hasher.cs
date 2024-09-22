@@ -6,7 +6,7 @@ using Newtonsoft.Json.Linq;
 
 namespace TrueVote.Api.Services
 {
-    public interface IBallotValidator
+    public interface IHasher
     {
         Task<BallotHashModel> HashBallotAsync(BallotModel ballot);
         Task<TimestampModel> HashBallotsAsync();
@@ -14,14 +14,14 @@ namespace TrueVote.Api.Services
         Task StoreBallotHashAsync(BallotHashModel ballotHashModel);
     }
 
-    public class BallotValidator : IBallotValidator
+    public class Hasher : IHasher
     {
         private readonly ITrueVoteDbContext _trueVoteDbContext;
         private readonly IOpenTimestampsClient _openTimestampsClient;
         private readonly IServiceBus _serviceBus;
         private readonly ILogger _log;
 
-        public BallotValidator(ILogger log, ITrueVoteDbContext trueVoteDbContext, IOpenTimestampsClient openTimestampsClient, IServiceBus serviceBus)
+        public Hasher(ILogger log, ITrueVoteDbContext trueVoteDbContext, IOpenTimestampsClient openTimestampsClient, IServiceBus serviceBus)
         {
             _trueVoteDbContext = trueVoteDbContext;
             _openTimestampsClient = openTimestampsClient;
@@ -57,9 +57,17 @@ namespace TrueVote.Api.Services
                 BallotHashId = Guid.NewGuid().ToString()
             };
 
-            // Store the BallotHash in Database
-            await StoreBallotHashAsync(ballotHashModel);
-            await _trueVoteDbContext.SaveChangesAsync();
+            try
+            {
+                // Store the BallotHash in Database
+                await StoreBallotHashAsync(ballotHashModel);
+                await _trueVoteDbContext.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                _log.LogError(ex, $"Error saving ballot hash to database: {ballot.BallotId}");
+                throw;
+            }
 
             var ballotHashJson = JsonConvert.SerializeObject(ballotHashModel, Formatting.Indented);
 
@@ -108,18 +116,26 @@ namespace TrueVote.Api.Services
             // TODO Do we need to wrap these 2 separate DB operations in a Transaction?
             // https://learn.microsoft.com/en-us/ef/ef6/saving/transactions#what-ef-does-by-default
 
-            // Store the timestamp in Database
-            await StoreTimestampAsync(timestamp);
-
-            // Update all the BallotHash models and Database with the new Timestamp
-            items.ToList().ForEach(e =>
+            try
             {
-                e.TimestampId = timestamp.TimestampId;
-                e.DateUpdated = UtcNowProviderFactory.GetProvider().UtcNow;
-                _trueVoteDbContext.BallotHashes.Update(e);
-            });
+                // Store the timestamp in Database
+                await StoreTimestampAsync(timestamp);
 
-            await _trueVoteDbContext.SaveChangesAsync();
+                // Update all the BallotHash models and Database with the new Timestamp
+                items.ToList().ForEach(e =>
+                {
+                    e.TimestampId = timestamp.TimestampId;
+                    e.DateUpdated = UtcNowProviderFactory.GetProvider().UtcNow;
+                    _trueVoteDbContext.BallotHashes.Update(e);
+                });
+
+                await _trueVoteDbContext.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                _log.LogError(ex, $"Error saving or updating timestamp to database: {timestamp.TimestampId}");
+                throw;
+            }
 
             var timestampJson = JsonConvert.SerializeObject(timestamp, Formatting.Indented);
 
