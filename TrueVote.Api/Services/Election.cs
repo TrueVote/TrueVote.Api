@@ -128,6 +128,28 @@ namespace TrueVote.Api.Services
             return CreatedAtAction(null, null, election);
         }
 
+        [NonAction]
+        public async Task<string> GenerateUniqueKeyAsync()
+        {
+            const int maxAttempts = 100; // Arbitrary limit to prevent infinite loop
+            var attempts = 0;
+
+            while (attempts < maxAttempts)
+            {
+                var uniqueKey = UniqueKeyGenerator.GenerateUniqueKey();
+
+                var keyExists = await _trueVoteDbContext.ElectionAccessCodes.CountAsync(eac => eac.AccessCode == uniqueKey) > 0;
+                if (!keyExists)
+                {
+                    return uniqueKey;
+                }
+
+                attempts++;
+            }
+
+            throw new Exception("Unable to generate a unique key after multiple attempts.");
+        }
+
         [HttpPost]
         [Authorize]
         [ServiceFilter(typeof(ValidateUserIdFilter))]
@@ -175,7 +197,16 @@ namespace TrueVote.Api.Services
 
             for (var i = 0; i < accessCodesRequest.NumberOfAccessCodes; i++)
             {
-                var uniqueKey = UniqueKeyGenerator.GenerateUniqueKey();
+                var uniqueKey = string.Empty;
+                try
+                {
+                    uniqueKey = await GenerateUniqueKeyAsync();
+                }
+                catch (Exception e)
+                {
+                    _log.LogError("HTTP trigger - CreateAccessCodes:End");
+                    return StatusCode(StatusCodes.Status500InternalServerError, new SecureString { Value = $"Error creating unique access code for Election: '{accessCodesRequest.ElectionId}'. Error: {e.Message}" });
+                }
 
                 var accessCode = new AccessCodeModel
                 {
