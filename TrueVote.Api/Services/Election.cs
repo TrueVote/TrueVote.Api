@@ -16,6 +16,7 @@ namespace TrueVote.Api.Services
     [ProducesResponseType(typeof(SecureString), StatusCodes.Status406NotAcceptable)]
     [ProducesResponseType(typeof(SecureString), StatusCodes.Status429TooManyRequests)]
     [ProducesResponseType(typeof(SecureString), StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(SecureString), StatusCodes.Status422UnprocessableEntity)]
     public class Election : ControllerBase
     {
         private readonly ILogger _log;
@@ -129,7 +130,7 @@ namespace TrueVote.Api.Services
         }
 
         [NonAction]
-        public async Task<string> GenerateUniqueKeyAsync()
+        public virtual async Task<string> GenerateUniqueKeyAsync()
         {
             const int maxAttempts = 100; // Arbitrary limit to prevent infinite loop
             var attempts = 0;
@@ -205,7 +206,7 @@ namespace TrueVote.Api.Services
                 catch (Exception e)
                 {
                     _log.LogError("HTTP trigger - CreateAccessCodes:End");
-                    return StatusCode(StatusCodes.Status500InternalServerError, new SecureString { Value = $"Error creating unique access code for Election: '{accessCodesRequest.ElectionId}'. Error: {e.Message}" });
+                    return UnprocessableEntity(new SecureString { Value = $"Error creating unique access code for Election: '{accessCodesRequest.ElectionId}'. Error: {e.Message}" });
                 }
 
                 var accessCode = new AccessCodeModel

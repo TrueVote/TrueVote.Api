@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using TrueVote.Api.Helpers;
 using TrueVote.Api.Models;
+using TrueVote.Api.Services;
 using TrueVote.Api.Tests.Helpers;
 using Xunit;
 using Xunit.Abstractions;
@@ -235,6 +236,30 @@ namespace TrueVote.Api.Tests.ServiceTests
             Assert.Contains("not found", val.Value.ToString());
 
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+        }
+
+        [Fact]
+        public async Task HandlesCreateAccessCodesUniqueKeyException()
+        {
+            var numberOfAccessCodes = 5;
+            var accessCodesRequest = new AccessCodesRequest { UserId = MoqData.MockUserData[0].UserId, ElectionId = MoqData.MockElectionData[0].ElectionId, NumberOfAccessCodes = numberOfAccessCodes, RequestDescription = "Test Harness" };
+            var validationResults = ValidationHelper.Validate(accessCodesRequest);
+            Assert.Empty(validationResults);
+
+            var electionApi = new Mock<Election>(_logHelper.Object, _moqDataAccessor.mockElectionContext.Object, _mockServiceBus.Object) { CallBase = true };
+            electionApi.Object.ControllerContext = _authControllerContext;
+            electionApi.Setup(e => e.GenerateUniqueKeyAsync()).Throws(new Exception("Unable to generate a unique key after multiple attempts"));
+
+            var ret = await electionApi.Object.CreateAccessCodes(accessCodesRequest);
+            Assert.NotNull(ret);
+            Assert.Equal(StatusCodes.Status422UnprocessableEntity, ((IStatusCodeActionResult) ret).StatusCode);
+
+            var val = (SecureString) (ret as ObjectResult).Value;
+            Assert.Contains("Error creating unique access code", val.Value.ToString());
+
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(1));
+            _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
+            _logHelper.Verify(LogLevel.Error, Times.Exactly(1));
         }
 
         [Fact]
