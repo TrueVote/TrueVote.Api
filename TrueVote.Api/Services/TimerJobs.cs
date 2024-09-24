@@ -7,6 +7,7 @@ namespace TrueVote.Api.Services
     {
         private readonly ILogger _log;
         private readonly IServiceProvider _serviceProvider;
+        // TODO AD-128 - Make these intervals environment settings
         private const int BALLOT_HASHING_INTERVAL_MINUTES = 10;
         private const int OPENTIMESTAMPS_STAMPING_INTERVAL_MINUTES = 30;
 
@@ -90,6 +91,7 @@ namespace TrueVote.Api.Services
         private Task ProcessPendingOpentimestamps(CancellationToken cancellationToken)
 #pragma warning restore IDE0060 // Remove unused parameter
         {
+            // TODO AD-128 Fill in body
             _log.LogDebug("End: ProcessPendingOpentimestamps");
 
             return Task.CompletedTask;
