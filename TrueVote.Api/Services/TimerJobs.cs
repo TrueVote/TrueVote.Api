@@ -49,11 +49,17 @@ namespace TrueVote.Api.Services
             try
             {
                 using var scope = _serviceProvider.CreateScope();
-                var hasher = scope.ServiceProvider.GetRequiredService<IHasher>();
                 var ballot = scope.ServiceProvider.GetRequiredService<Ballot>();
                 var ballotsWithoutHashes = await ballot.GetBallotsWithoutHashesAsync(cancellationToken);
+                if (ballotsWithoutHashes == null || ballotsWithoutHashes.Count == 0)
+                {
+                    _log.LogDebug("End: ProcessPendingBallots");
+
+                    return;
+                }
 
                 var tasks = new List<Task>();
+                var hasher = scope.ServiceProvider.GetRequiredService<IHasher>();
 
                 foreach (var b in ballotsWithoutHashes)
                 {
@@ -84,7 +90,7 @@ namespace TrueVote.Api.Services
         private Task ProcessPendingOpentimestamps(CancellationToken cancellationToken)
 #pragma warning restore IDE0060 // Remove unused parameter
         {
-            _log.LogDebug("ProcessPendingOpentimestamps");
+            _log.LogDebug("End: ProcessPendingOpentimestamps");
 
             return Task.CompletedTask;
         }
