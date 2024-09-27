@@ -270,3 +270,4 @@ version.json
 Version.cs
 swagger.json
 TrueVote.Api/appsettings.json
+TrueVote.Api/appsettings.Development.json
