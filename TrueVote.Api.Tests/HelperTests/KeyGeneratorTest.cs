@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using TrueVote.Api.Helpers;
 using TrueVote.Api.Tests.Helpers;
 using Xunit;
 using Xunit.Abstractions;
@@ -11,7 +10,7 @@ namespace TrueVote.Api.Tests.HelperTests
         [Fact]
         public void GenerateUniqueKeyReturnsValidString()
         {
-            var key = UniqueKeyGenerator.GenerateUniqueKey();
+            var key = _uniqueKeyGenerator.GenerateUniqueKey();
 
             Assert.NotNull(key);
             Assert.True(key.Length is >= 12 and <= 16);
@@ -26,7 +25,7 @@ namespace TrueVote.Api.Tests.HelperTests
 
             for (var i = 0; i < iterations; i++)
             {
-                var key = UniqueKeyGenerator.GenerateUniqueKey();
+                var key = _uniqueKeyGenerator.GenerateUniqueKey();
                 Assert.True(generatedKeys.Add(key), $"Duplicate key generated: {key}");
             }
 
@@ -41,7 +40,7 @@ namespace TrueVote.Api.Tests.HelperTests
 
             for (var i = 0; i < iterations; i++)
             {
-                var key = UniqueKeyGenerator.GenerateUniqueKey();
+                var key = _uniqueKeyGenerator.GenerateUniqueKey();
                 foreach (var c in key)
                 {
                     if (!charCounts.ContainsKey(c))

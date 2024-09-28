@@ -16,17 +16,20 @@ namespace TrueVote.Api.Services
     [ProducesResponseType(typeof(SecureString), StatusCodes.Status406NotAcceptable)]
     [ProducesResponseType(typeof(SecureString), StatusCodes.Status429TooManyRequests)]
     [ProducesResponseType(typeof(SecureString), StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(SecureString), StatusCodes.Status422UnprocessableEntity)]
     public class Election : ControllerBase
     {
         private readonly ILogger _log;
         private readonly ITrueVoteDbContext _trueVoteDbContext;
         private readonly IServiceBus _serviceBus;
+        private readonly IUniqueKeyGenerator _uniqueKeyGenerator;
 
-        public Election(ILogger log, ITrueVoteDbContext trueVoteDbContext, IServiceBus serviceBus)
+        public Election(ILogger log, ITrueVoteDbContext trueVoteDbContext, IServiceBus serviceBus, IUniqueKeyGenerator uniqueKeyGenerator)
         {
             _log = log;
             _trueVoteDbContext = trueVoteDbContext;
             _serviceBus = serviceBus;
+            _uniqueKeyGenerator = uniqueKeyGenerator;
         }
 
         [HttpPost]
@@ -128,6 +131,28 @@ namespace TrueVote.Api.Services
             return CreatedAtAction(null, null, election);
         }
 
+        [NonAction]
+        public virtual async Task<string> GenerateUniqueKeyAsync()
+        {
+            const int maxAttempts = 100; // Arbitrary limit to prevent infinite loop
+            var attempts = 0;
+
+            while (attempts < maxAttempts)
+            {
+                var uniqueKey = _uniqueKeyGenerator.GenerateUniqueKey();
+
+                var keyExists = await _trueVoteDbContext.ElectionAccessCodes.CountAsync(eac => eac.AccessCode == uniqueKey) > 0;
+                if (!keyExists)
+                {
+                    return uniqueKey;
+                }
+
+                attempts++;
+            }
+
+            throw new Exception("Unable to generate a unique key after multiple attempts.");
+        }
+
         [HttpPost]
         [Authorize]
         [ServiceFilter(typeof(ValidateUserIdFilter))]
@@ -175,7 +200,16 @@ namespace TrueVote.Api.Services
 
             for (var i = 0; i < accessCodesRequest.NumberOfAccessCodes; i++)
             {
-                var uniqueKey = UniqueKeyGenerator.GenerateUniqueKey();
+                var uniqueKey = string.Empty;
+                try
+                {
+                    uniqueKey = await GenerateUniqueKeyAsync();
+                }
+                catch (Exception e)
+                {
+                    _log.LogError("HTTP trigger - CreateAccessCodes:End");
+                    return UnprocessableEntity(new SecureString { Value = $"Error creating unique access code for Election: '{accessCodesRequest.ElectionId}'. Error: {e.Message}" });
+                }
 
                 var accessCode = new AccessCodeModel
                 {

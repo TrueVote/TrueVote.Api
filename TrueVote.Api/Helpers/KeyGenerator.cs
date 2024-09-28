@@ -3,12 +3,17 @@ using System.Security.Cryptography;
 #pragma warning disable SCS0005 // Weak random number generator.
 namespace TrueVote.Api.Helpers
 {
-    public static class UniqueKeyGenerator
+    public interface IUniqueKeyGenerator
+    {
+        string GenerateUniqueKey();
+    }
+
+    public class UniqueKeyGenerator : IUniqueKeyGenerator
     {
         private const string AllowedChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
         private static readonly Random random = new();
 
-        public static string GenerateUniqueKey()
+        public virtual string GenerateUniqueKey()
         {
             var length = random.Next(12, 17); // Random length between 12 and 16
             var randomBytes = new byte[length];
