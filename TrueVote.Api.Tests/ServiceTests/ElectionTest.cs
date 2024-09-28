@@ -263,6 +263,32 @@ namespace TrueVote.Api.Tests.ServiceTests
         }
 
         [Fact]
+        public async Task GenerateUniqueKeyHandlesNameCollision()
+        {
+            var numberOfAccessCodes = 5;
+            var accessCodesRequest = new AccessCodesRequest { UserId = MoqData.MockUserData[0].UserId, ElectionId = MoqData.MockElectionData[0].ElectionId, NumberOfAccessCodes = numberOfAccessCodes, RequestDescription = "Test Harness" };
+            var validationResults = ValidationHelper.Validate(accessCodesRequest);
+            Assert.Empty(validationResults);
+
+            var mockUniqueKeyGenerator = new Mock<IUniqueKeyGenerator>();
+            mockUniqueKeyGenerator.Setup(m => m.GenerateUniqueKey()).Returns("accesscode0");
+
+            var electionApi = new Mock<Election>(_logHelper.Object, _moqDataAccessor.mockElectionContext.Object, _mockServiceBus.Object, mockUniqueKeyGenerator.Object) { CallBase = true };
+            electionApi.Object.ControllerContext = _authControllerContext;
+
+            var ret = await electionApi.Object.CreateAccessCodes(accessCodesRequest);
+            Assert.NotNull(ret);
+            Assert.Equal(StatusCodes.Status422UnprocessableEntity, ((IStatusCodeActionResult) ret).StatusCode);
+
+            var val = (SecureString) (ret as ObjectResult).Value;
+            Assert.Contains("Unable to generate a unique key after multiple attempts", val.Value.ToString());
+
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(1));
+            _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
+            _logHelper.Verify(LogLevel.Error, Times.Exactly(1));
+        }
+
+        [Fact]
         public async Task CreatesAccessCodes()
         {
             var numberOfAccessCodes = 5;
