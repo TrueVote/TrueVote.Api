@@ -246,7 +246,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             var validationResults = ValidationHelper.Validate(accessCodesRequest);
             Assert.Empty(validationResults);
 
-            var electionApi = new Mock<Election>(_logHelper.Object, _moqDataAccessor.mockElectionContext.Object, _mockServiceBus.Object) { CallBase = true };
+            var electionApi = new Mock<Election>(_logHelper.Object, _moqDataAccessor.mockElectionContext.Object, _mockServiceBus.Object, _uniqueKeyGenerator) { CallBase = true };
             electionApi.Object.ControllerContext = _authControllerContext;
             electionApi.Setup(e => e.GenerateUniqueKeyAsync()).Throws(new Exception("Unable to generate a unique key after multiple attempts"));
 

@@ -35,6 +35,7 @@ namespace TrueVote.Api.Tests.Helpers
         protected readonly Mock<IServiceBus> _mockServiceBus;
         protected readonly Mock<IJwtHandler> _mockJwtHandler;
         protected readonly Mock<IRecursiveValidator> _mockRecursiveValidator;
+        protected readonly IUniqueKeyGenerator _uniqueKeyGenerator;
         protected readonly ControllerContext _authControllerContext;
         protected readonly MoqTrueVoteDbContext _trueVoteDbContext;
 
@@ -78,6 +79,7 @@ namespace TrueVote.Api.Tests.Helpers
             serviceCollection.TryAddScoped<IServiceBus, ServiceBus>();
             serviceCollection.TryAddScoped<IJwtHandler, JwtHandler>();
             serviceCollection.TryAddScoped<IRecursiveValidator, RecursiveValidator>();
+            serviceCollection.TryAddScoped<IUniqueKeyGenerator, UniqueKeyGenerator>();
             var serviceProvider = serviceCollection.BuildServiceProvider();
             _trueVoteDbContext = (MoqTrueVoteDbContext) serviceProvider.GetService(typeof(MoqTrueVoteDbContext));
 
@@ -104,9 +106,11 @@ namespace TrueVote.Api.Tests.Helpers
             _mockRecursiveValidator = new Mock<IRecursiveValidator>();
             _ = _mockRecursiveValidator.Setup(m => m.TryValidateObjectRecursive(It.IsAny<object>(), It.IsAny<ValidationContext>(), It.IsAny<List<ValidationResult>>())).Returns(true);
 
+            _uniqueKeyGenerator = new UniqueKeyGenerator();
+
             _moqDataAccessor = new MoqDataAccessor();
             _userApi = new User(_logHelper.Object, _moqDataAccessor.mockUserContext.Object, _mockServiceBus.Object, _mockJwtHandler.Object);
-            _electionApi = new Election(_logHelper.Object, _moqDataAccessor.mockElectionContext.Object, _mockServiceBus.Object);
+            _electionApi = new Election(_logHelper.Object, _moqDataAccessor.mockElectionContext.Object, _mockServiceBus.Object, _uniqueKeyGenerator);
             _hasherApi = new Hasher(_logHelper.Object, _moqDataAccessor.mockBallotContext.Object, _mockOpenTimestampsClient.Object, _mockServiceBus.Object);
             _ballotApi = new Ballot(_logHelper.Object, _moqDataAccessor.mockBallotContext.Object, _mockServiceBus.Object, _mockRecursiveValidator.Object);
             _raceApi = new Race(_logHelper.Object, _moqDataAccessor.mockRaceContext.Object, _mockServiceBus.Object);

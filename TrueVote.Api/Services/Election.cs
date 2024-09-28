@@ -22,12 +22,14 @@ namespace TrueVote.Api.Services
         private readonly ILogger _log;
         private readonly ITrueVoteDbContext _trueVoteDbContext;
         private readonly IServiceBus _serviceBus;
+        private readonly IUniqueKeyGenerator _uniqueKeyGenerator;
 
-        public Election(ILogger log, ITrueVoteDbContext trueVoteDbContext, IServiceBus serviceBus)
+        public Election(ILogger log, ITrueVoteDbContext trueVoteDbContext, IServiceBus serviceBus, IUniqueKeyGenerator uniqueKeyGenerator)
         {
             _log = log;
             _trueVoteDbContext = trueVoteDbContext;
             _serviceBus = serviceBus;
+            _uniqueKeyGenerator = uniqueKeyGenerator;
         }
 
         [HttpPost]
@@ -137,7 +139,7 @@ namespace TrueVote.Api.Services
 
             while (attempts < maxAttempts)
             {
-                var uniqueKey = UniqueKeyGenerator.GenerateUniqueKey();
+                var uniqueKey = _uniqueKeyGenerator.GenerateUniqueKey();
 
                 var keyExists = await _trueVoteDbContext.ElectionAccessCodes.CountAsync(eac => eac.AccessCode == uniqueKey) > 0;
                 if (!keyExists)

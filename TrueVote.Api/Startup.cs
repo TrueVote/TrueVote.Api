@@ -145,6 +145,7 @@ namespace TrueVote.Api
             services.TryAddScoped<IJwtHandler, JwtHandler>();
             services.TryAddScoped<IRecursiveValidator, RecursiveValidator>();
             services.TryAddSingleton<INamingConventions, TrueVoteNamingConventions>();
+            services.TryAddSingleton<IUniqueKeyGenerator, UniqueKeyGenerator>();
             services.TryAddSingleton(new Uri("https://a.pool.opentimestamps.org")); // TODO Need to pull the Timestamp URL from Config. Also, TrueVote needs to stand up its own Timestamp servers.
             services.AddHttpClient<IOpenTimestampsClient, OpenTimestampsClient>().ConfigureHttpClient((provider, client) =>
             {
