@@ -97,15 +97,15 @@ namespace TrueVote.Api.Models
         [DataType("integer")]
         [Range(0, int.MaxValue)]
         [JsonPropertyName("MaxNumberOfChoices")]
-        [JsonProperty(nameof(MaxNumberOfChoices), Required = Required.Default)]
-        public int? MaxNumberOfChoices { get; set; }
+        [JsonProperty(nameof(MaxNumberOfChoices), Required = Required.Always)]
+        public required int MaxNumberOfChoices { get; set; }
 
         [Description("Min Number of Choices")]
         [DataType("integer")]
         [Range(0, int.MaxValue)]
         [JsonPropertyName("MinNumberOfChoices")]
-        [JsonProperty(nameof(MinNumberOfChoices), Required = Required.Default)]
-        public int? MinNumberOfChoices { get; set; }
+        [JsonProperty(nameof(MinNumberOfChoices), Required = Required.Always)]
+        public required int MinNumberOfChoices { get; set; }
 
         [Required]
         [Description("List of BaseCandidates")]
