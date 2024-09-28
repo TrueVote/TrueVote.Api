@@ -5,12 +5,14 @@
   "Description": "Election for the great state of California. All eligibile California voters, use this election to make your voice heard!",
   "HeaderImageUrl": "/static/sample-elections/ca_secretary_of_state.png",
   "StartDate": "2023-11-06",
-  "EndDate": "2023-11-24",
-  "Races": [
+  "EndDate": "2024-11-24",
+  "BaseRaces": [
     {
       "Name": "Governor",
       "RaceType": 0,
-      "Candidates": [
+      "MinNumberOfChoices": 1,
+      "MaxNumberOfChoices": 1,
+      "BaseCandidates": [
         {
           "Name": "Kevin Brunner",
           "PartyAffiliation": "Democratic",
@@ -31,7 +33,9 @@
     {
       "Name": "County Commissioner",
       "RaceType": 0,
-      "Candidates": [
+      "MinNumberOfChoices": 0,
+      "MaxNumberOfChoices": 1,
+      "BaseCandidates": [
         {
           "Name": "Judy Tyack",
           "PartyAffiliation": "Republican",
@@ -50,9 +54,10 @@
     },
     {
       "Name": "Justice of State Supreme Court",
-      "RaceType": 1,
-      "RaceTypeMetadata": "2",
-      "Candidates": [
+      "RaceType": 2,
+      "MinNumberOfChoices": 2,
+      "MaxNumberOfChoices": 4,
+      "BaseCandidates": [
         {
           "Name": "Stephen Pitlick",
           "CandidateImageUrl": "/static/sample-elections/stephenpitlick.jpg"
@@ -74,7 +79,9 @@
     {
       "Name": "Proposition 18 - Water purification center",
       "RaceType": 0,
-      "Candidates": [
+      "MinNumberOfChoices": 0,
+      "MaxNumberOfChoices": 1,
+      "BaseCandidates": [
         {
           "Name": "For"
         },
@@ -92,11 +99,13 @@
   "HeaderImageUrl": "/static/sample-elections/Franklin-County-Logo.jpg",
   "StartDate": "2024-02-25",
   "EndDate": "2024-04-04",
-  "Races": [
+  "BaseRaces": [
     {
       "Name": "Governor",
       "RaceType": 0,
-      "Candidates": [
+      "MinNumberOfChoices": 0,
+      "MaxNumberOfChoices": 1,
+      "BaseCandidates": [
         {
           "Name": "Jane Doe",
           "PartyAffiliation": "Democrat"
@@ -110,7 +119,9 @@
     {
       "Name": "Judge",
       "RaceType": 1,
-      "Candidates": [
+      "MinNumberOfChoices": 0,
+      "MaxNumberOfChoices": 2,
+      "BaseCandidates": [
         {
           "Name": "Larry Jones"
         },
@@ -128,7 +139,9 @@
     {
       "Name": "Proposition 32 - Traffic analysis funding",
       "RaceType": 0,
-      "Candidates": [
+      "MinNumberOfChoices": 0,
+      "MaxNumberOfChoices": 0,
+      "BaseCandidates": [
         {
           "Name": "For"
         },
@@ -143,36 +156,36 @@
   "_comment": "NCAA Board of Governors",
   "Name": "NCAA Board of Governors",
   "Description": "Election for board of governors for the National Collegiate Athletic Association",
-  "HeaderImageUrl": "",
+  "HeaderImageUrl": ".",
   "StartDate": "2023-12-17",
   "EndDate": "2024-02-25",
-  "Races": []
+  "BaseRaces": []
 },
 {
   "_comment": "National Parks Conservation Association (NPCA)",
   "Name": "National Parks Conservation Association (NPCA)",
   "Description": "Election for National Parks Conservation Association (NPCA)",
-  "HeaderImageUrl": "",
+  "HeaderImageUrl": ".",
   "StartDate": "2023-12-17",
   "EndDate": "2024-02-25",
-  "Races": []
+  "BaseRaces": []
 },
 {
   "_comment": "United Auto Workers (UAW)",
   "Name": "United Auto Workers (UAW)",
   "Description": "Election for United Auto Workers (UAW)",
-  "HeaderImageUrl": "",
+  "HeaderImageUrl": ".",
   "StartDate": "2023-12-17",
   "EndDate": "2024-02-25",
-  "Races": []
+  "BaseRaces": []
 },
 {
   "_comment": "Society for the Prevention of Cruelty to Animals (SPCA) ",
   "Name": "Society for the Prevention of Cruelty to Animals (SPCA) ",
   "Description": "Election for Society for the Prevention of Cruelty to Animals (SPCA) ",
-  "HeaderImageUrl": "",
+  "HeaderImageUrl": ".",
   "StartDate": "2023-12-17",
   "EndDate": "2024-02-25",
-  "Races": []
+  "BaseRaces": []
 }
 ]
