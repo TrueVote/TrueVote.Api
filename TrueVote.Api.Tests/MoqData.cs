@@ -34,15 +34,16 @@ namespace TrueVote.Api.Tests
             new ElectionModel { ElectionId = "electionid3", Name = "Federal", DateCreated = createDate3, StartDate = startDate, EndDate = endDate, Description = "desc3", HeaderImageUrl = "url3", Races = [] },
             new ElectionModel { ElectionId = "electionid4", Name = "Association", DateCreated = createDate4, StartDate = DateTime.Now.AddDays(-30), EndDate = DateTime.Now.AddDays(-10), Description = "desc4", HeaderImageUrl = "url4", Races = [] },
             new ElectionModel { ElectionId = "electionid5", Name = "Union", DateCreated = createDate5, StartDate = DateTime.Now.AddDays(10), EndDate = DateTime.Now.AddDays(30), Description = "desc5", HeaderImageUrl = "url5", Races = [] },
+            new ElectionModel { ElectionId = "electionid6", Name = "Shim", DateCreated = createDate5, StartDate = DateTime.Now.AddDays(10), EndDate = DateTime.Now.AddDays(30), Description = "desc6", HeaderImageUrl = "url6", Races = [] },
         };
 
         public static List<BallotModel> MockBallotData => new()
         {
-            new BallotModel { BallotId = "ballotid1", DateCreated = createDate, Election = MockElectionData[0] },
-            new BallotModel { BallotId = "ballotid2", DateCreated = createDate2, Election = MockElectionData[0] },
-            new BallotModel { BallotId = "ballotid3", DateCreated = createDate3, Election = MockElectionData[0] },
-            new BallotModel { BallotId = "ballotid4", DateCreated = createDate4, Election = MockElectionData[3] },
-            new BallotModel { BallotId = "ballotid5", DateCreated = createDate5, Election = MockElectionData[4] },
+            new BallotModel { BallotId = "ballotid1", DateCreated = createDate, Election = MockElectionData[0], ElectionId = MockElectionData[0].ElectionId },
+            new BallotModel { BallotId = "ballotid2", DateCreated = createDate2, Election = MockElectionData[0], ElectionId = MockElectionData[0].ElectionId },
+            new BallotModel { BallotId = "ballotid3", DateCreated = createDate3, Election = MockElectionData[0], ElectionId = MockElectionData[0].ElectionId },
+            new BallotModel { BallotId = "ballotid4", DateCreated = createDate4, Election = MockElectionData[3], ElectionId = MockElectionData[3].ElectionId },
+            new BallotModel { BallotId = "ballotid5", DateCreated = createDate5, Election = MockElectionData[4], ElectionId = MockElectionData[4].ElectionId },
         };
 
         public static List<CandidateModel> MockCandidateData => new()
