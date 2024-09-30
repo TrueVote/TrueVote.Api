@@ -103,7 +103,7 @@ namespace TrueVote.Api.Services
                 return Conflict(new SecureString { Value = $"AccessCode: '{usedAccessCode.AccessCode}' already used" });
             }
 
-            var ballot = new BallotModel { Election = bindSubmitBallotModel.Election, BallotId = Guid.NewGuid().ToString(), DateCreated = now };
+            var ballot = new BallotModel { Election = bindSubmitBallotModel.Election, ElectionId = bindSubmitBallotModel.Election.ElectionId, BallotId = Guid.NewGuid().ToString(), DateCreated = now };
 
             // TODO Localize .Message
             var submitBallotResponse = new SubmitBallotModelResponse

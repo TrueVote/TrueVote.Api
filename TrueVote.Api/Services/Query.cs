@@ -93,5 +93,50 @@ namespace TrueVote.Api.Services
 
             return items;
         }
+
+        public async Task<ElectionResults> GetElectionResultsByElectionId([GraphQLName("ElectionId")] string ElectionId)
+        {
+            // Step 1: Fetch Ballots with the given ElectionId
+            var ballots = await _trueVoteDbContext.Ballots.Where(b => b.ElectionId == ElectionId).ToListAsync();
+
+            if (ballots.Count == 0)
+            {
+                return new ElectionResults
+                {
+                    ElectionId = ElectionId,
+                    TotalBallots = 0,
+                    Races = []
+                };
+            }
+
+            // Step 2: Count total ballots
+            var totalBallots = ballots.Count;
+
+            // Step 3: Aggregate results across all ballots
+            var raceResults = ballots.SelectMany(b => b.Election.Races.Select(r => new { Ballot = b, Race = r }))
+                .GroupBy(br => new { br.Race.RaceId, br.Race.Name })
+                .Select(g => new RaceResult
+                {
+                    RaceId = g.Key.RaceId,
+                    RaceName = g.Key.Name,
+                    CandidateResults = g.SelectMany(br => br.Race.Candidates)
+                        .GroupBy(c => new { c.CandidateId, c.Name })
+                        .Select(cg => new CandidateResult
+                        {
+                            CandidateId = cg.Key.CandidateId,
+                            CandidateName = cg.Key.Name,
+                            TotalVotes = cg.Count(c => c.Selected)
+                        })
+                        .ToList()
+                })
+                .ToList();
+
+            return new ElectionResults
+            {
+                ElectionId = ElectionId,
+                TotalBallots = totalBallots,
+                Races = raceResults
+            };
+        }
     }
 }

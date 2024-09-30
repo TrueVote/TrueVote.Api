@@ -78,6 +78,14 @@ namespace TrueVote.Api.Models
         public required string BallotId { get; set; }
 
         [Required]
+        [Description("Election Id")]
+        [MaxLength(2048)]
+        [DataType(DataType.Text)]
+        [JsonPropertyName("ElectionId")]
+        [JsonProperty(nameof(ElectionId), Required = Required.Always)]
+        public required string ElectionId { get; set; }
+
+        [Required]
         [MaxLength(2048)]
         [Description("Election for the Ballot")]
         [JsonPropertyName("Election")]

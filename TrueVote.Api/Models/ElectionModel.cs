@@ -333,4 +333,81 @@ namespace TrueVote.Api.Models
         [JsonProperty(nameof(AccessCode), Required = Required.Always)]
         public required string AccessCode { get; set; }
     }
+
+    public class ElectionResults
+    {
+        [Required]
+        [Description("Election Id")]
+        [MaxLength(2048)]
+        [DataType(DataType.Text)]
+        [JsonPropertyName("ElectionId")]
+        [JsonProperty(nameof(ElectionId), Required = Required.Always)]
+        public required string ElectionId { get; set; }
+
+        [Required]
+        [Description("Total number of ballots cast")]
+        [Range(0, int.MaxValue)]
+        [JsonPropertyName("TotalBallots")]
+        [JsonProperty(nameof(TotalBallots), Required = Required.Always)]
+        public required int TotalBallots { get; set; }
+
+        [Required]
+        [Description("List of Race Results")]
+        [DataType("List<RaceResult>")]
+        [JsonPropertyName("Races")]
+        [JsonProperty(nameof(Races), Required = Required.Always)]
+        public required List<RaceResult> Races { get; set; } = new List<RaceResult>();
+    }
+
+    public class RaceResult
+    {
+        [Required]
+        [Description("Race Id")]
+        [MaxLength(2048)]
+        [DataType(DataType.Text)]
+        [JsonPropertyName("RaceId")]
+        [JsonProperty(nameof(RaceId), Required = Required.Always)]
+        public required string RaceId { get; set; }
+
+        [Required]
+        [Description("Race Name")]
+        [MaxLength(2048)]
+        [DataType(DataType.Text)]
+        [JsonPropertyName("RaceName")]
+        [JsonProperty(nameof(RaceName), Required = Required.Always)]
+        public required string RaceName { get; set; }
+
+        [Required]
+        [Description("List of Candidate Results")]
+        [DataType("List<CandidateResult>")]
+        [JsonPropertyName("CandidateResults")]
+        [JsonProperty(nameof(CandidateResults), Required = Required.Always)]
+        public required List<CandidateResult> CandidateResults { get; set; } = new List<CandidateResult>();
+    }
+
+    public class CandidateResult
+    {
+        [Required]
+        [Description("Candidate Id")]
+        [MaxLength(2048)]
+        [DataType(DataType.Text)]
+        [JsonPropertyName("CandidateId")]
+        [JsonProperty(nameof(CandidateId), Required = Required.Always)]
+        public required string CandidateId { get; set; }
+
+        [Required]
+        [Description("Candidate Name")]
+        [MaxLength(2048)]
+        [DataType(DataType.Text)]
+        [JsonPropertyName("CandidateName")]
+        [JsonProperty(nameof(CandidateName), Required = Required.Always)]
+        public required string CandidateName { get; set; }
+
+        [Required]
+        [Description("Total votes received by the candidate")]
+        [Range(0, int.MaxValue)]
+        [JsonPropertyName("TotalVotes")]
+        [JsonProperty(nameof(TotalVotes), Required = Required.Always)]
+        public required int TotalVotes { get; set; }
+    }
 }
