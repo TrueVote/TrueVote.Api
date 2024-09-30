@@ -34,7 +34,7 @@ namespace TrueVote.Api.Tests
             new ElectionModel { ElectionId = "electionid3", Name = "Federal", DateCreated = createDate3, StartDate = startDate, EndDate = endDate, Description = "desc3", HeaderImageUrl = "url3", Races = [] },
             new ElectionModel { ElectionId = "electionid4", Name = "Association", DateCreated = createDate4, StartDate = DateTime.Now.AddDays(-30), EndDate = DateTime.Now.AddDays(-10), Description = "desc4", HeaderImageUrl = "url4", Races = [] },
             new ElectionModel { ElectionId = "electionid5", Name = "Union", DateCreated = createDate5, StartDate = DateTime.Now.AddDays(10), EndDate = DateTime.Now.AddDays(30), Description = "desc5", HeaderImageUrl = "url5", Races = [] },
-            new ElectionModel { ElectionId = "electionid6", Name = "Shim", DateCreated = createDate5, StartDate = DateTime.Now.AddDays(10), EndDate = DateTime.Now.AddDays(30), Description = "desc6", HeaderImageUrl = "url6", Races = [] },
+            new ElectionModel { ElectionId = "electionid6", Name = "Club", DateCreated = createDate5, StartDate = DateTime.Now.AddDays(10), EndDate = DateTime.Now.AddDays(30), Description = "desc6", HeaderImageUrl = "url6", Races = [] },
         };
 
         public static List<BallotModel> MockBallotData => new()

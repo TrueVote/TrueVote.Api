@@ -42,8 +42,8 @@ namespace TrueVote.Api.Tests.ServiceTests
 
             Assert.NotNull(ret);
             Assert.Equal("Union", ret[0].Name);
-            Assert.Equal("Association", ret[1].Name);
-            Assert.Equal(5, ret.Count);
+            Assert.Equal("Club", ret[1].Name);
+            Assert.Equal(6, ret.Count);
         }
 
         [Fact]
