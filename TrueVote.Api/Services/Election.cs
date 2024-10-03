@@ -70,7 +70,8 @@ namespace TrueVote.Api.Services
             var item = await _trueVoteDbContext.Elections.Where(e => e.ElectionId == ElectionId).FirstOrDefaultAsync();
             if (item == default)
             {
-                return NotFound();
+                _log.LogDebug("HTTP trigger - ElectionDetails:End");
+                return NotFound(new SecureString { Value = $"Election: '{ElectionId}' not found" });
             }
 
             _log.LogDebug("HTTP trigger - ElectionDetails:End");

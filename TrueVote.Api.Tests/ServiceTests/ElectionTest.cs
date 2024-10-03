@@ -402,5 +402,37 @@ namespace TrueVote.Api.Tests.ServiceTests
             _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
         }
+
+        [Fact]
+        public async Task ReturnsElectionDetails()
+        {
+            _electionApi.ControllerContext = _authControllerContext;
+            var ret = await _electionApi.ElectionDetails(MoqData.MockElectionData[0].ElectionId);
+            Assert.NotNull(ret);
+            Assert.Equal(StatusCodes.Status200OK, ((IStatusCodeActionResult) ret).StatusCode);
+
+            var val = (ElectionModel) (ret as OkObjectResult).Value;
+            Assert.NotNull(val);
+            Assert.Equal("California State", val.Name);
+
+            _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+        }
+
+        [Fact]
+        public async Task HandlesElectionDetailsNotFound()
+        {
+            _electionApi.ControllerContext = _authControllerContext;
+            var ret = await _electionApi.ElectionDetails("blah");
+            Assert.NotNull(ret);
+            Assert.Equal(StatusCodes.Status404NotFound, ((IStatusCodeActionResult) ret).StatusCode);
+
+            var val = (SecureString) (ret as NotFoundObjectResult).Value;
+            Assert.Contains("Election", val.Value.ToString());
+            Assert.Contains("not found", val.Value.ToString());
+
+            _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+        }
     }
 }
