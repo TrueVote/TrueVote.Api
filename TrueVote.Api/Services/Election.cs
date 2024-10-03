@@ -57,6 +57,28 @@ namespace TrueVote.Api.Services
         }
 
         [HttpGet]
+        [Route("election")]
+        [Produces(typeof(ElectionModel))]
+        [Description("Returns an Election")]
+        [ProducesResponseType(typeof(ElectionModel), StatusCodes.Status200OK)]
+        public async Task<IActionResult> ElectionDetails([FromQuery] string ElectionId)
+        {
+            _log.LogDebug("HTTP trigger - ElectionDetails:Begin");
+
+            _log.LogInformation($"Request Data: {ElectionId}");
+
+            var item = await _trueVoteDbContext.Elections.Where(e => e.ElectionId == ElectionId).FirstOrDefaultAsync();
+            if (item == default)
+            {
+                return NotFound();
+            }
+
+            _log.LogDebug("HTTP trigger - ElectionDetails:End");
+
+            return Ok(item);
+        }
+
+        [HttpGet]
         [Route("election/find")]
         [Produces(typeof(ElectionModelList))]
         [Description("Returns collection of Elections")]
