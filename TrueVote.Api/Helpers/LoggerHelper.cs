@@ -39,6 +39,7 @@ namespace TrueVote.Api.Helpers
                 _log.Log(logLevel, eventId, state, exception, formatter);
                 if (logLevel >= LogLevel.Error)
                 {
+                    // AD-133 TODO - Fails with no network
                     _serviceBus.SendAsync(message).Wait();
                 }
             }
