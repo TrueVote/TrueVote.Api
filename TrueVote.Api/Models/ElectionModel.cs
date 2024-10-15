@@ -1,4 +1,5 @@
 using Newtonsoft.Json;
+using Swashbuckle.AspNetCore.Annotations;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
@@ -334,6 +335,7 @@ namespace TrueVote.Api.Models
         public required string AccessCode { get; set; }
     }
 
+    [SwaggerSchema]
     public class ElectionResults
     {
         [Required]
@@ -359,6 +361,7 @@ namespace TrueVote.Api.Models
         public required List<RaceResult> Races { get; set; } = new List<RaceResult>();
     }
 
+    [SwaggerSchema]
     public class RaceResult
     {
         [Required]
@@ -385,6 +388,7 @@ namespace TrueVote.Api.Models
         public required List<CandidateResult> CandidateResults { get; set; } = new List<CandidateResult>();
     }
 
+    [SwaggerSchema]
     public class CandidateResult
     {
         [Required]
