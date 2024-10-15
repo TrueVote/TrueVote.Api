@@ -62,6 +62,13 @@ namespace TrueVote.Api
                     Url = baseUrl
                 });
                 o.EnableAnnotations();
+                o.SchemaFilter<AddCustomModelsFilter>();
+
+                // Explicitly tell Swagger to include these models
+                o.DocumentFilter<CustomModelDocumentFilter<ElectionResults>>();
+                o.DocumentFilter<CustomModelDocumentFilter<RaceResult>>();
+                o.DocumentFilter<CustomModelDocumentFilter<CandidateResult>>();
+
                 o.SwaggerDoc("v1", new OpenApiInfo()
                 {
                     Version = "1.0.0",
@@ -500,6 +507,30 @@ namespace TrueVote.Api
             {
                 context.Result = new ForbidResult();
             }
+        }
+    }
+
+    [ExcludeFromCodeCoverage]
+    public class AddCustomModelsFilter : ISchemaFilter
+    {
+        public void Apply(OpenApiSchema schema, SchemaFilterContext context)
+        {
+            if (context.Type == typeof(ElectionResults) ||
+                context.Type == typeof(RaceResult) ||
+                context.Type == typeof(CandidateResult))
+            {
+                // This will force Swagger to generate a schema for these types
+                _ = schema.Properties;
+            }
+        }
+    }
+
+    [ExcludeFromCodeCoverage]
+    public class CustomModelDocumentFilter<T> : IDocumentFilter where T : class
+    {
+        public void Apply(OpenApiDocument swaggerDoc, DocumentFilterContext context)
+        {
+            context.SchemaGenerator.GenerateSchema(typeof(T), context.SchemaRepository);
         }
     }
 
