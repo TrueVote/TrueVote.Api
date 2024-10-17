@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using System.Diagnostics.CodeAnalysis;
 using TrueVote.Api.Interfaces;
 using TrueVote.Api.Models;
 
@@ -137,6 +138,17 @@ namespace TrueVote.Api.Services
                 TotalBallots = totalBallots,
                 Races = raceResults
             };
+        }
+    }
+
+    [ExcludeFromCodeCoverage]
+    public class Subscription
+    {
+        [Subscribe]
+        [Topic("ElectionResultsUpdated.{electionId}")]
+        public ElectionResults ElectionResultsUpdated(string electionId, [EventMessage] ElectionResults results)
+        {
+            return results.ElectionId == electionId ? results : null;
         }
     }
 }
