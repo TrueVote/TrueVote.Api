@@ -149,6 +149,7 @@ namespace TrueVote.Api
                        .AddProvider(new CustomLoggerProvider(builder));
             });
             services.TryAddScoped<Query, Query>();
+            services.TryAddScoped<Subscription, Subscription>();
             services.TryAddScoped<IJwtHandler, JwtHandler>();
             services.TryAddScoped<IRecursiveValidator, RecursiveValidator>();
             services.TryAddSingleton<INamingConventions, TrueVoteNamingConventions>();
@@ -162,7 +163,10 @@ namespace TrueVote.Api
             services.TryAddScoped<IHasher, Hasher>();
             services.AddLogging();
             services.AddSingleton(typeof(ILogger), typeof(Logger<Startup>));
-            services.AddGraphQLServer().AddQueryType<Query>().BindRuntimeType<DateTime, UTCDateTimeFormatted>();
+            services.AddGraphQLServer().AddQueryType<Query>().BindRuntimeType<DateTime, UTCDateTimeFormatted>()
+                .AddSubscriptionType<Subscription>()
+                .AddInMemorySubscriptions();
+
             services.AddExceptionHandler<GlobalExceptionHandler>();
             services.AddProblemDetails();
             services.AddHostedService<TimerJobs>();
@@ -181,6 +185,7 @@ namespace TrueVote.Api
 
             app.UsePathBase("/api");
             app.UseOpenApi();
+            app.UseWebSockets();
 
             // Redirect /swagger and /swagger/index.html to /
             // Unfortunately, browser renders as /index.html

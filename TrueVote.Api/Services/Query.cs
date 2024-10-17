@@ -139,4 +139,14 @@ namespace TrueVote.Api.Services
             };
         }
     }
+
+    public class Subscription
+    {
+        [Subscribe]
+        [Topic("ElectionResultsUpdated.{electionId}")]
+        public ElectionResults ElectionResultsUpdated(string electionId, [EventMessage] ElectionResults results)
+        {
+            return results.ElectionId == electionId ? results : null;
+        }
+    }
 }

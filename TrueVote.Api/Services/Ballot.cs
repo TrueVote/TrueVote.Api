@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
+using HotChocolate.Subscriptions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -25,13 +26,17 @@ namespace TrueVote.Api.Services
         private readonly ITrueVoteDbContext _trueVoteDbContext;
         private readonly IServiceBus _serviceBus;
         private readonly IRecursiveValidator _recursiveValidator;
+        private readonly ITopicEventSender _eventSender;
+        private readonly Query _query;
 
-        public Ballot(ILogger log, ITrueVoteDbContext trueVoteDbContext, IServiceBus serviceBus, IRecursiveValidator recursiveValidator)
+        public Ballot(ILogger log, ITrueVoteDbContext trueVoteDbContext, IServiceBus serviceBus, IRecursiveValidator recursiveValidator, ITopicEventSender eventSender, Query query)
         {
             _log = log;
             _trueVoteDbContext = trueVoteDbContext;
             _serviceBus = serviceBus;
             _recursiveValidator = recursiveValidator;
+            _eventSender = eventSender;
+            _query = query;
         }
 
         [HttpPost]
@@ -139,6 +144,13 @@ namespace TrueVote.Api.Services
 
             // Post a message to Service Bus for this Ballot
             await _serviceBus.SendAsync($"New TrueVote Ballot successfully submitted. Election ID: {bindSubmitBallotModel.Election.ElectionId}, Ballot ID: {ballot.BallotId}");
+
+            // TODO AD-137 Should optimize this to not do it on every single ballot.
+            // Post a subscription event for client data refresh. This happens async to not hold up the return of the SubmitBallot() method
+            await _query.GetElectionResultsByElectionId(ballot.ElectionId).ContinueWith(async task => {
+                var updatedResults = await task;
+                await _eventSender.SendAsync($"{nameof(Subscription.ElectionResultsUpdated)}.{updatedResults.ElectionId}", updatedResults).ConfigureAwait(false);
+            }).ConfigureAwait(false);
 
             _log.LogDebug("HTTP trigger - SubmitBallot:End");
 
