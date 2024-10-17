@@ -1,3 +1,4 @@
+using HotChocolate.Subscriptions;
 using HotChocolate.Types.Descriptors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -9,6 +10,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.IO.Abstractions;
 using System.Security.Claims;
+using System.Threading;
 using System.Threading.Tasks;
 using TrueVote.Api.Helpers;
 using TrueVote.Api.Interfaces;
@@ -35,6 +37,7 @@ namespace TrueVote.Api.Tests.Helpers
         protected readonly Mock<IServiceBus> _mockServiceBus;
         protected readonly Mock<IJwtHandler> _mockJwtHandler;
         protected readonly Mock<IRecursiveValidator> _mockRecursiveValidator;
+        protected readonly Mock<ITopicEventSender> _mockTopicEventSender;
         protected readonly IUniqueKeyGenerator _uniqueKeyGenerator;
         protected readonly ControllerContext _authControllerContext;
         protected readonly MoqTrueVoteDbContext _trueVoteDbContext;
@@ -106,17 +109,21 @@ namespace TrueVote.Api.Tests.Helpers
             _mockRecursiveValidator = new Mock<IRecursiveValidator>();
             _ = _mockRecursiveValidator.Setup(m => m.TryValidateObjectRecursive(It.IsAny<object>(), It.IsAny<ValidationContext>(), It.IsAny<List<ValidationResult>>())).Returns(true);
 
+            _mockTopicEventSender = new Mock<ITopicEventSender>();
+            _ = _mockTopicEventSender.Setup(m => m.SendAsync(It.IsAny<string>(), It.IsAny<object>(), It.IsAny<CancellationToken>()));
+
             _uniqueKeyGenerator = new UniqueKeyGenerator();
 
             _moqDataAccessor = new MoqDataAccessor();
+
+            _queryService = new Query(_trueVoteDbContext);
             _userApi = new User(_logHelper.Object, _moqDataAccessor.mockUserContext.Object, _mockServiceBus.Object, _mockJwtHandler.Object);
             _electionApi = new Election(_logHelper.Object, _moqDataAccessor.mockElectionContext.Object, _mockServiceBus.Object, _uniqueKeyGenerator);
             _hasherApi = new Hasher(_logHelper.Object, _moqDataAccessor.mockBallotContext.Object, _mockOpenTimestampsClient.Object, _mockServiceBus.Object);
-            _ballotApi = new Ballot(_logHelper.Object, _moqDataAccessor.mockBallotContext.Object, _mockServiceBus.Object, _mockRecursiveValidator.Object);
+            _ballotApi = new Ballot(_logHelper.Object, _moqDataAccessor.mockBallotContext.Object, _mockServiceBus.Object, _mockRecursiveValidator.Object, _mockTopicEventSender.Object, _queryService);
             _raceApi = new Race(_logHelper.Object, _moqDataAccessor.mockRaceContext.Object, _mockServiceBus.Object);
             _candidateApi = new Candidate(_logHelper.Object, _moqDataAccessor.mockCandidateContext.Object, _mockServiceBus.Object);
             _timestampApi = new Timestamp(_logHelper.Object, _moqDataAccessor.mockTimestampContext.Object);
-            _queryService = new Query(_trueVoteDbContext);
             _authControllerContext = AuthHelper(MoqData.MockUserData[0].UserId);
         }
     }

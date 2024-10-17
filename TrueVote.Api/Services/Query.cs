@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using System.Diagnostics.CodeAnalysis;
 using TrueVote.Api.Interfaces;
 using TrueVote.Api.Models;
 
@@ -140,6 +141,7 @@ namespace TrueVote.Api.Services
         }
     }
 
+    [ExcludeFromCodeCoverage]
     public class Subscription
     {
         [Subscribe]

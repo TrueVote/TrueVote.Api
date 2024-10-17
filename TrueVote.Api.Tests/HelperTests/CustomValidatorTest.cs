@@ -17,7 +17,7 @@ namespace TrueVote.Api.Tests.HelperTests
         {
             var testModel = new CandidateTestModel { MaxNumberOfChoices = 1, MinNumberOfChoices = 1, Candidates = MoqData.MockCandidateData };
             testModel.Candidates[0].Selected = true;
-            Assert.Single(testModel.Candidates.Where(c => c.Selected == true));
+            Assert.Single(testModel.Candidates, c => c.Selected == true);
 
             var validationResults = ValidationHelper.Validate(testModel);
             Assert.Empty(validationResults);
