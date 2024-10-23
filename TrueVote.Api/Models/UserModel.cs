@@ -4,9 +4,31 @@ using Nostr.Client.Messages;
 using System.ComponentModel;
 using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace TrueVote.Api.Models
 {
+    public static class UserRoles
+    {
+        public const string ElectionAdmin = "ElectionAdmin";
+        public const string Voter = "Voter";
+        public const string SystemAdmin = "SystemAdmin";
+    }
+
+    public static class UserRolesId
+    {
+        public const string ElectionAdminId = "election-admin";
+        public const string VoterId = "voter";
+        public const string SystemAdminId = "system-admin";
+    }
+
+    public static class UserRolesDescription
+    {
+        public const string ElectionAdminDesc = "Can manage elections";
+        public const string VoterDesc = "Can vote in elections";
+        public const string SystemAdminDesc = "System administrator";
+    }
+
     public class UserObj
     {
         [JsonPropertyName("User")]
@@ -219,5 +241,72 @@ namespace TrueVote.Api.Models
         [JsonPropertyName("Content")]
         [JsonProperty(nameof(Content), Required = Required.Always)]
         public required string Content { get; set; }
+    }
+
+    public class UserRoleModel
+    {
+        [Required]
+        [Description("User Role Id")]
+        [JsonPropertyName("UserRoleId")]
+        [JsonProperty(nameof(UserRoleId), Required = Required.Always)]
+        [Key]
+        public required string UserRoleId { get; set; } = Guid.NewGuid().ToString();
+
+        [Required]
+        [Description("User Id")]
+        [MaxLength(2048)]
+        [DataType(DataType.Text)]
+        [JsonPropertyName("UserId")]
+        [ForeignKey("User")]
+        [JsonProperty(nameof(UserId), Required = Required.Always)]
+        public required string UserId { get; set; }
+
+        [Required]
+        [Description("Role Id")]
+        [MaxLength(2048)]
+        [DataType(DataType.Text)]
+        [JsonPropertyName("RoleId")]
+        [ForeignKey("Role")]
+        [JsonProperty(nameof(RoleId), Required = Required.Always)]
+        public required string RoleId { get; set; }
+
+        [Required]
+        [Description("DateCreated")]
+        [DataType(DataType.Date)]
+        [JsonPropertyName("DateCreated")]
+        [JsonProperty(nameof(DateCreated), Required = Required.Default)]
+        public required DateTime DateCreated { get; set; } = DateTime.UtcNow;
+
+        // Navigation property
+        public virtual UserModel? User { get; set; }
+        public virtual RoleModel? Role { get; set; }
+    }
+
+    public class RoleModel
+    {
+        [Required]
+        [Description("Role Id")]
+        [JsonPropertyName("RoleId")]
+        [JsonProperty(nameof(RoleId), Required = Required.Always)]
+        [Key]
+        public required string RoleId { get; set; } = Guid.NewGuid().ToString();
+
+        [Required]
+        [Description("Role Name")]
+        [MaxLength(256)]
+        [DataType(DataType.Text)]
+        [JsonPropertyName("RoleName")]
+        [JsonProperty(nameof(RoleName), Required = Required.Always)]
+        public required string RoleName { get; set; }
+
+        [Description("Role Description")]
+        [MaxLength(1024)]
+        [DataType(DataType.Text)]
+        [JsonPropertyName("Description")]
+        [JsonProperty(nameof(Description))]
+        public string? Description { get; set; }
+
+        // Navigation property
+        public virtual ICollection<UserRoleModel> UserRoles { get; set; } = new List<UserRoleModel>();
     }
 }

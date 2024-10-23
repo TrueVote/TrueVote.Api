@@ -173,6 +173,7 @@ namespace TrueVote.Api
             services.AddExceptionHandler<GlobalExceptionHandler>();
             services.AddProblemDetails();
             services.AddHostedService<TimerJobs>();
+            services.AddDatabaseSeeder();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, TrueVoteDbContext dbContext)
@@ -240,6 +241,8 @@ namespace TrueVote.Api
 
             dbContext.EnsureCreatedAsync().GetAwaiter().GetResult();
 
+            _ = app.SeedDatabase();
+
             Console.WriteLine("HostingEnvironmentName: '{0}'", env.EnvironmentName);
         }
 
@@ -267,6 +270,8 @@ namespace TrueVote.Api
         public virtual required DbSet<AccessCodeModel> ElectionAccessCodes { get; set; }
         public virtual required DbSet<UsedAccessCodeModel> UsedAccessCodes { get; set; }
         public virtual required DbSet<ElectionUserBindingModel> ElectionUserBindings { get; set; }
+        public virtual required DbSet<RoleModel> Roles { get; set; }
+        public virtual required DbSet<UserRoleModel> UserRoles { get; set; }
 
         private readonly IConfiguration? _configuration;
         private readonly string? _connectionString;
@@ -383,6 +388,16 @@ namespace TrueVote.Api
             modelBuilder.Entity<ElectionUserBindingModel>().HasNoDiscriminator();
             modelBuilder.Entity<ElectionUserBindingModel>().HasPartitionKey(eub => eub.UserId);
             modelBuilder.Entity<ElectionUserBindingModel>().HasKey(eub => new { eub.UserId, eub.ElectionId });
+
+            modelBuilder.HasDefaultContainer("Roles");
+            modelBuilder.Entity<RoleModel>().ToContainer("Roles").HasPartitionKey(r => r.RoleId);
+
+            modelBuilder.HasDefaultContainer("UserRoles");
+            modelBuilder.Entity<UserRoleModel>().ToContainer("UserRoles").HasPartitionKey(ur => ur.UserId)
+            .HasOne<UserModel>()
+            .WithMany()
+            .HasForeignKey(ur => ur.UserId)
+            .HasPrincipalKey(u => u.UserId);
         }
     }
 
@@ -432,6 +447,15 @@ namespace TrueVote.Api
                     }
                 };
             }
+        }
+    }
+
+    [ExcludeFromCodeCoverage]
+    public class RequireRoleAttribute : AuthorizeAttribute
+    {
+        public RequireRoleAttribute(params string[] roles)
+        {
+            Roles = string.Join(",", roles);
         }
     }
 

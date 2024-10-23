@@ -146,6 +146,8 @@ namespace TrueVote.Api.Services
             };
 
             UserModel user;
+            var roles = new List<string>();
+            var now = UtcNowProviderFactory.GetProvider().UtcNow;
 
             // If the user isn't found, create a new user record
             if (items.Users.Count == 0)
@@ -168,14 +170,36 @@ namespace TrueVote.Api.Services
                 var userId = Guid.NewGuid().ToString();
 
                 user = await AddNewUser(new BaseUserModel { Email = baseUserModel.Email, FullName = baseUserModel.FullName, NostrPubKey = signInEventModel.PubKey }, userId);
+
+                // New user, just use a default role
+                roles.Add(UserRoles.Voter);
+
+                var userRoleModel = new UserRoleModel
+                {
+                    UserId = userId,
+                    RoleId = UserRolesId.VoterId,
+                    DateCreated = now,
+                    UserRoleId = Guid.NewGuid().ToString()
+                };
+
+                await _trueVoteDbContext.UserRoles.AddAsync(userRoleModel);
+                await _trueVoteDbContext.SaveChangesAsync();
             }
             else
             {
                 user = items.Users.FirstOrDefault();
+
+                // Existing user, need to query their roles
+                var userRoles = await _trueVoteDbContext.UserRoles.Where(ur => ur.UserId == user.UserId).ToListAsync();
+                if (userRoles.Any())
+                {
+                    var roleIds = userRoles.Select(ur => ur.RoleId).ToList();
+
+                    roles = await _trueVoteDbContext.Roles.Where(r => roleIds.Contains(r.RoleId)).Select(r => r.RoleName).ToListAsync();
+                }
             }
 
-            // TODO ["User"] is the only "role" for now. Here's where we could assign an elevated role
-            var token = _jwtHandler.GenerateToken(user.UserId, signInEventModel.PubKey, ["User"]);
+            var token = _jwtHandler.GenerateToken(user.UserId, signInEventModel.PubKey, roles);
 
             _log.LogDebug("HTTP trigger - SignIn:End");
 
