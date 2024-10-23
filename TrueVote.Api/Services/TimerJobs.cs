@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using System.Diagnostics.CodeAnalysis;
 
 namespace TrueVote.Api.Services
@@ -61,6 +62,7 @@ namespace TrueVote.Api.Services
 
                 var tasks = new List<Task>();
                 var hasher = scope.ServiceProvider.GetRequiredService<IHasher>();
+                var factory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<TrueVoteDbContext>>();
 
                 foreach (var b in ballotsWithoutHashes)
                 {
@@ -70,7 +72,8 @@ namespace TrueVote.Api.Services
                         {
                             _log.LogDebug("Hashing Ballot: {ballotId}", b.BallotId);
 
-                            await hasher.HashBallotAsync(b);
+                            using var trueVoteDbContext = factory.CreateDbContext();
+                            await hasher.HashBallotAsync(trueVoteDbContext, b);
                         }
                         catch (Exception ex)
                         {

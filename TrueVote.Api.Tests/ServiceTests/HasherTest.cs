@@ -20,7 +20,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         [Fact]
         public async Task HashesBallotDataAsync()
         {
-            var timestamp = await _hasherApi.HashBallotsAsync();
+            var timestamp = await _hasherApi.HashBallotsAsync(_trueVoteDbContext);
 
             Assert.NotNull(timestamp);
             Assert.Equal(18, timestamp.MerkleRoot[0]);
@@ -33,7 +33,7 @@ namespace TrueVote.Api.Tests.ServiceTests
 
             try
             {
-                var timestamp = await _hasherApi.HashBallotsAsync();
+                var timestamp = await _hasherApi.HashBallotsAsync(_trueVoteDbContext);
                 Assert.True(false);
             }
             catch (Exception ex)
@@ -59,11 +59,11 @@ namespace TrueVote.Api.Tests.ServiceTests
             mockBallotContext.Setup(m => m.Timestamps).Returns(MockTimestampsSet.Object);
             mockBallotContext.Setup(m => m.SaveChangesAsync()).Throws(new Exception("Storing data exception"));
 
-            var hasherApi = new Hasher(_logHelper.Object, mockBallotContext.Object, _mockOpenTimestampsClient.Object, _mockServiceBus.Object);
+            var hasherApi = new Hasher(_logHelper.Object, _mockOpenTimestampsClient.Object, _mockServiceBus.Object);
 
             try
             {
-                var timestamp = await hasherApi.HashBallotsAsync();
+                var timestamp = await hasherApi.HashBallotsAsync(mockBallotContext.Object);
                 Assert.True(false);
             }
             catch (Exception ex)
@@ -89,11 +89,11 @@ namespace TrueVote.Api.Tests.ServiceTests
             mockBallotContext.Setup(m => m.Timestamps).Returns(MockTimestampsSet.Object);
             mockBallotContext.Setup(m => m.SaveChangesAsync()).Throws(new Exception("Storing data exception"));
 
-            var hasherApi = new Hasher(_logHelper.Object, mockBallotContext.Object, _mockOpenTimestampsClient.Object, _mockServiceBus.Object);
+            var hasherApi = new Hasher(_logHelper.Object, _mockOpenTimestampsClient.Object, _mockServiceBus.Object);
 
             try
             {
-                var timestamp = await hasherApi.HashBallotAsync(MoqData.MockBallotData[4]);
+                var timestamp = await hasherApi.HashBallotAsync(mockBallotContext.Object, MoqData.MockBallotData[4]);
                 Assert.True(false);
             }
             catch (Exception ex)
@@ -109,7 +109,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         {
             try
             {
-                var ballotHashModel = await _hasherApi.HashBallotAsync(MoqData.MockBallotData[0]);
+                var ballotHashModel = await _hasherApi.HashBallotAsync(_trueVoteDbContext, MoqData.MockBallotData[0]);
                 Assert.True(false);
             }
             catch (Exception ex)
@@ -125,7 +125,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         {
             try
             {
-                var ballotHashModel = await _hasherApi.HashBallotAsync(MoqData.MockBallotData[2]);
+                var ballotHashModel = await _hasherApi.HashBallotAsync(_trueVoteDbContext, MoqData.MockBallotData[2]);
                 Assert.NotNull(ballotHashModel);
             }
             catch
@@ -149,11 +149,11 @@ namespace TrueVote.Api.Tests.ServiceTests
             mockBallotHashContext.Setup(m => m.Timestamps).Returns(MockTimestampsSet.Object);
             mockBallotHashContext.Setup(m => m.BallotHashes.AddAsync(It.IsAny<BallotHashModel>(), It.IsAny<CancellationToken>())).Throws(new Exception("Storing data exception"));
 
-            var hasherApi = new Hasher(_logHelper.Object, mockBallotHashContext.Object, _mockOpenTimestampsClient.Object, _mockServiceBus.Object);
+            var hasherApi = new Hasher(_logHelper.Object, _mockOpenTimestampsClient.Object, _mockServiceBus.Object);
 
             try
             {
-                await hasherApi.StoreBallotHashAsync(MoqData.MockBallotHashData[0]);
+                await hasherApi.StoreBallotHashAsync(mockBallotHashContext.Object, MoqData.MockBallotHashData[0]);
                 Assert.True(false);
             }
             catch (Exception ex)
@@ -179,11 +179,11 @@ namespace TrueVote.Api.Tests.ServiceTests
             mockTimestampContext.Setup(m => m.Timestamps).Returns(MockTimestampsSet.Object);
             mockTimestampContext.Setup(m => m.Timestamps.AddAsync(It.IsAny<TimestampModel>(), It.IsAny<CancellationToken>())).Throws(new Exception("Storing data exception"));
 
-            var hasherApi = new Hasher(_logHelper.Object, mockTimestampContext.Object, _mockOpenTimestampsClient.Object, _mockServiceBus.Object);
+            var hasherApi = new Hasher(_logHelper.Object, _mockOpenTimestampsClient.Object, _mockServiceBus.Object);
 
             try
             {
-                await hasherApi.StoreTimestampAsync(MoqData.MockTimestampData[0]);
+                await hasherApi.StoreTimestampAsync(mockTimestampContext.Object, MoqData.MockTimestampData[0]);
                 Assert.True(false);
             }
             catch (Exception ex)
