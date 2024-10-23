@@ -1,10 +1,12 @@
 using Microsoft.EntityFrameworkCore;
+using System.Diagnostics.CodeAnalysis;
 using TrueVote.Api.Helpers;
 using TrueVote.Api.Interfaces;
 using TrueVote.Api.Models;
 
 namespace TrueVote.Api
 {
+    [ExcludeFromCodeCoverage]
     public static class DatabaseSeederExtensions
     {
         public static IServiceCollection AddDatabaseSeeder(this IServiceCollection services)
@@ -14,6 +16,7 @@ namespace TrueVote.Api
         }
     }
 
+    [ExcludeFromCodeCoverage]
     public static class ServiceCollectionExtensions
     {
         public static async Task<IApplicationBuilder> SeedDatabase(this IApplicationBuilder app)
@@ -35,6 +38,7 @@ namespace TrueVote.Api
         }
     }
 
+    [ExcludeFromCodeCoverage]
     public class DatabaseSeeder
     {
         private readonly ITrueVoteDbContext _context;
@@ -109,6 +113,7 @@ namespace TrueVote.Api
                 throw;
             }
         }
+
         public async Task SeedRolesAsync()
         {
             try

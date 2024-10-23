@@ -255,10 +255,6 @@ namespace TrueVote.Api.Models
         [JsonPropertyName("DateCreated")]
         [JsonProperty(nameof(DateCreated), Required = Required.Default)]
         public required DateTime DateCreated { get; set; } = DateTime.UtcNow;
-
-        // Navigation property
-        public virtual UserModel? User { get; set; }
-        public virtual RoleModel? Role { get; set; }
     }
 
     public class RoleModel
@@ -374,18 +370,5 @@ namespace TrueVote.Api.Models
 
         [Description("System Administrator Name Constant")]
         public const string SystemAdminName = "SystemAdmin";
-
-        // Helper methods
-        [Description("Get Role Information by Role Name")]
-        public static RoleInfo? GetRoleByName([Description("Role Name to Search")] [Required] [MaxLength(256)] string name)
-        {
-            return AllRoles.FirstOrDefault(r => r.Name == name);
-        }
-
-        [Description("Get Role Information by Role ID")]
-        public static RoleInfo? GetRoleById([Description("Role ID to Search")] [Required] [MaxLength(256)] string id)
-        {
-            return AllRoles.FirstOrDefault(r => r.Id == id);
-        }
     }
 }
