@@ -8,31 +8,29 @@ namespace TrueVote.Api.Services
 {
     public interface IHasher
     {
-        Task<BallotHashModel> HashBallotAsync(BallotModel ballot);
-        Task<TimestampModel> HashBallotsAsync();
-        Task StoreTimestampAsync(TimestampModel timestamp);
-        Task StoreBallotHashAsync(BallotHashModel ballotHashModel);
+        Task<BallotHashModel> HashBallotAsync(ITrueVoteDbContext trueVoteDbContext, BallotModel ballot);
+        Task<TimestampModel> HashBallotsAsync(ITrueVoteDbContext trueVoteDbContext);
+        Task StoreTimestampAsync(ITrueVoteDbContext trueVoteDbContext, TimestampModel timestamp);
+        Task StoreBallotHashAsync(ITrueVoteDbContext trueVoteDbContext, BallotHashModel ballotHashModel);
     }
 
     public class Hasher : IHasher
     {
-        private readonly ITrueVoteDbContext _trueVoteDbContext;
         private readonly IOpenTimestampsClient _openTimestampsClient;
         private readonly IServiceBus _serviceBus;
         private readonly ILogger _log;
 
-        public Hasher(ILogger log, ITrueVoteDbContext trueVoteDbContext, IOpenTimestampsClient openTimestampsClient, IServiceBus serviceBus)
+        public Hasher(ILogger log, IOpenTimestampsClient openTimestampsClient, IServiceBus serviceBus)
         {
-            _trueVoteDbContext = trueVoteDbContext;
             _openTimestampsClient = openTimestampsClient;
             _serviceBus = serviceBus;
             _log = log;
         }
 
-        public async virtual Task<BallotHashModel> HashBallotAsync(BallotModel ballot)
+        public async virtual Task<BallotHashModel> HashBallotAsync(ITrueVoteDbContext trueVoteDbContext, BallotModel ballot)
         {
             // Determine if this ballot hash record already exists
-            var items = _trueVoteDbContext.BallotHashes.Where(e => e.BallotId == ballot.BallotId).ToList();
+            var items = trueVoteDbContext.BallotHashes.Where(e => e.BallotId == ballot.BallotId).ToList();
             if (items.Any())
             {
                 // TODO Localize msg
@@ -60,8 +58,8 @@ namespace TrueVote.Api.Services
             try
             {
                 // Store the BallotHash in Database
-                await StoreBallotHashAsync(ballotHashModel);
-                await _trueVoteDbContext.SaveChangesAsync();
+                await StoreBallotHashAsync(trueVoteDbContext, ballotHashModel);
+                await trueVoteDbContext.SaveChangesAsync();
             }
             catch (Exception ex)
             {
@@ -76,10 +74,10 @@ namespace TrueVote.Api.Services
             return ballotHashModel;
         }
 
-        public async virtual Task<TimestampModel> HashBallotsAsync()
+        public async virtual Task<TimestampModel> HashBallotsAsync(ITrueVoteDbContext trueVoteDbContext)
         {
             // Get all the ballots that don't have a TimestampId
-            var items = _trueVoteDbContext.BallotHashes.Where(e => e.TimestampId == null).OrderByDescending(e => e.DateCreated);
+            var items = trueVoteDbContext.BallotHashes.Where(e => e.TimestampId == null).OrderByDescending(e => e.DateCreated);
 
             // Generate Merkle root from data list
             var merkleRoot = MerkleTree.CalculateMerkleRoot(items.Select(e => e.ServerBallotHash).ToList());
@@ -119,17 +117,17 @@ namespace TrueVote.Api.Services
             try
             {
                 // Store the timestamp in Database
-                await StoreTimestampAsync(timestamp);
+                await StoreTimestampAsync(trueVoteDbContext, timestamp);
 
                 // Update all the BallotHash models and Database with the new Timestamp
                 items.ToList().ForEach(e =>
                 {
                     e.TimestampId = timestamp.TimestampId;
                     e.DateUpdated = UtcNowProviderFactory.GetProvider().UtcNow;
-                    _trueVoteDbContext.BallotHashes.Update(e);
+                    trueVoteDbContext.BallotHashes.Update(e);
                 });
 
-                await _trueVoteDbContext.SaveChangesAsync();
+                await trueVoteDbContext.SaveChangesAsync();
             }
             catch (Exception ex)
             {
@@ -144,11 +142,11 @@ namespace TrueVote.Api.Services
             return timestamp;
         }
 
-        public async virtual Task StoreTimestampAsync(TimestampModel timestamp)
+        public async virtual Task StoreTimestampAsync(ITrueVoteDbContext trueVoteDbContext, TimestampModel timestamp)
         {
             try
             {
-                await _trueVoteDbContext.Timestamps.AddAsync(timestamp);
+                await trueVoteDbContext.Timestamps.AddAsync(timestamp);
             }
             catch (Exception ex)
             {
@@ -157,11 +155,11 @@ namespace TrueVote.Api.Services
             }
         }
 
-        public async virtual Task StoreBallotHashAsync(BallotHashModel ballotHashModel)
+        public async virtual Task StoreBallotHashAsync(ITrueVoteDbContext trueVoteDbContext, BallotHashModel ballotHashModel)
         {
             try
             {
-                await _trueVoteDbContext.BallotHashes.AddAsync(ballotHashModel);
+                await trueVoteDbContext.BallotHashes.AddAsync(ballotHashModel);
             }
             catch (Exception ex)
             {

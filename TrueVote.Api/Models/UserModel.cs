@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using Nostr.Client.Messages;
 using System.ComponentModel;
 using System.Text.Json.Serialization;
+using Microsoft.EntityFrameworkCore;
 
 namespace TrueVote.Api.Models
 {
@@ -155,6 +156,7 @@ namespace TrueVote.Api.Models
         public required string Token { get; set; }
     }
 
+    [Owned]
     public class UserPreferencesModel
     {
         [Description("Notification: New Elections")]

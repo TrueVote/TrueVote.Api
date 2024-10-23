@@ -212,21 +212,21 @@ namespace TrueVote.Api.Tests
     // By implementing ITrueVoteDbContext, override the properties and set them to use Mocked data
     public class MoqTrueVoteDbContext : DbContext, ITrueVoteDbContext
     {
-        public virtual DbSet<UserModel> Users { get; set; }
-        public virtual DbSet<ElectionModel> Elections { get; set; }
-        public virtual DbSet<RaceModel> Races { get; set; }
-        public virtual DbSet<CandidateModel> Candidates { get; set; }
-        public virtual DbSet<BallotModel> Ballots { get; set; }
-        public virtual DbSet<TimestampModel> Timestamps { get; set; }
-        public virtual DbSet<BallotHashModel> BallotHashes { get; set; }
-        public virtual DbSet<FeedbackModel> Feedbacks { get; set; }
-        public virtual DbSet<AccessCodeModel> ElectionAccessCodes { get; set; }
-        public virtual DbSet<UsedAccessCodeModel> UsedAccessCodes { get; set; }
-        public virtual DbSet<ElectionUserBindingModel> ElectionUserBindings { get; set; }
+        public virtual required DbSet<UserModel> Users { get; set; }
+        public virtual required DbSet<ElectionModel> Elections { get; set; }
+        public virtual required DbSet<RaceModel> Races { get; set; }
+        public virtual required DbSet<CandidateModel> Candidates { get; set; }
+        public virtual required DbSet<BallotModel> Ballots { get; set; }
+        public virtual required DbSet<TimestampModel> Timestamps { get; set; }
+        public virtual required DbSet<BallotHashModel> BallotHashes { get; set; }
+        public virtual required DbSet<FeedbackModel> Feedbacks { get; set; }
+        public virtual required DbSet<AccessCodeModel> ElectionAccessCodes { get; set; }
+        public virtual required DbSet<UsedAccessCodeModel> UsedAccessCodes { get; set; }
+        public virtual required DbSet<ElectionUserBindingModel> ElectionUserBindings { get; set; }
 
         protected MoqDataAccessor _moqDataAccessor;
 
-        public MoqTrueVoteDbContext()
+        public MoqTrueVoteDbContext(DbContextOptions<MoqTrueVoteDbContext> options) : base(options)
         {
             _moqDataAccessor = new MoqDataAccessor();
 
@@ -243,6 +243,11 @@ namespace TrueVote.Api.Tests
             ElectionUserBindings = _moqDataAccessor.MockElectionUserBindingsSet.Object;
         }
 
+        // Keep parameterless constructor if needed
+        public MoqTrueVoteDbContext() : this(new DbContextOptionsBuilder<MoqTrueVoteDbContext>().UseInMemoryDatabase(databaseName: "TestDb").Options)
+        {
+        }
+
         public virtual async Task<bool> EnsureCreatedAsync()
         {
             return await Database.EnsureCreatedAsync();
@@ -251,6 +256,14 @@ namespace TrueVote.Api.Tests
         public virtual async Task<int> SaveChangesAsync()
         {
             return await base.SaveChangesAsync();
+        }
+
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            if (!optionsBuilder.IsConfigured)
+            {
+                optionsBuilder.UseInMemoryDatabase(databaseName: "TestDb");
+            }
         }
     }
 }

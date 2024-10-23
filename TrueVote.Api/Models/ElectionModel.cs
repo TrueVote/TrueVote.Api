@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using Swashbuckle.AspNetCore.Annotations;
 using System.ComponentModel;
@@ -150,6 +151,7 @@ namespace TrueVote.Api.Models
         }
     }
 
+    [PrimaryKey(nameof(RequestId), [nameof(ElectionId), nameof(AccessCode)])]
     public class AccessCodeModel
     {
         [Required]
@@ -226,6 +228,7 @@ namespace TrueVote.Api.Models
 
     // For DateCreated, only going to store YYYYMMDD, not the time. Because if we stored a very precise date,
     // it would be possible to bind to a BallotId which could reveal the User by using heuristics.
+    [PrimaryKey(nameof(ElectionId), [nameof(UserId)])]
     public class ElectionUserBindingModel
     {
         [Required]
