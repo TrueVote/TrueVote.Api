@@ -8,27 +8,6 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace TrueVote.Api.Models
 {
-    public static class UserRoles
-    {
-        public const string ElectionAdmin = "ElectionAdmin";
-        public const string Voter = "Voter";
-        public const string SystemAdmin = "SystemAdmin";
-    }
-
-    public static class UserRolesId
-    {
-        public const string ElectionAdminId = "election-admin";
-        public const string VoterId = "voter";
-        public const string SystemAdminId = "system-admin";
-    }
-
-    public static class UserRolesDescription
-    {
-        public const string ElectionAdminDesc = "Can manage elections";
-        public const string VoterDesc = "Can vote in elections";
-        public const string SystemAdminDesc = "System administrator";
-    }
-
     public class UserObj
     {
         [JsonPropertyName("User")]
@@ -308,5 +287,105 @@ namespace TrueVote.Api.Models
 
         // Navigation property
         public virtual ICollection<UserRoleModel> UserRoles { get; set; } = new List<UserRoleModel>();
+    }
+
+    public readonly record struct RoleInfo
+    {
+        [Required]
+        [Description("Role Name")]
+        [DataType(DataType.Text)]
+        [MaxLength(256)]
+        [JsonPropertyName("name")]
+        [JsonProperty(nameof(Name), Required = Required.Always)]
+        public string Name { get; init; }
+
+        [Required]
+        [Description("Role ID")]
+        [DataType(DataType.Text)]
+        [MaxLength(256)]
+        [JsonPropertyName("id")]
+        [JsonProperty(nameof(Id), Required = Required.Always)]
+        public string Id { get; init; }
+
+        [Required]
+        [Description("Role Description")]
+        [DataType(DataType.Text)]
+        [MaxLength(1024)]
+        [JsonPropertyName("description")]
+        [JsonProperty(nameof(Description), Required = Required.Always)]
+        public string Description { get; init; }
+
+        public RoleInfo(string Name, string Id, string Description)
+        {
+            (this.Name, this.Id, this.Description) = (Name, Id, Description);
+        }
+    }
+
+    [Description("User Roles Static Definitions")]
+    public static class UserRoles
+    {
+        // Role definitions
+        [Description("Election Administrator Role")]
+        public static readonly RoleInfo ElectionAdmin = new(
+            Name: "ElectionAdmin",
+            Id: "election-admin",
+            Description: "Can manage elections"
+        );
+
+        [Description("Voter Role")]
+        public static readonly RoleInfo Voter = new(
+            Name: "Voter",
+            Id: "voter",
+            Description: "Can vote in elections"
+        );
+
+        [Description("System Administrator Role")]
+        public static readonly RoleInfo SystemAdmin = new(
+            Name: "SystemAdmin",
+            Id: "system-admin",
+            Description: "System administrator"
+        );
+
+        // Constants for attribute usage (attributes require const values)
+        [Description("Election Administrator Role Constant")]
+        public const string ElectionAdmin_Role = "ElectionAdmin";
+
+        [Description("Voter Role Constant")]
+        public const string Voter_Role = "Voter";
+
+        [Description("System Administrator Role Constant")]
+        public const string SystemAdmin_Role = "SystemAdmin";
+
+        // Collection of all roles for iteration
+        [Description("Collection of All Available Roles")]
+        public static readonly IReadOnlyCollection<RoleInfo> AllRoles =
+        [
+            ElectionAdmin,
+            Voter,
+            SystemAdmin
+        ];
+
+        // Constants for attribute usage
+        [Description("Election Administrator Name Constant")]
+        public const string ElectionAdminName = "ElectionAdmin";
+
+        [Description("Voter Name Constant")]
+        public const string VoterName = "Voter";
+
+        [Description("System Administrator Name Constant")]
+        public const string SystemAdminName = "SystemAdmin";
+
+        // Helper methods
+        [Description("Get Role Information by Role Name")]
+        public static RoleInfo? GetRoleByName([Description("Role Name to Search")] [Required] [MaxLength(256)] string name)
+        {
+            return AllRoles.FirstOrDefault(r => r.Name == name);
+        }
+
+        [Description("Get Role Information by Role ID")]
+        public static RoleInfo? GetRoleById([Description("Role ID to Search")] [Required] [MaxLength(256)] string id)
+        {
+            return AllRoles.FirstOrDefault(r => r.Id == id);
+        }
     }
 }

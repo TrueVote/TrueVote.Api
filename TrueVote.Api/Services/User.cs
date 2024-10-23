@@ -172,12 +172,12 @@ namespace TrueVote.Api.Services
                 user = await AddNewUser(new BaseUserModel { Email = baseUserModel.Email, FullName = baseUserModel.FullName, NostrPubKey = signInEventModel.PubKey }, userId);
 
                 // New user, just use a default role
-                roles.Add(UserRoles.Voter);
+                roles.Add(UserRoles.Voter.Name);
 
                 var userRoleModel = new UserRoleModel
                 {
                     UserId = userId,
-                    RoleId = UserRolesId.VoterId,
+                    RoleId = UserRoles.Voter.Id,
                     DateCreated = now,
                     UserRoleId = Guid.NewGuid().ToString()
                 };

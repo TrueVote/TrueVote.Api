@@ -51,60 +51,57 @@ namespace TrueVote.Api
         public async Task SeedUserRolesAsync()
         {
             var now = UtcNowProviderFactory.GetProvider().UtcNow;
-
             try
             {
                 _log.LogInformation("Checking if user roles need to be seeded...");
 
                 var userIds = _configuration.GetSection("SystemAdminUserIds").Get<string[]>();
-
-                foreach (var u in userIds)
+                if (userIds == null || !userIds.Any())
                 {
-                    var userRoles = new[]
-                    {
-                        new UserRoleModel
-                        {
-                           UserId = u,
-                           RoleId = UserRolesId.ElectionAdminId,
-                           DateCreated = now,
-                           UserRoleId = Guid.NewGuid().ToString()
-                        },
-                        new UserRoleModel
-                        {
-                           UserId = u,
-                           RoleId = UserRolesId.SystemAdminId,
-                           DateCreated = now,
-                           UserRoleId = Guid.NewGuid().ToString()
-                        },
-                        new UserRoleModel
-                        {
-                           UserId = u,
-                           RoleId = UserRolesId.VoterId,
-                           DateCreated = now,
-                           UserRoleId = Guid.NewGuid().ToString()
-                        }
-                    };
-
-                    // Determine if user even exists
-                    var existingUser = await _context.Users.FirstOrDefaultAsync(r => r.UserId == u);
-                    if (existingUser == null)
-                    {
-                        continue;
-                    }
-
-                    foreach (var userRole in userRoles)
-                    {
-                        var existingUserRole = await _context.UserRoles.FirstOrDefaultAsync(r => r.UserId == userRole.UserId && r.RoleId == userRole.RoleId);
-                        if (existingUserRole == null)
-                        {
-                            _log.LogInformation("Seeding userRole: {UserRoleName}", userRole.RoleId);
-                            await _context.UserRoles.AddAsync(userRole);
-                        }
-                    }
+                    _log.LogWarning("No system admin user IDs configured for seeding");
+                    return;
                 }
 
-                await _context.SaveChangesAsync();
-                _log.LogInformation("User Role seeding completed successfully");
+                // Get all existing users that match our configured IDs
+                var existingUsers = await _context.Users.Where(u => userIds.Contains(u.UserId)).Select(u => u.UserId).ToListAsync();
+                if (existingUsers.Count == 0)
+                {
+                    _log.LogWarning("None of the configured user IDs exist in the database");
+                    return;
+                }
+
+                // Get existing user roles for these users to avoid duplicates
+                var existingUserRoles = await _context.UserRoles.Where(ur => existingUsers.Contains(ur.UserId)).Select(ur => new { ur.UserId, ur.RoleId }).ToListAsync();
+
+                var newUserRoles = new List<UserRoleModel>();
+
+                foreach (var userId in existingUsers)
+                {
+                    // Create role assignments for each role that doesn't already exist
+                    var userNewRoles = UserRoles.AllRoles.Where(role => !existingUserRoles.Any(er => er.UserId == userId && er.RoleId == role.Id))
+                        .Select(role => new UserRoleModel
+                        {
+                            UserId = userId,
+                            RoleId = role.Id,
+                            DateCreated = now,
+                            UserRoleId = Guid.NewGuid().ToString()
+                        });
+
+                    newUserRoles.AddRange(userNewRoles);
+                }
+
+                if (newUserRoles.Count != 0)
+                {
+                    foreach (var userRole in newUserRoles)
+                    {
+                        _log.LogInformation("Seeding user role: User {UserId} with Role {RoleId}", userRole.UserId, userRole.RoleId);
+                    }
+
+                    await _context.UserRoles.AddRangeAsync(newUserRoles);
+                    await _context.SaveChangesAsync();
+                }
+
+                _log.LogInformation("User Role seeding completed successfully. Added {Count} new role assignments", newUserRoles.Count);
             }
             catch (Exception ex)
             {
@@ -112,46 +109,25 @@ namespace TrueVote.Api
                 throw;
             }
         }
-
         public async Task SeedRolesAsync()
         {
             try
             {
                 _log.LogInformation("Checking if roles need to be seeded...");
 
-                var requiredRoles = new[]
+                foreach (var roleInfo in UserRoles.AllRoles)
                 {
-                    new RoleModel
-                    {
-                        RoleId = UserRolesId.ElectionAdminId,
-                        RoleName = UserRoles.ElectionAdmin,
-                        Description = UserRolesDescription.ElectionAdminDesc
-                    },
-                    new RoleModel
-                    {
-                        RoleId = UserRolesId.VoterId,
-                        RoleName = UserRoles.Voter,
-                        Description = UserRolesDescription.VoterDesc
-                    },
-                    new RoleModel
-                    {
-                        RoleId = UserRolesId.SystemAdminId,
-                        RoleName = UserRoles.SystemAdmin,
-                        Description = UserRolesDescription.SystemAdminDesc
-                    }
-                };
-
-                foreach (var role in requiredRoles)
-                {
-                    var existingRole = await _context.Roles.FirstOrDefaultAsync(r => r.RoleName == role.RoleName);
-
+                    var existingRole = await _context.Roles.FirstOrDefaultAsync(r => r.RoleId == roleInfo.Id);
                     if (existingRole == null)
                     {
-                        _log.LogInformation("Seeding role: {RoleName}", role.RoleName);
-                        await _context.Roles.AddAsync(role);
+                        await _context.Roles.AddAsync(new RoleModel
+                        {
+                            RoleId = roleInfo.Id,
+                            RoleName = roleInfo.Name,
+                            Description = roleInfo.Description
+                        });
                     }
                 }
-
                 await _context.SaveChangesAsync();
                 _log.LogInformation("Role seeding completed successfully");
             }

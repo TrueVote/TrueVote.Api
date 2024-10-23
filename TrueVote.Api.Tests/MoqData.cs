@@ -223,6 +223,8 @@ namespace TrueVote.Api.Tests
         public virtual required DbSet<AccessCodeModel> ElectionAccessCodes { get; set; }
         public virtual required DbSet<UsedAccessCodeModel> UsedAccessCodes { get; set; }
         public virtual required DbSet<ElectionUserBindingModel> ElectionUserBindings { get; set; }
+        public virtual required DbSet<RoleModel> Roles { get; set; }
+        public virtual required DbSet<UserRoleModel> UserRoles { get; set; }
 
         protected MoqDataAccessor _moqDataAccessor;
 

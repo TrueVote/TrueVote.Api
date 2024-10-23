@@ -34,7 +34,7 @@ namespace TrueVote.Api.Services
 
         [HttpPost]
         [Authorize]
-        [RequireRole(UserRoles.ElectionAdmin)]
+        [RequireRole(UserRoles.ElectionAdmin_Role)]
         [Route("election")]
         [Produces(typeof(ElectionModel))]
         [Description("Returns the added Election")]
@@ -181,7 +181,7 @@ namespace TrueVote.Api.Services
 
         [HttpPost]
         [Authorize]
-        [RequireRole(UserRoles.ElectionAdmin)]
+        [RequireRole(UserRoles.ElectionAdmin_Role)]
         [ServiceFilter(typeof(ValidateUserIdFilter))]
         [Route("election/createaccesscodes")]
         [Produces(typeof(AccessCodesResponse))]
