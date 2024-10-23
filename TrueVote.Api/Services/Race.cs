@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel;
@@ -30,6 +31,7 @@ namespace TrueVote.Api.Services
         }
 
         [HttpPost]
+        [Authorize]
         [Route("race")]
         [Produces(typeof(RaceModel))]
         [Description("Returns the added Race")]
@@ -53,6 +55,7 @@ namespace TrueVote.Api.Services
         }
 
         [HttpPost]
+        [Authorize]
         [Route("race/addcandidates")]
         [Produces(typeof(RaceModel))]
         [Description("Adds Candidates to a Race and returns the updated Race")]

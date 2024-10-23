@@ -33,6 +33,7 @@ namespace TrueVote.Api.Services
         }
 
         [HttpPost]
+        [Authorize]
         [Route("election")]
         [Produces(typeof(ElectionModel))]
         [Description("Returns the added Election")]
@@ -104,6 +105,7 @@ namespace TrueVote.Api.Services
         }
 
         [HttpPost]
+        [Authorize]
         [Route("election/addraces")]
         [Produces(typeof(ElectionModel))]
         [Description("Adds Races to an Election and returns the updated Election")]

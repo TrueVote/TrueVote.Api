@@ -37,6 +37,7 @@ namespace TrueVote.Api.Services
         }
 
         [HttpPost]
+        [Authorize]
         [Route("user")]
         [Produces(typeof(UserModel))]
         [Description("Creates a new User and returns the added User")]
