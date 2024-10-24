@@ -1,191 +1,497 @@
 [
-{
-  "_comment": "California Election Sample Data",
-  "Name": "California State Election",
-  "Description": "Election for the great state of California. All eligibile California voters, use this election to make your voice heard!",
-  "HeaderImageUrl": "/static/sample-elections/ca_secretary_of_state.png",
-  "StartDate": "2023-11-06",
-  "EndDate": "2024-11-24",
-  "BaseRaces": [
-    {
-      "Name": "Governor",
-      "RaceType": 0,
-      "MinNumberOfChoices": 1,
-      "MaxNumberOfChoices": 1,
-      "BaseCandidates": [
-        {
-          "Name": "Kevin Brunner",
-          "PartyAffiliation": "Democratic",
-          "CandidateImageUrl": "/static/sample-elections/kevinbrunner.jpg"
-        },
-        {
-          "Name": "Andrew Newman",
-          "PartyAffiliation": "Republican",
-          "CandidateImageUrl": "/static/sample-elections/andrewnewman.jpg"
-        },
-        {
-          "Name": "Ron O'Donnell",
-          "PartyAffiliation": "Libertarian",
-          "CandidateImageUrl": "/static/sample-elections/ronodonnell.jpg"
-        }
-      ]
-    },
-    {
-      "Name": "County Commissioner",
-      "RaceType": 0,
-      "MinNumberOfChoices": 0,
-      "MaxNumberOfChoices": 1,
-      "BaseCandidates": [
-        {
-          "Name": "Judy Tyack",
-          "PartyAffiliation": "Republican",
-          "CandidateImageUrl": "/static/sample-elections/judytyack.jpg"
-        },
-        {
-          "Name": "Sharon Goodrow",
-          "CandidateImageUrl": "/static/sample-elections/sharongoodrow.jpg"
-        },
-        {
-          "Name": "John R. Hood",
-          "PartyAffiliation": "Republican",
-          "CandidateImageUrl": "/static/sample-elections/johnhood.jpg"
-        }
-      ]
-    },
-    {
-      "Name": "Justice of State Supreme Court",
-      "RaceType": 2,
-      "MinNumberOfChoices": 2,
-      "MaxNumberOfChoices": 4,
-      "BaseCandidates": [
-        {
-          "Name": "Stephen Pitlick",
-          "CandidateImageUrl": "/static/sample-elections/stephenpitlick.jpg"
-        },
-        {
-          "Name": "Jason Roenick",
-          "CandidateImageUrl": "/static/sample-elections/jasonroenick.jpg"
-        },
-        {
-          "Name": "Lucy Lingren",
-          "CandidateImageUrl": "/static/sample-elections/lucylingren.jpg"
-        },
-        {
-          "Name": "Ian Danforth",
-          "CandidateImageUrl": "/static/sample-elections/iandanforth.jpg"
-        }
-      ]
-    },
-    {
-      "Name": "Proposition 18 - Water purification center",
-      "RaceType": 0,
-      "MinNumberOfChoices": 0,
-      "MaxNumberOfChoices": 1,
-      "BaseCandidates": [
-        {
-          "Name": "For"
-        },
-        {
-          "Name": "Against"
-        }
-      ]
-    }
-  ]
-},
-{
-  "_comment": "Ohio Election Sample Data",
-  "Name": "Franklin County Ohio Election",
-  "Description": "Election for the great state of Ohio, The Heart of it All. All eligibile Franklin County voters, use this election to make your voice heard!",
-  "HeaderImageUrl": "/static/sample-elections/Franklin-County-Logo.jpg",
-  "StartDate": "2024-02-25",
-  "EndDate": "2024-04-04",
-  "BaseRaces": [
-    {
-      "Name": "Governor",
-      "RaceType": 0,
-      "MinNumberOfChoices": 0,
-      "MaxNumberOfChoices": 1,
-      "BaseCandidates": [
-        {
-          "Name": "Jane Doe",
-          "PartyAffiliation": "Democrat"
-        },
-        {
-          "Name": "John Smith",
-          "PartyAffiliation": "Republican"
-        }
-      ]
-    },
-    {
-      "Name": "Judge",
-      "RaceType": 1,
-      "MinNumberOfChoices": 0,
-      "MaxNumberOfChoices": 2,
-      "BaseCandidates": [
-        {
-          "Name": "Larry Jones"
-        },
-        {
-          "Name": "Candice Leary"
-        },
-        {
-          "Name": "Stephan Wilkins"
-        },
-        {
-          "Name": "Lisa Thomas"
-        }
-      ]
-    },
-    {
-      "Name": "Proposition 32 - Traffic analysis funding",
-      "RaceType": 0,
-      "MinNumberOfChoices": 0,
-      "MaxNumberOfChoices": 0,
-      "BaseCandidates": [
-        {
-          "Name": "For"
-        },
-        {
-          "Name": "Against"
-        }
-      ]
-    }
-  ]
-},
-{
-  "_comment": "NCAA Board of Governors",
-  "Name": "NCAA Board of Governors",
-  "Description": "Election for board of governors for the National Collegiate Athletic Association",
-  "HeaderImageUrl": ".",
-  "StartDate": "2023-12-17",
-  "EndDate": "2024-02-25",
-  "BaseRaces": []
-},
-{
-  "_comment": "National Parks Conservation Association (NPCA)",
-  "Name": "National Parks Conservation Association (NPCA)",
-  "Description": "Election for National Parks Conservation Association (NPCA)",
-  "HeaderImageUrl": ".",
-  "StartDate": "2023-12-17",
-  "EndDate": "2024-02-25",
-  "BaseRaces": []
-},
-{
-  "_comment": "United Auto Workers (UAW)",
-  "Name": "United Auto Workers (UAW)",
-  "Description": "Election for United Auto Workers (UAW)",
-  "HeaderImageUrl": ".",
-  "StartDate": "2023-12-17",
-  "EndDate": "2024-02-25",
-  "BaseRaces": []
-},
-{
-  "_comment": "Society for the Prevention of Cruelty to Animals (SPCA) ",
-  "Name": "Society for the Prevention of Cruelty to Animals (SPCA) ",
-  "Description": "Election for Society for the Prevention of Cruelty to Animals (SPCA) ",
-  "HeaderImageUrl": ".",
-  "StartDate": "2023-12-17",
-  "EndDate": "2024-02-25",
-  "BaseRaces": []
-}
+  {
+    "_comment": "California Election Sample Data",
+    "Name": "California State Election",
+    "Description": "Election for the great state of California. All eligibile California voters, use this election to make your voice heard!",
+    "HeaderImageUrl": "/static/sample-elections/ca_secretary_of_state.png",
+    "StartDate": "2023-11-06",
+    "EndDate": "2024-11-24",
+    "BaseRaces": [
+      {
+        "Name": "Governor",
+        "RaceType": 0,
+        "MinNumberOfChoices": 1,
+        "MaxNumberOfChoices": 1,
+        "BaseCandidates": [
+          {
+            "Name": "Kevin Brunner",
+            "PartyAffiliation": "Democratic",
+            "CandidateImageUrl": "/static/sample-elections/kevinbrunner.jpg"
+          },
+          {
+            "Name": "Andrew Newman",
+            "PartyAffiliation": "Republican",
+            "CandidateImageUrl": "/static/sample-elections/andrewnewman.jpg"
+          },
+          {
+            "Name": "Ron O'Donnell",
+            "PartyAffiliation": "Libertarian",
+            "CandidateImageUrl": "/static/sample-elections/ronodonnell.jpg"
+          }
+        ]
+      },
+      {
+        "Name": "County Commissioner",
+        "RaceType": 0,
+        "MinNumberOfChoices": 0,
+        "MaxNumberOfChoices": 1,
+        "BaseCandidates": [
+          {
+            "Name": "Judy Tyack",
+            "PartyAffiliation": "Republican",
+            "CandidateImageUrl": "/static/sample-elections/judytyack.jpg"
+          },
+          {
+            "Name": "Sharon Goodrow",
+            "CandidateImageUrl": "/static/sample-elections/sharongoodrow.jpg"
+          },
+          {
+            "Name": "John R. Hood",
+            "PartyAffiliation": "Republican",
+            "CandidateImageUrl": "/static/sample-elections/johnhood.jpg"
+          }
+        ]
+      },
+      {
+        "Name": "Justice of State Supreme Court",
+        "RaceType": 2,
+        "MinNumberOfChoices": 2,
+        "MaxNumberOfChoices": 4,
+        "BaseCandidates": [
+          {
+            "Name": "Stephen Pitlick",
+            "CandidateImageUrl": "/static/sample-elections/stephenpitlick.jpg"
+          },
+          {
+            "Name": "Jason Roenick",
+            "CandidateImageUrl": "/static/sample-elections/jasonroenick.jpg"
+          },
+          {
+            "Name": "Lucy Lingren",
+            "CandidateImageUrl": "/static/sample-elections/lucylingren.jpg"
+          },
+          {
+            "Name": "Ian Danforth",
+            "CandidateImageUrl": "/static/sample-elections/iandanforth.jpg"
+          }
+        ]
+      },
+      {
+        "Name": "Proposition 18 - Water purification center",
+        "RaceType": 0,
+        "MinNumberOfChoices": 0,
+        "MaxNumberOfChoices": 1,
+        "BaseCandidates": [
+          {
+            "Name": "For"
+          },
+          {
+            "Name": "Against"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "_comment": "Presidential General Election - Santa Barbara County, California",
+    "Name": "Presidential General Election - Santa Barbara County, California",
+    "Description": "Election for the great state of California. All eligibile California voters, use this election to make your voice heard!",
+    "HeaderImageUrl": "/static/sample-elections/ca_secretary_of_state.png",
+    "StartDate": "2024-10-22",
+    "EndDate": "2024-11-05",
+    "BaseRaces": [
+      {
+        "Name": "President and Vice President",
+        "RaceType": 0,
+        "MinNumberOfChoices": 0,
+        "MaxNumberOfChoices": 1,
+        "BaseCandidates": [
+          {
+            "Name": "Donald J. Trump and JD Vance",
+            "PartyAffiliation": "Republican",
+            "CandidateImageUrl": "/static/sample-elections/Donald_Trump_Square.png"
+          },
+          {
+            "Name": "Claudia De La Cruz and Karina Garcia",
+            "PartyAffiliation": "Peace and Freedom",
+            "CandidateImageUrl": "/static/sample-elections/cdlc.jpg"
+          },
+          {
+            "Name": "Kamala D. Harris and Tim Walz",
+            "PartyAffiliation": "Democratic",
+            "CandidateImageUrl": "/static/sample-elections/Kamala_Harris.png"
+          },
+          {
+            "Name": "Robert F. Kennedy Jr. and Nicole Shanahan",
+            "PartyAffiliation": "American Independent",
+            "CandidateImageUrl": "/static/sample-elections/RFKJrPres2024.jpg"
+          },
+          {
+            "Name": "Chase Oliver and Mike Ter Maat",
+            "PartyAffiliation": "Libertarian",
+            "CandidateImageUrl": "/static/sample-elections/ChaseOliversquare.png"
+          },
+          {
+            "Name": "Jill Stein and Rudolph Ware",
+            "PartyAffiliation": "Green",
+            "CandidateImageUrl": "/static/sample-elections/Steinsquare24.jpg"
+          }
+        ]
+      },
+      {
+        "Name": "United States Senator - Full Term",
+        "RaceType": 0,
+        "MinNumberOfChoices": 0,
+        "MaxNumberOfChoices": 1,
+        "BaseCandidates": [
+          {
+            "Name": "Steve Garvey",
+            "PartyAffiliation": "Republican",
+            "CandidateImageUrl": "/static/sample-elections/SteveGarvey.jpg"
+          },
+          {
+            "Name": "Adam B. Schiff",
+            "PartyAffiliation": "Democratic",
+            "CandidateImageUrl": "/static/sample-elections/Adam-Schiff.png"
+          }
+        ]
+      },
+      {
+        "Name": "United States Senator - Partial/Unexpired Term",
+        "RaceType": 0,
+        "MinNumberOfChoices": 0,
+        "MaxNumberOfChoices": 1,
+        "BaseCandidates": [
+          {
+            "Name": "Steve Garvey",
+            "PartyAffiliation": "Republican",
+            "CandidateImageUrl": "/static/sample-elections/SteveGarvey.jpg"
+          },
+          {
+            "Name": "Adam B. Schiff",
+            "PartyAffiliation": "Democratic",
+            "CandidateImageUrl": "/static/sample-elections/Adam-Schiff.png"
+          }
+        ]
+      },
+      {
+        "Name": "United States Representative - District 24",
+        "RaceType": 0,
+        "MinNumberOfChoices": 0,
+        "MaxNumberOfChoices": 1,
+        "BaseCandidates": [
+          {
+            "Name": "Thomas Cole",
+            "PartyAffiliation": "Republican",
+            "CandidateImageUrl": "/static/sample-elections/tcole.jpg"
+          },
+          {
+            "Name": "Salud Carbajal",
+            "PartyAffiliation": "Democratic",
+            "CandidateImageUrl": "/static/sample-elections/Salud_Carbajal_115th_Congress_photo.jpg"
+          }
+        ]
+      },
+      {
+        "Name": "State Senator - District 21",
+        "RaceType": 0,
+        "MinNumberOfChoices": 0,
+        "MaxNumberOfChoices": 1,
+        "BaseCandidates": [
+          {
+            "Name": "S. Monique Limón",
+            "PartyAffiliation": "Democratic",
+            "CandidateImageUrl": "/static/sample-elections/Monique_Limon_portrait.jpg"
+          },
+          {
+            "Name": "Elijah Mack",
+            "PartyAffiliation": "Republican",
+            "CandidateImageUrl": "/static/sample-elections/elisjahmack.jpg"
+          }
+        ]
+      },
+      {
+        "Name": "Member of the State Assembly - District 37",
+        "RaceType": 0,
+        "MinNumberOfChoices": 0,
+        "MaxNumberOfChoices": 1,
+        "BaseCandidates": [
+          {
+            "Name": "Sari M. Domingues",
+            "PartyAffiliation": "Republican",
+            "CandidateImageUrl": "/static/sample-elections/sdomingues.jpg"
+          },
+          {
+            "Name": "Gregg Hart",
+            "PartyAffiliation": "Democratic",
+            "CandidateImageUrl": "/static/sample-elections/gregghart.jpg"
+          }
+        ]
+      },
+      {
+        "Name": "Prop 2 - AUTHORIZES BONDS FOR PUBLIC SCHOOL AND COMMUNITY COLLEGE FACILITIES. LEGISLATIVE STATUTE.",
+        "RaceType": 0,
+        "MinNumberOfChoices": 0,
+        "MaxNumberOfChoices": 1,
+        "BaseCandidates": [
+          {
+            "Name": "Yes"
+          },
+          {
+            "Name": "No"
+          }
+        ]
+      },
+      {
+        "Name": "Prop 3 - CONSTITUTIONAL RIGHT TO MARRIAGE. LEGISLATIVE CONSTITUTIONAL AMENDMENT.",
+        "RaceType": 0,
+        "MinNumberOfChoices": 0,
+        "MaxNumberOfChoices": 1,
+        "BaseCandidates": [
+          {
+            "Name": "Yes"
+          },
+          {
+            "Name": "No"
+          }
+        ]
+      },
+      {
+        "Name": "Prop 4 - AUTHORIZES BONDS FOR SAFE DRINKING WATER, WILDFIRE PREVENTION, AND PROTECTING COMMUNITIES AND NATURAL LANDS FROM CLIMATE RISKS. LEGISLATIVE STATUTE.",
+        "RaceType": 0,
+        "MinNumberOfChoices": 0,
+        "MaxNumberOfChoices": 1,
+        "BaseCandidates": [
+          {
+            "Name": "Yes"
+          },
+          {
+            "Name": "No"
+          }
+        ]
+      },
+      {
+        "Name": "Prop 5 - ALLOWS LOCAL BONDS FOR AFFORDABLE HOUSING AND PUBLIC INFRASTRUCTURE WITH 55% VOTER APPROVAL. LEGISLATIVE CONSTITUTIONAL AMENDMENT.",
+        "RaceType": 0,
+        "MinNumberOfChoices": 0,
+        "MaxNumberOfChoices": 1,
+        "BaseCandidates": [
+          {
+            "Name": "Yes"
+          },
+          {
+            "Name": "No"
+          }
+        ]
+      },
+      {
+        "Name": "Prop 6 - ELIMINATES CONSTITUTIONAL PROVISION ALLOWING INVOLUNTARY SERVITUDE FOR INCARCERATED PERSONS. LEGISLATIVE CONSTITUTIONAL AMENDMENT.",
+        "RaceType": 0,
+        "MinNumberOfChoices": 0,
+        "MaxNumberOfChoices": 1,
+        "BaseCandidates": [
+          {
+            "Name": "Yes"
+          },
+          {
+            "Name": "No"
+          }
+        ]
+      },
+      {
+        "Name": "Prop 32 - RAISES MINIMUM WAGE. INITIATIVE STATUTE.",
+        "RaceType": 0,
+        "MinNumberOfChoices": 0,
+        "MaxNumberOfChoices": 1,
+        "BaseCandidates": [
+          {
+            "Name": "Yes"
+          },
+          {
+            "Name": "No"
+          }
+        ]
+      },
+      {
+        "Name": "Prop 33 - EXPANDS LOCAL GOVERNMENTS’ AUTHORITY TO ENACT RENT CONTROL ON RESIDENTIAL PROPERTY. INITIATIVE STATUTE.",
+        "RaceType": 0,
+        "MinNumberOfChoices": 0,
+        "MaxNumberOfChoices": 1,
+        "BaseCandidates": [
+          {
+            "Name": "Yes"
+          },
+          {
+            "Name": "No"
+          }
+        ]
+      },
+      {
+        "Name": "Prop 34 - RESTRICTS SPENDING OF PRESCRIPTION DRUG REVENUES BY CERTAIN HEALTH CARE PROVIDERS. INITIATIVE STATUTE.",
+        "RaceType": 0,
+        "MinNumberOfChoices": 0,
+        "MaxNumberOfChoices": 1,
+        "BaseCandidates": [
+          {
+            "Name": "Yes"
+          },
+          {
+            "Name": "No"
+          }
+        ]
+      },
+      {
+        "Name": "Prop 35 - PROVIDES PERMANENT FUNDING FOR MEDI-CAL HEALTH CARE SERVICES. INITIATIVE STATUTE.",
+        "RaceType": 0,
+        "MinNumberOfChoices": 0,
+        "MaxNumberOfChoices": 1,
+        "BaseCandidates": [
+          {
+            "Name": "Yes"
+          },
+          {
+            "Name": "No"
+          }
+        ]
+      },
+      {
+        "Name": "Prop 36 - ALLOWS FELONY CHARGES AND INCREASES SENTENCES FOR CERTAIN DRUG AND THEFT CRIMES. INITIATIVE STATUTE.",
+        "RaceType": 0,
+        "MinNumberOfChoices": 0,
+        "MaxNumberOfChoices": 1,
+        "BaseCandidates": [
+          {
+            "Name": "Yes"
+          },
+          {
+            "Name": "No"
+          }
+        ]
+      },
+      {
+        "Name": "Measure P2024 - SANTA BARBARA CITY COLLEGE MEASURE PRESERVING AFFORDABLE HIGHER EDUCATION/CAREER TRAINING WITHOUT INCREASING TAX RATES.",
+        "RaceType": 0,
+        "MinNumberOfChoices": 0,
+        "MaxNumberOfChoices": 1,
+        "BaseCandidates": [
+          {
+            "Name": "Bonds - Yes"
+          },
+          {
+            "Name": "Bonds - No"
+          }
+        ]
+      },
+      {
+        "Name": "Measure H2024 - SANTA BARBARA COUNTY ESSENTIAL COMMUNITY SERVICES MEASURE.",
+        "RaceType": 0,
+        "MinNumberOfChoices": 0,
+        "MaxNumberOfChoices": 1,
+        "BaseCandidates": [
+          {
+            "Name": "Yes"
+          },
+          {
+            "Name": "No"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "_comment": "Ohio Election Sample Data",
+    "Name": "Franklin County Ohio Election",
+    "Description": "Election for the great state of Ohio, The Heart of it All. All eligibile Franklin County voters, use this election to make your voice heard!",
+    "HeaderImageUrl": "/static/sample-elections/Franklin-County-Logo.jpg",
+    "StartDate": "2024-02-25",
+    "EndDate": "2024-04-04",
+    "BaseRaces": [
+      {
+        "Name": "Governor",
+        "RaceType": 0,
+        "MinNumberOfChoices": 0,
+        "MaxNumberOfChoices": 1,
+        "BaseCandidates": [
+          {
+            "Name": "Jane Doe",
+            "PartyAffiliation": "Democrat"
+          },
+          {
+            "Name": "John Smith",
+            "PartyAffiliation": "Republican"
+          }
+        ]
+      },
+      {
+        "Name": "Judge",
+        "RaceType": 1,
+        "MinNumberOfChoices": 0,
+        "MaxNumberOfChoices": 2,
+        "BaseCandidates": [
+          {
+            "Name": "Larry Jones"
+          },
+          {
+            "Name": "Candice Leary"
+          },
+          {
+            "Name": "Stephan Wilkins"
+          },
+          {
+            "Name": "Lisa Thomas"
+          }
+        ]
+      },
+      {
+        "Name": "Proposition 32 - Traffic analysis funding",
+        "RaceType": 0,
+        "MinNumberOfChoices": 0,
+        "MaxNumberOfChoices": 0,
+        "BaseCandidates": [
+          {
+            "Name": "For"
+          },
+          {
+            "Name": "Against"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "_comment": "NCAA Board of Governors",
+    "Name": "NCAA Board of Governors",
+    "Description": "Election for board of governors for the National Collegiate Athletic Association",
+    "HeaderImageUrl": ".",
+    "StartDate": "2023-12-17",
+    "EndDate": "2024-02-25",
+    "BaseRaces": []
+  },
+  {
+    "_comment": "National Parks Conservation Association (NPCA)",
+    "Name": "National Parks Conservation Association (NPCA)",
+    "Description": "Election for National Parks Conservation Association (NPCA)",
+    "HeaderImageUrl": ".",
+    "StartDate": "2023-12-17",
+    "EndDate": "2024-02-25",
+    "BaseRaces": []
+  },
+  {
+    "_comment": "United Auto Workers (UAW)",
+    "Name": "United Auto Workers (UAW)",
+    "Description": "Election for United Auto Workers (UAW)",
+    "HeaderImageUrl": ".",
+    "StartDate": "2023-12-17",
+    "EndDate": "2024-02-25",
+    "BaseRaces": []
+  },
+  {
+    "_comment": "Society for the Prevention of Cruelty to Animals (SPCA)",
+    "Name": "Society for the Prevention of Cruelty to Animals (SPCA)",
+    "Description": "Election for Society for the Prevention of Cruelty to Animals (SPCA)",
+    "HeaderImageUrl": ".",
+    "StartDate": "2023-12-17",
+    "EndDate": "2024-02-25",
+    "BaseRaces": []
+  }
 ]
