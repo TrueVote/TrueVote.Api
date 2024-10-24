@@ -37,6 +37,7 @@ namespace TrueVote.Api.Services
         }
 
         [HttpPost]
+        [RequireRole(UserRoles.ElectionAdmin_Role)]
         [Authorize]
         [Route("user")]
         [Produces(typeof(UserModel))]

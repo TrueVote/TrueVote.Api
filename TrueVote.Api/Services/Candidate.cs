@@ -31,6 +31,7 @@ namespace TrueVote.Api.Services
 
         [HttpPost]
         [Authorize]
+        [RequireRole(UserRoles.ElectionAdmin_Role)]
         [Route("candidate")]
         [Produces(typeof(CandidateModel))]
         [Description("Returns the added Candidate")]

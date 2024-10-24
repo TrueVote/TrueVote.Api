@@ -107,6 +107,7 @@ namespace TrueVote.Api.Services
 
         [HttpPost]
         [Authorize]
+        [RequireRole(UserRoles.ElectionAdmin_Role)]
         [Route("election/addraces")]
         [Produces(typeof(ElectionModel))]
         [Description("Adds Races to an Election and returns the updated Election")]

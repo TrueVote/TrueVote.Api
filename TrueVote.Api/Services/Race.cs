@@ -32,6 +32,7 @@ namespace TrueVote.Api.Services
 
         [HttpPost]
         [Authorize]
+        [RequireRole(UserRoles.ElectionAdmin_Role)]
         [Route("race")]
         [Produces(typeof(RaceModel))]
         [Description("Returns the added Race")]
@@ -56,6 +57,7 @@ namespace TrueVote.Api.Services
 
         [HttpPost]
         [Authorize]
+        [RequireRole(UserRoles.ElectionAdmin_Role)]
         [Route("race/addcandidates")]
         [Produces(typeof(RaceModel))]
         [Description("Adds Candidates to a Race and returns the updated Race")]
