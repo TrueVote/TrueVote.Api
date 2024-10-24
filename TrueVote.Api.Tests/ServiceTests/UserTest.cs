@@ -247,6 +247,22 @@ namespace TrueVote.Api.Tests.ServiceTests
             var MockUserSet = DbMoqHelper.GetDbSet(mockUserDataQueryable);
             mockUserContext.Setup(m => m.Users).Returns(MockUserSet.Object);
 
+            var mockRoleDataQueryable = MoqData.MockRoleData.AsQueryable();
+            var MockRoleSet = DbMoqHelper.GetDbSet(mockRoleDataQueryable);
+            mockUserContext.Setup(m => m.Roles).Returns(MockRoleSet.Object);
+
+            var userRoleModel = new UserRoleModel
+            {
+                RoleId = UserRoles.Voter.Id,
+                DateCreated = utcTime.DateTime,
+                UserId = userId,
+                UserRoleId = "1"
+            };
+            var mockUserRoleData = new List<UserRoleModel> { userRoleModel };
+            var mockUserRoleDataQueryable = mockUserRoleData.AsQueryable();
+            var MockUserRoleSet = DbMoqHelper.GetDbSet(mockUserRoleDataQueryable);
+            mockUserContext.Setup(m => m.UserRoles).Returns(MockUserRoleSet.Object);
+
             // Simulate a client (e.g. TypeScript)
             var content = new BaseUserModel
             {

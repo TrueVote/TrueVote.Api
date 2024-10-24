@@ -4,6 +4,7 @@ using Nostr.Client.Messages;
 using System.ComponentModel;
 using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace TrueVote.Api.Models
 {
@@ -219,5 +220,155 @@ namespace TrueVote.Api.Models
         [JsonPropertyName("Content")]
         [JsonProperty(nameof(Content), Required = Required.Always)]
         public required string Content { get; set; }
+    }
+
+    public class UserRoleModel
+    {
+        [Required]
+        [Description("User Role Id")]
+        [JsonPropertyName("UserRoleId")]
+        [JsonProperty(nameof(UserRoleId), Required = Required.Always)]
+        [Key]
+        public required string UserRoleId { get; set; } = Guid.NewGuid().ToString();
+
+        [Required]
+        [Description("User Id")]
+        [MaxLength(2048)]
+        [DataType(DataType.Text)]
+        [JsonPropertyName("UserId")]
+        [ForeignKey("User")]
+        [JsonProperty(nameof(UserId), Required = Required.Always)]
+        public required string UserId { get; set; }
+
+        [Required]
+        [Description("Role Id")]
+        [MaxLength(2048)]
+        [DataType(DataType.Text)]
+        [JsonPropertyName("RoleId")]
+        [ForeignKey("Role")]
+        [JsonProperty(nameof(RoleId), Required = Required.Always)]
+        public required string RoleId { get; set; }
+
+        [Required]
+        [Description("DateCreated")]
+        [DataType(DataType.Date)]
+        [JsonPropertyName("DateCreated")]
+        [JsonProperty(nameof(DateCreated), Required = Required.Default)]
+        public required DateTime DateCreated { get; set; } = DateTime.UtcNow;
+    }
+
+    public class RoleModel
+    {
+        [Required]
+        [Description("Role Id")]
+        [JsonPropertyName("RoleId")]
+        [JsonProperty(nameof(RoleId), Required = Required.Always)]
+        [Key]
+        public required string RoleId { get; set; } = Guid.NewGuid().ToString();
+
+        [Required]
+        [Description("Role Name")]
+        [MaxLength(256)]
+        [DataType(DataType.Text)]
+        [JsonPropertyName("RoleName")]
+        [JsonProperty(nameof(RoleName), Required = Required.Always)]
+        public required string RoleName { get; set; }
+
+        [Description("Role Description")]
+        [MaxLength(1024)]
+        [DataType(DataType.Text)]
+        [JsonPropertyName("Description")]
+        [JsonProperty(nameof(Description))]
+        public string? Description { get; set; }
+
+        // Navigation property
+        public virtual ICollection<UserRoleModel> UserRoles { get; set; } = new List<UserRoleModel>();
+    }
+
+    public readonly record struct RoleInfo
+    {
+        [Required]
+        [Description("Role Name")]
+        [DataType(DataType.Text)]
+        [MaxLength(256)]
+        [JsonPropertyName("name")]
+        [JsonProperty(nameof(Name), Required = Required.Always)]
+        public string Name { get; init; }
+
+        [Required]
+        [Description("Role ID")]
+        [DataType(DataType.Text)]
+        [MaxLength(256)]
+        [JsonPropertyName("id")]
+        [JsonProperty(nameof(Id), Required = Required.Always)]
+        public string Id { get; init; }
+
+        [Required]
+        [Description("Role Description")]
+        [DataType(DataType.Text)]
+        [MaxLength(1024)]
+        [JsonPropertyName("description")]
+        [JsonProperty(nameof(Description), Required = Required.Always)]
+        public string Description { get; init; }
+
+        public RoleInfo(string Name, string Id, string Description)
+        {
+            (this.Name, this.Id, this.Description) = (Name, Id, Description);
+        }
+    }
+
+    [Description("User Roles Static Definitions")]
+    public static class UserRoles
+    {
+        // Role definitions
+        [Description("Election Administrator Role")]
+        public static readonly RoleInfo ElectionAdmin = new(
+            Name: "ElectionAdmin",
+            Id: "election-admin",
+            Description: "Can manage elections"
+        );
+
+        [Description("Voter Role")]
+        public static readonly RoleInfo Voter = new(
+            Name: "Voter",
+            Id: "voter",
+            Description: "Can vote in elections"
+        );
+
+        [Description("System Administrator Role")]
+        public static readonly RoleInfo SystemAdmin = new(
+            Name: "SystemAdmin",
+            Id: "system-admin",
+            Description: "System administrator"
+        );
+
+        // Constants for attribute usage (attributes require const values)
+        [Description("Election Administrator Role Constant")]
+        public const string ElectionAdmin_Role = "ElectionAdmin";
+
+        [Description("Voter Role Constant")]
+        public const string Voter_Role = "Voter";
+
+        [Description("System Administrator Role Constant")]
+        public const string SystemAdmin_Role = "SystemAdmin";
+
+        // Collection of all roles for iteration
+        [Description("Collection of All Available Roles")]
+        public static readonly IReadOnlyCollection<RoleInfo> AllRoles =
+        [
+            ElectionAdmin,
+            Voter,
+            SystemAdmin
+        ];
+
+        // Constants for attribute usage
+        [Description("Election Administrator Name Constant")]
+        public const string ElectionAdminName = "ElectionAdmin";
+
+        [Description("Voter Name Constant")]
+        public const string VoterName = "Voter";
+
+        [Description("System Administrator Name Constant")]
+        public const string SystemAdminName = "SystemAdmin";
     }
 }
