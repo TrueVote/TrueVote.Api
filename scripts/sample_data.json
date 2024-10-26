@@ -97,8 +97,8 @@
     "Name": "Presidential General Election - Santa Barbara County, California",
     "Description": "Election for the great state of California. All eligibile California voters, use this election to make your voice heard!",
     "HeaderImageUrl": "/static/sample-elections/ca_secretary_of_state.png",
-    "StartDate": "2024-10-22",
-    "EndDate": "2024-11-05",
+    "StartDate": "2024-10-22 13:00:00",
+    "EndDate": "2024-11-06 07:59:59",
     "BaseRaces": [
       {
         "Name": "President and Vice President",

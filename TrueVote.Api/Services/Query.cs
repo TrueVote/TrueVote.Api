@@ -97,23 +97,19 @@ namespace TrueVote.Api.Services
 
         public async Task<ElectionResults> GetElectionResultsByElectionId([GraphQLName("ElectionId")] string ElectionId)
         {
-            // Step 1: Fetch Ballots with the given ElectionId
             var ballots = await _trueVoteDbContext.Ballots.Where(b => b.ElectionId == ElectionId).ToListAsync();
-
             if (ballots.Count == 0)
             {
                 return new ElectionResults
                 {
                     ElectionId = ElectionId,
                     TotalBallots = 0,
+                    TotalBallotsHashed = 0,
                     Races = []
                 };
             }
 
-            // Step 2: Count total ballots
-            var totalBallots = ballots.Count;
-
-            // Step 3: Aggregate results across all ballots
+            // Aggregate results across all ballots
             var raceResults = ballots.SelectMany(b => b.Election.Races.Select(r => new { Ballot = b, Race = r }))
                 .GroupBy(br => new { br.Race.RaceId, br.Race.Name })
                 .Select(g => new RaceResult
@@ -132,10 +128,14 @@ namespace TrueVote.Api.Services
                 })
                 .ToList();
 
+            // TODO Optimize this. Across large data sets this is a big .Contains (IN clause). Use a batching pattern or reporting server, etc.
+            var ballotHashes = await _trueVoteDbContext.BallotHashes.Where(bh => ballots.Select(b => b.BallotId).Contains(bh.BallotId)).ToListAsync();
+
             return new ElectionResults
             {
                 ElectionId = ElectionId,
-                TotalBallots = totalBallots,
+                TotalBallots = ballots.Count,
+                TotalBallotsHashed = ballotHashes.Count,
                 Races = raceResults
             };
         }

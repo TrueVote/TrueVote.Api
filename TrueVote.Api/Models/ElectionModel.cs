@@ -357,6 +357,13 @@ namespace TrueVote.Api.Models
         public required int TotalBallots { get; set; }
 
         [Required]
+        [Description("Total number of ballots hashed")]
+        [Range(0, int.MaxValue)]
+        [JsonPropertyName("TotalBallotsHashed")]
+        [JsonProperty(nameof(TotalBallotsHashed), Required = Required.Always)]
+        public required int TotalBallotsHashed { get; set; }
+
+        [Required]
         [Description("List of Race Results")]
         [DataType("List<RaceResult>")]
         [JsonPropertyName("Races")]
