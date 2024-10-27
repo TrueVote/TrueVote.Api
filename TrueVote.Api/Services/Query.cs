@@ -151,10 +151,23 @@ namespace TrueVote.Api.Services
     public class Subscription
     {
         [Subscribe]
-        [Topic("ElectionResultsUpdated.{electionId}")]
-        public ElectionResults ElectionResultsUpdated(string electionId, [EventMessage] ElectionResults results)
+        [Topic("ElectionResultsUpdated.{ElectionId}")]
+        public ElectionResults ElectionResultsUpdated([EventMessage] ElectionResults results, [GraphQLName("ElectionId")] string ElectionId,  [GraphQLName("offset")] int offset = 0, [GraphQLName("limit")] int limit = 100)
         {
-            return results.ElectionId == electionId ? results : null;
+            if (results.ElectionId != ElectionId)
+                return null;
+
+            // Update the results to match the requested pagination
+            var paginatedItems = results.BallotIds.Items
+                .Skip(offset)
+                .Take(limit)
+                .ToList();
+
+            results.BallotIds.Items = paginatedItems;
+            results.BallotIds.Offset = offset;
+            results.BallotIds.Limit = limit;
+
+            return results;
         }
     }
 }
