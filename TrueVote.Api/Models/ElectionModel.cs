@@ -371,9 +371,9 @@ namespace TrueVote.Api.Models
         public required List<RaceResult> Races { get; set; } = new List<RaceResult>();
 
         [Required]
-        [Description("List of Ballot Ids")]
+        [Description("List of ballot IDs and ballot dates for the current page")]
         [DataType("PaginatedBallotIds")]
-        [JsonPropertyName("PaginatedBallotIds")]
+        [JsonPropertyName("BallotIds")]
         [JsonProperty(nameof(PaginatedBallotIds), Required = Required.Always)]
         public required PaginatedBallotIds BallotIds { get; set; }
     }
@@ -433,14 +433,33 @@ namespace TrueVote.Api.Models
     }
 
     [SwaggerSchema]
+    public class BallotIdInfo
+    {
+        [Required]
+        [Description("Ballot Id")]
+        [MaxLength(2048)]
+        [DataType(DataType.Text)]
+        [JsonPropertyName("BallotId")]
+        [JsonProperty(nameof(BallotId), Required = Required.Always)]
+        public required string BallotId { get; set; }
+
+        [Required]
+        [Description("Date the ballot was created")]
+        [DataType(DataType.DateTime)]
+        [JsonPropertyName("DateCreated")]
+        [JsonProperty(nameof(DateCreated), Required = Required.Always)]
+        public required DateTime DateCreated { get; set; }
+    }
+
+    [SwaggerSchema]
     public class PaginatedBallotIds
     {
         [Required]
-        [Description("List of ballot IDs for the current page")]
-        [DataType("List<string>")]
+        [Description("List of ballot IDs and ballot dates for the current page")]
+        [DataType("List<BallotIdInfo>")]
         [JsonPropertyName("Items")]
         [JsonProperty(nameof(Items), Required = Required.Always)]
-        public required List<string> Items { get; set; }
+        public required List<BallotIdInfo> Items { get; set; }
 
         [Required]
         [Description("Total number of ballot IDs across all pages")]

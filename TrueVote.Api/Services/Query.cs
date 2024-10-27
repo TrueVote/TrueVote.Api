@@ -134,7 +134,7 @@ namespace TrueVote.Api.Services
             var ballotHashes = await _trueVoteDbContext.BallotHashes.Where(bh => ballots.Select(b => b.BallotId).Contains(bh.BallotId)).ToListAsync();
 
             // Get paginated ballot IDs
-            var paginatedBallotIds = ballots.Skip(offset).Take(limit).Select(b => b.BallotId).ToList();
+            var paginatedBallotIds = ballots.Skip(offset).Take(limit).Select(b => new BallotIdInfo { BallotId = b.BallotId, DateCreated = b.DateCreated }).ToList();
 
             return new ElectionResults
             {
