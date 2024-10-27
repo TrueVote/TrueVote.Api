@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using NJsonSchema.Annotations;
 using System.Diagnostics.CodeAnalysis;
 using TrueVote.Api.Interfaces;
 using TrueVote.Api.Models;
@@ -95,9 +96,9 @@ namespace TrueVote.Api.Services
             return items;
         }
 
-        public async Task<ElectionResults> GetElectionResultsByElectionId([GraphQLName("ElectionId")] string ElectionId)
+        public async Task<ElectionResults> GetElectionResultsByElectionId([GraphQLName("ElectionId")] string ElectionId, [GraphQLName("offset")] int offset = 0, [GraphQLName("limit")] int limit = 100)
         {
-            var ballots = await _trueVoteDbContext.Ballots.Where(b => b.ElectionId == ElectionId).ToListAsync();
+            var ballots = await _trueVoteDbContext.Ballots.Where(b => b.ElectionId == ElectionId).OrderByDescending(b => b.DateCreated).ToListAsync();
             if (ballots.Count == 0)
             {
                 return new ElectionResults
@@ -105,7 +106,8 @@ namespace TrueVote.Api.Services
                     ElectionId = ElectionId,
                     TotalBallots = 0,
                     TotalBallotsHashed = 0,
-                    Races = []
+                    Races = [],
+                    BallotIds = new PaginatedBallotIds { Items = [], Limit = limit, Offset = offset, TotalCount = 0 }
                 };
             }
 
@@ -131,12 +133,16 @@ namespace TrueVote.Api.Services
             // TODO Optimize this. Across large data sets this is a big .Contains (IN clause). Use a batching pattern or reporting server, etc.
             var ballotHashes = await _trueVoteDbContext.BallotHashes.Where(bh => ballots.Select(b => b.BallotId).Contains(bh.BallotId)).ToListAsync();
 
+            // Get paginated ballot IDs
+            var paginatedBallotIds = ballots.Skip(offset).Take(limit).Select(b => new BallotIdInfo { BallotId = b.BallotId, DateCreated = b.DateCreated }).ToList();
+
             return new ElectionResults
             {
                 ElectionId = ElectionId,
                 TotalBallots = ballots.Count,
                 TotalBallotsHashed = ballotHashes.Count,
-                Races = raceResults
+                Races = raceResults,
+                BallotIds = new PaginatedBallotIds { Items = paginatedBallotIds, Limit = limit, Offset = offset, TotalCount = ballots.Count }
             };
         }
     }
@@ -145,10 +151,23 @@ namespace TrueVote.Api.Services
     public class Subscription
     {
         [Subscribe]
-        [Topic("ElectionResultsUpdated.{electionId}")]
-        public ElectionResults ElectionResultsUpdated(string electionId, [EventMessage] ElectionResults results)
+        [Topic("ElectionResultsUpdated.{ElectionId}")]
+        public ElectionResults ElectionResultsUpdated([EventMessage] ElectionResults results, [GraphQLName("ElectionId")] string ElectionId,  [GraphQLName("offset")] int offset = 0, [GraphQLName("limit")] int limit = 100)
         {
-            return results.ElectionId == electionId ? results : null;
+            if (results.ElectionId != ElectionId)
+                return null;
+
+            // Update the results to match the requested pagination
+            var paginatedItems = results.BallotIds.Items
+                .Skip(offset)
+                .Take(limit)
+                .ToList();
+
+            results.BallotIds.Items = paginatedItems;
+            results.BallotIds.Offset = offset;
+            results.BallotIds.Limit = limit;
+
+            return results;
         }
     }
 }

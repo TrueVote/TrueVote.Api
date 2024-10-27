@@ -369,6 +369,13 @@ namespace TrueVote.Api.Models
         [JsonPropertyName("Races")]
         [JsonProperty(nameof(Races), Required = Required.Always)]
         public required List<RaceResult> Races { get; set; } = new List<RaceResult>();
+
+        [Required]
+        [Description("List of ballot IDs and ballot dates for the current page")]
+        [DataType("PaginatedBallotIds")]
+        [JsonPropertyName("BallotIds")]
+        [JsonProperty(nameof(PaginatedBallotIds), Required = Required.Always)]
+        public required PaginatedBallotIds BallotIds { get; set; }
     }
 
     [SwaggerSchema]
@@ -423,5 +430,56 @@ namespace TrueVote.Api.Models
         [JsonPropertyName("TotalVotes")]
         [JsonProperty(nameof(TotalVotes), Required = Required.Always)]
         public required int TotalVotes { get; set; }
+    }
+
+    [SwaggerSchema]
+    public class BallotIdInfo
+    {
+        [Required]
+        [Description("Ballot Id")]
+        [MaxLength(2048)]
+        [DataType(DataType.Text)]
+        [JsonPropertyName("BallotId")]
+        [JsonProperty(nameof(BallotId), Required = Required.Always)]
+        public required string BallotId { get; set; }
+
+        [Required]
+        [Description("Date the ballot was created")]
+        [DataType(DataType.DateTime)]
+        [JsonPropertyName("DateCreated")]
+        [JsonProperty(nameof(DateCreated), Required = Required.Always)]
+        public required DateTime DateCreated { get; set; }
+    }
+
+    [SwaggerSchema]
+    public class PaginatedBallotIds
+    {
+        [Required]
+        [Description("List of ballot IDs and ballot dates for the current page")]
+        [DataType("List<BallotIdInfo>")]
+        [JsonPropertyName("Items")]
+        [JsonProperty(nameof(Items), Required = Required.Always)]
+        public required List<BallotIdInfo> Items { get; set; }
+
+        [Required]
+        [Description("Total number of ballot IDs across all pages")]
+        [Range(0, int.MaxValue)]
+        [JsonPropertyName("TotalCount")]
+        [JsonProperty(nameof(TotalCount), Required = Required.Always)]
+        public required int TotalCount { get; set; }
+
+        [Required]
+        [Description("Number of items to skip (starting position)")]
+        [Range(0, int.MaxValue)]
+        [JsonPropertyName("Offset")]
+        [JsonProperty(nameof(Offset), Required = Required.Always)]
+        public required int Offset { get; set; }
+
+        [Required]
+        [Description("Maximum number of items to return per page")]
+        [Range(1, int.MaxValue)]
+        [JsonPropertyName("Limit")]
+        [JsonProperty(nameof(Limit), Required = Required.Always)]
+        public required int Limit { get; set; }
     }
 }
