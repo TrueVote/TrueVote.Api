@@ -369,6 +369,13 @@ namespace TrueVote.Api.Models
         [JsonPropertyName("Races")]
         [JsonProperty(nameof(Races), Required = Required.Always)]
         public required List<RaceResult> Races { get; set; } = new List<RaceResult>();
+
+        [Required]
+        [Description("List of Ballot Ids")]
+        [DataType("PaginatedBallotIds")]
+        [JsonPropertyName("PaginatedBallotIds")]
+        [JsonProperty(nameof(PaginatedBallotIds), Required = Required.Always)]
+        public required PaginatedBallotIds BallotIds { get; set; }
     }
 
     [SwaggerSchema]
@@ -423,5 +430,37 @@ namespace TrueVote.Api.Models
         [JsonPropertyName("TotalVotes")]
         [JsonProperty(nameof(TotalVotes), Required = Required.Always)]
         public required int TotalVotes { get; set; }
+    }
+
+    [SwaggerSchema]
+    public class PaginatedBallotIds
+    {
+        [Required]
+        [Description("List of ballot IDs for the current page")]
+        [DataType("List<string>")]
+        [JsonPropertyName("Items")]
+        [JsonProperty(nameof(Items), Required = Required.Always)]
+        public required List<string> Items { get; set; }
+
+        [Required]
+        [Description("Total number of ballot IDs across all pages")]
+        [Range(0, int.MaxValue)]
+        [JsonPropertyName("TotalCount")]
+        [JsonProperty(nameof(TotalCount), Required = Required.Always)]
+        public required int TotalCount { get; set; }
+
+        [Required]
+        [Description("Number of items to skip (starting position)")]
+        [Range(0, int.MaxValue)]
+        [JsonPropertyName("Offset")]
+        [JsonProperty(nameof(Offset), Required = Required.Always)]
+        public required int Offset { get; set; }
+
+        [Required]
+        [Description("Maximum number of items to return per page")]
+        [Range(1, int.MaxValue)]
+        [JsonPropertyName("Limit")]
+        [JsonProperty(nameof(Limit), Required = Required.Always)]
+        public required int Limit { get; set; }
     }
 }
