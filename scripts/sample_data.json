@@ -229,7 +229,43 @@
         ]
       },
       {
-        "Name": "Prop 2 - AUTHORIZES BONDS FOR PUBLIC SCHOOL AND COMMUNITY COLLEGE FACILITIES. LEGISLATIVE STATUTE.",
+        "Name": "Favorite Colors",
+        "RaceType": 2,
+        "MinNumberOfChoices": 2,
+        "MaxNumberOfChoices": 4,
+        "BaseCandidates": [
+          {
+            "Name": "Red",
+            "CandidateImageUrl": "/static/red-square.svg"
+          },
+          {
+            "Name": "Orange",
+            "CandidateImageUrl": "/static/orange-square.svg"
+          },
+          {
+            "Name": "Yellow",
+            "CandidateImageUrl": "/static/yellow-square.svg"
+          },
+          {
+            "Name": "Green",
+            "CandidateImageUrl": "/static/green-square.svg"
+          },
+          {
+            "Name": "Blue",
+            "CandidateImageUrl": "/static/blue-square.svg"
+          },
+          {
+            "Name": "Indigo",
+            "CandidateImageUrl": "/static/indigo-square.svg"
+          },
+          {
+            "Name": "Violet",
+            "CandidateImageUrl": "/static/violet-square.svg"
+          }
+        ]
+      },
+      {
+        "Name": "Prop 2 - Authorizes Bonds For Public School And Community College Facilities. Legislative Statute.",
         "RaceType": 0,
         "MinNumberOfChoices": 0,
         "MaxNumberOfChoices": 1,
@@ -243,7 +279,7 @@
         ]
       },
       {
-        "Name": "Prop 3 - CONSTITUTIONAL RIGHT TO MARRIAGE. LEGISLATIVE CONSTITUTIONAL AMENDMENT.",
+        "Name": "Prop 3 - Constitutional Right To Marriage. Legislative Constitutional Amendment.",
         "RaceType": 0,
         "MinNumberOfChoices": 0,
         "MaxNumberOfChoices": 1,
@@ -257,7 +293,7 @@
         ]
       },
       {
-        "Name": "Prop 4 - AUTHORIZES BONDS FOR SAFE DRINKING WATER, WILDFIRE PREVENTION, AND PROTECTING COMMUNITIES AND NATURAL LANDS FROM CLIMATE RISKS. LEGISLATIVE STATUTE.",
+        "Name": "Prop 4 - Authorizes Bonds For Safe Drinking Water, Wildfire Prevention, And Protecting Communities And Natural Lands From Climate Risks. Legislative Statute.",
         "RaceType": 0,
         "MinNumberOfChoices": 0,
         "MaxNumberOfChoices": 1,
@@ -271,7 +307,7 @@
         ]
       },
       {
-        "Name": "Prop 5 - ALLOWS LOCAL BONDS FOR AFFORDABLE HOUSING AND PUBLIC INFRASTRUCTURE WITH 55% VOTER APPROVAL. LEGISLATIVE CONSTITUTIONAL AMENDMENT.",
+        "Name": "Prop 5 - Allows Local Bonds For Affordable Housing And Public Infrastructure With 55% Voter Approval. Legislative Constitutional Amendment.",
         "RaceType": 0,
         "MinNumberOfChoices": 0,
         "MaxNumberOfChoices": 1,
@@ -285,7 +321,7 @@
         ]
       },
       {
-        "Name": "Prop 6 - ELIMINATES CONSTITUTIONAL PROVISION ALLOWING INVOLUNTARY SERVITUDE FOR INCARCERATED PERSONS. LEGISLATIVE CONSTITUTIONAL AMENDMENT.",
+        "Name": "Prop 6 - Eliminates Constitutional Provision Allowing Involuntary Servitude For Incarcerated Persons. Legislative Constitutional Amendment.",
         "RaceType": 0,
         "MinNumberOfChoices": 0,
         "MaxNumberOfChoices": 1,
@@ -299,7 +335,7 @@
         ]
       },
       {
-        "Name": "Prop 32 - RAISES MINIMUM WAGE. INITIATIVE STATUTE.",
+        "Name": "Prop 32 - Raises Minimum Wage. Initiative Statute.",
         "RaceType": 0,
         "MinNumberOfChoices": 0,
         "MaxNumberOfChoices": 1,
@@ -313,7 +349,7 @@
         ]
       },
       {
-        "Name": "Prop 33 - EXPANDS LOCAL GOVERNMENTS’ AUTHORITY TO ENACT RENT CONTROL ON RESIDENTIAL PROPERTY. INITIATIVE STATUTE.",
+        "Name": "Prop 33 - Expands Local Governments' Authority To Enact Rent Control On Residential Property. Initiative Statute.",
         "RaceType": 0,
         "MinNumberOfChoices": 0,
         "MaxNumberOfChoices": 1,
@@ -327,7 +363,7 @@
         ]
       },
       {
-        "Name": "Prop 34 - RESTRICTS SPENDING OF PRESCRIPTION DRUG REVENUES BY CERTAIN HEALTH CARE PROVIDERS. INITIATIVE STATUTE.",
+        "Name": "Prop 34 - Restricts Spending Of Prescription Drug Revenues By Certain Health Care Providers. Initiative Statute.",
         "RaceType": 0,
         "MinNumberOfChoices": 0,
         "MaxNumberOfChoices": 1,
@@ -341,7 +377,7 @@
         ]
       },
       {
-        "Name": "Prop 35 - PROVIDES PERMANENT FUNDING FOR MEDI-CAL HEALTH CARE SERVICES. INITIATIVE STATUTE.",
+        "Name": "Prop 35 - Provides Permanent Funding For Medi-Cal Health Care Services. Initiative Statute.",
         "RaceType": 0,
         "MinNumberOfChoices": 0,
         "MaxNumberOfChoices": 1,
@@ -355,7 +391,7 @@
         ]
       },
       {
-        "Name": "Prop 36 - ALLOWS FELONY CHARGES AND INCREASES SENTENCES FOR CERTAIN DRUG AND THEFT CRIMES. INITIATIVE STATUTE.",
+        "Name": "Prop 36 - Allows Felony Charges And Increases Sentences For Certain Drug And Theft Crimes. Initiative Statute.",
         "RaceType": 0,
         "MinNumberOfChoices": 0,
         "MaxNumberOfChoices": 1,
@@ -369,7 +405,7 @@
         ]
       },
       {
-        "Name": "Measure P2024 - SANTA BARBARA CITY COLLEGE MEASURE PRESERVING AFFORDABLE HIGHER EDUCATION/CAREER TRAINING WITHOUT INCREASING TAX RATES.",
+        "Name": "Measure P2024 - Santa Barbara City College Measure Preserving Affordable Higher Education/Career Training Without Increasing Tax Rates.",
         "RaceType": 0,
         "MinNumberOfChoices": 0,
         "MaxNumberOfChoices": 1,
@@ -383,7 +419,7 @@
         ]
       },
       {
-        "Name": "Measure H2024 - SANTA BARBARA COUNTY ESSENTIAL COMMUNITY SERVICES MEASURE.",
+        "Name": "Measure H2024 - Santa Barbara County Essential Community Services Measure.",
         "RaceType": 0,
         "MinNumberOfChoices": 0,
         "MaxNumberOfChoices": 1,
