@@ -272,6 +272,7 @@ namespace TrueVote.Api
         public virtual required DbSet<ElectionUserBindingModel> ElectionUserBindings { get; set; }
         public virtual required DbSet<RoleModel> Roles { get; set; }
         public virtual required DbSet<UserRoleModel> UserRoles { get; set; }
+        public virtual required DbSet<CommunicationEventModel> CommunicationEvents { get; set; }
 
         private readonly IConfiguration? _configuration;
         private readonly string? _connectionString;
@@ -398,6 +399,42 @@ namespace TrueVote.Api
             .WithMany()
             .HasForeignKey(ur => ur.UserId)
             .HasPrincipalKey(u => u.UserId);
+
+            modelBuilder.HasDefaultContainer("CommunicationEvents");
+            modelBuilder.Entity<CommunicationEventModel>().ToContainer("CommunicationEvents");
+            modelBuilder.Entity<CommunicationEventModel>().HasNoDiscriminator();
+            modelBuilder.Entity<CommunicationEventModel>().HasPartitionKey(c => c.CommunicationEventId);
+            modelBuilder.Entity<CommunicationEventModel>().HasKey(c => c.CommunicationEventId);
+            modelBuilder.Entity<CommunicationEventModel>()
+               .Property(c => c.CommunicationMethod)
+               .HasConversion(
+                   v => JsonSerializer.Serialize(v, (JsonSerializerOptions) null),
+                   v => JsonSerializer.Deserialize<Dictionary<string, string>>(v, (JsonSerializerOptions) null),
+                   new ValueComparer<Dictionary<string, string>>(
+                       (c1, c2) => c1.SequenceEqual(c2),
+                       c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
+                       c => new Dictionary<string, string>(c)
+                   ));
+            modelBuilder.Entity<CommunicationEventModel>()
+               .Property(c => c.RelatedEntities)
+               .HasConversion(
+                   v => JsonSerializer.Serialize(v, (JsonSerializerOptions) null),
+                   v => JsonSerializer.Deserialize<Dictionary<string, string>>(v, (JsonSerializerOptions) null),
+                   new ValueComparer<Dictionary<string, string>>(
+                       (c1, c2) => c1.SequenceEqual(c2),
+                       c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
+                       c => new Dictionary<string, string>(c)
+                   ));
+            modelBuilder.Entity<CommunicationEventModel>()
+               .Property(c => c.Metadata)
+               .HasConversion(
+                   v => JsonSerializer.Serialize(v, (JsonSerializerOptions) null),
+                   v => JsonSerializer.Deserialize<Dictionary<string, string>>(v, (JsonSerializerOptions) null),
+                   new ValueComparer<Dictionary<string, string>>(
+                       (c1, c2) => (c1 == null && c2 == null) || (c1 != null && c2 != null && c1.SequenceEqual(c2)),
+                       c => c != null ? c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())) : 0,
+                       c => c != null ? new Dictionary<string, string>(c) : null
+                   ));
         }
     }
 

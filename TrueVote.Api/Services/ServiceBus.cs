@@ -1,33 +1,41 @@
 using Azure.Messaging.ServiceBus;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
 
 namespace TrueVote.Api.Services
 {
     public interface IServiceBus
     {
-        Task SendAsync(string message);
+        Task SendAsync<T>(T message, string? subject = null, string? correlationId = null, string? queueName = null) where T : class;
     }
 
     [ExcludeFromCodeCoverage]
     public class ServiceBus : IServiceBus
     {
-        private readonly IConfiguration _configuration;
+        readonly IConfiguration _configuration;
+        readonly ServiceBusClient _client;
+        readonly string _defaultQueueName;
 
         public ServiceBus(IConfiguration configuration)
         {
             _configuration = configuration;
+            var connectionString = _configuration.GetConnectionString("ServiceBusConnectionString");
+            _client = new ServiceBusClient(connectionString);
+            _defaultQueueName = _configuration["ServiceBusApiEventQueueName"]!;
         }
 
-        public async Task SendAsync(string message)
+        public async Task SendAsync<T>(T message, string? subject = null, string? correlationId = null, string? queueName = null) where T : class
         {
-            var connectionString = _configuration.GetConnectionString("ServiceBusConnectionString");
-            var queueName = _configuration["ServiceBusApiEventQueueName"];
+            var targetQueue = queueName ?? _defaultQueueName;
+            var sender = _client.CreateSender(targetQueue);
 
-            var serviceBusClient = new ServiceBusClient(connectionString);
-            var serviceBusSender = serviceBusClient.CreateSender(queueName);
+            var serviceBusMessage = new ServiceBusMessage(BinaryData.FromString(JsonSerializer.Serialize(message)))
+            {
+                Subject = subject,
+                CorrelationId = correlationId
+            };
 
-            var serviceBusMessage = new ServiceBusMessage(message);
-            await serviceBusSender.SendMessageAsync(serviceBusMessage);
+            await sender.SendMessageAsync(serviceBusMessage);
         }
     }
 }
