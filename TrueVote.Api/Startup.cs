@@ -19,7 +19,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO.Abstractions;
 using System.Reflection;
-using System.Security.Claims;
 using System.Text.Json;
 using TrueVote.Api.Helpers;
 using TrueVote.Api.Interfaces;
@@ -45,7 +44,6 @@ namespace TrueVote.Api
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddSingleton<ValidateUserIdFilter>();
             services.AddControllers().AddNewtonsoftJson(jsonoptions =>
             {
                 jsonoptions.SerializerSettings.Converters.Add(new Newtonsoft.Json.Converters.IsoDateTimeConverter());
@@ -493,51 +491,6 @@ namespace TrueVote.Api
         public RequireRoleAttribute(params string[] roles)
         {
             Roles = string.Join(",", roles);
-        }
-    }
-
-    [ExcludeFromCodeCoverage]
-    public class ValidateUserIdFilter : IActionFilter
-    {
-        public void OnActionExecuting(ActionExecutingContext context)
-        {
-            var userId = context.HttpContext.User.GetUserId();
-            if (userId == Guid.Empty)
-            {
-                context.Result = new ForbidResult();
-                return;
-            }
-
-            // Check if the action argument is a model with a UserId property
-            foreach (var model in context.ActionArguments.Values.Where(v => v != null))
-            {
-                switch (model)
-                {
-                    case UserModel userModel:
-                    {
-                        ValidateUserId(context, userModel.UserId, userId.ToString());
-                        break;
-                    }
-
-                    // Add more cases for other models with UserId property
-
-                    default:
-                        break;
-                }
-            }
-        }
-
-        public void OnActionExecuted(ActionExecutedContext context)
-        {
-            // Not needed for this filter
-        }
-
-        private void ValidateUserId(ActionExecutingContext context, string modelUserId, string tokenUserId)
-        {
-            if (modelUserId != tokenUserId)
-            {
-                context.Result = new ForbidResult();
-            }
         }
     }
 

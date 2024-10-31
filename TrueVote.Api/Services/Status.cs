@@ -103,7 +103,6 @@ namespace TrueVote.Api.Services
 
         [HttpGet]
         [Authorize]
-        [ServiceFilter(typeof(ValidateUserIdFilter))]
         [Route("add")]
         [Produces(typeof(SecureString))]
         [Description("Returns simple addition")]

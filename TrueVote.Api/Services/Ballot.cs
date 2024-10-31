@@ -42,7 +42,6 @@ namespace TrueVote.Api.Services
         [HttpPost]
         [Authorize]
         [RequireRole(UserRoles.Voter_Role)]
-        [ServiceFilter(typeof(ValidateUserIdFilter))]
         [Route("ballot/submitballot")]
         [Produces(typeof(SubmitBallotModelResponse))]
         [Description("Election Model with vote selections")]

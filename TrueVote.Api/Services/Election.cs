@@ -1,4 +1,3 @@
-using Azure.Core;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -240,7 +239,6 @@ namespace TrueVote.Api.Services
         [HttpPost]
         [Authorize]
         [RequireRole(UserRoles.ElectionAdmin_Role)]
-        [ServiceFilter(typeof(ValidateUserIdFilter))]
         [Route("election/createaccesscodes")]
         [Produces(typeof(AccessCodesResponse))]
         [Description("Returns an AccessCodesResponse with a list of AccessCodes")]
@@ -273,7 +271,6 @@ namespace TrueVote.Api.Services
 
         [HttpGet]
         [Authorize]
-        [ServiceFilter(typeof(ValidateUserIdFilter))]
         [Route("election/checkaccesscode")]
         [Produces(typeof(ElectionModel))]
         [Description("Returns an Election for the AccessCode")]
