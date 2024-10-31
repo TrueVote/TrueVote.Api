@@ -433,6 +433,17 @@ namespace TrueVote.Api
                        c => c != null ? c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())) : 0,
                        c => c != null ? new Dictionary<string, string>(c) : null
                    ));
+            modelBuilder.Entity<CommunicationEventModel>()
+                .Property(c => c.CommunicationMethodJson)
+                .HasJsonConversion();
+
+            modelBuilder.Entity<CommunicationEventModel>()
+                .Property(c => c.RelatedEntitiesJson)
+                .HasJsonConversion();
+
+            modelBuilder.Entity<CommunicationEventModel>()
+                .Property(c => c.MetadataJson)
+                .HasJsonConversion();
         }
     }
 

@@ -1,4 +1,3 @@
-/*
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authorization.Infrastructure;
@@ -17,10 +16,6 @@ using System;
 using Microsoft.AspNetCore.Routing;
 using System.Linq;
 
-// Use this for testing [Authorize]
-// Since this would end up testing "Microsoft's" code, not really needed here. It was
-// built as a prototype
-//
 public static class ControllerTestExtensions
 {
     public static void SetupController(this ControllerBase controller, string userId)
@@ -45,6 +40,10 @@ public static class ControllerTestExtensions
         };
     }
 
+    // Use this for testing [Authorize]
+    // Since this would end up testing "Microsoft's" code, not really needed here. It was
+    // built as a prototype
+    //
     public static void SetupControllerForAuth(this ControllerBase controller, string methodName, bool isAuthenticated = true, string userId = "test-user", string role = "Voter")
     {
         // Set up services
@@ -146,4 +145,3 @@ public static class ControllerTestExtensions
         return await action();
     }
 }
-*/

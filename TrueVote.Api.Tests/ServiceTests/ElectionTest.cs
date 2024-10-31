@@ -212,7 +212,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             var validationResults = ValidationHelper.Validate(accessCodesRequest);
             Assert.Empty(validationResults);
 
-            var electionApi = new Mock<Election>(_logHelper.Object, _moqDataAccessor.mockElectionContext.Object, _mockServiceBus.Object, _uniqueKeyGenerator) { CallBase = true };
+            var electionApi = new Mock<Election>(_logHelper.Object, _moqDataAccessor.mockElectionContext.Object, _mockServiceBus.Object, _uniqueKeyGenerator, _configuration) { CallBase = true };
             electionApi.Setup(e => e.GenerateUniqueKeyAsync()).Throws(new Exception("Unable to generate a unique key after multiple attempts"));
 
             var ret = await electionApi.Object.CreateAccessCodes(accessCodesRequest);
@@ -222,7 +222,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             var val = (SecureString) (ret as ObjectResult).Value;
             Assert.Contains("Error creating unique access code", val.Value.ToString());
 
-            _logHelper.Verify(LogLevel.Debug, Times.Exactly(1));
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
             _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
             _logHelper.Verify(LogLevel.Error, Times.Exactly(1));
         }
@@ -238,7 +238,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             var mockUniqueKeyGenerator = new Mock<IUniqueKeyGenerator>();
             mockUniqueKeyGenerator.Setup(m => m.GenerateUniqueKey()).Returns("accesscode0");
 
-            var electionApi = new Mock<Election>(_logHelper.Object, _moqDataAccessor.mockElectionContext.Object, _mockServiceBus.Object, mockUniqueKeyGenerator.Object) { CallBase = true };
+            var electionApi = new Mock<Election>(_logHelper.Object, _moqDataAccessor.mockElectionContext.Object, _mockServiceBus.Object, mockUniqueKeyGenerator.Object, _configuration) { CallBase = true };
 
             var ret = await electionApi.Object.CreateAccessCodes(accessCodesRequest);
             Assert.NotNull(ret);
@@ -247,7 +247,7 @@ namespace TrueVote.Api.Tests.ServiceTests
             var val = (SecureString) (ret as ObjectResult).Value;
             Assert.Contains("Unable to generate a unique key after multiple attempts", val.Value.ToString());
 
-            _logHelper.Verify(LogLevel.Debug, Times.Exactly(1));
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
             _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
             _logHelper.Verify(LogLevel.Error, Times.Exactly(1));
         }
@@ -260,6 +260,8 @@ namespace TrueVote.Api.Tests.ServiceTests
             var validationResults = ValidationHelper.Validate(accessCodesRequest);
             Assert.Empty(validationResults);
 
+            var user = MoqData.MockUserData[0];
+            _electionApi.SetupController(user.UserId);
             var ret = await _electionApi.CreateAccessCodes(accessCodesRequest);
             Assert.NotNull(ret);
             Assert.Equal(StatusCodes.Status201Created, ((IStatusCodeActionResult) ret).StatusCode);

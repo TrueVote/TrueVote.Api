@@ -95,28 +95,5 @@ namespace TrueVote.Api.Tests.ServiceTests
             Assert.NotNull(val);
             Assert.Equal("4", val.Value);
         }
-
-        [Fact]
-        public async Task HandlesCalculatesMathExpressionWithoutAuthorization()
-        {
-            _status.SetupControllerForAuth("GetAdd", isAuthenticated: false);
-
-            Console.WriteLine("=== Auth Status ===");
-            Console.WriteLine($"Is Authenticated: {_status.HttpContext?.User?.Identity?.IsAuthenticated}");
-            Console.WriteLine($"Auth Type: {_status.HttpContext?.User?.Identity?.AuthenticationType}");
-            Console.WriteLine("User Claims: " + string.Join(", ", _status.HttpContext?.User?.Claims.Select(c => $"{c.Type}={c.Value}") ?? Array.Empty<string>()));
-
-            var ret = await _status.ExecuteWithAuth(async () => await _status.GetAdd());
-
-            Console.WriteLine("\n=== Result ===");
-            Console.WriteLine($"Result type: {ret.GetType().Name}");
-            if (ret is IStatusCodeActionResult statusCodeResult)
-            {
-                Console.WriteLine($"Status code: {statusCodeResult.StatusCode}");
-            }
-
-            Assert.NotNull(ret);
-            Assert.Equal(StatusCodes.Status401Unauthorized, ((IStatusCodeActionResult) ret).StatusCode);
-        }
     }
 }

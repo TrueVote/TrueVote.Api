@@ -261,6 +261,8 @@ namespace TrueVote.Api.Services
             }
             catch (Exception ex)
             {
+                _log.LogError($"UnprocessableEntity - CreateAccessCodes:End: {ex.Message}");
+
                 return UnprocessableEntity(new SecureString { Value = ex.Message });
             }
             finally

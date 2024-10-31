@@ -1,6 +1,7 @@
 using Newtonsoft.Json;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 
 namespace TrueVote.Api.Models
@@ -15,22 +16,43 @@ namespace TrueVote.Api.Models
         [JsonProperty(nameof(Type), Required = Required.Always)]
         public required string Type { get; set; } = string.Empty;
 
+        [NotMapped]
         [Required]
         [Description("Communication method and address/id (e.g., Email: user@domain.com, MobileDeviceId: abc123)")]
         [JsonPropertyName("CommunicationMethod")]
         [JsonProperty(nameof(CommunicationMethod), Required = Required.Always)]
         public required Dictionary<string, string> CommunicationMethod { get; set; } = []; // Example: { "Email": "user@domain.com", "MobileDeviceId": "device_123", "PhoneNumber": "+1234567890" }
 
+        [NotMapped]
         [Required]
         [Description("Dictionary of related entity IDs and their types")]
         [JsonPropertyName("RelatedEntities")]
         [JsonProperty(nameof(RelatedEntities), Required = Required.Always)]
         public required Dictionary<string, string> RelatedEntities { get; set; } = [];
 
+        [NotMapped]
         [Description("Additional metadata for the communication event")]
         [JsonPropertyName("Metadata")]
         [JsonProperty(nameof(Metadata), Required = Required.Default)]
         public Dictionary<string, string>? Metadata { get; set; }
+
+        public string CommunicationMethodJson
+        {
+            get => JsonConvert.SerializeObject(CommunicationMethod);
+            set => CommunicationMethod = JsonConvert.DeserializeObject<Dictionary<string, string>>(value) ?? new();
+        }
+
+        public string RelatedEntitiesJson
+        {
+            get => JsonConvert.SerializeObject(RelatedEntities);
+            set => RelatedEntities = JsonConvert.DeserializeObject<Dictionary<string, string>>(value) ?? new();
+        }
+
+        public string? MetadataJson
+        {
+            get => Metadata != null ? JsonConvert.SerializeObject(Metadata) : null;
+            set => Metadata = value != null ? JsonConvert.DeserializeObject<Dictionary<string, string>>(value) : null;
+        }
     }
 
     public class CommunicationEventModel : RootCommunicationEventBaseModel

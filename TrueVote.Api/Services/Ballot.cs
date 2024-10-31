@@ -72,12 +72,7 @@ namespace TrueVote.Api.Services
             }
 
             // Get the GUID UserId from the JWT
-            var userId = User.FindAll(ClaimTypes.NameIdentifier).FirstOrDefault(u => !u.Value.StartsWith("npub"))?.Value;
-            if (userId == null)
-            {
-                _log.LogDebug("HTTP trigger - SubmitBallot:End");
-                return NotFound(new SecureString { Value = $"UserId not found" });
-            }
+            var userId = User.GetUserId().ToString();
 
             // Check if user already submitted ballot for this election
             var alreadySubmitted = await _trueVoteDbContext.ElectionUserBindings.Where(u => u.UserId == userId && u.ElectionId == bindSubmitBallotModel.Election.ElectionId).FirstOrDefaultAsync();

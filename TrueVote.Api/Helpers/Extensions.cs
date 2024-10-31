@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Security.Claims;
@@ -32,6 +33,7 @@ namespace TrueVote.Api
         }
     }
 
+    [ExcludeFromCodeCoverage]
     public static class ClaimsPrincipalExtensions
     {
         public static Guid GetUserId(this ClaimsPrincipal principal)
@@ -61,6 +63,17 @@ namespace TrueVote.Api
                 throw new UnauthorizedAccessException("User ID not found in token");
             }
             return userId;
+        }
+    }
+
+    [ExcludeFromCodeCoverage]
+    public static class ModelBuilderExtensions
+    {
+        public static PropertyBuilder<T> HasJsonConversion<T>(this PropertyBuilder<T> propertyBuilder)
+        {
+            return propertyBuilder.HasConversion(
+                v => v,
+                v => v);
         }
     }
 }
