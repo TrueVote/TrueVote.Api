@@ -28,8 +28,11 @@ namespace TrueVote.Api.Services
         {
             var targetQueue = queueName ?? _defaultQueueName;
             var sender = _client.CreateSender(targetQueue);
+            var messageBody = message is string stringMessage
+                    ? BinaryData.FromString(stringMessage)  // Don't serialize strings
+                    : BinaryData.FromString(JsonSerializer.Serialize(message));
 
-            var serviceBusMessage = new ServiceBusMessage(BinaryData.FromString(JsonSerializer.Serialize(message)))
+            var serviceBusMessage = new ServiceBusMessage(messageBody)
             {
                 Subject = subject,
                 CorrelationId = correlationId

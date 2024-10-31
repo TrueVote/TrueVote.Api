@@ -1,3 +1,4 @@
+using Azure.Core;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -5,6 +6,7 @@ using System.ComponentModel;
 using TrueVote.Api.Helpers;
 using TrueVote.Api.Interfaces;
 using TrueVote.Api.Models;
+using KeyNotFoundException = System.Collections.Generic.KeyNotFoundException;
 namespace TrueVote.Api.Services
 {
     [ApiController]
@@ -23,13 +25,15 @@ namespace TrueVote.Api.Services
         private readonly ITrueVoteDbContext _trueVoteDbContext;
         private readonly IServiceBus _serviceBus;
         private readonly IUniqueKeyGenerator _uniqueKeyGenerator;
+        private readonly IConfiguration _configuration;
 
-        public Election(ILogger log, ITrueVoteDbContext trueVoteDbContext, IServiceBus serviceBus, IUniqueKeyGenerator uniqueKeyGenerator)
+        public Election(ILogger log, ITrueVoteDbContext trueVoteDbContext, IServiceBus serviceBus, IUniqueKeyGenerator uniqueKeyGenerator, IConfiguration configuration)
         {
             _log = log;
             _trueVoteDbContext = trueVoteDbContext;
             _serviceBus = serviceBus;
             _uniqueKeyGenerator = uniqueKeyGenerator;
+            _configuration = configuration;
         }
 
         [HttpPost]
@@ -180,40 +184,14 @@ namespace TrueVote.Api.Services
             throw new Exception("Unable to generate a unique key after multiple attempts.");
         }
 
-        [HttpPost]
-        [Authorize]
-        [RequireRole(UserRoles.ElectionAdmin_Role)]
-        [ServiceFilter(typeof(ValidateUserIdFilter))]
-        [Route("election/createaccesscodes")]
-        [Produces(typeof(AccessCodesResponse))]
-        [Description("Returns an AccessCodesResponse with a list of AccessCodes")]
-        [ProducesResponseType(typeof(AccessCodesResponse), StatusCodes.Status201Created)]
-        public async Task<IActionResult> CreateAccessCodes([FromBody] AccessCodesRequest accessCodesRequest)
+        [NonAction]
+        public virtual async Task<AccessCodesResponse> GenerateAccessCodes(AccessCodesRequest accessCodesRequest)
         {
-            _log.LogDebug("HTTP trigger - CreateAccessCodes:Begin");
-
-            _log.LogInformation($"Request Data: {accessCodesRequest}");
-
-            if (User == null || User.Identity == null)
-            {
-                _log.LogDebug("HTTP trigger - CreateAccessCodes:End");
-                return Unauthorized();
-            }
-
-            // Determine if User is found
-            var foundUser = await _trueVoteDbContext.Users.Where(u => u.UserId == accessCodesRequest.UserId).FirstOrDefaultAsync();
-            if (foundUser == null)
-            {
-                _log.LogDebug("HTTP trigger - CreateAccessCodes:End");
-                return NotFound(new SecureString { Value = $"User: '{accessCodesRequest.UserId}' not found" });
-            }
-
             // Check if the election exists.
             var election = await _trueVoteDbContext.Elections.Where(r => r.ElectionId == accessCodesRequest.ElectionId).AsNoTracking().OrderByDescending(r => r.DateCreated).FirstOrDefaultAsync();
             if (election == null)
             {
-                _log.LogDebug("HTTP trigger - CreateAccessCodes:End");
-                return NotFound(new SecureString { Value = $"Election: '{accessCodesRequest.ElectionId}' not found" });
+                throw new KeyNotFoundException($"Election: '{accessCodesRequest.ElectionId}' not found");
             }
 
             var requestId = Guid.NewGuid().ToString();
@@ -235,8 +213,7 @@ namespace TrueVote.Api.Services
                 }
                 catch (Exception e)
                 {
-                    _log.LogError("HTTP trigger - CreateAccessCodes:End");
-                    return UnprocessableEntity(new SecureString { Value = $"Error creating unique access code for Election: '{accessCodesRequest.ElectionId}'. Error: {e.Message}" });
+                    throw new Exception($"Error creating unique access code for Election: '{accessCodesRequest.ElectionId}'. Error: {e.Message}");
                 }
 
                 var accessCode = new AccessCodeModel
@@ -246,21 +223,52 @@ namespace TrueVote.Api.Services
                     DateCreated = dateCreated,
                     AccessCode = uniqueKey,
                     RequestDescription = accessCodesRequest.RequestDescription,
-                    RequestedByUserId = accessCodesRequest.UserId
+                    RequestedByUserId = User.GetUserId().ToString()
                 };
 
                 accessCodesResponse.AccessCodes.Add(accessCode);
             }
 
             await _trueVoteDbContext.ElectionAccessCodes.AddRangeAsync(accessCodesResponse.AccessCodes);
-
             await _trueVoteDbContext.SaveChangesAsync();
 
             await _serviceBus.SendAsync($"Election Access Codes created for ElectionId: {accessCodesRequest.ElectionId}, Number of Access Codes: {accessCodesRequest.NumberOfAccessCodes}");
 
-            _log.LogDebug("HTTP trigger - CreateAccessCodes:End");
+            return accessCodesResponse;
+        }
 
-            return CreatedAtAction(null, null, accessCodesResponse);
+        [HttpPost]
+        [Authorize]
+        [RequireRole(UserRoles.ElectionAdmin_Role)]
+        [ServiceFilter(typeof(ValidateUserIdFilter))]
+        [Route("election/createaccesscodes")]
+        [Produces(typeof(AccessCodesResponse))]
+        [Description("Returns an AccessCodesResponse with a list of AccessCodes")]
+        [ProducesResponseType(typeof(AccessCodesResponse), StatusCodes.Status201Created)]
+        public async Task<IActionResult> CreateAccessCodes([FromBody] AccessCodesRequest accessCodesRequest)
+        {
+            _log.LogDebug("HTTP trigger - CreateAccessCodes:Begin");
+
+            _log.LogInformation($"Request Data: {accessCodesRequest}");
+
+            try
+            {
+                var accessCodesResponse = await GenerateAccessCodes(accessCodesRequest);
+
+                return CreatedAtAction(null, null, accessCodesResponse);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new SecureString { Value = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return UnprocessableEntity(new SecureString { Value = ex.Message });
+            }
+            finally
+            {
+                _log.LogDebug("HTTP trigger - CreateAccessCodes:End");
+            }
         }
 
         [HttpGet]
@@ -275,20 +283,6 @@ namespace TrueVote.Api.Services
             _log.LogDebug("HTTP trigger - CheckAccessCode:Begin");
 
             _log.LogInformation($"Request Data: {checkCodeRequest}");
-
-            if (User == null || User.Identity == null)
-            {
-                _log.LogDebug("HTTP trigger - CheckAccessCode:End");
-                return Unauthorized();
-            }
-
-            // Determine if User is found
-            var foundUser = await _trueVoteDbContext.Users.Where(u => u.UserId == checkCodeRequest.UserId).FirstOrDefaultAsync();
-            if (foundUser == null)
-            {
-                _log.LogDebug("HTTP trigger - CheckAccessCode:End");
-                return NotFound(new SecureString { Value = $"User: '{checkCodeRequest.UserId}' not found" });
-            }
 
             // Determine if the EAC exists
             var accessCode = await _trueVoteDbContext.ElectionAccessCodes.Where(u => u.AccessCode == checkCodeRequest.AccessCode).FirstOrDefaultAsync();
@@ -311,6 +305,74 @@ namespace TrueVote.Api.Services
             _log.LogDebug("HTTP trigger - CheckAccessCode:End");
 
             return Ok(election);
+        }
+
+        [HttpPost]
+        [Authorize]
+        [RequireRole(UserRoles.ElectionAdmin_Role)]
+        [Route("comms/voter-access-code")]
+        [Produces(typeof(CommunicationEventModel))]
+        [Description("Sends a new voter access code for an election")]
+        [ProducesResponseType(typeof(CommunicationEventModel), StatusCodes.Status201Created)]
+        public async Task<IActionResult> SendNewVoterElectionAccessCode([FromBody] VoterElectionAccessCodeRequest voterElectionAccessCodeRequest)
+        {
+            _log.LogDebug("HTTP trigger - SendNewVoterElectionAccessCode:Begin");
+
+            _log.LogInformation($"Request Data: {voterElectionAccessCodeRequest}");
+
+            try
+            {
+                var accessCodesResponse = await GenerateAccessCodes(new AccessCodesRequest { ElectionId = voterElectionAccessCodeRequest.ElectionId, NumberOfAccessCodes = 1, RequestDescription = "SendNewVoterElectionAccessCode Request" });
+
+                var now = DateTime.UtcNow;
+
+                var commEvent = new CommunicationEventModel
+                {
+                    CommunicationEventId = Guid.NewGuid().ToString(),
+                    Type = "VoterAccessCode",
+                    CommunicationMethod = new Dictionary<string, string>
+                    {
+                    { "Email", voterElectionAccessCodeRequest.VoterEmail }
+                },
+                    RelatedEntities = new Dictionary<string, string>
+                    {
+                    { "ElectionId", voterElectionAccessCodeRequest.ElectionId },
+                },
+                    Status = "Queued",
+                    DateCreated = now,
+                    DateUpdated = now,
+                    Metadata = null
+                };
+
+                await _trueVoteDbContext.CommunicationEvents.AddAsync(commEvent);
+                await _trueVoteDbContext.SaveChangesAsync();
+
+                await _serviceBus.SendAsync(new
+                {
+                    commEvent.CommunicationEventId,
+                    commEvent.Type,
+                    Email = voterElectionAccessCodeRequest.VoterEmail,
+                    voterElectionAccessCodeRequest.ElectionId,
+                    accessCodesResponse.AccessCodes[0].AccessCode
+                },
+                subject: "VoterAccessCode",
+                correlationId: commEvent.CommunicationEventId,
+                queueName: _configuration["ServiceBusCommsQueueName"]);
+
+                return CreatedAtAction(null, null, commEvent);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new SecureString { Value = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return UnprocessableEntity(new SecureString { Value = ex.Message });
+            }
+            finally
+            {
+                _log.LogDebug("HTTP trigger - SendNewVoterElectionAccessCode:End");
+            }
         }
     }
 }
