@@ -296,14 +296,6 @@ namespace TrueVote.Api.Models
         public required string ElectionId { get; set; }
 
         [Required]
-        [Description("User Id")]
-        [MaxLength(2048)]
-        [DataType(DataType.Text)]
-        [JsonPropertyName("UserId")]
-        [JsonProperty(nameof(UserId), Required = Required.Always)]
-        public required string UserId { get; set; }
-
-        [Required]
         [Description("Request Description")]
         [MaxLength(2048)]
         [DataType(DataType.Text)]
@@ -321,14 +313,6 @@ namespace TrueVote.Api.Models
 
     public class CheckCodeRequest
     {
-        [Required]
-        [Description("User Id")]
-        [MaxLength(2048)]
-        [DataType(DataType.Text)]
-        [JsonPropertyName("UserId")]
-        [JsonProperty(nameof(UserId), Required = Required.Always)]
-        public required string UserId { get; set; }
-
         [Required]
         [Description("AccessCode")]
         [MaxLength(2048)]

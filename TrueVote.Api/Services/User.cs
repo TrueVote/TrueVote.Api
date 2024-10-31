@@ -233,12 +233,6 @@ namespace TrueVote.Api.Services
 
             _log.LogInformation($"Request Data: {user}");
 
-            if (User == null || User.Identity == null)
-            {
-                _log.LogDebug("HTTP trigger - SaveUser:End");
-                return Unauthorized();
-            }
-
             // Determine if User is found
             var foundUser = await _trueVoteDbContext.Users.Where(u => u.UserId == user.UserId).FirstOrDefaultAsync();
             if (foundUser == null)
@@ -287,21 +281,10 @@ namespace TrueVote.Api.Services
 
             _log.LogInformation($"Request Data: {feedback}");
 
-            if (User == null || User.Identity == null)
-            {
-                _log.LogDebug("HTTP trigger - SaveFeedback:End");
-                return Unauthorized();
-            }
-
-            // Determine if User is found
-            var foundUser = await _trueVoteDbContext.Users.Where(u => u.UserId == feedback.UserId).FirstOrDefaultAsync();
-            if (foundUser == null)
-            {
-                _log.LogDebug("HTTP trigger - SaveFeedback:End");
-                return NotFound(new SecureString { Value = $"User: '{feedback.UserId}' not found" });
-            }
+            var userId = User.GetUserId().ToString();
 
             // Sanitize the feedback
+            feedback.UserId = userId;
             feedback.Feedback = Regex.Replace(feedback.Feedback, "<.*?>", string.Empty);
             feedback.FeedbackId = Guid.NewGuid().ToString();
             feedback.DateCreated = UtcNowProviderFactory.GetProvider().UtcNow;
