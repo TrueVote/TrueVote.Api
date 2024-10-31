@@ -30,7 +30,6 @@ namespace TrueVote.Api.Tests.ServiceTests
         {
             var baseBallotObj = new SubmitBallotModel { AccessCode = MoqData.MockElectionAccessCodeData[0].AccessCode, Election = MoqData.MockBallotData[1].Election };
 
-            _ballotApi.ControllerContext = _authControllerContext;
             var ret = await _ballotApi.SubmitBallot(baseBallotObj);
             Assert.NotNull(ret);
             Assert.Equal(StatusCodes.Status201Created, ((IStatusCodeActionResult) ret).StatusCode);
@@ -203,7 +202,6 @@ namespace TrueVote.Api.Tests.ServiceTests
 
             var ballotApi = new Ballot(_logHelper.Object, mockBallotContext.Object, _mockServiceBus.Object, _mockRecursiveValidator.Object, _mockTopicEventSender.Object, _queryService);
 
-            ballotApi.ControllerContext = _authControllerContext;
             var ret = await ballotApi.SubmitBallot(baseBallotObj);
             Assert.NotNull(ret);
             Assert.Equal(StatusCodes.Status409Conflict, ((IStatusCodeActionResult) ret).StatusCode);
@@ -221,7 +219,6 @@ namespace TrueVote.Api.Tests.ServiceTests
         {
             var baseBallotObj = new SubmitBallotModel { AccessCode = "blah", Election = MoqData.MockBallotData[1].Election };
 
-            _ballotApi.ControllerContext = _authControllerContext;
             var ret = await _ballotApi.SubmitBallot(baseBallotObj);
             Assert.NotNull(ret);
             Assert.Equal(StatusCodes.Status404NotFound, ((IStatusCodeActionResult) ret).StatusCode);
@@ -240,7 +237,6 @@ namespace TrueVote.Api.Tests.ServiceTests
         {
             var baseBallotObj = new SubmitBallotModel { AccessCode = MoqData.MockUsedAccessCodeData[0].AccessCode, Election = MoqData.MockBallotData[1].Election };
 
-            _ballotApi.ControllerContext = _authControllerContext;
             var ret = await _ballotApi.SubmitBallot(baseBallotObj);
             Assert.NotNull(ret);
             Assert.Equal(StatusCodes.Status409Conflict, ((IStatusCodeActionResult) ret).StatusCode);
@@ -259,7 +255,6 @@ namespace TrueVote.Api.Tests.ServiceTests
         {
             var baseBallotObj = new SubmitBallotModel { AccessCode = MoqData.MockUsedAccessCodeData[0].AccessCode, Election = MoqData.MockBallotData[1].Election };
 
-            _ballotApi.ControllerContext = AuthHelper(MoqData.MockUserData[2].UserId);
             var ret = await _ballotApi.SubmitBallot(baseBallotObj);
             Assert.NotNull(ret);
             Assert.Equal(StatusCodes.Status409Conflict, ((IStatusCodeActionResult) ret).StatusCode);

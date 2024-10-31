@@ -398,13 +398,13 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task SavesUser()
         {
             var user = MoqData.MockUserData[0];
+            _userApi.SetupController(user.UserId);
             user.FullName = "Joe Jones";
             Assert.Equal(DateTime.MinValue, user.DateUpdated);
             Assert.Equal("Joe Jones", user.FullName);
             var validationResults = ValidationHelper.Validate(user);
             Assert.Empty(validationResults);
 
-            _userApi.ControllerContext = _authControllerContext;
             var ret = await _userApi.SaveUser(user);
 
             Assert.NotNull(ret);
@@ -423,6 +423,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task SavesUserWithNewEmail()
         {
             var user = MoqData.MockUserData[0];
+            _userApi.SetupController(user.UserId);
             user.FullName = "Joe Jones";
             user.Email = "anewemail@anywhere.com";
             Assert.Equal(DateTime.MinValue, user.DateUpdated);
@@ -430,7 +431,6 @@ namespace TrueVote.Api.Tests.ServiceTests
             var validationResults = ValidationHelper.Validate(user);
             Assert.Empty(validationResults);
 
-            _userApi.ControllerContext = _authControllerContext;
             var ret = await _userApi.SaveUser(user);
 
             Assert.NotNull(ret);
@@ -447,27 +447,11 @@ namespace TrueVote.Api.Tests.ServiceTests
         }
 
         [Fact]
-        public async Task HandlesSavesUserWithoutAuthorization()
-        {
-            var user = MoqData.MockUserData[0];
-            user.FullName = "Joe Jones";
-            Assert.Equal(DateTime.MinValue, user.DateUpdated);
-            Assert.Equal("Joe Jones", user.FullName);
-            var validationResults = ValidationHelper.Validate(user);
-            Assert.Empty(validationResults);
-
-            var ret = await _userApi.SaveUser(user);
-
-            Assert.NotNull(ret);
-            Assert.Equal(StatusCodes.Status401Unauthorized, ((IStatusCodeActionResult) ret).StatusCode);
-
-            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
-        }
-
-        [Fact]
         public async Task HandlesSavesUserUserNotFound()
         {
             var user = MoqData.MockUserData[0];
+            user.UserId = "e364f231-54e4-46ff-844d-cd7bc7ab5d09";
+            _userApi.SetupController(user.UserId);
             user.UserId = "blah1";
             user.FullName = "Joe Jones";
             Assert.Equal(DateTime.MinValue, user.DateUpdated);
@@ -475,7 +459,6 @@ namespace TrueVote.Api.Tests.ServiceTests
             var validationResults = ValidationHelper.Validate(user);
             Assert.Empty(validationResults);
 
-            _userApi.ControllerContext = _authControllerContext;
             var ret = await _userApi.SaveUser(user);
 
             Assert.NotNull(ret);
@@ -490,8 +473,9 @@ namespace TrueVote.Api.Tests.ServiceTests
             var feedback = MoqData.MockFeedbackData[0];
             var validationResults = ValidationHelper.Validate(feedback);
             Assert.Empty(validationResults);
+            var user = MoqData.MockUserData[0];
+            _userApi.SetupController(user.UserId);
 
-            _userApi.ControllerContext = _authControllerContext;
             var ret = await _userApi.SaveFeedback(feedback);
 
             Assert.NotNull(ret);
@@ -502,38 +486,6 @@ namespace TrueVote.Api.Tests.ServiceTests
             Assert.Equal("Success", res.Value);
 
             _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
-            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
-        }
-
-        [Fact]
-        public async Task HandlesSavesFeedbackUserNotFound()
-        {
-            var feedback = MoqData.MockFeedbackData[0];
-            feedback.UserId = "blah";
-            var validationResults = ValidationHelper.Validate(feedback);
-            Assert.Empty(validationResults);
-
-            _userApi.ControllerContext = _authControllerContext;
-            var ret = await _userApi.SaveFeedback(feedback);
-
-            Assert.NotNull(ret);
-            Assert.Equal(StatusCodes.Status404NotFound, ((IStatusCodeActionResult) ret).StatusCode);
-
-            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
-        }
-
-        [Fact]
-        public async Task HandlesSavesFeedbackWithoutAuthorization()
-        {
-            var feedback = MoqData.MockFeedbackData[0];
-            var validationResults = ValidationHelper.Validate(feedback);
-            Assert.Empty(validationResults);
-
-            var ret = await _userApi.SaveFeedback(feedback);
-
-            Assert.NotNull(ret);
-            Assert.Equal(StatusCodes.Status401Unauthorized, ((IStatusCodeActionResult) ret).StatusCode);
-
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
         }
 

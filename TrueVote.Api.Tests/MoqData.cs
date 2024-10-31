@@ -19,12 +19,15 @@ namespace TrueVote.Api.Tests
         private static readonly DateTime createDate3 = DateTime.Parse("2023-12-17").AddHours(2);
         private static readonly DateTime createDate4 = DateTime.Parse("2023-12-17").AddHours(3);
         private static readonly DateTime createDate5 = DateTime.Parse("2023-12-17").AddHours(4);
+        private static readonly string userId1 = "c49f94f5-0bb9-43dc-879f-19953952ec6a";
+        private static readonly string userId2 = "93643e68-57fb-4dae-8ab1-0fe1a2d4dda0";
+        private static readonly string userId3 = "b0c72afc-22f0-46bd-9ef1-b95366ac3ebc";
 
         public static List<UserModel> MockUserData => new()
         {
-            new UserModel { UserId = "userid1", Email = "foo@foo.com", DateCreated = createDate, DateUpdated = DateTime.MinValue, FullName = "Foo Bar", NostrPubKey = "npub1", UserPreferences = new UserPreferencesModel() },
-            new UserModel { UserId = "userid2", Email = "foo2@bar.com", DateCreated = createDate2, DateUpdated = DateTime.MinValue, FullName = "Foo2 Bar", NostrPubKey = "npub2", UserPreferences = new UserPreferencesModel() },
-            new UserModel { UserId = "userid3", Email = "boo@bar.com", DateCreated = createDate3, DateUpdated = DateTime.MinValue, FullName = "Boo Bar", NostrPubKey = "npub3", UserPreferences = new UserPreferencesModel() }
+            new UserModel { UserId = userId1, Email = "foo@foo.com", DateCreated = createDate, DateUpdated = DateTime.MinValue, FullName = "Foo Bar", NostrPubKey = "npub1", UserPreferences = new UserPreferencesModel() },
+            new UserModel { UserId = userId2, Email = "foo2@bar.com", DateCreated = createDate2, DateUpdated = DateTime.MinValue, FullName = "Foo2 Bar", NostrPubKey = "npub2", UserPreferences = new UserPreferencesModel() },
+            new UserModel { UserId = userId3, Email = "boo@bar.com", DateCreated = createDate3, DateUpdated = DateTime.MinValue, FullName = "Boo Bar", NostrPubKey = "npub3", UserPreferences = new UserPreferencesModel() }
         };
 
         public static List<ElectionModel> MockElectionData => new()
@@ -251,6 +254,7 @@ namespace TrueVote.Api.Tests
         public virtual required DbSet<ElectionUserBindingModel> ElectionUserBindings { get; set; }
         public virtual required DbSet<RoleModel> Roles { get; set; }
         public virtual required DbSet<UserRoleModel> UserRoles { get; set; }
+        public virtual required DbSet<CommunicationEventModel> CommunicationEvents { get; set; }
 
         protected MoqDataAccessor _moqDataAccessor;
 
