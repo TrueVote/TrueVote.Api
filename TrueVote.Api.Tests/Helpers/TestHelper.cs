@@ -2,6 +2,7 @@ using HotChocolate.Subscriptions;
 using HotChocolate.Types.Descriptors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -39,8 +40,8 @@ namespace TrueVote.Api.Tests.Helpers
         protected readonly Mock<IJwtHandler> _mockJwtHandler;
         protected readonly Mock<IRecursiveValidator> _mockRecursiveValidator;
         protected readonly Mock<ITopicEventSender> _mockTopicEventSender;
-        protected readonly IUniqueKeyGenerator _uniqueKeyGenerator;
-        protected readonly IConfiguration _configuration;
+        protected readonly Mock<IUniqueKeyGenerator> _uniqueKeyGenerator;
+        protected readonly Mock<IConfiguration> _configuration;
         protected readonly MoqTrueVoteDbContext _trueVoteDbContext;
 
         public const string MockedTokenValue = "mocked_token_value";
@@ -68,6 +69,8 @@ namespace TrueVote.Api.Tests.Helpers
             _trueVoteDbContext = (MoqTrueVoteDbContext) serviceProvider.GetService(typeof(MoqTrueVoteDbContext));
 
             _output = output;
+
+            _configuration = new Mock<IConfiguration>();
 
             _fileSystem = new FileSystem();
 
@@ -98,13 +101,13 @@ namespace TrueVote.Api.Tests.Helpers
             _mockTopicEventSender = new Mock<ITopicEventSender>();
             _ = _mockTopicEventSender.Setup(m => m.SendAsync(It.IsAny<string>(), It.IsAny<object>(), It.IsAny<CancellationToken>()));
 
-            _uniqueKeyGenerator = new UniqueKeyGenerator();
+            _uniqueKeyGenerator = new Mock<IUniqueKeyGenerator>();
 
             _moqDataAccessor = new MoqDataAccessor();
 
             _queryService = new Query(_trueVoteDbContext);
             _userApi = new User(_logHelper.Object, _moqDataAccessor.mockUserContext.Object, _mockServiceBus.Object, _mockJwtHandler.Object);
-            _electionApi = new Election(_logHelper.Object, _moqDataAccessor.mockElectionContext.Object, _mockServiceBus.Object, _uniqueKeyGenerator, _configuration);
+            _electionApi = new Election(_logHelper.Object, _moqDataAccessor.mockElectionContext.Object, _mockServiceBus.Object, _uniqueKeyGenerator.Object, _configuration.Object);
             _hasherApi = new Hasher(_logHelper.Object, _mockOpenTimestampsClient.Object, _mockServiceBus.Object);
             _ballotApi = new Ballot(_logHelper.Object, _moqDataAccessor.mockBallotContext.Object, _mockServiceBus.Object, _mockRecursiveValidator.Object, _mockTopicEventSender.Object, _queryService);
             _raceApi = new Race(_logHelper.Object, _moqDataAccessor.mockRaceContext.Object, _mockServiceBus.Object);

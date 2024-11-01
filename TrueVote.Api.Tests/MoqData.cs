@@ -126,6 +126,26 @@ namespace TrueVote.Api.Tests
         {
             new UserRoleModel { RoleId = UserRoles.Voter.Id, DateCreated = createDate.Date, UserId = MockUserData[0].UserId, UserRoleId = "1" },
         };
+
+        public static List<CommunicationEventModel> MockCommunicationEventData => new()
+        {
+            new CommunicationEventModel {
+                    CommunicationEventId = Guid.NewGuid().ToString(),
+                    Type = "VoterAccessCode",
+                    CommunicationMethod = new Dictionary<string, string>
+                    {
+                        { "Email", MockUserData[0].Email }
+                    },
+                    RelatedEntities = new Dictionary<string, string>
+                    {
+                        { "ElectionId", MockElectionData[0].ElectionId },
+                    },
+                    Status = "Queued",
+                    DateCreated = createDate,
+                    DateUpdated = createDate,
+                    Metadata = null
+                },
+        };
     }
 
     public class MoqDataAccessor
@@ -143,6 +163,7 @@ namespace TrueVote.Api.Tests
         public readonly Mock<MoqTrueVoteDbContext> mockElectionUserBindingsContext;
         public readonly Mock<MoqTrueVoteDbContext> mockRoleContext;
         public readonly Mock<MoqTrueVoteDbContext> mockUserRoleContext;
+        public readonly Mock<MoqTrueVoteDbContext> mockCommunicationEventContext;
 
         public Mock<DbSet<UserModel>> MockUserSet { get; private set; }
         public Mock<DbSet<RaceModel>> MockRaceSet { get; private set; }
@@ -157,6 +178,7 @@ namespace TrueVote.Api.Tests
         public Mock<DbSet<ElectionUserBindingModel>> MockElectionUserBindingsSet { get; private set; }
         public Mock<DbSet<RoleModel>> MockRoleSet { get; private set; }
         public Mock<DbSet<UserRoleModel>> MockUserRoleSet { get; private set; }
+        public Mock<DbSet<CommunicationEventModel>> MockCommunicationEventSet { get; private set; }
 
         // https://docs.microsoft.com/en-us/ef/ef6/fundamentals/testing/mocking?redirectedfrom=MSDN
         // https://github.com/romantitov/MockQueryable
@@ -175,6 +197,7 @@ namespace TrueVote.Api.Tests
             MockElectionUserBindingsSet = MoqData.MockElectionUserBindingsData.AsQueryable().BuildMockDbSet();
             MockRoleSet = MoqData.MockRoleData.AsQueryable().BuildMockDbSet();
             MockUserRoleSet = MoqData.MockUserRoleData.AsQueryable().BuildMockDbSet();
+            MockCommunicationEventSet = MoqData.MockCommunicationEventData.AsQueryable().BuildMockDbSet();
 
             mockUserContext = new Mock<MoqTrueVoteDbContext>();
             mockUserContext.Setup(m => m.Feedbacks).Returns(MockFeedbackSet.Object);
@@ -188,6 +211,7 @@ namespace TrueVote.Api.Tests
             mockElectionContext.Setup(m => m.Users).Returns(MockUserSet.Object);
             mockElectionContext.Setup(m => m.ElectionAccessCodes).Returns(MockElectionAccessCodeSet.Object);
             mockElectionContext.Setup(m => m.UsedAccessCodes).Returns(MockUsedAccessCodeSet.Object);
+            mockElectionContext.Setup(m => m.CommunicationEvents).Returns(MockCommunicationEventSet.Object);
 
             mockTimestampContext = new Mock<MoqTrueVoteDbContext>();
             mockTimestampContext.Setup(m => m.Timestamps).Returns(MockTimestampSet.Object);
@@ -230,6 +254,9 @@ namespace TrueVote.Api.Tests
 
             mockUserRoleContext = new Mock<MoqTrueVoteDbContext>();
             mockUserRoleContext.Setup(m => m.UserRoles).Returns(MockUserRoleSet.Object);
+
+            mockCommunicationEventContext = new Mock<MoqTrueVoteDbContext>();
+            mockCommunicationEventContext.Setup(m => m.CommunicationEvents).Returns(MockCommunicationEventSet.Object);
 
             // Leaving commented code. This is for Mocking UTC time. Helpful for test consistency.
             // var mockUtcNowProvider = new Mock<IUtcNowProvider>();
@@ -274,6 +301,7 @@ namespace TrueVote.Api.Tests
             UsedAccessCodes = _moqDataAccessor.MockUsedAccessCodeSet.Object;
             ElectionUserBindings = _moqDataAccessor.MockElectionUserBindingsSet.Object;
             Roles = _moqDataAccessor.MockRoleSet.Object;
+            CommunicationEvents = _moqDataAccessor.MockCommunicationEventSet.Object;
         }
 
         // Keep parameterless constructor if needed

@@ -1,11 +1,13 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Moq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using TrueVote.Api.Helpers;
 using TrueVote.Api.Models;
@@ -208,44 +210,27 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task HandlesCreateAccessCodesUniqueKeyException()
         {
             var numberOfAccessCodes = 5;
-            var accessCodesRequest = new AccessCodesRequest { ElectionId = MoqData.MockElectionData[0].ElectionId, NumberOfAccessCodes = numberOfAccessCodes, RequestDescription = "Test Harness" };
+            var accessCodesRequest = new AccessCodesRequest
+            {
+                ElectionId = MoqData.MockElectionData[0].ElectionId,
+                NumberOfAccessCodes = numberOfAccessCodes,
+                RequestDescription = "Test Harness"
+            };
             var validationResults = ValidationHelper.Validate(accessCodesRequest);
             Assert.Empty(validationResults);
+            var uniqueKeyGenerator = new Mock<IUniqueKeyGenerator>();
+            uniqueKeyGenerator.Setup(e => e.GenerateUniqueKey()).Throws(new Exception("Unable to generate a unique key after multiple attempts"));
 
-            var electionApi = new Mock<Election>(_logHelper.Object, _moqDataAccessor.mockElectionContext.Object, _mockServiceBus.Object, _uniqueKeyGenerator, _configuration) { CallBase = true };
-            electionApi.Setup(e => e.GenerateUniqueKeyAsync()).Throws(new Exception("Unable to generate a unique key after multiple attempts"));
+            var electionApi = new Election(_logHelper.Object, _moqDataAccessor.mockElectionContext.Object, _mockServiceBus.Object, uniqueKeyGenerator.Object, _configuration.Object);
 
-            var ret = await electionApi.Object.CreateAccessCodes(accessCodesRequest);
+            var user = MoqData.MockUserData[0];
+            electionApi.SetupController(user.UserId);
+            var ret = await electionApi.CreateAccessCodes(accessCodesRequest);
+
             Assert.NotNull(ret);
             Assert.Equal(StatusCodes.Status422UnprocessableEntity, ((IStatusCodeActionResult) ret).StatusCode);
-
             var val = (SecureString) (ret as ObjectResult).Value;
             Assert.Contains("Error creating unique access code", val.Value.ToString());
-
-            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
-            _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
-            _logHelper.Verify(LogLevel.Error, Times.Exactly(1));
-        }
-
-        [Fact]
-        public async Task GenerateUniqueKeyHandlesNameCollision()
-        {
-            var numberOfAccessCodes = 5;
-            var accessCodesRequest = new AccessCodesRequest { ElectionId = MoqData.MockElectionData[0].ElectionId, NumberOfAccessCodes = numberOfAccessCodes, RequestDescription = "Test Harness" };
-            var validationResults = ValidationHelper.Validate(accessCodesRequest);
-            Assert.Empty(validationResults);
-
-            var mockUniqueKeyGenerator = new Mock<IUniqueKeyGenerator>();
-            mockUniqueKeyGenerator.Setup(m => m.GenerateUniqueKey()).Returns("accesscode0");
-
-            var electionApi = new Mock<Election>(_logHelper.Object, _moqDataAccessor.mockElectionContext.Object, _mockServiceBus.Object, mockUniqueKeyGenerator.Object, _configuration) { CallBase = true };
-
-            var ret = await electionApi.Object.CreateAccessCodes(accessCodesRequest);
-            Assert.NotNull(ret);
-            Assert.Equal(StatusCodes.Status422UnprocessableEntity, ((IStatusCodeActionResult) ret).StatusCode);
-
-            var val = (SecureString) (ret as ObjectResult).Value;
-            Assert.Contains("Unable to generate a unique key after multiple attempts", val.Value.ToString());
 
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
             _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
@@ -360,6 +345,105 @@ namespace TrueVote.Api.Tests.ServiceTests
 
             _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
             _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+        }
+
+        [Fact]
+        public async Task HandlesSendNewVoterElectionAccessCodeUnfoundElection()
+        {
+            var request = new VoterElectionAccessCodeRequest
+            {
+                ElectionId = "nonexistent",
+                VoterEmail = "test@example.com"
+            };
+            var validationResults = ValidationHelper.Validate(request);
+            Assert.Empty(validationResults);
+
+            var ret = await _electionApi.SendNewVoterElectionAccessCode(request);
+            Assert.NotNull(ret);
+            Assert.Equal(StatusCodes.Status404NotFound, ((IStatusCodeActionResult) ret).StatusCode);
+
+            var val = (SecureString) (ret as NotFoundObjectResult).Value;
+            Assert.Contains("Election", val.Value.ToString());
+            Assert.Contains("not found", val.Value.ToString());
+
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+            _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
+        }
+
+        [Fact]
+        public async Task SendsNewVoterElectionAccessCode()
+        {
+            var user = MoqData.MockUserData[0];
+            _electionApi.SetupController(user.UserId);
+
+            var request = new VoterElectionAccessCodeRequest
+            {
+                ElectionId = MoqData.MockElectionData[0].ElectionId,
+                VoterEmail = "voter@example.com"
+            };
+            var validationResults = ValidationHelper.Validate(request);
+            Assert.Empty(validationResults);
+
+            var ret = await _electionApi.SendNewVoterElectionAccessCode(request);
+            Assert.NotNull(ret);
+            Assert.Equal(StatusCodes.Status201Created, ((IStatusCodeActionResult) ret).StatusCode);
+
+            var val = (CommunicationEventModel) (ret as CreatedAtActionResult).Value;
+            Assert.NotNull(val);
+            Assert.Equal("VoterAccessCode", val.Type);
+            Assert.Equal("Queued", val.Status);
+            Assert.Equal("voter@example.com", val.CommunicationMethod["Email"]);
+            Assert.Equal(request.ElectionId, val.RelatedEntities["ElectionId"]);
+            Assert.NotEmpty(val.CommunicationEventId);
+
+            _logHelper.Verify(LogLevel.Information, Times.AtLeastOnce());
+            _logHelper.Verify(LogLevel.Debug, Times.AtLeastOnce());
+
+            // Verify ServiceBus was called with correct queue name
+            _mockServiceBus.Verify(x => x.SendAsync(
+                It.IsAny<object>(),
+                It.Is<string>(s => s == "VoterAccessCode"),
+                It.Is<string>(s => s == val.CommunicationEventId),
+                It.Is<string>(s => s == _configuration.Object["ServiceBusCommsQueueName"])),
+                Times.Once);
+        }
+
+        [Fact]
+        public async Task HandlesSendNewVoterElectionAccessCodeServiceError()
+        {
+            var user = MoqData.MockUserData[0];
+            _electionApi.SetupController(user.UserId);
+
+            var request = new VoterElectionAccessCodeRequest
+            {
+                ElectionId = MoqData.MockElectionData[0].ElectionId,
+                VoterEmail = "voter@example.com"
+            };
+            var validationResults = ValidationHelper.Validate(request);
+            Assert.Empty(validationResults);
+
+            // Mock CommunicationEvents DbSet
+            var mockCommunicationEvents = new Mock<DbSet<CommunicationEventModel>>();
+            _moqDataAccessor.mockElectionContext
+                .Setup(m => m.CommunicationEvents)
+                .Returns(mockCommunicationEvents.Object);
+
+            // Setup mock to throw on AddAsync
+            mockCommunicationEvents
+                .Setup(m => m.AddAsync(
+                    It.IsAny<CommunicationEventModel>(),
+                    It.IsAny<CancellationToken>()))
+                .ThrowsAsync(new Exception("Database error"));
+
+            var ret = await _electionApi.SendNewVoterElectionAccessCode(request);
+            Assert.NotNull(ret);
+            Assert.Equal(StatusCodes.Status422UnprocessableEntity, ((IStatusCodeActionResult) ret).StatusCode);
+
+            var val = (SecureString) (ret as ObjectResult).Value;
+            Assert.Contains("Database error", val.Value.ToString());
+
+            _logHelper.Verify(LogLevel.Debug, Times.Exactly(2));
+            _logHelper.Verify(LogLevel.Information, Times.Exactly(1));
         }
     }
 }

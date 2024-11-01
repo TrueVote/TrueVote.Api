@@ -331,12 +331,12 @@ namespace TrueVote.Api.Services
                     Type = "VoterAccessCode",
                     CommunicationMethod = new Dictionary<string, string>
                     {
-                    { "Email", voterElectionAccessCodeRequest.VoterEmail }
-                },
+                        { "Email", voterElectionAccessCodeRequest.VoterEmail }
+                    },
                     RelatedEntities = new Dictionary<string, string>
                     {
-                    { "ElectionId", voterElectionAccessCodeRequest.ElectionId },
-                },
+                        { "ElectionId", voterElectionAccessCodeRequest.ElectionId },
+                    },
                     Status = "Queued",
                     DateCreated = now,
                     DateUpdated = now,
