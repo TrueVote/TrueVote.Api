@@ -2,8 +2,6 @@ using HotChocolate.Language;
 using HotChocolate.Types.Descriptors;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
@@ -66,6 +64,9 @@ namespace TrueVote.Api
                 o.DocumentFilter<CustomModelDocumentFilter<ElectionResults>>();
                 o.DocumentFilter<CustomModelDocumentFilter<RaceResult>>();
                 o.DocumentFilter<CustomModelDocumentFilter<CandidateResult>>();
+                o.DocumentFilter<CustomModelDocumentFilter<ServiceBusCommsMessage>>();
+                o.DocumentFilter<CustomModelDocumentFilter<BallotIdInfo>>();
+                o.DocumentFilter<CustomModelDocumentFilter<PaginatedBallotIds>>();
 
                 o.SwaggerDoc("v1", new OpenApiInfo()
                 {

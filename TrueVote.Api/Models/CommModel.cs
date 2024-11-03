@@ -1,4 +1,5 @@
 using Newtonsoft.Json;
+using Swashbuckle.AspNetCore.Annotations;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -108,6 +109,46 @@ namespace TrueVote.Api.Models
         public int? TimeToLive { get; set; }
     }
 
+    public class CommunicationEventUpdateModel
+    {
+        [Required]
+        [Description("Communication Event Id")]
+        [MaxLength(2048)]
+        [DataType(DataType.Text)]
+        [JsonPropertyName("CommunicationEventId")]
+        [JsonProperty(nameof(CommunicationEventId), Required = Required.Always)]
+        [Key]
+        public required string CommunicationEventId { get; set; }
+
+        [Required]
+        [Description("Status of the communication")]
+        [MaxLength(50)]
+        [DataType(DataType.Text)]
+        [JsonPropertyName("Status")]
+        [JsonProperty(nameof(Status), Required = Required.Always)]
+        public required string Status { get; set; } = "Queued";
+
+        [Description("DateUpdated")]
+        [DataType(DataType.DateTime)]
+        [JsonPropertyName("DateUpdated")]
+        [JsonProperty(nameof(DateUpdated), Required = Required.Default)]
+        public DateTime DateUpdated { get; set; }
+
+        [Required]
+        [Description("DateProcessed")]
+        [DataType(DataType.DateTime)]
+        [JsonPropertyName("DateProcessed")]
+        [JsonProperty(nameof(DateProcessed), Required = Required.Always)]
+        public required DateTime DateProcessed { get; set; }
+
+        [Description("Error message if failed")]
+        [MaxLength(4096)]
+        [DataType(DataType.Text)]
+        [JsonPropertyName("ErrorMessage")]
+        [JsonProperty(nameof(ErrorMessage), Required = Required.Default)]
+        public string? ErrorMessage { get; set; }
+    }
+
     public class VoterElectionAccessCodeRequest
     {
         [Required]
@@ -126,5 +167,32 @@ namespace TrueVote.Api.Models
         [JsonPropertyName("VoterEmail")]
         [JsonProperty(nameof(VoterEmail), Required = Required.Always)]
         public required string VoterEmail { get; set; }
+    }
+
+    [SwaggerSchema]
+    public class ServiceBusCommsMessage
+    {
+        [Required]
+        [Description("Required message metadata (Type, CommunicationEventId, etc)")]
+        [JsonPropertyName("Metadata")]
+        [JsonProperty(nameof(Metadata), Required = Required.Always)]
+        public required Dictionary<string, string> Metadata { get; set; } = new();
+
+        [Required]
+        [Description("Communication method and destination (Email, SMS, etc)")]
+        [JsonPropertyName("CommunicationMethod")]
+        [JsonProperty(nameof(CommunicationMethod), Required = Required.Always)]
+        public required Dictionary<string, string> CommunicationMethod { get; set; } = new();
+
+        [Required]
+        [Description("Related entity IDs (ElectionId, BallotId, etc)")]
+        [JsonPropertyName("RelatedEntities")]
+        [JsonProperty(nameof(RelatedEntities), Required = Required.Always)]
+        public required Dictionary<string, string> RelatedEntities { get; set; } = new();
+
+        [Description("Type-specific message payload data")]
+        [JsonPropertyName("MessageData")]
+        [JsonProperty(nameof(MessageData), Required = Required.Default)]
+        public Dictionary<string, string>? MessageData { get; set; }
     }
 }

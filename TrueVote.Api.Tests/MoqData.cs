@@ -22,6 +22,8 @@ namespace TrueVote.Api.Tests
         private static readonly string userId1 = "c49f94f5-0bb9-43dc-879f-19953952ec6a";
         private static readonly string userId2 = "93643e68-57fb-4dae-8ab1-0fe1a2d4dda0";
         private static readonly string userId3 = "b0c72afc-22f0-46bd-9ef1-b95366ac3ebc";
+        private static readonly string commId1 = "30d5951f-0ae3-4ca3-ad78-b90ae3442eac";
+        private static readonly string commId2 = "90e6d57e-5fe8-4d04-8e60-49cdd58f3988";
 
         public static List<UserModel> MockUserData => new()
         {
@@ -129,22 +131,8 @@ namespace TrueVote.Api.Tests
 
         public static List<CommunicationEventModel> MockCommunicationEventData => new()
         {
-            new CommunicationEventModel {
-                    CommunicationEventId = Guid.NewGuid().ToString(),
-                    Type = "VoterAccessCode",
-                    CommunicationMethod = new Dictionary<string, string>
-                    {
-                        { "Email", MockUserData[0].Email }
-                    },
-                    RelatedEntities = new Dictionary<string, string>
-                    {
-                        { "ElectionId", MockElectionData[0].ElectionId },
-                    },
-                    Status = "Queued",
-                    DateCreated = createDate,
-                    DateUpdated = createDate,
-                    Metadata = null
-                },
+            new CommunicationEventModel { CommunicationEventId = commId1, Type = "VoterAccessCode", CommunicationMethod = new Dictionary<string, string> { { "Email", MockUserData[0].Email } }, RelatedEntities = new Dictionary<string, string> { { "ElectionId", MockElectionData[0].ElectionId }, }, Status = "Queued", DateCreated = createDate, DateUpdated = createDate, Metadata = null },
+            new CommunicationEventModel { CommunicationEventId = commId2, Type = "VoterAccessCode", CommunicationMethod = new Dictionary<string, string> { { "Email", MockUserData[0].Email } }, RelatedEntities = new Dictionary<string, string> { { "ElectionId", MockElectionData[1].ElectionId }, }, Status = "Queued", DateCreated = createDate2, DateUpdated = createDate2, Metadata = null },
         };
     }
 

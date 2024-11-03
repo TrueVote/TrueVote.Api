@@ -323,7 +323,7 @@ namespace TrueVote.Api.Services
             {
                 var accessCodesResponse = await GenerateAccessCodes(new AccessCodesRequest { ElectionId = voterElectionAccessCodeRequest.ElectionId, NumberOfAccessCodes = 1, RequestDescription = "SendNewVoterElectionAccessCode Request" });
 
-                var now = DateTime.UtcNow;
+                var now = UtcNowProviderFactory.GetProvider().UtcNow;
 
                 var commEvent = new CommunicationEventModel
                 {
@@ -346,13 +346,25 @@ namespace TrueVote.Api.Services
                 await _trueVoteDbContext.CommunicationEvents.AddAsync(commEvent);
                 await _trueVoteDbContext.SaveChangesAsync();
 
-                await _serviceBus.SendAsync(new
+                await _serviceBus.SendAsync(new ServiceBusCommsMessage
                 {
-                    commEvent.CommunicationEventId,
-                    commEvent.Type,
-                    Email = voterElectionAccessCodeRequest.VoterEmail,
-                    voterElectionAccessCodeRequest.ElectionId,
-                    accessCodesResponse.AccessCodes[0].AccessCode
+                    Metadata = new Dictionary<string, string>
+                    {
+                        { "Type", "VoterAccessCode" },
+                        { "CommunicationEventId", commEvent.CommunicationEventId }
+                    },
+                    CommunicationMethod = new Dictionary<string, string>
+                    {
+                        { "Email", voterElectionAccessCodeRequest.VoterEmail }
+                    },
+                    RelatedEntities = new Dictionary<string, string>
+                    {
+                        { "ElectionId", voterElectionAccessCodeRequest.ElectionId }
+                    },
+                    MessageData = new Dictionary<string, string>
+                    {
+                        { "AccessCode", accessCodesResponse.AccessCodes[0].AccessCode }
+                    }
                 },
                 subject: "VoterAccessCode",
                 correlationId: commEvent.CommunicationEventId,

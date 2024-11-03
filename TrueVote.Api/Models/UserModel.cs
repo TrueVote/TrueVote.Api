@@ -200,7 +200,7 @@ namespace TrueVote.Api.Models
 
         [Required]
         [Description("CreatedAt")]
-        [DataType(DataType.Date)]
+        [DataType(DataType.DateTime)]
         [JsonPropertyName("CreatedAt")]
         [JsonProperty(nameof(CreatedAt), Required = Required.Always)]
         public required DateTime CreatedAt { get; set; }
@@ -342,6 +342,13 @@ namespace TrueVote.Api.Models
             Description: "System administrator"
         );
 
+        [Description("Service Role")]
+        public static readonly RoleInfo Service = new(
+            Name: "Service",
+            Id: "service",
+            Description: "For Services running requiring access"
+        );
+
         // Constants for attribute usage (attributes require const values)
         [Description("Election Administrator Role Constant")]
         public const string ElectionAdmin_Role = "ElectionAdmin";
@@ -352,13 +359,17 @@ namespace TrueVote.Api.Models
         [Description("System Administrator Role Constant")]
         public const string SystemAdmin_Role = "SystemAdmin";
 
+        [Description("Service Role Constant")]
+        public const string Service_Role = "Service";
+
         // Collection of all roles for iteration
         [Description("Collection of All Available Roles")]
         public static readonly IReadOnlyCollection<RoleInfo> AllRoles =
         [
             ElectionAdmin,
             Voter,
-            SystemAdmin
+            SystemAdmin,
+            Service
         ];
 
         // Constants for attribute usage
@@ -370,5 +381,8 @@ namespace TrueVote.Api.Models
 
         [Description("System Administrator Name Constant")]
         public const string SystemAdminName = "SystemAdmin";
+
+        [Description("Service Name Constant")]
+        public const string ServiceName = "Service";
     }
 }

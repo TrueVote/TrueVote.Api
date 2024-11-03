@@ -1,8 +1,5 @@
 using HotChocolate.Subscriptions;
 using HotChocolate.Types.Descriptors;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -11,7 +8,6 @@ using Moq;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.IO.Abstractions;
-using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using TrueVote.Api.Helpers;
@@ -33,6 +29,7 @@ namespace TrueVote.Api.Tests.Helpers
         protected readonly Candidate _candidateApi;
         protected readonly Hasher _hasherApi;
         protected readonly Timestamp _timestampApi;
+        protected readonly Comms _commApi;
         protected readonly Query _queryService;
         protected readonly MoqDataAccessor _moqDataAccessor;
         protected readonly Mock<IOpenTimestampsClient> _mockOpenTimestampsClient;
@@ -113,6 +110,7 @@ namespace TrueVote.Api.Tests.Helpers
             _raceApi = new Race(_logHelper.Object, _moqDataAccessor.mockRaceContext.Object, _mockServiceBus.Object);
             _candidateApi = new Candidate(_logHelper.Object, _moqDataAccessor.mockCandidateContext.Object, _mockServiceBus.Object);
             _timestampApi = new Timestamp(_logHelper.Object, _moqDataAccessor.mockTimestampContext.Object);
+            _commApi = new Comms(_logHelper.Object, _moqDataAccessor.mockCommunicationEventContext.Object);
         }
     }
 }

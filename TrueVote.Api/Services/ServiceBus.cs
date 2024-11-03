@@ -26,19 +26,28 @@ namespace TrueVote.Api.Services
 
         public async Task SendAsync<T>(T message, string? subject = null, string? correlationId = null, string? queueName = null) where T : class
         {
-            var targetQueue = queueName ?? _defaultQueueName;
-            var sender = _client.CreateSender(targetQueue);
-            var messageBody = message is string stringMessage
-                    ? BinaryData.FromString(stringMessage)  // Don't serialize strings
-                    : BinaryData.FromString(JsonSerializer.Serialize(message));
-
-            var serviceBusMessage = new ServiceBusMessage(messageBody)
+            try
             {
-                Subject = subject,
-                CorrelationId = correlationId
-            };
+                var targetQueue = queueName ?? _defaultQueueName;
+                var sender = _client.CreateSender(targetQueue);
+                var messageBody = message is string stringMessage
+                        ? BinaryData.FromString(stringMessage)  // Don't serialize strings
+                        : BinaryData.FromString(JsonSerializer.Serialize(message));
 
-            await sender.SendMessageAsync(serviceBusMessage);
+                var serviceBusMessage = new ServiceBusMessage(messageBody)
+                {
+                    Subject = subject,
+                    CorrelationId = correlationId
+                };
+
+                await sender.SendMessageAsync(serviceBusMessage);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+
+                throw;
+            }
         }
     }
 }
