@@ -13,14 +13,17 @@ namespace TrueVote.Api.Services
     public class ServiceBus : IServiceBus
     {
         readonly IConfiguration _configuration;
-        readonly ServiceBusClient _client;
+        readonly ServiceBusClient? _client;
         readonly string _defaultQueueName;
 
         public ServiceBus(IConfiguration configuration)
         {
             _configuration = configuration;
             var connectionString = _configuration.GetConnectionString("ServiceBusConnectionString");
-            _client = new ServiceBusClient(connectionString);
+            if (!string.IsNullOrEmpty(connectionString))
+            {
+                _client = new ServiceBusClient(connectionString);
+            }
             _defaultQueueName = _configuration["ServiceBusApiEventQueueName"]!;
         }
 
