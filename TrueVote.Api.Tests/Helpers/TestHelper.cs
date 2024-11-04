@@ -1,7 +1,6 @@
 using HotChocolate.Subscriptions;
 using HotChocolate.Types.Descriptors;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
@@ -9,7 +8,6 @@ using Moq;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.IO.Abstractions;
-using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using TrueVote.Api.Helpers;
@@ -31,6 +29,7 @@ namespace TrueVote.Api.Tests.Helpers
         protected readonly Candidate _candidateApi;
         protected readonly Hasher _hasherApi;
         protected readonly Timestamp _timestampApi;
+        protected readonly Comms _commApi;
         protected readonly Query _queryService;
         protected readonly MoqDataAccessor _moqDataAccessor;
         protected readonly Mock<IOpenTimestampsClient> _mockOpenTimestampsClient;
@@ -38,32 +37,11 @@ namespace TrueVote.Api.Tests.Helpers
         protected readonly Mock<IJwtHandler> _mockJwtHandler;
         protected readonly Mock<IRecursiveValidator> _mockRecursiveValidator;
         protected readonly Mock<ITopicEventSender> _mockTopicEventSender;
-        protected readonly IUniqueKeyGenerator _uniqueKeyGenerator;
-        protected readonly ControllerContext _authControllerContext;
+        protected readonly Mock<IUniqueKeyGenerator> _uniqueKeyGenerator;
+        protected readonly Mock<IConfiguration> _configuration;
         protected readonly MoqTrueVoteDbContext _trueVoteDbContext;
 
         public const string MockedTokenValue = "mocked_token_value";
-
-        public static ControllerContext AuthHelper(string userId)
-        {
-            // For endpoints that require Authorization [Authorize]
-            // Mock a user principal with desired claims
-            var claims = new[]
-            {
-                new Claim(ClaimTypes.NameIdentifier, userId),
-                new Claim(ClaimTypes.Role, "User"), // Role
-            };
-            var identity = new ClaimsIdentity(claims, "TestAuthentication");
-            var principal = new ClaimsPrincipal(identity);
-
-            // Create context for controllers to attach to
-            var authControllerContext = new ControllerContext
-            {
-                HttpContext = new DefaultHttpContext { User = principal }
-            };
-
-            return authControllerContext;
-        }
 
         public TestHelper(ITestOutputHelper output)
         {
@@ -83,10 +61,13 @@ namespace TrueVote.Api.Tests.Helpers
             serviceCollection.TryAddScoped<IJwtHandler, JwtHandler>();
             serviceCollection.TryAddScoped<IRecursiveValidator, RecursiveValidator>();
             serviceCollection.TryAddScoped<IUniqueKeyGenerator, UniqueKeyGenerator>();
+
             var serviceProvider = serviceCollection.BuildServiceProvider();
             _trueVoteDbContext = (MoqTrueVoteDbContext) serviceProvider.GetService(typeof(MoqTrueVoteDbContext));
 
             _output = output;
+
+            _configuration = new Mock<IConfiguration>();
 
             _fileSystem = new FileSystem();
 
@@ -100,7 +81,12 @@ namespace TrueVote.Api.Tests.Helpers
             _ = _mockOpenTimestampsClient.Setup(m => m.Stamp(It.IsAny<byte[]>())).Returns<byte[]>(hash => Task.FromResult(hash));
 
             _mockServiceBus = new Mock<IServiceBus>();
-            _ = _mockServiceBus.Setup(m => m.SendAsync(It.IsAny<string>())).Returns(Task.FromResult(""));
+            _mockServiceBus.Setup(m => m.SendAsync(
+                It.IsAny<string>(),
+                It.IsAny<string>(),  // subject
+                It.IsAny<string>(),  // correlationId
+                It.IsAny<string>()   // queueName
+            )).Returns(Task.CompletedTask);
 
             _mockJwtHandler = new Mock<IJwtHandler>();
             _ = _mockJwtHandler.Setup(m => m.GenerateToken(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<IEnumerable<string>>()))
@@ -112,19 +98,19 @@ namespace TrueVote.Api.Tests.Helpers
             _mockTopicEventSender = new Mock<ITopicEventSender>();
             _ = _mockTopicEventSender.Setup(m => m.SendAsync(It.IsAny<string>(), It.IsAny<object>(), It.IsAny<CancellationToken>()));
 
-            _uniqueKeyGenerator = new UniqueKeyGenerator();
+            _uniqueKeyGenerator = new Mock<IUniqueKeyGenerator>();
 
             _moqDataAccessor = new MoqDataAccessor();
 
             _queryService = new Query(_trueVoteDbContext);
             _userApi = new User(_logHelper.Object, _moqDataAccessor.mockUserContext.Object, _mockServiceBus.Object, _mockJwtHandler.Object);
-            _electionApi = new Election(_logHelper.Object, _moqDataAccessor.mockElectionContext.Object, _mockServiceBus.Object, _uniqueKeyGenerator);
+            _electionApi = new Election(_logHelper.Object, _moqDataAccessor.mockElectionContext.Object, _mockServiceBus.Object, _uniqueKeyGenerator.Object, _configuration.Object);
             _hasherApi = new Hasher(_logHelper.Object, _mockOpenTimestampsClient.Object, _mockServiceBus.Object);
             _ballotApi = new Ballot(_logHelper.Object, _moqDataAccessor.mockBallotContext.Object, _mockServiceBus.Object, _mockRecursiveValidator.Object, _mockTopicEventSender.Object, _queryService);
             _raceApi = new Race(_logHelper.Object, _moqDataAccessor.mockRaceContext.Object, _mockServiceBus.Object);
             _candidateApi = new Candidate(_logHelper.Object, _moqDataAccessor.mockCandidateContext.Object, _mockServiceBus.Object);
             _timestampApi = new Timestamp(_logHelper.Object, _moqDataAccessor.mockTimestampContext.Object);
-            _authControllerContext = AuthHelper(MoqData.MockUserData[0].UserId);
+            _commApi = new Comms(_logHelper.Object, _moqDataAccessor.mockCommunicationEventContext.Object);
         }
     }
 }

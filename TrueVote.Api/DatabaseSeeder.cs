@@ -59,30 +59,42 @@ namespace TrueVote.Api
             {
                 _log.LogInformation("Checking if user roles need to be seeded...");
 
-                var userIds = _configuration.GetSection("SystemAdminUserIds").Get<string[]>();
-                if (userIds == null || !userIds.Any())
+                // Get system admin and service user IDs from configuration
+                var systemAdminUserIds = _configuration.GetSection("SystemAdminUserIds").Get<string[]>() ?? Array.Empty<string>();
+                var serviceUserIds = _configuration.GetSection("ServiceUserIds").Get<string[]>() ?? Array.Empty<string>();
+
+                if (!systemAdminUserIds.Any() && !serviceUserIds.Any())
                 {
-                    _log.LogWarning("No system admin user IDs configured for seeding");
+                    _log.LogWarning("No system admin or service user IDs configured for seeding");
                     return;
                 }
 
-                // Get all existing users that match our configured IDs
-                var existingUsers = await _context.Users.Where(u => userIds.Contains(u.UserId)).Select(u => u.UserId).ToListAsync();
-                if (existingUsers.Count == 0)
+                // Get all configured users that exist in the database
+                var allConfiguredUserIds = systemAdminUserIds.Union(serviceUserIds).ToArray();
+                var existingUsers = await _context.Users
+                    .Where(u => allConfiguredUserIds.Contains(u.UserId))
+                    .Select(u => u.UserId)
+                    .ToListAsync();
+
+                if (!existingUsers.Any())
                 {
                     _log.LogWarning("None of the configured user IDs exist in the database");
                     return;
                 }
 
-                // Get existing user roles for these users to avoid duplicates
-                var existingUserRoles = await _context.UserRoles.Where(ur => existingUsers.Contains(ur.UserId)).Select(ur => new { ur.UserId, ur.RoleId }).ToListAsync();
+                // Get existing user roles to avoid duplicates
+                var existingUserRoles = await _context.UserRoles
+                    .Where(ur => existingUsers.Contains(ur.UserId))
+                    .Select(ur => new { ur.UserId, ur.RoleId })
+                    .ToListAsync();
 
                 var newUserRoles = new List<UserRoleModel>();
 
-                foreach (var userId in existingUsers)
+                // Process system admin users - they get all roles
+                foreach (var userId in existingUsers.Where(u => systemAdminUserIds.Contains(u)))
                 {
-                    // Create role assignments for each role that doesn't already exist
-                    var userNewRoles = UserRoles.AllRoles.Where(role => !existingUserRoles.Any(er => er.UserId == userId && er.RoleId == role.Id))
+                    var userNewRoles = UserRoles.AllRoles
+                        .Where(role => !existingUserRoles.Any(er => er.UserId == userId && er.RoleId == role.Id))
                         .Select(role => new UserRoleModel
                         {
                             UserId = userId,
@@ -94,7 +106,23 @@ namespace TrueVote.Api
                     newUserRoles.AddRange(userNewRoles);
                 }
 
-                if (newUserRoles.Count != 0)
+                // Process service users - they only get the Service role
+                foreach (var userId in existingUsers.Where(u => serviceUserIds.Contains(u)))
+                {
+                    // Only add Service role if it doesn't exist
+                    if (!existingUserRoles.Any(er => er.UserId == userId && er.RoleId == UserRoles.Service.Id))
+                    {
+                        newUserRoles.Add(new UserRoleModel
+                        {
+                            UserId = userId,
+                            RoleId = UserRoles.Service.Id,
+                            DateCreated = now,
+                            UserRoleId = Guid.NewGuid().ToString()
+                        });
+                    }
+                }
+
+                if (newUserRoles.Any())
                 {
                     foreach (var userRole in newUserRoles)
                     {

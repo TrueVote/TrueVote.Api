@@ -1,6 +1,5 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using System.Security.Claims;
 using HotChocolate.Subscriptions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -42,7 +41,6 @@ namespace TrueVote.Api.Services
         [HttpPost]
         [Authorize]
         [RequireRole(UserRoles.Voter_Role)]
-        [ServiceFilter(typeof(ValidateUserIdFilter))]
         [Route("ballot/submitballot")]
         [Produces(typeof(SubmitBallotModelResponse))]
         [Description("Election Model with vote selections")]
@@ -73,12 +71,7 @@ namespace TrueVote.Api.Services
             }
 
             // Get the GUID UserId from the JWT
-            var userId = User.FindAll(ClaimTypes.NameIdentifier).FirstOrDefault(u => !u.Value.StartsWith("npub"))?.Value;
-            if (userId == null)
-            {
-                _log.LogDebug("HTTP trigger - SubmitBallot:End");
-                return NotFound(new SecureString { Value = $"UserId not found" });
-            }
+            var userId = User.GetUserId().ToString();
 
             // Check if user already submitted ballot for this election
             var alreadySubmitted = await _trueVoteDbContext.ElectionUserBindings.Where(u => u.UserId == userId && u.ElectionId == bindSubmitBallotModel.Election.ElectionId).FirstOrDefaultAsync();

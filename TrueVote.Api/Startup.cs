@@ -2,8 +2,6 @@ using HotChocolate.Language;
 using HotChocolate.Types.Descriptors;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
@@ -19,7 +17,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO.Abstractions;
 using System.Reflection;
-using System.Security.Claims;
 using System.Text.Json;
 using TrueVote.Api.Helpers;
 using TrueVote.Api.Interfaces;
@@ -45,7 +42,6 @@ namespace TrueVote.Api
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddSingleton<ValidateUserIdFilter>();
             services.AddControllers().AddNewtonsoftJson(jsonoptions =>
             {
                 jsonoptions.SerializerSettings.Converters.Add(new Newtonsoft.Json.Converters.IsoDateTimeConverter());
@@ -68,6 +64,9 @@ namespace TrueVote.Api
                 o.DocumentFilter<CustomModelDocumentFilter<ElectionResults>>();
                 o.DocumentFilter<CustomModelDocumentFilter<RaceResult>>();
                 o.DocumentFilter<CustomModelDocumentFilter<CandidateResult>>();
+                o.DocumentFilter<CustomModelDocumentFilter<ServiceBusCommsMessage>>();
+                o.DocumentFilter<CustomModelDocumentFilter<BallotIdInfo>>();
+                o.DocumentFilter<CustomModelDocumentFilter<PaginatedBallotIds>>();
 
                 o.SwaggerDoc("v1", new OpenApiInfo()
                 {
@@ -272,6 +271,7 @@ namespace TrueVote.Api
         public virtual required DbSet<ElectionUserBindingModel> ElectionUserBindings { get; set; }
         public virtual required DbSet<RoleModel> Roles { get; set; }
         public virtual required DbSet<UserRoleModel> UserRoles { get; set; }
+        public virtual required DbSet<CommunicationEventModel> CommunicationEvents { get; set; }
 
         private readonly IConfiguration? _configuration;
         private readonly string? _connectionString;
@@ -398,6 +398,53 @@ namespace TrueVote.Api
             .WithMany()
             .HasForeignKey(ur => ur.UserId)
             .HasPrincipalKey(u => u.UserId);
+
+            modelBuilder.HasDefaultContainer("CommunicationEvents");
+            modelBuilder.Entity<CommunicationEventModel>().ToContainer("CommunicationEvents");
+            modelBuilder.Entity<CommunicationEventModel>().HasNoDiscriminator();
+            modelBuilder.Entity<CommunicationEventModel>().HasPartitionKey(c => c.CommunicationEventId);
+            modelBuilder.Entity<CommunicationEventModel>().HasKey(c => c.CommunicationEventId);
+            modelBuilder.Entity<CommunicationEventModel>()
+               .Property(c => c.CommunicationMethod)
+               .HasConversion(
+                   v => JsonSerializer.Serialize(v, (JsonSerializerOptions) null),
+                   v => JsonSerializer.Deserialize<Dictionary<string, string>>(v, (JsonSerializerOptions) null),
+                   new ValueComparer<Dictionary<string, string>>(
+                       (c1, c2) => c1.SequenceEqual(c2),
+                       c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
+                       c => new Dictionary<string, string>(c)
+                   ));
+            modelBuilder.Entity<CommunicationEventModel>()
+               .Property(c => c.RelatedEntities)
+               .HasConversion(
+                   v => JsonSerializer.Serialize(v, (JsonSerializerOptions) null),
+                   v => JsonSerializer.Deserialize<Dictionary<string, string>>(v, (JsonSerializerOptions) null),
+                   new ValueComparer<Dictionary<string, string>>(
+                       (c1, c2) => c1.SequenceEqual(c2),
+                       c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
+                       c => new Dictionary<string, string>(c)
+                   ));
+            modelBuilder.Entity<CommunicationEventModel>()
+               .Property(c => c.Metadata)
+               .HasConversion(
+                   v => JsonSerializer.Serialize(v, (JsonSerializerOptions) null),
+                   v => JsonSerializer.Deserialize<Dictionary<string, string>>(v, (JsonSerializerOptions) null),
+                   new ValueComparer<Dictionary<string, string>>(
+                       (c1, c2) => (c1 == null && c2 == null) || (c1 != null && c2 != null && c1.SequenceEqual(c2)),
+                       c => c != null ? c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())) : 0,
+                       c => c != null ? new Dictionary<string, string>(c) : null
+                   ));
+            modelBuilder.Entity<CommunicationEventModel>()
+                .Property(c => c.CommunicationMethodJson)
+                .HasJsonConversion();
+
+            modelBuilder.Entity<CommunicationEventModel>()
+                .Property(c => c.RelatedEntitiesJson)
+                .HasJsonConversion();
+
+            modelBuilder.Entity<CommunicationEventModel>()
+                .Property(c => c.MetadataJson)
+                .HasJsonConversion();
         }
     }
 
@@ -456,86 +503,6 @@ namespace TrueVote.Api
         public RequireRoleAttribute(params string[] roles)
         {
             Roles = string.Join(",", roles);
-        }
-    }
-
-    [ExcludeFromCodeCoverage]
-    public class ValidateUserIdFilter : IActionFilter
-    {
-        public void OnActionExecuting(ActionExecutingContext context)
-        {
-            var userId = Guid.Empty;
-
-            // Get the user ID from the JWT token
-            // Dereference the ClaimTypes in an odd way because JwtRegisteredClaimNames doesn't work well.
-            // Instead, getting this value from token creation code in JwtAuth.cs:
-            // claims.Add(new Claim(JwtRegisteredClaimNames.NameId, userId));
-            var nameIdentifierList = context.HttpContext.User.Claims.Where(c => c.Type == ClaimTypes.NameIdentifier).ToList();
-            foreach (var claim in nameIdentifierList)
-            {
-                if (claim.Value != null)
-                {
-                    var isValid = Guid.TryParse(claim.Value, out userId);
-
-                    if (isValid)
-                        break;
-                }
-            }
-
-            //var userId = context.HttpContext.User.Claims.Where(c => c.Type == ClaimTypes.NameIdentifier).Skip(1).Take(1).Select(c => c.Value).FirstOrDefault() ?? null;
-            if (userId == Guid.Empty)
-            {
-                context.Result = new ForbidResult();
-                return;
-            }
-
-            // Check if the action argument is a model with a UserId property
-            foreach (var model in context.ActionArguments.Values.Where(v => v != null))
-            {
-                switch (model)
-                {
-                    case UserModel userModel:
-                    {
-                        ValidateUserId(context, userModel.UserId, userId.ToString());
-                        break;
-                    }
-
-                    case FeedbackModel feedbackModel:
-                    {
-                        ValidateUserId(context, feedbackModel.UserId, userId.ToString());
-                        break;
-                    }
-
-                    case AccessCodesRequest accessCodesRequest:
-                    {
-                        ValidateUserId(context, accessCodesRequest.UserId, userId.ToString());
-                        break;
-                    }
-
-                    case CheckCodeRequest checkCodeRequest:
-                    {
-                        ValidateUserId(context, checkCodeRequest.UserId, userId.ToString());
-                        break;
-                    }
-                    // Add more cases for other models with UserId property
-
-                    default:
-                        break;
-                }
-            }
-        }
-
-        public void OnActionExecuted(ActionExecutedContext context)
-        {
-            // Not needed for this filter
-        }
-
-        private void ValidateUserId(ActionExecutingContext context, string modelUserId, string tokenUserId)
-        {
-            if (modelUserId != tokenUserId)
-            {
-                context.Result = new ForbidResult();
-            }
         }
     }
 

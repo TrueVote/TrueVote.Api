@@ -222,61 +222,53 @@ namespace TrueVote.Api.Services
 
         [HttpPut]
         [Authorize]
-        [ServiceFilter(typeof(ValidateUserIdFilter))]
         [Route("user/saveuser")]
         [Produces(typeof(UserModel))]
         [Description("Saves an existing User preferences and returns the same updated User")]
         [ProducesResponseType(typeof(UserModel), StatusCodes.Status200OK)]
-        public async Task<IActionResult> SaveUser([FromBody] UserModel user)
+        public async Task<IActionResult> SaveUser([FromBody] UserModel userModel)
         {
             _log.LogDebug("HTTP trigger - SaveUser:Begin");
 
-            _log.LogInformation($"Request Data: {user}");
+            _log.LogInformation($"Request Data: {userModel}");
 
-            if (User == null || User.Identity == null)
+            // Get User record
+            var user = await _trueVoteDbContext.Users.Where(u => u.UserId == User.GetUserId().ToString()).FirstOrDefaultAsync();
+            if (user == null)
             {
                 _log.LogDebug("HTTP trigger - SaveUser:End");
-                return Unauthorized();
-            }
-
-            // Determine if User is found
-            var foundUser = await _trueVoteDbContext.Users.Where(u => u.UserId == user.UserId).FirstOrDefaultAsync();
-            if (foundUser == null)
-            {
-                _log.LogDebug("HTTP trigger - SaveUser:End");
-                return NotFound(new SecureString { Value = $"User: '{user.UserId}' not found" });
+                return NotFound(new SecureString { Value = $"User: '{userModel.UserId}' not found" });
             }
 
             // Save settings passed in
-            foundUser.FullName = user.FullName;
+            user.FullName = userModel.FullName;
 
-            if (!foundUser.Email.Equals(user.Email))
+            if (!user.Email.Equals(userModel.Email))
             {
-                _log.LogInformation($"TrueVote User settings - updated email: {foundUser.Email}");
+                _log.LogInformation($"TrueVote User settings - updated email: {user.Email}");
                 // TODO May need to generate a "validate email" workflow here
             }
-            foundUser.Email = user.Email; 
+            user.Email = userModel.Email; 
 
             // Save all the preferences. Possible in the future here will need to generate workflows if new features are enabled
-            foundUser.UserPreferences = user.UserPreferences;
+            user.UserPreferences = userModel.UserPreferences;
 
             // Last thing to do - set the updated timestamp
-            foundUser.DateUpdated = UtcNowProviderFactory.GetProvider().UtcNow;
+            user.DateUpdated = UtcNowProviderFactory.GetProvider().UtcNow;
 
             // TODO Add Versioning for each update
-            _trueVoteDbContext.Users.Update(foundUser);
+            _trueVoteDbContext.Users.Update(user);
             await _trueVoteDbContext.SaveChangesAsync();
 
-            await _serviceBus.SendAsync($"TrueVote User updated: {foundUser.FullName}");
+            await _serviceBus.SendAsync($"TrueVote User updated: {user.FullName}");
 
             _log.LogDebug("HTTP trigger - SaveUser:End");
 
-            return Ok(foundUser);
+            return Ok(user);
         }
 
         [HttpPost]
         [Authorize]
-        [ServiceFilter(typeof(ValidateUserIdFilter))]
         [Route("user/savefeedback")]
         [Produces(typeof(SecureString))]
         [Description("Saves feedback for a user and returns a response")]
@@ -287,21 +279,8 @@ namespace TrueVote.Api.Services
 
             _log.LogInformation($"Request Data: {feedback}");
 
-            if (User == null || User.Identity == null)
-            {
-                _log.LogDebug("HTTP trigger - SaveFeedback:End");
-                return Unauthorized();
-            }
-
-            // Determine if User is found
-            var foundUser = await _trueVoteDbContext.Users.Where(u => u.UserId == feedback.UserId).FirstOrDefaultAsync();
-            if (foundUser == null)
-            {
-                _log.LogDebug("HTTP trigger - SaveFeedback:End");
-                return NotFound(new SecureString { Value = $"User: '{feedback.UserId}' not found" });
-            }
-
             // Sanitize the feedback
+            feedback.UserId = User.GetUserId().ToString();
             feedback.Feedback = Regex.Replace(feedback.Feedback, "<.*?>", string.Empty);
             feedback.FeedbackId = Guid.NewGuid().ToString();
             feedback.DateCreated = UtcNowProviderFactory.GetProvider().UtcNow;

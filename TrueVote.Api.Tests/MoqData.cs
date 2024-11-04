@@ -19,12 +19,17 @@ namespace TrueVote.Api.Tests
         private static readonly DateTime createDate3 = DateTime.Parse("2023-12-17").AddHours(2);
         private static readonly DateTime createDate4 = DateTime.Parse("2023-12-17").AddHours(3);
         private static readonly DateTime createDate5 = DateTime.Parse("2023-12-17").AddHours(4);
+        private static readonly string userId1 = "c49f94f5-0bb9-43dc-879f-19953952ec6a";
+        private static readonly string userId2 = "93643e68-57fb-4dae-8ab1-0fe1a2d4dda0";
+        private static readonly string userId3 = "b0c72afc-22f0-46bd-9ef1-b95366ac3ebc";
+        private static readonly string commId1 = "30d5951f-0ae3-4ca3-ad78-b90ae3442eac";
+        private static readonly string commId2 = "90e6d57e-5fe8-4d04-8e60-49cdd58f3988";
 
         public static List<UserModel> MockUserData => new()
         {
-            new UserModel { UserId = "userid1", Email = "foo@foo.com", DateCreated = createDate, DateUpdated = DateTime.MinValue, FullName = "Foo Bar", NostrPubKey = "npub1", UserPreferences = new UserPreferencesModel() },
-            new UserModel { UserId = "userid2", Email = "foo2@bar.com", DateCreated = createDate2, DateUpdated = DateTime.MinValue, FullName = "Foo2 Bar", NostrPubKey = "npub2", UserPreferences = new UserPreferencesModel() },
-            new UserModel { UserId = "userid3", Email = "boo@bar.com", DateCreated = createDate3, DateUpdated = DateTime.MinValue, FullName = "Boo Bar", NostrPubKey = "npub3", UserPreferences = new UserPreferencesModel() }
+            new UserModel { UserId = userId1, Email = "foo@foo.com", DateCreated = createDate, DateUpdated = DateTime.MinValue, FullName = "Foo Bar", NostrPubKey = "npub1", UserPreferences = new UserPreferencesModel() },
+            new UserModel { UserId = userId2, Email = "foo2@bar.com", DateCreated = createDate2, DateUpdated = DateTime.MinValue, FullName = "Foo2 Bar", NostrPubKey = "npub2", UserPreferences = new UserPreferencesModel() },
+            new UserModel { UserId = userId3, Email = "boo@bar.com", DateCreated = createDate3, DateUpdated = DateTime.MinValue, FullName = "Boo Bar", NostrPubKey = "npub3", UserPreferences = new UserPreferencesModel() }
         };
 
         public static List<ElectionModel> MockElectionData => new()
@@ -123,6 +128,12 @@ namespace TrueVote.Api.Tests
         {
             new UserRoleModel { RoleId = UserRoles.Voter.Id, DateCreated = createDate.Date, UserId = MockUserData[0].UserId, UserRoleId = "1" },
         };
+
+        public static List<CommunicationEventModel> MockCommunicationEventData => new()
+        {
+            new CommunicationEventModel { CommunicationEventId = commId1, Type = "VoterAccessCode", CommunicationMethod = new Dictionary<string, string> { { "Email", MockUserData[0].Email } }, RelatedEntities = new Dictionary<string, string> { { "ElectionId", MockElectionData[0].ElectionId }, }, Status = "Queued", DateCreated = createDate, DateUpdated = createDate, Metadata = null },
+            new CommunicationEventModel { CommunicationEventId = commId2, Type = "VoterAccessCode", CommunicationMethod = new Dictionary<string, string> { { "Email", MockUserData[0].Email } }, RelatedEntities = new Dictionary<string, string> { { "ElectionId", MockElectionData[1].ElectionId }, }, Status = "Queued", DateCreated = createDate2, DateUpdated = createDate2, Metadata = null },
+        };
     }
 
     public class MoqDataAccessor
@@ -140,6 +151,7 @@ namespace TrueVote.Api.Tests
         public readonly Mock<MoqTrueVoteDbContext> mockElectionUserBindingsContext;
         public readonly Mock<MoqTrueVoteDbContext> mockRoleContext;
         public readonly Mock<MoqTrueVoteDbContext> mockUserRoleContext;
+        public readonly Mock<MoqTrueVoteDbContext> mockCommunicationEventContext;
 
         public Mock<DbSet<UserModel>> MockUserSet { get; private set; }
         public Mock<DbSet<RaceModel>> MockRaceSet { get; private set; }
@@ -154,6 +166,7 @@ namespace TrueVote.Api.Tests
         public Mock<DbSet<ElectionUserBindingModel>> MockElectionUserBindingsSet { get; private set; }
         public Mock<DbSet<RoleModel>> MockRoleSet { get; private set; }
         public Mock<DbSet<UserRoleModel>> MockUserRoleSet { get; private set; }
+        public Mock<DbSet<CommunicationEventModel>> MockCommunicationEventSet { get; private set; }
 
         // https://docs.microsoft.com/en-us/ef/ef6/fundamentals/testing/mocking?redirectedfrom=MSDN
         // https://github.com/romantitov/MockQueryable
@@ -172,6 +185,7 @@ namespace TrueVote.Api.Tests
             MockElectionUserBindingsSet = MoqData.MockElectionUserBindingsData.AsQueryable().BuildMockDbSet();
             MockRoleSet = MoqData.MockRoleData.AsQueryable().BuildMockDbSet();
             MockUserRoleSet = MoqData.MockUserRoleData.AsQueryable().BuildMockDbSet();
+            MockCommunicationEventSet = MoqData.MockCommunicationEventData.AsQueryable().BuildMockDbSet();
 
             mockUserContext = new Mock<MoqTrueVoteDbContext>();
             mockUserContext.Setup(m => m.Feedbacks).Returns(MockFeedbackSet.Object);
@@ -185,6 +199,7 @@ namespace TrueVote.Api.Tests
             mockElectionContext.Setup(m => m.Users).Returns(MockUserSet.Object);
             mockElectionContext.Setup(m => m.ElectionAccessCodes).Returns(MockElectionAccessCodeSet.Object);
             mockElectionContext.Setup(m => m.UsedAccessCodes).Returns(MockUsedAccessCodeSet.Object);
+            mockElectionContext.Setup(m => m.CommunicationEvents).Returns(MockCommunicationEventSet.Object);
 
             mockTimestampContext = new Mock<MoqTrueVoteDbContext>();
             mockTimestampContext.Setup(m => m.Timestamps).Returns(MockTimestampSet.Object);
@@ -228,6 +243,9 @@ namespace TrueVote.Api.Tests
             mockUserRoleContext = new Mock<MoqTrueVoteDbContext>();
             mockUserRoleContext.Setup(m => m.UserRoles).Returns(MockUserRoleSet.Object);
 
+            mockCommunicationEventContext = new Mock<MoqTrueVoteDbContext>();
+            mockCommunicationEventContext.Setup(m => m.CommunicationEvents).Returns(MockCommunicationEventSet.Object);
+
             // Leaving commented code. This is for Mocking UTC time. Helpful for test consistency.
             // var mockUtcNowProvider = new Mock<IUtcNowProvider>();
             // mockUtcNowProvider.Setup(p => p.UtcNow).Returns(MoqData.startDate);
@@ -251,6 +269,7 @@ namespace TrueVote.Api.Tests
         public virtual required DbSet<ElectionUserBindingModel> ElectionUserBindings { get; set; }
         public virtual required DbSet<RoleModel> Roles { get; set; }
         public virtual required DbSet<UserRoleModel> UserRoles { get; set; }
+        public virtual required DbSet<CommunicationEventModel> CommunicationEvents { get; set; }
 
         protected MoqDataAccessor _moqDataAccessor;
 
@@ -270,6 +289,7 @@ namespace TrueVote.Api.Tests
             UsedAccessCodes = _moqDataAccessor.MockUsedAccessCodeSet.Object;
             ElectionUserBindings = _moqDataAccessor.MockElectionUserBindingsSet.Object;
             Roles = _moqDataAccessor.MockRoleSet.Object;
+            CommunicationEvents = _moqDataAccessor.MockCommunicationEventSet.Object;
         }
 
         // Keep parameterless constructor if needed
