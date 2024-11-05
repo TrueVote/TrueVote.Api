@@ -53,6 +53,7 @@ namespace TrueVote.Api
                 jsonoptions.SerializerSettings.ContractResolver = new DefaultContractResolver();
             });
             services.AddEndpointsApiExplorer();
+
             services.AddSwaggerGen(o =>
             {
                 var baseUrl = "/api";
@@ -157,8 +158,7 @@ namespace TrueVote.Api
 
             services.AddLogging(builder =>
             {
-                builder.SetMinimumLevel(LogLevel.Debug)
-                       .AddProvider(new CustomLoggerProvider(builder));
+                builder.SetMinimumLevel(LogLevel.Debug).AddProvider(new CustomLoggerProvider(builder));
             });
 
             services.AddDbContextFactory<TrueVoteDbContext>(options => options.UseCosmos(_configuration.GetConnectionString("CosmosDbConnectionString"), "true-vote"), ServiceLifetime.Scoped);
