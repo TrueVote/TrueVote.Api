@@ -2,6 +2,7 @@ using HotChocolate.Language;
 using HotChocolate.Types.Descriptors;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
@@ -99,7 +100,9 @@ namespace TrueVote.Api
                 o.OperationFilter<AuthorizeCheckOperationFilter>();
             });
 
-            services.AddHealthChecks().AddCheck("api", () => HealthCheckResult.Healthy());
+            services.AddHealthChecks()
+                .AddCheck("api", () => HealthCheckResult.Healthy())
+                .AddCheck<DatabaseHealthCheck>("database");
 
             services.AddApplicationInsightsTelemetry();
             services.AddDbContext<ITrueVoteDbContext, TrueVoteDbContext>();
@@ -189,6 +192,18 @@ namespace TrueVote.Api
                 Console.WriteLine("Running Deployed");
             }
 
+            app.UseStatusCodePages(async context =>
+            {
+                // Return clean JSON errors instead of HTML
+                context.HttpContext.Response.ContentType = "application/json";
+                var response = new
+                {
+                    status = context.HttpContext.Response.StatusCode,
+                    message = "Not Found"
+                };
+                await context.HttpContext.Response.WriteAsJsonAsync(response);
+            });
+
             app.UseHttpsRedirection();
             app.UseExceptionHandler();
 
@@ -231,12 +246,49 @@ namespace TrueVote.Api
             {
                 e.MapControllers();
                 e.MapGraphQL();
-                e.MapHealthChecks("/health");
+                e.MapHealthChecks("/health", new HealthCheckOptions
+                {
+                    ResponseWriter = async (context, report) =>
+                    {
+                        context.Response.ContentType = "application/json";
+                        var response = new
+                        {
+                            status = report.Status.ToString(),
+                            checks = report.Entries.Select(e => new
+                            {
+                                name = e.Key,
+                                status = e.Value.Status.ToString(),
+                                duration = e.Value.Duration.ToString()
+                            }),
+                            duration = report.TotalDuration
+                        };
+                        await context.Response.WriteAsJsonAsync(response);
+                    }
+                });
                 e.MapGet("/", context =>
                 {
-                    context.Response.Redirect("/swagger");
+                    context.Response.Redirect("/index.html");
                     return Task.CompletedTask;
                 });
+            });
+
+            // Security headers
+            app.Use(async (context, next) =>
+            {
+                // Add security headers
+                context.Response.Headers.Append("X-Content-Type-Options", "nosniff");
+                context.Response.Headers.Append("X-Frame-Options", "DENY");
+                context.Response.Headers.Append("X-XSS-Protection", "1; mode=block");
+
+                // Block access to sensitive files
+                var path = context.Request.Path.Value?.ToLower();
+                if (path != null && (path.Contains("/.env") || path.Contains("/web.config") || path.Contains("/appsettings")))
+                {
+                    context.Response.StatusCode = 404;
+                    return;
+                }
+
+                await next();
             });
 
             dbContext.EnsureCreatedAsync().GetAwaiter().GetResult();
@@ -628,6 +680,32 @@ namespace TrueVote.Api
             }
 
             throw new InvalidOperationException($"Unable to convert value '{value}' to type {targetType}");
+        }
+    }
+
+    [ExcludeFromCodeCoverage]
+    public class DatabaseHealthCheck : IHealthCheck
+    {
+        private readonly IServiceScopeFactory _scopeFactory;
+
+        public DatabaseHealthCheck(IServiceScopeFactory scopeFactory)
+        {
+            _scopeFactory = scopeFactory;
+        }
+
+        public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                using var scope = _scopeFactory.CreateScope();
+                var dbContext = scope.ServiceProvider.GetRequiredService<ITrueVoteDbContext>();
+                await dbContext.EnsureCreatedAsync();
+                return HealthCheckResult.Healthy();
+            }
+            catch (Exception ex)
+            {
+                return HealthCheckResult.Unhealthy(ex.Message);
+            }
         }
     }
 }
