@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -98,6 +99,8 @@ namespace TrueVote.Api
                 o.OperationFilter<AuthorizeCheckOperationFilter>();
             });
 
+            services.AddHealthChecks().AddCheck("api", () => HealthCheckResult.Healthy());
+
             services.AddApplicationInsightsTelemetry();
             services.AddDbContext<ITrueVoteDbContext, TrueVoteDbContext>();
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
@@ -186,24 +189,21 @@ namespace TrueVote.Api
                 Console.WriteLine("Running Deployed");
             }
 
-            app.UsePathBase("/api");
+            app.UseHttpsRedirection();
+            app.UseExceptionHandler();
+
             app.UseOpenApi();
-            app.UseWebSockets();
-
-            // Redirect /swagger and /swagger/index.html to /
-            // Unfortunately, browser renders as /index.html
-            // Ideally it would just stop at / and not show /index.html
-            app.Use(async (context, next) =>
+            app.UseSwagger(c =>
             {
-                if (context.Request.Path == "/swagger" || context.Request.Path == "/swagger/index.html")
+                c.PreSerializeFilters.Add((swaggerDoc, httpReq) =>
                 {
-                    context.Response.Redirect("/");
-                    return;
-                }
-                await next();
+                    swaggerDoc.Servers = new List<OpenApiServer>
+                    {
+                        new OpenApiServer { Url = $"{httpReq.Scheme}://{httpReq.Host.Value}/api" }
+                    };
+                });
+                c.RouteTemplate = "swagger/{documentName}/swagger.json";
             });
-
-            app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "TrueVote.Api");
@@ -215,14 +215,10 @@ namespace TrueVote.Api
                 c.EnableValidator();
             });
 
-            app.UseHttpsRedirection();
-
-            app.UseExceptionHandler();
-
+            app.UsePathBase("/api");
             app.UseRouting();
-
+            app.UseWebSockets();
             app.UseAuthentication();
-
             app.UseAuthorization();
 
             app.UseStaticFiles(new StaticFileOptions
@@ -235,11 +231,15 @@ namespace TrueVote.Api
             {
                 e.MapControllers();
                 e.MapGraphQL();
-                e.MapSwagger();
+                e.MapHealthChecks("/health");
+                e.MapGet("/", context =>
+                {
+                    context.Response.Redirect("/swagger");
+                    return Task.CompletedTask;
+                });
             });
 
             dbContext.EnsureCreatedAsync().GetAwaiter().GetResult();
-
             _ = app.SeedDatabase();
 
             Console.WriteLine("HostingEnvironmentName: '{0}'", env.EnvironmentName);
