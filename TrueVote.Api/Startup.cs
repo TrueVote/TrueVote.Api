@@ -146,8 +146,13 @@ namespace TrueVote.Api
                 };
             });
             services.TryAddScoped<IFileSystem, FileSystem>();
-            services.TryAddScoped<IServiceBus, ServiceBus>();
+
+            services.AddSingleton<ResilientServiceBus>();
+            services.AddSingleton<IServiceBus>(sp => sp.GetRequiredService<ResilientServiceBus>());
+            services.AddHostedService<RetryBackgroundService>();
+
             services.TryAddScoped<Ballot>();
+
             services.AddLogging(builder =>
             {
                 builder.SetMinimumLevel(LogLevel.Debug)

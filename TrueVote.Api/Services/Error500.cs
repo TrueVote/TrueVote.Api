@@ -39,9 +39,9 @@ namespace TrueVote.Api.Services
             if (error500Flag.Error)
             {
                 // Throw this random exception for no reason other than the requester wants it
-                _log.LogError($"error500 - throwing a sample exception");
+                _log.LogError($"error500 - logging error");
                 _log.LogDebug("HTTP trigger - ThrowError500:End");
-                await _serviceBus.SendAsync($"error500 - throwing a sample exception");
+                await _serviceBus.SendAsync($"error500 - sending service bus message directly throwing a sample exception");
                 throw new Exception("error500 - throwing a sample exception");
             }
 

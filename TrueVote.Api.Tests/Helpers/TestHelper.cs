@@ -57,7 +57,7 @@ namespace TrueVote.Api.Tests.Helpers
             serviceCollection.TryAddSingleton<INamingConventions, TrueVoteNamingConventions>();
             serviceCollection.TryAddScoped<IFileSystem, FileSystem>();
             serviceCollection.TryAddScoped<Hasher, Hasher>();
-            serviceCollection.TryAddScoped<IServiceBus, ServiceBus>();
+            serviceCollection.TryAddScoped<IServiceBus, ResilientServiceBus>();
             serviceCollection.TryAddScoped<IJwtHandler, JwtHandler>();
             serviceCollection.TryAddScoped<IRecursiveValidator, RecursiveValidator>();
             serviceCollection.TryAddScoped<IUniqueKeyGenerator, UniqueKeyGenerator>();
