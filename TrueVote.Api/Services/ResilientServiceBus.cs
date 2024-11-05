@@ -10,7 +10,7 @@ namespace TrueVote.Api.Services
 {
     public interface IServiceBus
     {
-        Task SendAsync<T>(T message, string? subject = null, string? correlationId = null, string? queueName = null) where T : class;
+        Task SendAsync<T>(T message, string? subject = null, string? correlationId = null, string? queueName = null, CancellationToken cancellationToken = default) where T : class;
         Channel<FailedMessage> GetRetryChannel();
     }
 
@@ -116,7 +116,7 @@ namespace TrueVote.Api.Services
                     });
         }
 
-        public async Task SendAsync<T>(T message, string? subject = null, string? correlationId = null, string? queueName = null) where T : class
+        public async Task SendAsync<T>(T message, string? subject = null, string? correlationId = null, string? queueName = null, CancellationToken cancellationToken = default) where T : class
         {
             try
             {
@@ -139,13 +139,20 @@ namespace TrueVote.Api.Services
                     TimeToLive = ServiceBusConstants.MessageTimeToLive
                 };
 
-                using var cts = new CancellationTokenSource();
-                cts.CancelAfter(ServiceBusConstants.OperationTimeout);
+                // If no cancellation token provided, create one with default timeout
+                using var timeoutCts = new CancellationTokenSource();
+                using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutCts.Token);
+
+                // Only set timeout if none was provided
+                if (!cancellationToken.CanBeCanceled)
+                {
+                    timeoutCts.CancelAfter(ServiceBusConstants.OperationTimeout);
+                }
 
                 await Policy.WrapAsync(_retryPolicy, _circuitBreakerPolicy)
                     .ExecuteAsync(async () =>
                     {
-                        await sender.SendMessageAsync(serviceBusMessage, cts.Token);
+                        await sender.SendMessageAsync(serviceBusMessage, linkedCts.Token);
                     });
             }
             catch (OperationCanceledException)

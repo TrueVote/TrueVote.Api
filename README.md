@@ -50,6 +50,8 @@ Create a new file at the root of the TrueVote.Api project named `appsettings.jso
   "WEBSITE_CONTENTAZUREFILESCOMPATIBILITYOVERRIDE": 1,
   "AzureWebJobsStorage": "UseDevelopmentStorage=true",
   "ServiceBusApiEventQueueName": "apieventqueue-dev",
+  "ServiceBusCommsQueueName": "comms-dev",
+  "ServiceBusHealthCheckQueueName": "healthcheck-dev",
   "JWTSecret": "<JWTBase64Key>",
   "ConnectionStrings": {
     "DefaultConnection": "AccountEndpoint=https://localhost:8081/;AccountKey=<AccountKeyFromCosmosDBEmulator>",
