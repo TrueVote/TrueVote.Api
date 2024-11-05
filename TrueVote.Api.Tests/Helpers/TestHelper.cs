@@ -83,9 +83,10 @@ namespace TrueVote.Api.Tests.Helpers
             _mockServiceBus = new Mock<IServiceBus>();
             _mockServiceBus.Setup(m => m.SendAsync(
                 It.IsAny<string>(),
-                It.IsAny<string>(),  // subject
-                It.IsAny<string>(),  // correlationId
-                It.IsAny<string>()   // queueName
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<CancellationToken>()
             )).Returns(Task.CompletedTask);
 
             _mockJwtHandler = new Mock<IJwtHandler>();

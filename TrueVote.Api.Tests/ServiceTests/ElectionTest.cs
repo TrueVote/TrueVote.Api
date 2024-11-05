@@ -404,7 +404,8 @@ namespace TrueVote.Api.Tests.ServiceTests
                 It.IsAny<object>(),
                 It.Is<string>(s => s == "VoterAccessCode"),
                 It.Is<string>(s => s == val.CommunicationEventId),
-                It.Is<string>(s => s == _configuration.Object["ServiceBusCommsQueueName"])),
+                It.Is<string>(s => s == _configuration.Object["ServiceBusCommsQueueName"]),
+                It.Is<CancellationToken>(s => s == default)),
                 Times.Once);
         }
 
