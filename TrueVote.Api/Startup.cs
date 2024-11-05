@@ -199,19 +199,30 @@ namespace TrueVote.Api
                 Console.WriteLine("Running Deployed");
             }
 
-            app.UseExceptionHandler(errorApp =>
+            app.Use(async (context, next) =>
             {
-                errorApp.Run(async context =>
+                try
                 {
-                    context.Response.StatusCode = StatusCodes.Status500InternalServerError;
-                    context.Response.ContentType = "application/json";
-                    await context.Response.WriteAsJsonAsync(new
+                    await next();
+
+                    // Handle non-success status codes that haven't been handled yet
+                    if (!context.Response.HasStarted && context.Response.StatusCode >= 400)
                     {
-                        statusCode = context.Response.StatusCode,
-                        message = "Internal Server Error",
-                        path = context.Request.Path.Value
-                    });
-                });
+                        await HandleErrorResponse(context);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // Handle any unhandled exceptions
+                    if (!context.Response.HasStarted)
+                    {
+                        context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+                        await HandleErrorResponse(context);
+                    }
+                    // Log the exception
+                    var logger = context.RequestServices.GetRequiredService<ILogger<Startup>>();
+                    logger.LogError(ex, "Unhandled exception");
+                }
             });
 
             // Security headers
@@ -225,13 +236,7 @@ namespace TrueVote.Api
                 if (path != null && (path.Contains("/.env") || path.Contains("/web.config") || path.Contains("/appsettings")))
                 {
                     context.Response.StatusCode = StatusCodes.Status404NotFound;
-                    context.Response.ContentType = "application/json";
-                    await context.Response.WriteAsJsonAsync(new
-                    {
-                        statusCode = StatusCodes.Status404NotFound,
-                        message = "Not Found",
-                        path = context.Request.Path.Value
-                    });
+                    await HandleErrorResponse(context);
                     return;
                 }
 
@@ -352,6 +357,32 @@ namespace TrueVote.Api
 
             // Combine with the 'dist' folder path and the runtime folder name
             return Path.Combine(basePath, "dist");
+        }
+
+        private static async Task HandleErrorResponse(HttpContext context)
+        {
+            context.Response.ContentType = "application/json";
+            var message = context.Response.StatusCode switch
+            {
+                400 => "Bad Request",
+                401 => "Unauthorized",
+                403 => "Forbidden",
+                404 => "Not Found",
+                405 => "Method Not Allowed",
+                408 => "Request Timeout",
+                409 => "Conflict",
+                500 => "Internal Server Error",
+                502 => "Bad Gateway",
+                503 => "Service Unavailable",
+                _ => "Error"
+            };
+
+            await context.Response.WriteAsJsonAsync(new
+            {
+                statusCode = context.Response.StatusCode,
+                path = context.Request.Path.Value,
+                message
+            });
         }
     }
 
