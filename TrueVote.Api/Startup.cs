@@ -199,16 +199,46 @@ namespace TrueVote.Api
                 Console.WriteLine("Running Deployed");
             }
 
+            // Security headers
+            app.Use(async (context, next) =>
+            {
+                // Add security headers
+                context.Response.Headers.Append("X-Content-Type-Options", "nosniff");
+                context.Response.Headers.Append("X-Frame-Options", "DENY");
+                context.Response.Headers.Append("X-XSS-Protection", "1; mode=block");
+
+                // Block access to sensitive files
+                var path = context.Request.Path.Value?.ToLower();
+                if (path != null && (path.Contains("/.env") || path.Contains("/web.config") || path.Contains("/appsettings")))
+                {
+                    context.Response.StatusCode = 404;
+                    return;
+                }
+
+                await next();
+            });
+
+            // Single status code handler for all error codes
             app.UseStatusCodePages(async context =>
             {
-                // Return clean JSON errors instead of HTML
-                context.HttpContext.Response.ContentType = "application/json";
-                var response = new
+                // Only handle if response hasn't started and is an error
+                if (!context.HttpContext.Response.HasStarted && context.HttpContext.Response.StatusCode >= 400)
                 {
-                    status = context.HttpContext.Response.StatusCode,
-                    message = "Not Found"
-                };
-                await context.HttpContext.Response.WriteAsJsonAsync(response);
+                    context.HttpContext.Response.ContentType = "application/json";
+                    var response = new
+                    {
+                        statusCode = context.HttpContext.Response.StatusCode,
+                        message = context.HttpContext.Response.StatusCode switch
+                        {
+                            404 => "Not Found",
+                            401 => "Unauthorized",
+                            403 => "Forbidden",
+                            _ => "Error"
+                        },
+                        path = context.HttpContext.Request.Path.Value
+                    };
+                    await context.HttpContext.Response.WriteAsJsonAsync(response);
+                }
             });
 
             app.UseHttpsRedirection();
@@ -278,25 +308,6 @@ namespace TrueVote.Api
                     context.Response.Redirect("/index.html");
                     return Task.CompletedTask;
                 });
-            });
-
-            // Security headers
-            app.Use(async (context, next) =>
-            {
-                // Add security headers
-                context.Response.Headers.Append("X-Content-Type-Options", "nosniff");
-                context.Response.Headers.Append("X-Frame-Options", "DENY");
-                context.Response.Headers.Append("X-XSS-Protection", "1; mode=block");
-
-                // Block access to sensitive files
-                var path = context.Request.Path.Value?.ToLower();
-                if (path != null && (path.Contains("/.env") || path.Contains("/web.config") || path.Contains("/appsettings")))
-                {
-                    context.Response.StatusCode = 404;
-                    return;
-                }
-
-                await next();
             });
 
             dbContext.EnsureCreatedAsync().GetAwaiter().GetResult();
