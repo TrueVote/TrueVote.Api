@@ -1,3 +1,4 @@
+using Azure.Messaging.ServiceBus;
 using HotChocolate.Language;
 using HotChocolate.Types.Descriptors;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -101,8 +102,9 @@ namespace TrueVote.Api
             });
 
             services.AddHealthChecks()
-                .AddCheck("api", () => HealthCheckResult.Healthy())
-                .AddCheck<DatabaseHealthCheck>("database");
+                .AddCheck("Api", () => HealthCheckResult.Healthy("Api is healthy"))
+                .AddCheck<DatabaseHealthCheck>("Database")
+                .AddCheck<ServiceBusHealthCheck>("ServiceBus", failureStatus: HealthStatus.Degraded, tags: new[] { "servicebus", "messaging" });
 
             services.AddApplicationInsightsTelemetry();
             services.AddDbContext<ITrueVoteDbContext, TrueVoteDbContext>();
@@ -146,8 +148,13 @@ namespace TrueVote.Api
                 };
             });
             services.TryAddScoped<IFileSystem, FileSystem>();
-            services.TryAddScoped<IServiceBus, ServiceBus>();
+
+            services.AddSingleton<ResilientServiceBus>();
+            services.AddSingleton<IServiceBus>(sp => sp.GetRequiredService<ResilientServiceBus>());
+            services.AddHostedService<RetryBackgroundService>();
+
             services.TryAddScoped<Ballot>();
+
             services.AddLogging(builder =>
             {
                 builder.SetMinimumLevel(LogLevel.Debug)
@@ -258,6 +265,7 @@ namespace TrueVote.Api
                             {
                                 name = e.Key,
                                 status = e.Value.Status.ToString(),
+                                description = e.Value.Description,
                                 duration = e.Value.Duration.ToString()
                             }),
                             duration = report.TotalDuration
@@ -700,11 +708,77 @@ namespace TrueVote.Api
                 using var scope = _scopeFactory.CreateScope();
                 var dbContext = scope.ServiceProvider.GetRequiredService<ITrueVoteDbContext>();
                 await dbContext.EnsureCreatedAsync();
-                return HealthCheckResult.Healthy();
+                return HealthCheckResult.Healthy("Database connection is healthy");
             }
             catch (Exception ex)
             {
-                return HealthCheckResult.Unhealthy(ex.Message);
+                return HealthCheckResult.Unhealthy("Database connection is unhealthy", ex);
+            }
+        }
+    }
+
+    [ExcludeFromCodeCoverage]
+    public class ServiceBusHealthCheck : IHealthCheck
+    {
+        private readonly ILogger<ServiceBusHealthCheck> _logger;
+        private readonly IConfiguration _configuration;
+
+        public ServiceBusHealthCheck(ILogger<ServiceBusHealthCheck> logger, IConfiguration configuration)
+        {
+            _logger = logger;
+            _configuration = configuration;
+        }
+
+        public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                var connectionString = _configuration.GetConnectionString("ServiceBusConnectionString");
+                var queueName = _configuration["ServiceBusHealthCheckQueueName"]!;
+
+                _logger.LogDebug($"Attempting health check on queue: {queueName}");
+
+                // Create a new client and sender for each check
+                await using var client = new ServiceBusClient(connectionString);
+                await using var sender = client.CreateSender(queueName);
+
+                // Create test message with debug info
+                var messageContent = new
+                {
+                    Type = "HealthCheck",
+                    Source = "ServiceBusHealthCheck",
+                    Timestamp = DateTime.UtcNow,
+                    QueueName = queueName
+                };
+
+                var message = new ServiceBusMessage(BinaryData.FromString(JsonSerializer.Serialize(messageContent)))
+                {
+                    Subject = "HealthCheck",
+                    ContentType = "application/json",
+                    TimeToLive = TimeSpan.FromMinutes(5),
+                    MessageId = Guid.NewGuid().ToString()
+                };
+
+                _logger.LogDebug($"Sending health check message with ID: {message.MessageId}");
+
+                // Use a short timeout
+                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+
+                await sender.SendMessageAsync(message, cts.Token);
+
+                _logger.LogDebug($"Successfully sent health check message: {message.MessageId}");
+
+                return HealthCheckResult.Healthy($"Service Bus health check successful. MessageId: {message.MessageId}", new Dictionary<string, object>
+                {
+                    { "MessageId", message.MessageId },
+                    { "Queue", queueName },
+                    { "Timestamp", DateTime.UtcNow }
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Service Bus health check failed");
+                return HealthCheckResult.Unhealthy("Service Bus connection failed", ex);
             }
         }
     }

@@ -67,6 +67,8 @@ namespace TrueVote.Api.Services
                 _BuildInfoReadTime = DateTime.Now.ToUniversalTime().ToString(UTCDateFormat);
             }
 
+            await _serviceBus.SendAsync($"Status Check");
+
             // Attach the static to the returned object
             status.BuildInfo = _BuildInfo;
             status.BuildInfoReadTime = _BuildInfoReadTime;
@@ -77,8 +79,6 @@ namespace TrueVote.Api.Services
             status.ExecutionTime = watch.ElapsedMilliseconds;
             status.ExecutionTimeMsg = $"Time to run: {watch.ElapsedMilliseconds}ms";
             status.CurrentTime = DateTime.Now.ToUniversalTime().ToString(UTCDateFormat);
-
-            await _serviceBus.SendAsync($"Status Check");
 
             _log.LogDebug("HTTP trigger - GetStatus:End");
 
