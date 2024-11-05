@@ -199,19 +199,39 @@ namespace TrueVote.Api
                 Console.WriteLine("Running Deployed");
             }
 
+            app.UseExceptionHandler(errorApp =>
+            {
+                errorApp.Run(async context =>
+                {
+                    context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+                    context.Response.ContentType = "application/json";
+                    await context.Response.WriteAsJsonAsync(new
+                    {
+                        statusCode = context.Response.StatusCode,
+                        message = "Internal Server Error",
+                        path = context.Request.Path.Value
+                    });
+                });
+            });
+
             // Security headers
             app.Use(async (context, next) =>
             {
-                // Add security headers
                 context.Response.Headers.Append("X-Content-Type-Options", "nosniff");
                 context.Response.Headers.Append("X-Frame-Options", "DENY");
                 context.Response.Headers.Append("X-XSS-Protection", "1; mode=block");
 
-                // Block access to sensitive files
                 var path = context.Request.Path.Value?.ToLower();
                 if (path != null && (path.Contains("/.env") || path.Contains("/web.config") || path.Contains("/appsettings")))
                 {
-                    context.Response.StatusCode = 404;
+                    context.Response.StatusCode = StatusCodes.Status404NotFound;
+                    context.Response.ContentType = "application/json";
+                    await context.Response.WriteAsJsonAsync(new
+                    {
+                        statusCode = StatusCodes.Status404NotFound,
+                        message = "Not Found",
+                        path = context.Request.Path.Value
+                    });
                     return;
                 }
 
@@ -221,23 +241,32 @@ namespace TrueVote.Api
             // Single status code handler for all error codes
             app.UseStatusCodePages(async context =>
             {
-                // Only handle if response hasn't started and is an error
-                if (!context.HttpContext.Response.HasStarted && context.HttpContext.Response.StatusCode >= 400)
+                var response = context.HttpContext.Response;
+
+                if (!response.HasStarted)
                 {
-                    context.HttpContext.Response.ContentType = "application/json";
-                    var response = new
+                    response.ContentType = "application/json";
+                    var message = response.StatusCode switch
                     {
-                        statusCode = context.HttpContext.Response.StatusCode,
-                        message = context.HttpContext.Response.StatusCode switch
-                        {
-                            404 => "Not Found",
-                            401 => "Unauthorized",
-                            403 => "Forbidden",
-                            _ => "Error"
-                        },
-                        path = context.HttpContext.Request.Path.Value
+                        400 => "Bad Request",
+                        401 => "Unauthorized",
+                        403 => "Forbidden",
+                        404 => "Not Found",
+                        405 => "Method Not Allowed",
+                        408 => "Request Timeout",
+                        409 => "Conflict",
+                        500 => "Internal Server Error",
+                        502 => "Bad Gateway",
+                        503 => "Service Unavailable",
+                        _ => "Error"
                     };
-                    await context.HttpContext.Response.WriteAsJsonAsync(response);
+
+                    await response.WriteAsJsonAsync(new
+                    {
+                        statusCode = response.StatusCode,
+                        path = context.HttpContext.Request.Path.Value,
+                        message
+                    });
                 }
             });
 
