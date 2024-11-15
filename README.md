@@ -5,6 +5,7 @@
 
 [![TrueVote.Api](https://github.com/TrueVote/TrueVote.Api/actions/workflows/truevote-api-appservice.yml/badge.svg)](https://github.com/TrueVote/TrueVote.Api/actions/workflows/truevote-api-appservice.yml)
 [![Coverage Status](https://coveralls.io/repos/github/TrueVote/TrueVote.Api/badge.svg)](https://coveralls.io/github/TrueVote/TrueVote.Api)
+[![CodeQL](https://github.com/TrueVote/TrueVote.Api/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/TrueVote/TrueVote.Api/actions/workflows/github-code-scanning/codeql)
 
 # TrueVote.Api
 
