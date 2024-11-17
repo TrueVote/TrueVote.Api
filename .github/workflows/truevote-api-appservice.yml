@@ -18,7 +18,7 @@ env:
   API_IMPORT_SPECIFICATION_PATH: TrueVote.Api\publish\swagger.json
   API_IMPORT_DLL: TrueVote.Api\publish\TrueVote.Api.dll
   API_IMPORT_VERSION: v1
-  DOTNET_CORE_VERSION: 8.0.x
+  DOTNET_CORE_VERSION: 9.0.x
   WORKING_DIRECTORY: TrueVote.Api
 
 jobs:
