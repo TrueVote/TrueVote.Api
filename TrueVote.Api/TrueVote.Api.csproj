@@ -38,7 +38,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.21.0" />
-    <PackageReference Include="NSwag.AspNetCore" Version="14.1.0" />
+    <PackageReference Include="NSwag.AspNetCore" Version="14.2.0" />
     <PackageReference Include="Polly" Version="8.5.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="7.0.0" />
     <PackageReference Include="Microsoft.CodeAnalysis" Version="4.11.0" />
