@@ -35,7 +35,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "sign-service", "sign-servic
 		sign-service\SIGN_IN_NSEC_SERVICE.MD = sign-service\SIGN_IN_NSEC_SERVICE.MD
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Postman Scripts", "Postman Scripts", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Postman Scripts", "Postman Scripts", "{F4AD93C0-7F63-4EBA-AFE4-BF36EA9C28C5}"
 	ProjectSection(SolutionItems) = preProject
 		sign-service\Postman Scripts\post-response.js = sign-service\Postman Scripts\post-response.js
 		sign-service\Postman Scripts\pre-request.js = sign-service\Postman Scripts\pre-request.js
@@ -60,7 +60,8 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{02EA681E-C7D8-13C7-8484-4AC65E1B71E8} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{02EA681E-C7D8-13C7-8484-4AC65E1B71E8} = {086E0C01-9405-4F20-A756-8558B1F4C9E9}
+		{F4AD93C0-7F63-4EBA-AFE4-BF36EA9C28C5} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {8F85F5CD-81E7-4C21-9D3A-329C38D479C6}
