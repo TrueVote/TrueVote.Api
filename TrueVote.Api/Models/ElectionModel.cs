@@ -86,6 +86,12 @@ namespace TrueVote.Api.Models
         [JsonPropertyName("EndDate")]
         [JsonProperty(nameof(EndDate), Required = Required.Always)]
         public required DateTime EndDate { get; set; }
+
+        [Required]
+        [Description("Unlisted")]
+        [JsonPropertyName("Unlisted")]
+        [JsonProperty(nameof(Unlisted), Required = Required.Always)]
+        public required bool Unlisted { get; set; } = false;
     }
 
     public class BaseElectionModel : RootElectionBaseModel
@@ -144,7 +150,8 @@ namespace TrueVote.Api.Models
                 StartDate = baseElection.StartDate,
                 EndDate = baseElection.EndDate,
                 Races = races,
-                DateCreated = UtcNowProviderFactory.GetProvider().UtcNow
+                DateCreated = UtcNowProviderFactory.GetProvider().UtcNow,
+                Unlisted = baseElection.Unlisted,
             };
 
             return election;

@@ -529,5 +529,55 @@
     "StartDate": "2023-12-17",
     "EndDate": "2024-02-25",
     "BaseRaces": []
+  },
+  {
+    "_comment": "1109 Santa Monica Fire Department Union Board Election - 2025",
+    "Name": "1109 Santa Monica Fire Department Union Board Election - 2025",
+    "Description": "Election for the 1109 Santa Monica Fire Department Union Board Election - 2025",
+    "HeaderImageUrl": "/static/sample-elections/smfd.png",
+    "Unlisted":  true,
+    "StartDate": "2024-11-25 13:00:00",
+    "EndDate": "2024-12-02 07:59:59",
+    "BaseRaces": [
+      {
+        "Name": "President",
+        "RaceType": 0,
+        "MinNumberOfChoices": 1,
+        "MaxNumberOfChoices": 1,
+        "BaseCandidates": [
+          {
+            "Name": "Garrett Childers",
+            "PartyAffiliation": "",
+            "CandidateImageUrl": ""
+          }
+        ]
+      },
+      {
+        "Name": "PAC",
+        "RaceType": 0,
+        "MinNumberOfChoices": 1,
+        "MaxNumberOfChoices": 1,
+        "BaseCandidates": [
+          {
+            "Name": "Trevor Mustin",
+            "PartyAffiliation": "",
+            "CandidateImageUrl": ""
+          }
+        ]
+      },
+      {
+        "Name": "Secretary",
+        "RaceType": 0,
+        "MinNumberOfChoices": 1,
+        "MaxNumberOfChoices": 1,
+        "BaseCandidates": [
+          {
+            "Name": "James Hesketh",
+            "PartyAffiliation": "",
+            "CandidateImageUrl": ""
+          }
+        ]
+      }
+    ]
   }
 ]

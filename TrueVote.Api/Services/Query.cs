@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using NJsonSchema.Annotations;
 using System.Diagnostics.CodeAnalysis;
 using TrueVote.Api.Interfaces;
 using TrueVote.Api.Models;
@@ -34,7 +33,7 @@ namespace TrueVote.Api.Services
 
         public async Task<IReadOnlyList<ElectionModel>> GetElection()
         {
-            var items = await _trueVoteDbContext.Elections.OrderByDescending(c => c.DateCreated).ToListAsync();
+            var items = await _trueVoteDbContext.Elections.Where(e => e.Unlisted == false).OrderByDescending(c => c.DateCreated).ToListAsync();
 
             return items;
         }
