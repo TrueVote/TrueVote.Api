@@ -2,7 +2,6 @@
 const express = require('express');
 const { 
     getPublicKey, 
-    getEventHash, 
     nip19, 
     finalizeEvent 
 } = require('nostr-tools');
