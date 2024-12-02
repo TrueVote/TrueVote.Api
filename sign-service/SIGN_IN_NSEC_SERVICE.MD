@@ -29,6 +29,8 @@ The service runs on `http://localhost:3456` by default.
 
 ## How It Works
 
+### Postman -> Collections -> Users -> SignIn
+
 1. **Postman Pre-request Script** sends your nsec to the local signing service
 2. **Local Service** uses nostr-tools to:
    - Generate public key from nsec

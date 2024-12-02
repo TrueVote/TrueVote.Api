@@ -100,7 +100,9 @@ This generates a coverage report in `TrueVote.Api.Tests/coverage-html`. Open `in
 
 ## 📮 Making requests via Postman
 
-[Postman](https://www.postman.com/) is a useful tool for testing Apis. TrueVote has a [hosted workspace](https://www.postman.com/truevote/workspace/truevote-api) containing a collection of useful example endpoints and their usage. Sign in with Nostr is supported via a locally running [sign-in service](sign-service/SIGN_IN_NSEC_SERVICE.MD).
+[Postman](https://www.postman.com/) is a useful tool for testing Apis. TrueVote has a [hosted workspace](https://www.postman.com/truevote/workspace/truevote-api) containing a collection of useful example endpoints and their usage.
+
+Sign in with Nostr is supported via a locally running [sign-in service](sign-service/SIGN_IN_NSEC_SERVICE.MD).
 
 ## 🎁 Versioning
 
