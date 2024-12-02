@@ -1,0 +1,19 @@
+{
+  "name": "truevote.signservice",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "update-packages": "ncu -u"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "Allows users to sign-in using Postman",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.21.1",
+    "nostr-tools": "^2.10.4",
+    "npm-check-updates": "^17.1.11"
+  }
+}
