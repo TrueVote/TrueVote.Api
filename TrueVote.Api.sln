@@ -28,6 +28,19 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TrueVote.Api.Tests", "TrueVote.Api.Tests\TrueVote.Api.Tests.csproj", "{63DCC3E9-0607-45A0-A379-C7FAC0FEDA57}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "sign-service", "sign-service", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+	ProjectSection(SolutionItems) = preProject
+		sign-service\package.json = sign-service\package.json
+		sign-service\sign-service.js = sign-service\sign-service.js
+		sign-service\SIGN_IN_NSEC_SERVICE.MD = sign-service\SIGN_IN_NSEC_SERVICE.MD
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Postman Scripts", "Postman Scripts", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+	ProjectSection(SolutionItems) = preProject
+		sign-service\Postman Scripts\post-response.js = sign-service\Postman Scripts\post-response.js
+		sign-service\Postman Scripts\pre-request.js = sign-service\Postman Scripts\pre-request.js
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -45,6 +58,9 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{02EA681E-C7D8-13C7-8484-4AC65E1B71E8} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {8F85F5CD-81E7-4C21-9D3A-329C38D479C6}
