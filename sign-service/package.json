@@ -12,8 +12,8 @@
   "description": "Allows users to sign-in using Postman",
   "dependencies": {
     "cors": "^2.8.5",
-    "express": "^4.21.1",
+    "express": "^4.21.2",
     "nostr-tools": "^2.10.4",
-    "npm-check-updates": "^17.1.11"
+    "npm-check-updates": "^17.1.12"
   }
 }
