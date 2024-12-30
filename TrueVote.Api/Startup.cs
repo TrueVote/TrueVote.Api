@@ -52,8 +52,36 @@ namespace TrueVote.Api
                 jsonoptions.SerializerSettings.DateFormatHandling = DateFormatHandling.IsoDateFormat;
                 jsonoptions.SerializerSettings.ContractResolver = new DefaultContractResolver();
             });
-            services.AddEndpointsApiExplorer();
 
+            services.AddEndpointsApiExplorer();
+            services.AddOpenApiDocument(o =>
+            {
+                o.PostProcess = doc =>
+                {
+                    doc.Info.Title = "TrueVote.Api";
+                    doc.Info.Version = "v1";
+                    doc.Info.Description = "TrueVote APIs using strict OpenAPI specification.";
+
+                    // Add SecurityDefinitions for Swagger UI authorization
+                    doc.SecurityDefinitions.Add("Bearer", new NSwag.OpenApiSecurityScheme
+                    {
+                        Description = "Please enter a valid TrueVote.Api token",
+                        Name = "Authorization",
+                        In = NSwag.OpenApiSecurityApiKeyLocation.Header,
+                        Type = NSwag.OpenApiSecuritySchemeType.Http,
+                        BearerFormat = "JWT",
+                        Scheme = "Bearer"
+                    });
+                };
+                o.OperationProcessors.Add(new AuthorizeCheckOperationProcessor());
+                o.DocumentProcessors.Add(new CustomModelDocumentProcessor<ElectionResults>());
+                o.DocumentProcessors.Add(new CustomModelDocumentProcessor<RaceResult>());
+                o.DocumentProcessors.Add(new CustomModelDocumentProcessor<CandidateResult>());
+                o.DocumentProcessors.Add(new CustomModelDocumentProcessor<ServiceBusCommsMessage>());
+                o.DocumentProcessors.Add(new CustomModelDocumentProcessor<ServiceBusCommsMessage>());
+                o.DocumentProcessors.Add(new CustomModelDocumentProcessor<BallotIdInfo>());
+                o.DocumentProcessors.Add(new CustomModelDocumentProcessor<PaginatedBallotIds>());
+            });
             services.AddSwaggerGen(o =>
             {
                 var baseUrl = "/api";
@@ -98,6 +126,21 @@ namespace TrueVote.Api
                     Type = SecuritySchemeType.Http,
                     BearerFormat = "JWT",
                     Scheme = "Bearer"
+                });
+                o.OperationFilter<AuthorizeCheckOperationFilter>();
+                o.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = "Bearer"
+                            }
+                        },
+                        new string[] { }
+                    }
                 });
                 o.OperationFilter<AuthorizeCheckOperationFilter>();
             });
@@ -578,15 +621,6 @@ namespace TrueVote.Api
                 // This will force Swagger to generate a schema for these types
                 _ = schema.Properties;
             }
-        }
-    }
-
-    [ExcludeFromCodeCoverage]
-    public class CustomModelDocumentFilter<T> : IDocumentFilter where T : class
-    {
-        public void Apply(OpenApiDocument swaggerDoc, DocumentFilterContext context)
-        {
-            context.SchemaGenerator.GenerateSchema(typeof(T), context.SchemaRepository);
         }
     }
 
