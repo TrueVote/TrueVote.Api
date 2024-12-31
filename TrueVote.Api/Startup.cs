@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.FileProviders;
@@ -397,7 +398,12 @@ namespace TrueVote.Api
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseCosmos(_connectionString, "true-vote");
+            optionsBuilder.UseCosmos(_connectionString, "true-vote")
+                .ConfigureWarnings(warnings =>
+                {
+                    // TODO Remove this and make all calls Async so this isn't needed
+                    warnings.Ignore(CosmosEventId.SyncNotSupported);
+                });
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
