@@ -13,8 +13,8 @@ on:
 env:
   AZURE_WEBAPP_NAME: TrueVoteApiAppService
   AZURE_WEBAPP_PACKAGE_PATH: TrueVote.Api\publish
-  SWASHBUCLE_ASPNET_CORE_CLI_PACKAGE_VERSION: 6.5.0
-  SWASHBUCKLE_DOTNET_CORE_VERSION: 3.1.x
+  SWASHBUCLE_ASPNET_CORE_CLI_PACKAGE_VERSION: 6.5.7
+  SWASHBUCKLE_DOTNET_CORE_VERSION: 7.0.x
   API_IMPORT_SPECIFICATION_PATH: TrueVote.Api\publish\swagger.json
   API_IMPORT_DLL: TrueVote.Api\publish\TrueVote.Api.dll
   API_IMPORT_VERSION: v1
@@ -32,11 +32,6 @@ jobs:
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: ${{ env.DOTNET_CORE_VERSION }}
-
-    - name: Setup SwashBuckle .NET Core
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: ${{ env.SWASHBUCKLE_DOTNET_CORE_VERSION }}
 
     - name: Setup Nuget cache
       uses: actions/cache@v3
