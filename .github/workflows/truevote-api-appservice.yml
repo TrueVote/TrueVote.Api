@@ -67,11 +67,14 @@ jobs:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         path-to-lcov: TrueVote.Api.Tests/TestResults/coverage.info
 
-    - name: Build Artifact
+    - name: Build Release Version
+      run: dotnet build --configuration Release
+
+    - name: Publish Artifact
       run: |
         dotnet publish ${{ env.WORKING_DIRECTORY }} --configuration Release --output ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
 
-    - name: Publish Artifact
+    - name: Upload Artifact
       uses: actions/upload-artifact@v4
       with:
         name: webapp
