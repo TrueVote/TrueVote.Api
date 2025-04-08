@@ -223,7 +223,7 @@ namespace TrueVote.Api.Tests.ServiceTests
         public async Task SignInSuccessFoundUser()
         {
             var keyPair = NostrKeyPair.GenerateNew();
-            var userId = Guid.NewGuid().ToString();
+            var userId = PrefixedGuid.NewPrefixedGuid(PrefixedGuid.EntityType.User);
             var utcTime = DateTimeOffset.UtcNow;
 
             var newUser = new UserModel

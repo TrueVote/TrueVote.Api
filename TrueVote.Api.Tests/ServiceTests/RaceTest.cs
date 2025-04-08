@@ -22,7 +22,7 @@ namespace TrueVote.Api.Tests.ServiceTests
 
     public class FakeRaceModel
     {
-        public string RaceId { get; set; } = Guid.NewGuid().ToString();
+        public string RaceId { get; set; } = PrefixedGuid.NewPrefixedGuid(PrefixedGuid.EntityType.Race);
         public string Name { get; set; } = string.Empty;
         public RaceTypes RaceType { get; set; }
         public List<CandidateModel> Candidates { get; set; } = new List<CandidateModel>();
