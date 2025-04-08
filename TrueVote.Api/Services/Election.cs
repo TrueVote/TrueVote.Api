@@ -151,7 +151,7 @@ namespace TrueVote.Api.Services
 
             // If made through the loop of checks above, ok to persist. This will write a new Election
             election.DateCreated = UtcNowProviderFactory.GetProvider().UtcNow;
-            election.ElectionId = Guid.NewGuid().ToString();
+            election.ElectionId = PrefixedGuid.NewPrefixedGuid(PrefixedGuid.EntityType.Election);
 
             await _trueVoteDbContext.Elections.AddAsync(election);
             await _trueVoteDbContext.SaveChangesAsync();
@@ -193,7 +193,7 @@ namespace TrueVote.Api.Services
                 throw new KeyNotFoundException($"Election: '{accessCodesRequest.ElectionId}' not found");
             }
 
-            var requestId = Guid.NewGuid().ToString();
+            var requestId = PrefixedGuid.NewPrefixedGuid(PrefixedGuid.EntityType.Message);
             var dateCreated = UtcNowProviderFactory.GetProvider().UtcNow;
 
             var accessCodesResponse = new AccessCodesResponse
@@ -327,7 +327,7 @@ namespace TrueVote.Api.Services
 
                 var commEvent = new CommunicationEventModel
                 {
-                    CommunicationEventId = Guid.NewGuid().ToString(),
+                    CommunicationEventId = PrefixedGuid.NewPrefixedGuid(PrefixedGuid.EntityType.Message),
                     Type = "VoterAccessCode",
                     CommunicationMethod = new Dictionary<string, string>
                     {

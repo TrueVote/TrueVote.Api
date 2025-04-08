@@ -100,7 +100,7 @@ namespace TrueVote.Api
                             UserId = userId,
                             RoleId = role.Id,
                             DateCreated = now,
-                            UserRoleId = Guid.NewGuid().ToString()
+                            UserRoleId = PrefixedGuid.NewPrefixedGuid(PrefixedGuid.EntityType.Role)
                         });
 
                     newUserRoles.AddRange(userNewRoles);
@@ -117,7 +117,7 @@ namespace TrueVote.Api
                             UserId = userId,
                             RoleId = UserRoles.Service.Id,
                             DateCreated = now,
-                            UserRoleId = Guid.NewGuid().ToString()
+                            UserRoleId = PrefixedGuid.NewPrefixedGuid(PrefixedGuid.EntityType.Role)
                         });
                     }
                 }

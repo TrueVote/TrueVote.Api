@@ -796,7 +796,7 @@ namespace TrueVote.Api
                     Subject = "HealthCheck",
                     ContentType = "application/json",
                     TimeToLive = TimeSpan.FromMinutes(5),
-                    MessageId = Guid.NewGuid().ToString()
+                    MessageId = PrefixedGuid.NewPrefixedGuid(PrefixedGuid.EntityType.Message)
                 };
 
                 _logger.LogDebug($"Sending health check message with ID: {message.MessageId}");

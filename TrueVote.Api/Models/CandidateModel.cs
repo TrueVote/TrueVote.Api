@@ -111,7 +111,7 @@ namespace TrueVote.Api.Models
         {
             return new CandidateModel
             {
-                CandidateId = Guid.NewGuid().ToString(),
+                CandidateId = PrefixedGuid.NewPrefixedGuid(PrefixedGuid.EntityType.Candidate),
                 Name = baseCandidateModel.Name,
                 DateCreated = UtcNowProviderFactory.GetProvider().UtcNow,
                 PartyAffiliation = baseCandidateModel.PartyAffiliation,

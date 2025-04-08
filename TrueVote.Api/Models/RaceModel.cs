@@ -161,7 +161,7 @@ namespace TrueVote.Api.Models
         {
             return new RaceModel
             {
-                RaceId = Guid.NewGuid().ToString(),
+                RaceId = PrefixedGuid.NewPrefixedGuid(PrefixedGuid.EntityType.Race),
                 Name = baseRaceModel.Name,
                 DateCreated = UtcNowProviderFactory.GetProvider().UtcNow,
                 Candidates = baseRaceModel.BaseCandidates.DTOToCandidates(),

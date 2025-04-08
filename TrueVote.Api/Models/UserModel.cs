@@ -5,6 +5,8 @@ using System.ComponentModel;
 using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations.Schema;
+using Swashbuckle.AspNetCore.Annotations;
+using TrueVote.Api.Helpers;
 
 namespace TrueVote.Api.Models
 {
@@ -229,7 +231,7 @@ namespace TrueVote.Api.Models
         [JsonPropertyName("UserRoleId")]
         [JsonProperty(nameof(UserRoleId), Required = Required.Always)]
         [Key]
-        public required string UserRoleId { get; set; } = Guid.NewGuid().ToString();
+        public required string UserRoleId { get; set; } = PrefixedGuid.NewPrefixedGuid(PrefixedGuid.EntityType.Role);
 
         [Required]
         [Description("User Id")]
@@ -247,7 +249,7 @@ namespace TrueVote.Api.Models
         [JsonPropertyName("RoleId")]
         [ForeignKey("Role")]
         [JsonProperty(nameof(RoleId), Required = Required.Always)]
-        public required string RoleId { get; set; }
+        public required string RoleId { get; set; } = PrefixedGuid.NewPrefixedGuid(PrefixedGuid.EntityType.Role);
 
         [Required]
         [Description("DateCreated")]
@@ -264,7 +266,7 @@ namespace TrueVote.Api.Models
         [JsonPropertyName("RoleId")]
         [JsonProperty(nameof(RoleId), Required = Required.Always)]
         [Key]
-        public required string RoleId { get; set; } = Guid.NewGuid().ToString();
+        public required string RoleId { get; set; } = PrefixedGuid.NewPrefixedGuid(PrefixedGuid.EntityType.Role);
 
         [Required]
         [Description("Role Name")]

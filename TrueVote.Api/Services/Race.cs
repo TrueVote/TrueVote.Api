@@ -98,7 +98,7 @@ namespace TrueVote.Api.Services
 
             // If made through the loop of checks above, ok to persist. This will write a new Race
             race.DateCreated = UtcNowProviderFactory.GetProvider().UtcNow;
-            race.RaceId = Guid.NewGuid().ToString();
+            race.RaceId = PrefixedGuid.NewPrefixedGuid(PrefixedGuid.EntityType.Race);
 
             await _trueVoteDbContext.Races.AddAsync(race);
             await _trueVoteDbContext.SaveChangesAsync();

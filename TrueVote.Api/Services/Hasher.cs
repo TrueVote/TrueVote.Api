@@ -52,7 +52,7 @@ namespace TrueVote.Api.Services
                 BallotId = ballot.BallotId,
                 DateCreated = UtcNowProviderFactory.GetProvider().UtcNow,
                 DateUpdated = UtcNowProviderFactory.GetProvider().UtcNow,
-                BallotHashId = Guid.NewGuid().ToString()
+                BallotHashId = PrefixedGuid.NewPrefixedGuid(PrefixedGuid.EntityType.Hash)
             };
 
             try
@@ -102,7 +102,7 @@ namespace TrueVote.Api.Services
             {
                 MerkleRoot = merkleRoot,
                 MerkleRootHash = merkleRootHash,
-                TimestampId = Guid.NewGuid().ToString(),
+                TimestampId = PrefixedGuid.NewPrefixedGuid(PrefixedGuid.EntityType.Timestamp),
                 TimestampHash = result,
                 TimestampHashS = (string) JToken.Parse(Utf8Json.JsonSerializer.ToJsonString(result)),
                 TimestampAt = UtcNowProviderFactory.GetProvider().UtcNow,

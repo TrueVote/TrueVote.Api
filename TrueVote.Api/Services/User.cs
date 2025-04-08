@@ -49,7 +49,7 @@ namespace TrueVote.Api.Services
 
             _log.LogInformation($"Request Data: {baseUser}");
 
-            var user = await AddNewUser(baseUser, Guid.NewGuid().ToString());
+            var user = await AddNewUser(baseUser, PrefixedGuid.NewPrefixedGuid(PrefixedGuid.EntityType.User));
 
             _log.LogDebug("HTTP trigger - CreateUser:End");
 
@@ -168,7 +168,7 @@ namespace TrueVote.Api.Services
                     return BadRequest(new SecureString { Value = "Could not deserialize signature content into BaseUserModel" });
                 }
 
-                var userId = Guid.NewGuid().ToString();
+                var userId = PrefixedGuid.NewPrefixedGuid(PrefixedGuid.EntityType.User);
 
                 user = await AddNewUser(new BaseUserModel { Email = baseUserModel.Email, FullName = baseUserModel.FullName, NostrPubKey = signInEventModel.PubKey }, userId);
 
@@ -180,7 +180,7 @@ namespace TrueVote.Api.Services
                     UserId = userId,
                     RoleId = UserRoles.Voter.Id,
                     DateCreated = now,
-                    UserRoleId = Guid.NewGuid().ToString()
+                    UserRoleId = PrefixedGuid.NewPrefixedGuid(PrefixedGuid.EntityType.Role)
                 };
 
                 await _trueVoteDbContext.UserRoles.AddAsync(userRoleModel);
@@ -282,7 +282,7 @@ namespace TrueVote.Api.Services
             // Sanitize the feedback
             feedback.UserId = User.GetUserId().ToString();
             feedback.Feedback = Regex.Replace(feedback.Feedback, "<.*?>", string.Empty);
-            feedback.FeedbackId = Guid.NewGuid().ToString();
+            feedback.FeedbackId = PrefixedGuid.NewPrefixedGuid(PrefixedGuid.EntityType.Feedback);
             feedback.DateCreated = UtcNowProviderFactory.GetProvider().UtcNow;
 
             await _trueVoteDbContext.Feedbacks.AddAsync(feedback);

@@ -143,7 +143,7 @@ namespace TrueVote.Api.Models
         {
             var election = new ElectionModel
             {
-                ElectionId = Guid.NewGuid().ToString(),
+                ElectionId = PrefixedGuid.NewPrefixedGuid(PrefixedGuid.EntityType.Election),
                 Name = baseElection.Name,
                 Description = baseElection.Description,
                 HeaderImageUrl = baseElection.HeaderImageUrl,
