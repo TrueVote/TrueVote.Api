@@ -44,8 +44,11 @@ Create a new file at the root of the TrueVote.Api project named `appsettings.jso
       }
     }
   },
-  "SystemAdminUserIds": [
-    "<UserId>"
+  "SystemAdminNsecs": [
+    "<nsec>"
+  ],
+  "ServiceNsecs": [
+    "<nsec>"
   ],
   "AllowedHosts": "*",
   "WEBSITE_CONTENTAZUREFILESCOMPATIBILITYOVERRIDE": 1,
@@ -69,8 +72,6 @@ Replace the <value> names:
 2. Get the `<ServiceBusConnectionString>` from Azure portal. Currently Service Bus is not available to run locally.
 
 3. Create a `<JWTBase64Key>`: `$ openssl rand -base64 32`
-
-4. Once you create a new User, to make that user a SystemAdmin, put the UserId GUID as `<UserId>` inside `SystemAdminUserIds`.
 
 ### Install the packages
 
