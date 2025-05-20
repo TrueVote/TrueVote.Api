@@ -364,9 +364,9 @@ namespace TrueVote.Api.Models
         [Required]
         [Description("List of ballot IDs and ballot dates for the current page")]
         [DataType("PaginatedBallotIds")]
-        [JsonPropertyName("BallotIds")]
+        [JsonPropertyName("PaginatedBallotIds")]
         [JsonProperty(nameof(PaginatedBallotIds), Required = Required.Always)]
-        public required PaginatedBallotIds BallotIds { get; set; }
+        public required PaginatedBallotIds PaginatedBallotIds { get; set; }
     }
 
     [SwaggerSchema]

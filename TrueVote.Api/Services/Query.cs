@@ -106,7 +106,7 @@ namespace TrueVote.Api.Services
                     TotalBallots = 0,
                     TotalBallotsHashed = 0,
                     Races = [],
-                    BallotIds = new PaginatedBallotIds { Items = [], Limit = limit, Offset = offset, TotalCount = 0 }
+                    PaginatedBallotIds = new PaginatedBallotIds { Items = [], Limit = limit, Offset = offset, TotalCount = 0 }
                 };
             }
 
@@ -141,7 +141,7 @@ namespace TrueVote.Api.Services
                 TotalBallots = ballots.Count,
                 TotalBallotsHashed = ballotHashes.Count,
                 Races = raceResults,
-                BallotIds = new PaginatedBallotIds { Items = paginatedBallotIds, Limit = limit, Offset = offset, TotalCount = ballots.Count }
+                PaginatedBallotIds = new PaginatedBallotIds { Items = paginatedBallotIds, Limit = limit, Offset = offset, TotalCount = ballots.Count }
             };
         }
     }
@@ -157,14 +157,14 @@ namespace TrueVote.Api.Services
                 return null;
 
             // Update the results to match the requested pagination
-            var paginatedItems = results.BallotIds.Items
+            var paginatedItems = results.PaginatedBallotIds.Items
                 .Skip(offset)
                 .Take(limit)
                 .ToList();
 
-            results.BallotIds.Items = paginatedItems;
-            results.BallotIds.Offset = offset;
-            results.BallotIds.Limit = limit;
+            results.PaginatedBallotIds.Items = paginatedItems;
+            results.PaginatedBallotIds.Offset = offset;
+            results.PaginatedBallotIds.Limit = limit;
 
             return results;
         }
