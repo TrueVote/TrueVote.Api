@@ -80,7 +80,7 @@ namespace TrueVote.Api.Services
             {
                 _client = new ServiceBusClient(connectionString, clientOptions);
             }
-            _defaultQueueName = configuration["ServiceBusApiEventQueueName"]!;
+            _defaultQueueName = configuration["ServiceBusCommsQueueName"]!;
 
             _retryChannel = Channel.CreateUnbounded<FailedMessage>(new UnboundedChannelOptions
             {
