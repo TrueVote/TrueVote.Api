@@ -367,8 +367,7 @@ namespace TrueVote.Api.Services
                     }
                 },
                 subject: "VoterAccessCode",
-                correlationId: commEvent.CommunicationEventId,
-                queueName: _configuration["ServiceBusCommsQueueName"]);
+                correlationId: commEvent.CommunicationEventId);
 
                 return CreatedAtAction(null, null, commEvent);
             }

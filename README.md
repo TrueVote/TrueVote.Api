@@ -53,7 +53,6 @@ Create a new file at the root of the TrueVote.Api project named `appsettings.jso
   "AllowedHosts": "*",
   "WEBSITE_CONTENTAZUREFILESCOMPATIBILITYOVERRIDE": 1,
   "AzureWebJobsStorage": "UseDevelopmentStorage=true",
-  "ServiceBusApiEventQueueName": "apieventqueue-dev",
   "ServiceBusCommsQueueName": "comms-dev",
   "ServiceBusHealthCheckQueueName": "healthcheck-dev",
   "JWTSecret": "<JWTBase64Key>",
